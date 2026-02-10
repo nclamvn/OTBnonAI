@@ -150,7 +150,7 @@ const MasterDataScreen = ({ type = 'brands', darkMode = false }) => {
                 ? 'linear-gradient(135deg, rgba(215,183,151,0.10) 0%, rgba(215,183,151,0.20) 100%)'
                 : 'linear-gradient(135deg, rgba(160,120,75,0.12) 0%, rgba(160,120,75,0.22) 100%)',
             }}>
-              <Icon size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} style={darkMode ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
+              <Icon size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={darkMode ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
             </div>
             <div>
               <h1 className={`text-sm font-bold font-['Montserrat'] leading-tight ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
@@ -193,7 +193,7 @@ const MasterDataScreen = ({ type = 'brands', darkMode = false }) => {
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-medium text-xs font-['Montserrat'] transition-all ${
                 darkMode
                   ? 'text-[#888888] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.06)] border border-[#1A1A1A]'
-                  : 'text-[#666666] hover:text-[#8A6340] hover:bg-[rgba(160,120,75,0.12)] border border-[#C4B5A5]'
+                  : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)] border border-[#C4B5A5]'
               }`}
             >
               <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
@@ -213,7 +213,7 @@ const MasterDataScreen = ({ type = 'brands', darkMode = false }) => {
       }}>
         {loading ? (
           <div className="p-10 text-center">
-            <RefreshCw size={24} className={`animate-spin mx-auto mb-3 ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`} />
+            <RefreshCw size={24} className={`animate-spin mx-auto mb-3 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
             <p className={`text-xs font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('masterData.loadingData')}</p>
           </div>
         ) : error ? (

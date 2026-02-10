@@ -42,6 +42,7 @@
     "apps",
     "packages",
     "backend",
+    "performance-testing",
     "*.ts"
   ],
   "include": [

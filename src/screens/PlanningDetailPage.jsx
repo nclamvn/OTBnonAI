@@ -973,7 +973,7 @@ const PlanningDetailPage = ({
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctBuy')}</th>
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctSales')}</th>
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctST')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#8A6340] uppercase bg-[rgba(160,120,75,0.28)]">{t('planningDetail.pctProposed')}</th>
+                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#6B4D30] uppercase bg-[rgba(160,120,75,0.28)]">{t('planningDetail.pctProposed')}</th>
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.dollarOtbProposed')}</th>
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctVar2025_2026')}</th>
                                   <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.otbSubmitted')}</th>
@@ -1036,7 +1036,7 @@ const PlanningDetailPage = ({
                                   <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.buyPct}%</td>
                                   <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.salesPct}%</td>
                                   <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.stPct}%</td>
-                                  <td className="px-3 py-2 text-center text-[#8A6340] bg-[rgba(160,120,75,0.22)] font-bold">{catTotals.buyProposed}%</td>
+                                  <td className="px-3 py-2 text-center text-[#6B4D30] bg-[rgba(160,120,75,0.22)] font-bold">{catTotals.buyProposed}%</td>
                                   <td className="px-3 py-2 text-center text-[#5C4A32] font-bold">{catTotals.otbProposed.toLocaleString()}</td>
                                   <td className={`px-3 py-2 text-center font-bold ${
                                     catTotals.varPct < 0 ? 'text-red-600' : 'text-[#5C4A32]'

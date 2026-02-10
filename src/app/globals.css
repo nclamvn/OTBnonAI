@@ -65,10 +65,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 25 20% 12%;
     --muted: 30 12% 90%;
-    --muted-foreground: 25 10% 35%;
-    --border: 30 15% 72%;
+    --muted-foreground: 25 12% 28%;
+    --border: 30 18% 62%;
     --input: 30 10% 92%;
-    --primary: 30 50% 52%;
+    --primary: 30 55% 42%;
     --primary-foreground: 0 0% 100%;
     --secondary: 152 73% 27%;
     --secondary-foreground: 0 0% 95%;
@@ -76,8 +76,8 @@
     --destructive-foreground: 0 0% 95%;
 
     /* Light Mode Hover */
-    --hover-bg: rgba(160, 120, 75, 0.12);
-    --hover-border: rgba(138, 99, 64, 0.45);
+    --hover-bg: rgba(140, 100, 55, 0.16);
+    --hover-border: rgba(120, 85, 50, 0.55);
     --hover-text: #6B4D30;
   }
 

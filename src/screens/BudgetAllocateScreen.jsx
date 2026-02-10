@@ -602,7 +602,7 @@ const BudgetAllocateScreen = ({
                       FY{selectedYear}
                     </span>
                     {selectedGroupBrandObj && (
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.15)] text-[#8A6340]'}`}>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30]'}`}>
                         {selectedGroupBrandObj.name}
                       </span>
                     )}
@@ -622,7 +622,7 @@ const BudgetAllocateScreen = ({
                       setSelectedVersionId(null);
                       setVersions([]);
                     }}
-                    className={`flex items-center gap-1 text-xs transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#8A6340]'}`}
+                    className={`flex items-center gap-1 text-xs transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'}`}
                   >
                     <X size={12} />
                     {t('common.clearAllFilters')}
@@ -798,14 +798,14 @@ const BudgetAllocateScreen = ({
                     className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${selectedGroupBrand
                       ? darkMode
                         ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
-                        : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340] hover:border-[#D7B797]'
+                        : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[#D7B797]'
                       : darkMode
                         ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:border-[rgba(215,183,151,0.25)] hover:bg-[rgba(215,183,151,0.08)]'
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Layers size={14} className={selectedGroupBrand ? 'text-[#D7B797]' : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                      <Layers size={14} className={selectedGroupBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
                       <span className="truncate">{selectedGroupBrandObj?.name || t('budget.allGroupBrands')}</span>
                     </div>
                     <ChevronDown size={16} className={`shrink-0 transition-transform duration-200 ${isGroupBrandDropdownOpen ? 'rotate-180' : ''}`} />
@@ -857,14 +857,14 @@ const BudgetAllocateScreen = ({
                     className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${selectedBrand
                       ? darkMode
                         ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
-                        : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340] hover:border-[#D7B797]'
+                        : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[#D7B797]'
                       : darkMode
                         ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:border-[rgba(215,183,151,0.25)] hover:bg-[rgba(215,183,151,0.08)]'
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Tag size={14} className={selectedBrand ? 'text-[#D7B797]' : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                      <Tag size={14} className={selectedBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
                       <span className="truncate">{selectedBrandObj?.name || t('budget.allBrands')}</span>
                     </div>
                     <ChevronDown size={16} className={`transition-transform duration-200 ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
@@ -917,17 +917,17 @@ const BudgetAllocateScreen = ({
                       ? selectedSeasonGroup === 'SS'
                         ? darkMode
                           ? 'bg-[rgba(227,179,65,0.15)] border-[#E3B341] text-[#E3B341] hover:border-[#E3B341]'
-                          : 'bg-[rgba(227,179,65,0.15)] border-[#E3B341] text-[#8A6340] hover:border-[#D7B797]'
+                          : 'bg-[rgba(227,179,65,0.15)] border-[#E3B341] text-[#6B4D30] hover:border-[#D7B797]'
                         : darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
-                          : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340] hover:border-[#D7B797]'
+                          : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[#D7B797]'
                       : darkMode
                         ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:border-[rgba(215,183,151,0.25)] hover:bg-[rgba(215,183,151,0.08)]'
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
                     <div className="flex items-center gap-2">
-                      {selectedSeasonGroup === 'SS' ? <Sun size={14} className="text-[#E3B341]" /> : selectedSeasonGroup === 'FW' ? <Snowflake size={14} className="text-[#D7B797]" /> : <Filter size={14} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />}
+                      {selectedSeasonGroup === 'SS' ? <Sun size={14} className="text-[#E3B341]" /> : selectedSeasonGroup === 'FW' ? <Snowflake size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} /> : <Filter size={14} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />}
                       <span>{selectedSeasonGroup ? (SEASON_CONFIG[selectedSeasonGroup]?.name || selectedSeasonGroup) : t('planning.allSeasonGroups')}</span>
                     </div>
                     <ChevronDown size={16} className={`transition-transform duration-200 ${isSeasonDropdownOpen ? 'rotate-180' : ''}`} />
@@ -957,7 +957,7 @@ const BudgetAllocateScreen = ({
                             }`}
                         >
                           <div className="flex items-center gap-2">
-                            {sg === 'SS' ? <Sun size={14} className="text-[#E3B341]" /> : <Snowflake size={14} className="text-[#D7B797]" />}
+                            {sg === 'SS' ? <Sun size={14} className="text-[#E3B341]" /> : <Snowflake size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />}
                             <span className="font-medium">{SEASON_CONFIG[sg]?.name || sg}</span>
                           </div>
                           {selectedSeasonGroup === sg && <Check size={14} className="text-[#127749]" />}
@@ -998,7 +998,7 @@ const BudgetAllocateScreen = ({
                           ? selectedVersion.isFinal
                             ? darkMode
                               ? 'bg-[rgba(160,120,75,0.18)] border-[#D7B797] text-[#D7B797]'
-                              : 'bg-[rgba(215,183,151,0.2)] border-[#D7B797] text-[#8A6340]'
+                              : 'bg-[rgba(215,183,151,0.2)] border-[#D7B797] text-[#6B4D30]'
                             : darkMode
                               ? 'bg-[rgba(18,119,73,0.15)] border-[#127749] text-[#2A9E6A]'
                               : 'bg-[rgba(18,119,73,0.1)] border-[#127749] text-[#127749]'
@@ -1009,9 +1009,9 @@ const BudgetAllocateScreen = ({
                   >
                     <div className="flex items-center gap-2 truncate">
                       {selectedVersion?.isFinal ? (
-                        <Star size={14} className="text-[#D7B797] fill-[#D7B797]" />
+                        <Star size={14} className={darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'} />
                       ) : (
-                        <Sparkles size={14} className={selectedVersion ? 'text-[#D7B797]' : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                        <Sparkles size={14} className={selectedVersion ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
                       )}
                       <span className="truncate">
                         {loadingVersions ? 'Loading...' : selectedVersion ? selectedVersion.name : 'Select Version'}
@@ -1051,7 +1051,7 @@ const BudgetAllocateScreen = ({
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2 min-w-0 flex-1">
-                                {version.isFinal && <Star size={14} className="text-[#D7B797] fill-[#D7B797] flex-shrink-0" />}
+                                {version.isFinal && <Star size={14} className={darkMode ? 'text-[#D7B797] fill-[#D7B797] flex-shrink-0' : 'text-[#6B4D30] fill-[#6B4D30] flex-shrink-0'} />}
                                 <span className={`font-semibold text-sm font-['Montserrat'] truncate ${selectedVersionId === version.id ? 'text-[#127749]' : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
                                   {version.name}
                                 </span>
@@ -1071,7 +1071,7 @@ const BudgetAllocateScreen = ({
                                     className={`px-2 py-1 text-xs font-medium rounded transition-colors ${
                                       darkMode
                                         ? 'bg-[rgba(160,120,75,0.18)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.25)]'
-                                        : 'bg-[rgba(215,183,151,0.2)] text-[#8A6340] hover:bg-[rgba(215,183,151,0.35)]'
+                                        : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.35)]'
                                     }`}
                                   >
                                     {t('planning.latestVersion')}
@@ -1186,11 +1186,11 @@ const BudgetAllocateScreen = ({
                                 <div className="flex items-center gap-3">
                                   <div className="text-right">
                                     <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rex')}: </span>
-                                    <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{formatCurrency(brandTotals.rex)}</span>
+                                    <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals.rex)}</span>
                                   </div>
                                   <div className="text-right">
                                     <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.ttp')}: </span>
-                                    <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{formatCurrency(brandTotals.ttp)}</span>
+                                    <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals.ttp)}</span>
                                   </div>
                                   <div className="text-right">
                                     <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.total')}: </span>
@@ -1236,7 +1236,7 @@ const BudgetAllocateScreen = ({
                                             {seasonGroup === 'SS' ? (
                                               <Sun size={16} className="text-[#E3B341]" />
                                             ) : (
-                                              <Snowflake size={16} className="text-[#D7B797]" />
+                                              <Snowflake size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                                             )}
                                             <span className={`font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{SEASON_CONFIG[seasonGroup]?.name}</span>
                                           </div>
@@ -1421,7 +1421,7 @@ const BudgetAllocateScreen = ({
       {selectedBudget && categoryData.length > 0 && (
         <div className={`mt-4 rounded-xl shadow-sm border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#2E2E2E]/20'}`}>
           <div className={`px-5 py-3 border-b flex items-center gap-3 ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.06)]' : 'border-[#2E2E2E]/10 bg-[rgba(215,183,151,0.08)]'}`}>
-            <Layers size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+            <Layers size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
             <h3 className={`font-bold text-sm font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
               {t('budget.categoryBreakdown') || 'Category Breakdown'}
             </h3>
@@ -1429,7 +1429,7 @@ const BudgetAllocateScreen = ({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[700px]">
               <thead>
-                <tr className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'bg-[#1A1A1A] text-[#999]' : 'bg-gray-50 text-gray-500'}`}>
+                <tr className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'bg-[#1A1A1A] text-[#999]' : 'bg-gray-50 text-gray-600'}`}>
                   <th className="text-left px-5 py-3 w-40">{t('common.gender') || 'Gender'}</th>
                   <th className="text-left px-5 py-3 w-56">{t('common.category') || 'Category'}</th>
                   <th className="text-left px-5 py-3">{t('common.subCategories') || 'Sub-Categories'}</th>
@@ -1442,12 +1442,12 @@ const BudgetAllocateScreen = ({
                   return cats.map((cat, cIdx) => (
                     <tr
                       key={`${gender.id}-${cat.id}`}
-                      className={`border-t text-sm ${darkMode ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.04)]' : 'border-gray-100 hover:bg-gray-50'}`}
+                      className={`border-t text-sm ${darkMode ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.04)]' : 'border-gray-200 hover:bg-gray-50'}`}
                     >
                       {cIdx === 0 && (
                         <td
                           rowSpan={cats.length}
-                          className={`px-5 py-3 font-semibold align-top font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}
+                          className={`px-5 py-3 font-semibold align-top font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}
                         >
                           {gender.name}
                         </td>
@@ -1455,12 +1455,12 @@ const BudgetAllocateScreen = ({
                       <td className={`px-5 py-3 font-medium font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
                         {cat.name}
                       </td>
-                      <td className={`px-5 py-3 ${darkMode ? 'text-[#999]' : 'text-gray-600'}`}>
+                      <td className={`px-5 py-3 ${darkMode ? 'text-[#999]' : 'text-gray-700'}`}>
                         <div className="flex flex-wrap gap-1.5">
                           {(cat.subCategories || []).map(sub => (
                             <span
                               key={sub.id}
-                              className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] border border-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.15)] text-[#8A6340] border border-[rgba(215,183,151,0.3)]'}`}
+                              className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] border border-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border border-[rgba(215,183,151,0.3)]'}`}
                             >
                               {sub.name}
                             </span>

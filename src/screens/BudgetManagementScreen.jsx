@@ -14,9 +14,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 const YEARS = [2023, 2024, 2025, 2026];
 
 const CARD_ACCENTS = {
-  total:     { color: '#D7B797', darkGrad: 'rgba(215,183,151,0.06)', lightGrad: 'rgba(180,140,95,0.10)', iconDark: 'rgba(215,183,151,0.07)', iconLight: 'rgba(160,120,75,0.08)' },
-  allocated: { color: '#2A9E6A', darkGrad: 'rgba(42,158,106,0.06)',  lightGrad: 'rgba(22,120,70,0.08)',  iconDark: 'rgba(42,158,106,0.07)', iconLight: 'rgba(22,120,70,0.07)' },
-  remaining: { color: '#E3B341', darkGrad: 'rgba(227,179,65,0.06)',  lightGrad: 'rgba(200,150,30,0.09)', iconDark: 'rgba(227,179,65,0.07)', iconLight: 'rgba(180,130,20,0.07)' },
+  total:     { color: '#D7B797', darkGrad: 'rgba(215,183,151,0.06)', lightGrad: 'rgba(180,140,95,0.25)', iconDark: 'rgba(215,183,151,0.07)', iconLight: 'rgba(160,120,75,0.20)' },
+  allocated: { color: '#2A9E6A', darkGrad: 'rgba(42,158,106,0.06)',  lightGrad: 'rgba(22,120,70,0.20)',  iconDark: 'rgba(42,158,106,0.07)', iconLight: 'rgba(22,120,70,0.18)' },
+  remaining: { color: '#E3B341', darkGrad: 'rgba(227,179,65,0.06)',  lightGrad: 'rgba(200,150,30,0.22)', iconDark: 'rgba(227,179,65,0.07)', iconLight: 'rgba(180,130,20,0.18)' },
 };
 
 const BudgetManagementScreen = ({
@@ -234,7 +234,7 @@ const BudgetManagementScreen = ({
               className={`flex items-center justify-between gap-2 px-3 py-1.5 border rounded-lg transition-colors min-w-[110px] ${selectedYear
                 ? darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340]'
+                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
                 : darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
                   : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
@@ -247,7 +247,7 @@ const BudgetManagementScreen = ({
               <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-lg border py-1 z-20 min-w-[140px] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
                 <button
                   onClick={() => { setSelectedYear(null); setYearDropdownOpen(false); }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedYear ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedYear ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                 >
                   {t('budget.allYears')}
                 </button>
@@ -255,7 +255,7 @@ const BudgetManagementScreen = ({
                   <button
                     key={year}
                     onClick={() => { setSelectedYear(year); setYearDropdownOpen(false); }}
-                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedYear === year ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedYear === year ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                   >
                     FY{year}
                   </button>
@@ -275,7 +275,7 @@ const BudgetManagementScreen = ({
               className={`flex items-center justify-between gap-2 px-3 py-1.5 border rounded-lg transition-colors min-w-[130px] ${selectedGroupBrand
                 ? darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340]'
+                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
                 : darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
                   : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
@@ -292,7 +292,7 @@ const BudgetManagementScreen = ({
               <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-lg border py-1 z-20 min-w-[150px] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
                 <button
                   onClick={() => { setSelectedGroupBrand(null); setGroupBrandDropdownOpen(false); }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedGroupBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedGroupBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                 >
                   {t('budget.allGroupBrands')}
                 </button>
@@ -300,7 +300,7 @@ const BudgetManagementScreen = ({
                   <button
                     key={group.id}
                     onClick={() => { setSelectedGroupBrand(group.id); setGroupBrandDropdownOpen(false); }}
-                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedGroupBrand === group.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedGroupBrand === group.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                   >
                     {group.name}
                   </button>
@@ -320,7 +320,7 @@ const BudgetManagementScreen = ({
               className={`flex items-center justify-between gap-2 px-3 py-1.5 border rounded-lg transition-colors min-w-[110px] ${selectedBrand
                 ? darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#8A6340]'
+                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
                 : darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
                   : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
@@ -335,7 +335,7 @@ const BudgetManagementScreen = ({
               <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-lg border py-1 z-20 min-w-[140px] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
                 <button
                   onClick={() => { setSelectedBrand(null); setBrandDropdownOpen(false); }}
-                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                  className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                 >
                   {t('budget.allBrands')}
                 </button>
@@ -343,7 +343,7 @@ const BudgetManagementScreen = ({
                   <button
                     key={brand.id}
                     onClick={() => { setSelectedBrand(brand.id); setBrandDropdownOpen(false); }}
-                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedBrand === brand.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#8A6340] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
+                    className={`w-full px-4 py-2 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedBrand === brand.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
                   >
                     {brand.name}
                   </button>
@@ -426,7 +426,7 @@ const BudgetManagementScreen = ({
             <button
               onClick={clearFilters}
               className={`flex items-center gap-1 text-xs font-medium transition-colors shrink-0 ${
-                darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#8A6340]'
+                darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
               }`}
             >
               <X size={12} />
@@ -538,7 +538,7 @@ const BudgetManagementScreen = ({
                     <span className={`text-sm font-medium cursor-pointer transition-colors ${
                       darkMode
                         ? 'text-[#D7B797] hover:text-[#D7B797]/80 hover:underline'
-                        : 'text-[#8A6340] hover:text-[#8A6340]/80 hover:underline'
+                        : 'text-[#6B4D30] hover:text-[#6B4D30]/80 hover:underline'
                     }`}>
                       {budget.budgetName}
                     </span>
@@ -581,7 +581,7 @@ const BudgetManagementScreen = ({
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition
         ${darkMode
                             ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(160,120,75,0.18)] border border-[rgba(215,183,151,0.25)]'
-                            : 'bg-[rgba(160,120,75,0.18)] text-[#8A6340] hover:bg-[rgba(215,183,151,0.25)] border border-[rgba(215,183,151,0.4)]'
+                            : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)] border border-[rgba(215,183,151,0.4)]'
                           }`}
                       >
                         <Split size={14} />
@@ -613,7 +613,7 @@ const BudgetManagementScreen = ({
                     className={`text-sm font-medium transition-colors ${
                       darkMode
                         ? 'text-[#D7B797] hover:text-[#D7B797]/80'
-                        : 'text-[#8A6340] hover:text-[#8A6340]/80'
+                        : 'text-[#6B4D30] hover:text-[#6B4D30]/80'
                     }`}
                   >
                     {t('common.clearAllFilters')}

@@ -48,13 +48,13 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
     <div className={`p-4 rounded-xl border transition-all duration-200 ${
       darkMode
         ? 'bg-[#121212] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.2)]'
-        : 'bg-white border-gray-200 hover:border-[rgba(215,183,151,0.3)]'
+        : 'bg-white border-gray-300 hover:border-[rgba(215,183,151,0.3)]'
     }`}>
       <div className="flex items-start gap-3">
         <div className={`p-2 rounded-lg ${
           darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-100'
         }`}>
-          <Icon size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+          <Icon size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
         </div>
         <div className="flex-1 min-w-0">
           <div className={`text-xs font-medium uppercase tracking-wider mb-1 ${
@@ -70,7 +70,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
               className={`w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none transition-all ${
                 darkMode
                   ? 'bg-[#0A0A0A] border-[#2E2E2E] text-[#F2F2F2] focus:border-[#D7B797]'
-                  : 'bg-gray-50 border-gray-200 text-gray-900 focus:border-[#8A6340]'
+                  : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-[#8A6340]'
               }`}
             />
           ) : (
@@ -106,7 +106,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               darkMode
                 ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] border border-[rgba(215,183,151,0.2)] hover:bg-[rgba(215,183,151,0.15)]'
-                : 'bg-[rgba(215,183,151,0.15)] text-[#8A6340] border border-[rgba(215,183,151,0.3)] hover:bg-[rgba(215,183,151,0.2)]'
+                : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border border-[rgba(215,183,151,0.3)] hover:bg-[rgba(215,183,151,0.2)]'
             }`}
           >
             <Edit3 size={16} />
@@ -119,7 +119,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 darkMode
                   ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E] hover:text-[#F2F2F2]'
-                  : 'bg-gray-100 text-gray-600 border border-gray-200 hover:text-gray-900'
+                  : 'bg-gray-100 text-gray-600 border border-gray-300 hover:text-gray-900'
               }`}
             >
               <X size={16} />
@@ -152,13 +152,13 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
 
       {/* Profile Card */}
       <div className={`rounded-xl border overflow-hidden ${
-        darkMode ? 'bg-[#0A0A0A] border-[#1A1A1A]' : 'bg-gray-50 border-gray-200'
+        darkMode ? 'bg-[#0A0A0A] border-[#1A1A1A]' : 'bg-gray-50 border-gray-300'
       }`}>
         {/* Header with Avatar */}
         <div className={`p-6 border-b ${
           darkMode
             ? 'bg-gradient-to-r from-[rgba(215,183,151,0.08)] to-[rgba(18,119,73,0.08)] border-[#1A1A1A]'
-            : 'bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(18,119,73,0.1)] border-gray-200'
+            : 'bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(18,119,73,0.1)] border-gray-300'
         }`}>
           <div className="flex items-center gap-5">
             {/* Avatar */}
@@ -166,7 +166,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
               <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold font-['Montserrat'] border-3 ${
                 darkMode
                   ? 'border-[#D7B797] text-[#D7B797]'
-                  : 'border-[#8A6340] text-[#8A6340]'
+                  : 'border-[#8A6340] text-[#6B4D30]'
               }`}
               style={{ borderWidth: '3px' }}
               >
@@ -192,7 +192,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
                 {user?.name || 'User'}
               </h2>
               <div className="flex items-center gap-2 mt-1">
-                <Shield size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+                <Shield size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                 <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
                   {user?.role?.name || 'User'}
                 </span>
@@ -232,7 +232,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
 
       {/* Security Section */}
       <div className={`rounded-xl border p-6 ${
-        darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'
+        darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'
       }`} style={{
         background: darkMode
           ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.10) 100%)'
@@ -248,7 +248,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
           <button className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all ${
             darkMode
               ? 'bg-[#0A0A0A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.2)]'
-              : 'bg-gray-50 border-gray-200 hover:border-[rgba(215,183,151,0.3)]'
+              : 'bg-gray-50 border-gray-300 hover:border-[rgba(215,183,151,0.3)]'
           }`}>
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-100'}`}>
@@ -271,7 +271,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }) => {
           <button className={`w-full flex items-center justify-between p-4 rounded-lg border transition-all ${
             darkMode
               ? 'bg-[#0A0A0A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.2)]'
-              : 'bg-gray-50 border-gray-200 hover:border-[rgba(215,183,151,0.3)]'
+              : 'bg-gray-50 border-gray-300 hover:border-[rgba(215,183,151,0.3)]'
           }`}>
             <div className="flex items-center gap-3">
               <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-100'}`}>

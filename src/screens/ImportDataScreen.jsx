@@ -57,14 +57,14 @@ const ImportDataScreen = ({ darkMode }) => {
   // ─── Styles ───────────────────────────────────────────────────────
   const cardBg = darkMode
     ? 'bg-[#111111] border-[#1E1E1E]'
-    : 'bg-white border-gray-200';
+    : 'bg-white border-gray-300';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
-  const textSecondary = darkMode ? 'text-[#888888]' : 'text-gray-500';
-  const textMuted = darkMode ? 'text-[#555555]' : 'text-gray-400';
+  const textSecondary = darkMode ? 'text-[#888888]' : 'text-gray-600';
+  const textMuted = darkMode ? 'text-[#555555]' : 'text-gray-500';
   const inputBg = darkMode
     ? 'bg-[#0A0A0A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#555555]'
-    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400';
-  const tableBorder = darkMode ? 'border-[#1E1E1E]' : 'border-gray-200';
+    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500';
+  const tableBorder = darkMode ? 'border-[#1E1E1E]' : 'border-gray-300';
   const hoverBg = darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50';
 
   // ─── Upload Tab ───────────────────────────────────────────────────
@@ -172,7 +172,7 @@ const ImportDataScreen = ({ darkMode }) => {
         <div className={`rounded-xl border p-4 ${cardBg}`}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <FileSpreadsheet size={16} className="text-[#D7B797]" />
+              <FileSpreadsheet size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
               <span className={`text-sm font-medium ${textPrimary}`}>{file.name}</span>
               <span className={`text-xs ${textMuted}`}>
                 ({parsedData.length} {t('import.rows', 'rows')}, {headers.length} {t('import.columns', 'columns')})
@@ -524,7 +524,7 @@ const ImportDataScreen = ({ darkMode }) => {
                 </div>
 
                 {Object.keys(stat.fieldCounts || {}).length > 0 && (
-                  <div className="pt-2 mt-2" style={{ borderTop: `1px solid ${darkMode ? '#1E1E1E' : '#E5E7EB'}` }}>
+                  <div className="pt-2 mt-2" style={{ borderTop: `1px solid ${darkMode ? '#1E1E1E' : '#D1D5DB'}` }}>
                     <p className={`text-[10px] font-medium mb-1 ${textMuted}`}>{t('import.fields', 'Fields')}:</p>
                     <div className="flex flex-wrap gap-1">
                       {Object.keys(stat.fieldCounts).slice(0, 8).map(field => (
@@ -547,7 +547,7 @@ const ImportDataScreen = ({ darkMode }) => {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => { setViewTarget(stat.target); setActiveTab('data'); }}
-                    className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-colors ${darkMode ? 'bg-[#1A1A1A] text-[#D7B797] hover:bg-[#222222]' : 'bg-gray-100 text-[#8A6340] hover:bg-gray-200'}`}
+                    className={`flex-1 text-[10px] font-medium py-1.5 rounded-lg transition-colors ${darkMode ? 'bg-[#1A1A1A] text-[#D7B797] hover:bg-[#222222]' : 'bg-gray-100 text-[#6B4D30] hover:bg-gray-200'}`}
                   >
                     {t('common.view')}
                   </button>
@@ -595,7 +595,7 @@ const ImportDataScreen = ({ darkMode }) => {
 
   // ─── Main Render ──────────────────────────────────────────────────
   return (
-    <div className={`min-h-screen p-4 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen p-4 ${darkMode ? 'bg-[#0A0A0A]' : ''}`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -609,7 +609,7 @@ const ImportDataScreen = ({ darkMode }) => {
       </div>
 
       {/* Tabs */}
-      <div className={`flex gap-1 p-1 rounded-xl mb-4 ${darkMode ? 'bg-[#111111]' : 'bg-gray-100'}`}>
+      <div className={`flex gap-1 p-1 rounded-xl mb-4 ${darkMode ? 'bg-[#111111]' : 'bg-white/60 border border-gray-200'}`}>
         {[
           { id: 'upload', label: t('import.upload', 'Upload'), icon: Upload },
           { id: 'data', label: t('import.viewData', 'View Data'), icon: FileSpreadsheet },
@@ -622,7 +622,7 @@ const ImportDataScreen = ({ darkMode }) => {
               activeTab === tab.id
                 ? darkMode
                   ? 'bg-[#1A1A1A] text-[#D7B797] shadow-sm'
-                  : 'bg-white text-[#8A6340] shadow-sm'
+                  : 'bg-white text-[#6B4D30] shadow-sm'
                 : `${textSecondary} hover:${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`
             }`}
           >

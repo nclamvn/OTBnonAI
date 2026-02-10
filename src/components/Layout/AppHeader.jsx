@@ -263,7 +263,7 @@ const AppHeader = ({
     }}>
       {/* Main Header */}
       <div className="h-11 px-4 flex items-center justify-between" style={{
-        borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#E5E7EB'}`,
+        borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
         background: darkMode
           ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.02) 100%)'
           : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 100%)',
@@ -282,7 +282,7 @@ const AppHeader = ({
                 boxShadow: darkMode ? '0 0 8px rgba(215,183,151,0.08)' : 'none',
               }}
             >
-              <CurrentIcon size={14} strokeWidth={2} className="text-[#D7B797]" style={{ filter: darkMode ? 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' : 'none' }} />
+              <CurrentIcon size={14} strokeWidth={2} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={{ filter: darkMode ? 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' : 'none' }} />
             </div>
             <div
               className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#2A9E6A]"
@@ -305,7 +305,7 @@ const AppHeader = ({
                 <span className={`px-1.5 py-px rounded text-[9px] font-medium font-['JetBrains_Mono'] uppercase tracking-wider ${
                   darkMode
                     ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797] border border-[rgba(215,183,151,0.15)]'
-                    : 'bg-[rgba(215,183,151,0.15)] text-[#8A6340] border border-[rgba(215,183,151,0.25)]'
+                    : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border border-[rgba(215,183,151,0.25)]'
                 }`}>
                   {t('common.step')} {currentConfig.step}
                 </span>
@@ -313,7 +313,7 @@ const AppHeader = ({
             </div>
             {currentConfig.step && (
               <div className="flex items-center gap-1">
-                <span className={`text-[10px] ${darkMode ? 'text-[#555555]' : 'text-gray-500'}`}>{t('header.planningBreadcrumb')}</span>
+                <span className={`text-[10px] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>{t('header.planningBreadcrumb')}</span>
                 <ChevronRight size={10} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
                 <span className={`text-[10px] font-medium ${darkMode ? 'text-[#888888]' : 'text-gray-600'}`}>
                   {currentConfig.shortLabel}
@@ -332,17 +332,17 @@ const AppHeader = ({
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all duration-200 ${
                 darkMode
                   ? 'border-[#1A1A1A] hover:border-[rgba(215,183,151,0.2)] hover:bg-[rgba(160,120,75,0.06)]'
-                  : 'border-gray-200 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]'
+                  : 'border-gray-300 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]'
               }`}
             >
-              <Search size={13} className={darkMode ? 'text-[#555555]' : 'text-gray-500'} />
-              <span className={`text-[11px] hidden sm:block ${darkMode ? 'text-[#555555]' : 'text-gray-500'}`}>
+              <Search size={13} className={darkMode ? 'text-[#555555]' : 'text-gray-600'} />
+              <span className={`text-[11px] hidden sm:block ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
                 {t('header.searchPlaceholder')}
               </span>
               <kbd className={`hidden sm:flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-['JetBrains_Mono'] ${
                 darkMode
                   ? 'bg-[#0A0A0A] text-[#444444] border border-[#1A1A1A]'
-                  : 'bg-gray-100 text-gray-400 border border-gray-200'
+                  : 'bg-gray-100 text-gray-500 border border-gray-300'
               }`}>
                 <Command size={8} />K
               </kbd>
@@ -353,9 +353,9 @@ const AppHeader = ({
               <div className={`absolute right-0 top-full mt-2 w-96 rounded-xl shadow-2xl border overflow-hidden z-[9999] ${
                 darkMode
                   ? 'bg-[#121212] border-[#2E2E2E]'
-                  : 'bg-white border-gray-200'
+                  : 'bg-white border-gray-300'
               }`}>
-                <div className={`p-3 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-100'}`}>
+                <div className={`p-3 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
                   <div className="flex items-center gap-3">
                     <Search size={18} className={darkMode ? 'text-[#666666]' : 'text-gray-600'} />
                     <input
@@ -372,11 +372,11 @@ const AppHeader = ({
                         }
                       }}
                       className={`flex-1 bg-transparent text-sm outline-none ${
-                        darkMode ? 'text-[#F2F2F2] placeholder:text-[#666666]' : 'text-gray-900 placeholder:text-gray-400'
+                        darkMode ? 'text-[#F2F2F2] placeholder:text-[#666666]' : 'text-gray-900 placeholder:text-gray-500'
                       }`}
                     />
                     {searchQuery && (
-                      <button onClick={() => setSearchQuery('')} className={`p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'}`}>
+                      <button onClick={() => setSearchQuery('')} className={`p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-500 hover:text-gray-700'}`}>
                         <span className="text-xs">{t('common.clearAll') || 'Clear'}</span>
                       </button>
                     )}
@@ -401,11 +401,11 @@ const AppHeader = ({
                               : 'hover:bg-gray-50 text-gray-900'
                           }`}
                         >
-                          <ResultIcon size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+                          <ResultIcon size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                           <div className="flex-1 text-left">
                             <div className={`text-sm font-medium font-['Montserrat']`}>{result.label}</div>
                             {result.step && (
-                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>Step {result.step}</div>
+                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>Step {result.step}</div>
                             )}
                           </div>
                           <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
@@ -414,7 +414,7 @@ const AppHeader = ({
                     })}
                   </div>
                 ) : searchQuery.trim() ? (
-                  <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                  <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
                     {t('common.noResults') || 'No results found'}
                   </div>
                 ) : (
@@ -443,7 +443,7 @@ const AppHeader = ({
             }`}
             title={language === 'en' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
           >
-            <span className={`text-[11px] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>
+            <span className={`text-[11px] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
               {language === 'en' ? 'EN' : 'VN'}
             </span>
           </button>
@@ -461,7 +461,7 @@ const AppHeader = ({
             {darkMode ? (
               <Moon size={15} strokeWidth={2} className="text-[#D7B797] transition-transform group-hover:-rotate-12" style={{ filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.3))' }} />
             ) : (
-              <Sun size={15} strokeWidth={2} className="text-[#8A6340] transition-transform group-hover:rotate-45" />
+              <Sun size={15} strokeWidth={2} className="text-[#6B4D30] transition-transform group-hover:rotate-45" />
             )}
           </button>
 
@@ -492,14 +492,14 @@ const AppHeader = ({
               <div className={`absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl border overflow-hidden z-50 ${
                 darkMode
                   ? 'bg-[#121212] border-[#2E2E2E]'
-                  : 'bg-white border-gray-200'
+                  : 'bg-white border-gray-300'
               }`}>
                 {/* Header */}
                 <div className={`px-4 py-3 border-b flex items-center justify-between ${
-                  darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-gray-100 bg-gray-50'
+                  darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-gray-300 bg-gray-50'
                 }`}>
                   <div className="flex items-center gap-2">
-                    <Bell size={14} className="text-[#D7B797]" />
+                    <Bell size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                     <h3 className={`text-sm font-semibold font-['Montserrat'] ${
                       darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'
                     }`}>
@@ -510,7 +510,7 @@ const AppHeader = ({
 
                 {/* Empty State */}
                 <div className="max-h-80 overflow-y-auto">
-                  <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+                  <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
                     {t('header.noAlerts')}
                   </div>
                 </div>
@@ -523,7 +523,7 @@ const AppHeader = ({
       {/* KPI Tracking Bar - Only show for Planning workflow */}
       {currentScreen !== 'budget-management' && isInPlanningWorkflow && (
         <div className="px-4 py-1.5" style={{
-          borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#E5E7EB'}`,
+          borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
             ? 'linear-gradient(90deg, #0A0A0A 0%, rgba(215,183,151,0.02) 50%, #0A0A0A 100%)'
             : 'linear-gradient(90deg, #FAFAFA 0%, #ffffff 50%, #FAFAFA 100%)',
@@ -544,7 +544,7 @@ const AppHeader = ({
                       <div className={`w-4 h-[1.5px] rounded-full transition-all duration-300`} style={{
                         background: isCompleted
                           ? 'linear-gradient(90deg, #127749, #2A9E6A)'
-                          : darkMode ? '#1A1A1A' : '#E5E7EB',
+                          : darkMode ? '#1A1A1A' : '#D1D5DB',
                       }} />
                     )}
                     <button
@@ -572,7 +572,7 @@ const AppHeader = ({
                       </div>
                       <div className="text-left">
                         <div className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
-                          isCurrent ? 'text-[#D7B797]' : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#888888]' : 'text-gray-600'
+                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#888888]' : 'text-gray-600'
                         }`}>
                           {config.shortLabel}
                         </div>
@@ -582,9 +582,9 @@ const AppHeader = ({
                           ) : kpi.status === 'in-progress' ? (
                             <Clock size={7} className="text-[#E3B341]" />
                           ) : (
-                            <Target size={7} className={darkMode ? 'text-[#444444]' : 'text-gray-400'} />
+                            <Target size={7} className={darkMode ? 'text-[#444444]' : 'text-gray-500'} />
                           )}
-                          <span className={`text-[8px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-500'}`}>
+                          <span className={`text-[8px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
                             {kpi.value} {config.kpiLabel}
                           </span>
                         </div>

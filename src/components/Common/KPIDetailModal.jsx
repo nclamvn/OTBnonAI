@@ -80,10 +80,10 @@ const KPIDetailModal = ({
 
   if (!isOpen || !mounted) return null;
 
-  const borderColor = darkMode ? 'border-[#2E2E2E]' : 'border-gray-200';
-  const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-500';
+  const borderColor = darkMode ? 'border-[#2E2E2E]' : 'border-gray-300';
+  const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
-  const textSecondary = darkMode ? 'text-[#999999]' : 'text-gray-600';
+  const textSecondary = darkMode ? 'text-[#999999]' : 'text-gray-700';
   const panelBg = darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50';
   const breakdownLabel = t(`home.kpiDetail.${BREAKDOWN_LABEL_KEY[cardKey] || 'breakdown'}`);
 
@@ -129,7 +129,7 @@ const KPIDetailModal = ({
             className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-150 ${
               darkMode
                 ? 'border-[#2E2E2E] text-[#999999] hover:bg-[rgba(248,81,73,0.15)] hover:text-[#FF7B72] hover:border-[rgba(248,81,73,0.3)]'
-                : 'border-gray-200 text-gray-400 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
+                : 'border-gray-300 text-gray-500 hover:bg-red-50 hover:text-red-500 hover:border-red-200'
             }`}
           >
             <X size={16} />
@@ -145,7 +145,7 @@ const KPIDetailModal = ({
               <p className={`text-sm ${textSecondary}`}>{t('home.kpiDetail.errorLoading')}</p>
               <button
                 onClick={retry}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-[rgba(215,183,151,0.15)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.25)] transition-colors"
+                className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
               >
                 {t('home.kpiDetail.retry')}
               </button>
@@ -257,7 +257,7 @@ const KPIDetailModal = ({
                             y={154}
                             textAnchor="middle"
                             fontSize="7"
-                            fill={darkMode ? '#666666' : '#9ca3af'}
+                            fill={darkMode ? '#666666' : '#6B7280'}
                             fontFamily="Montserrat"
                           >
                             {d.label.length > 5 ? d.label.slice(0, 5) + '..' : d.label}
@@ -352,7 +352,7 @@ const KPIDetailModal = ({
             className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg border transition-all duration-150 ${
               darkMode
                 ? 'border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797] hover:border-[rgba(215,183,151,0.25)]'
-                : 'border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                : 'border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-700'
             }`}
           >
             <Download size={14} />

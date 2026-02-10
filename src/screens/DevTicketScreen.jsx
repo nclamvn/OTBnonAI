@@ -187,7 +187,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
       gold: {
         bg: 'bg-[#D7B797]',
         bgLight: darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.12)]',
-        text: 'text-[#D7B797]',
+        text: darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]',
         border: 'border-[rgba(215,183,151,0.4)]'
       }
     };
@@ -214,17 +214,17 @@ const DevTicketScreen = ({ darkMode = false }) => {
       default:
         return darkMode
           ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E]'
-          : 'bg-gray-100 text-gray-600 border border-gray-200';
+          : 'bg-gray-100 text-gray-700 border border-gray-300';
     }
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className={`rounded-2xl shadow-sm border p-6 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}>
+      <div className={`rounded-2xl shadow-sm border p-6 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
         <div className="flex items-center gap-4 mb-4">
           <div className={`p-3 rounded-xl ${darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-            <FileText size={28} className="text-[#D7B797]" />
+            <FileText size={28} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
           </div>
           <div>
             <h1 className={`text-2xl font-bold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
@@ -237,10 +237,10 @@ const DevTicketScreen = ({ darkMode = false }) => {
         </div>
 
         {/* Flow Diagram */}
-        <div className={`rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+        <div className={`rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-300'}`}>
           <div className="flex items-center gap-2 mb-3">
             <GitBranch size={16} className={darkMode ? 'text-[#999999]' : 'text-gray-700'} />
-            <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
+            <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>
               {t('devTicket.navigationFlow')}
             </span>
           </div>
@@ -257,7 +257,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                     </span>
                   </div>
                   {idx < PLANNING_PAGES.length - 1 && (
-                    <ArrowRight size={20} className={darkMode ? 'text-[#666666]' : 'text-gray-600'} />
+                    <ArrowRight size={20} className={darkMode ? 'text-[#666666]' : 'text-gray-700'} />
                   )}
                 </React.Fragment>
               );
@@ -276,7 +276,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
           return (
             <div
               key={page.id}
-              className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}
+              className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}
             >
               {/* Page Header */}
               <button
@@ -285,7 +285,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                 className={`w-full flex items-center gap-4 px-5 py-4 ${colors.bgLight} border-b transition-colors ${
                   darkMode
                     ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)]'
-                    : 'border-gray-200 hover:bg-[rgba(160,120,75,0.18)]'
+                    : 'border-gray-300 hover:bg-[rgba(160,120,75,0.18)]'
                 }`}
               >
                 <ChevronRight
@@ -342,7 +342,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                       className={`flex items-center gap-2 mb-3 transition-colors ${
                         darkMode
                           ? 'text-[#999999] hover:text-[#D7B797]'
-                          : 'text-gray-700 hover:text-[#8A6340]'
+                          : 'text-gray-700 hover:text-[#6B4D30]'
                       }`}
                     >
                       <ChevronDown
@@ -353,7 +353,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                       <span className="text-sm font-semibold font-['Montserrat']">{t('devTicket.props')} ({page.props.length})</span>
                     </button>
                     {expandedSections[`${page.id}_props`] && (
-                      <div className={`rounded-lg border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+                      <div className={`rounded-lg border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
                         <table className="w-full text-sm">
                           <thead>
                             <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}>
@@ -365,9 +365,9 @@ const DevTicketScreen = ({ darkMode = false }) => {
                           <tbody>
                             {page.props.map((prop, idx) => (
                               <tr key={prop.name} className={`${idx % 2 === 0 ? (darkMode ? 'bg-[#121212]' : 'bg-white') : (darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50')}`}>
-                                <td className={`px-4 py-2 font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{prop.name}</td>
+                                <td className={`px-4 py-2 font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{prop.name}</td>
                                 <td className={`px-4 py-2 font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#E3B341]' : 'text-amber-600'}`}>{prop.type}</td>
-                                <td className={`px-4 py-2 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{prop.description}</td>
+                                <td className={`px-4 py-2 ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{prop.description}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -384,7 +384,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                       className={`flex items-center gap-2 mb-3 transition-colors ${
                         darkMode
                           ? 'text-[#999999] hover:text-[#D7B797]'
-                          : 'text-gray-700 hover:text-[#8A6340]'
+                          : 'text-gray-700 hover:text-[#6B4D30]'
                       }`}
                     >
                       <ChevronDown
@@ -395,7 +395,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                       <span className="text-sm font-semibold font-['Montserrat']">{t('devTicket.features')} ({page.features.length})</span>
                     </button>
                     {expandedSections[`${page.id}_features`] && (
-                      <ul className={`space-y-2 pl-6 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
+                      <ul className={`space-y-2 pl-6 ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>
                         {page.features.map((feature, idx) => (
                           <li key={idx} className="flex items-start gap-2 text-sm">
                             <CheckCircle size={14} className="text-[#2A9E6A] mt-0.5 flex-shrink-0" />
@@ -414,7 +414,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
                       className={`flex items-center gap-2 mb-3 transition-colors ${
                         darkMode
                           ? 'text-[#999999] hover:text-[#D7B797]'
-                          : 'text-gray-700 hover:text-[#8A6340]'
+                          : 'text-gray-700 hover:text-[#6B4D30]'
                       }`}
                     >
                       <ChevronDown
@@ -433,14 +433,14 @@ const DevTicketScreen = ({ darkMode = false }) => {
                               page.navigationFrom.map(nav => {
                                 const navPage = PLANNING_PAGES.find(p => p.id === nav);
                                 return navPage ? (
-                                  <div key={nav} className={`flex items-center gap-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
+                                  <div key={nav} className={`flex items-center gap-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>
                                     <ArrowRight size={14} className="text-[#2A9E6A]" />
                                     {navPage.name}
                                   </div>
                                 ) : null;
                               })
                             ) : (
-                              <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>{t('common.entryPointSidebar')}</span>
+                              <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>{t('common.entryPointSidebar')}</span>
                             )}
                           </div>
                         </div>
@@ -451,14 +451,14 @@ const DevTicketScreen = ({ darkMode = false }) => {
                               page.navigationTo.map(nav => {
                                 const navPage = PLANNING_PAGES.find(p => p.id === nav);
                                 return navPage ? (
-                                  <div key={nav} className={`flex items-center gap-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
-                                    <ArrowRight size={14} className="text-[#D7B797]" />
+                                  <div key={nav} className={`flex items-center gap-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>
+                                    <ArrowRight size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                                     {navPage.name}
                                   </div>
                                 ) : null;
                               })
                             ) : (
-                              <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>{t('common.endOfFlow')}</span>
+                              <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>{t('common.endOfFlow')}</span>
                             )}
                           </div>
                         </div>
@@ -473,16 +473,16 @@ const DevTicketScreen = ({ darkMode = false }) => {
       </div>
 
       {/* Summary Stats */}
-      <div className={`rounded-xl border p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}>
+      <div className={`rounded-xl border p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
         <div className="flex items-center gap-2 mb-4">
           <Database size={16} className={darkMode ? 'text-[#999999]' : 'text-gray-700'} />
-          <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{t('devTicket.summary')}</span>
+          <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('devTicket.summary')}</span>
         </div>
         <div className="grid grid-cols-4 gap-4">
           {/* Total Pages */}
           <div
             className={`relative overflow-hidden border rounded-2xl p-4 text-center transition-all duration-200 hover:shadow-lg group ${
-              darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'
+              darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'
             }`}
             style={{
               background: darkMode
@@ -511,7 +511,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
           {/* Completed */}
           <div
             className={`relative overflow-hidden border rounded-2xl p-4 text-center transition-all duration-200 hover:shadow-lg group ${
-              darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'
+              darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'
             }`}
             style={{
               background: darkMode
@@ -542,7 +542,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
           {/* Total Props */}
           <div
             className={`relative overflow-hidden border rounded-2xl p-4 text-center transition-all duration-200 hover:shadow-lg group ${
-              darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'
+              darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'
             }`}
             style={{
               background: darkMode
@@ -573,7 +573,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
           {/* Total Features */}
           <div
             className={`relative overflow-hidden border rounded-2xl p-4 text-center transition-all duration-200 hover:shadow-lg group ${
-              darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'
+              darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'
             }`}
             style={{
               background: darkMode

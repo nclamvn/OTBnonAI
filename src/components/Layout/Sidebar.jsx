@@ -70,21 +70,21 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
   const getIconClass = (itemId) => {
     const isActive = currentScreen === itemId;
     if (isActive) {
-      return 'text-[#D7B797]';
+      return darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]';
     }
     return darkMode
       ? 'text-[#555555] group-hover:text-[#D7B797]'
-      : 'text-gray-500 group-hover:text-[#8A6340]';
+      : 'text-gray-600 group-hover:text-[#6B4D30]';
   };
 
   const getTextClass = (itemId) => {
     const isActive = currentScreen === itemId;
     if (isActive) {
-      return 'text-[#D7B797] font-bold';
+      return darkMode ? 'text-[#D7B797] font-bold' : 'text-[#6B4D30] font-bold';
     }
     return darkMode
       ? 'text-[#888888] font-medium group-hover:text-[#D7B797]'
-      : 'text-gray-600 font-medium group-hover:text-[#8A6340]';
+      : 'text-gray-600 font-medium group-hover:text-[#6B4D30]';
   };
 
   // Collapsed sidebar item with tooltip
@@ -121,8 +121,8 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
               strokeWidth={isActive ? 2.5 : 2}
               className={`transition-all duration-200 ${
                 isActive
-                  ? 'text-[#D7B797]'
-                  : 'text-[#555555] group-hover:text-[#D7B797]'
+                  ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]')
+                  : darkMode ? 'text-[#555555] group-hover:text-[#D7B797]' : 'text-gray-600 group-hover:text-[#6B4D30]'
               }`}
               style={isActive ? { filter: 'drop-shadow(0 0 4px rgba(215,183,151,0.4))' } : undefined}
             />
@@ -134,7 +134,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
               <div className={`px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap text-[11px] font-medium font-['Montserrat']
                 ${darkMode
                   ? 'bg-[#1A1A1A] text-[#F2F2F2] border border-[#2E2E2E]'
-                  : 'bg-white text-gray-800 border border-gray-200'
+                  : 'bg-white text-gray-800 border border-gray-300'
                 }`}
               >
                 {item.label}
@@ -165,17 +165,17 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
         background: darkMode
           ? 'linear-gradient(180deg, #0A0A0A 0%, #080808 50%, rgba(13,11,9,1) 100%)'
           : 'linear-gradient(180deg, #ffffff 0%, #fefefe 50%, #fdfbf9 100%)',
-        borderColor: darkMode ? '#1A1A1A' : '#E5E7EB',
+        borderColor: darkMode ? '#1A1A1A' : '#D1D5DB',
       }}
     >
       {/* Logo Header */}
       <div
         className={`h-11 flex items-center justify-center`}
         style={{
-          borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#E5E7EB'}`,
+          borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
             ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.03) 100%)'
-            : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.05) 100%)',
+            : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.12) 100%)',
         }}
       >
         {isCollapsed ? (
@@ -208,7 +208,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
               className={`p-1 rounded-md flex-shrink-0 transition-all duration-200 ${
                 darkMode
                   ? 'text-[#555555] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.06)]'
-                  : 'text-gray-400 hover:text-[#8A6340] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'text-gray-500 hover:text-[#6B4D30] hover:bg-[rgba(215,183,151,0.08)]'
               }`}
               title={t('components.collapseSidebar')}
             >
@@ -304,7 +304,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
                   <ChevronDown
                     size={10}
                     strokeWidth={2.5}
-                    className={`${darkMode ? 'text-[#444444]' : 'text-gray-400'} transition-transform duration-200 ${
+                    className={`${darkMode ? 'text-[#444444]' : 'text-gray-500'} transition-transform duration-200 ${
                       openGroups[group.id] ? 'rotate-180' : ''
                     }`}
                   />
@@ -389,7 +389,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
                 <ChevronDown
                   size={10}
                   strokeWidth={2.5}
-                  className={`${darkMode ? 'text-[#444444]' : 'text-gray-400'} transition-transform duration-200 ${
+                  className={`${darkMode ? 'text-[#444444]' : 'text-gray-500'} transition-transform duration-200 ${
                     isMasterDataOpen ? 'rotate-180' : ''
                   }`}
                 />
@@ -460,7 +460,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
 
       {/* Footer Section - User Profile */}
       <div className="p-2 relative" style={{
-        borderTop: `1px solid ${darkMode ? '#1A1A1A' : '#E5E7EB'}`,
+        borderTop: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
         background: darkMode
           ? 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.02) 100%)'
           : 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.03) 100%)',
@@ -475,7 +475,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
                 background: darkMode
                   ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.08) 100%)'
                   : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 35%, rgba(215,183,151,0.10) 100%)',
-                borderColor: darkMode ? '#2E2E2E' : '#E5E7EB',
+                borderColor: darkMode ? '#2E2E2E' : '#D1D5DB',
                 boxShadow: darkMode
                   ? '0 -8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(215,183,151,0.06)'
                   : '0 -8px 30px rgba(0,0,0,0.08), inset 0 1px 0 rgba(215,183,151,0.08)',
@@ -484,7 +484,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
             >
               {/* User Info Header */}
               <div className="p-3" style={{
-                borderBottom: `1px solid ${darkMode ? '#2E2E2E' : '#E5E7EB'}`,
+                borderBottom: `1px solid ${darkMode ? '#2E2E2E' : '#D1D5DB'}`,
                 background: darkMode
                   ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.04) 100%)'
                   : 'linear-gradient(135deg, #F9FAFB 0%, rgba(215,183,151,0.06) 100%)',
@@ -528,7 +528,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
                   }`}
                 >
                   <div className={`p-1 rounded-md ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-100'}`}>
-                    <Crown size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} style={darkMode ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
+                    <Crown size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={darkMode ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
                   </div>
                   <div className="flex-1 text-left">
                     <div className="text-xs font-medium font-['Montserrat']">{t('userMenu.myProfile')}</div>
@@ -628,7 +628,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
               border: `1px solid ${
                 showUserMenu
                   ? darkMode ? 'rgba(215,183,151,0.2)' : 'rgba(215,183,151,0.3)'
-                  : darkMode ? '#1A1A1A' : '#E5E7EB'
+                  : darkMode ? '#1A1A1A' : '#D1D5DB'
               }`,
               boxShadow: darkMode ? 'inset 0 1px 0 rgba(215,183,151,0.04)' : 'none',
             }}
@@ -664,7 +664,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }) => {
 
             <ChevronRight
               size={14}
-              className={`transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''} ${darkMode ? 'text-[#444444]' : 'text-gray-400'}`}
+              className={`transition-transform duration-200 ${showUserMenu ? 'rotate-90' : ''} ${darkMode ? 'text-[#444444]' : 'text-gray-500'}`}
             />
           </button>
         )}

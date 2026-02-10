@@ -21,10 +21,10 @@ const COLUMNS = [
 const COLUMN_COLORS = {
   DRAFT: {
     header: ['bg-[rgba(102,102,102,0.15)]', 'bg-gray-100'],
-    icon: ['text-[#999999]', 'text-gray-500'],
+    icon: ['text-[#999999]', 'text-gray-600'],
     count: ['bg-[rgba(102,102,102,0.25)] text-[#999999]', 'bg-gray-200 text-gray-600'],
     bg: ['bg-[#0A0A0A]/50', 'bg-gray-50'],
-    border: ['border-[#2E2E2E]', 'border-gray-200'],
+    border: ['border-[#2E2E2E]', 'border-gray-300'],
   },
   SUBMITTED: {
     header: ['bg-[rgba(210,153,34,0.12)]', 'bg-amber-50'],
@@ -56,8 +56,8 @@ const COLUMN_COLORS = {
   },
   FINAL: {
     header: ['bg-[rgba(215,183,151,0.12)]', 'bg-[rgba(215,183,151,0.15)]'],
-    icon: ['text-[#D7B797]', 'text-[#8A6340]'],
-    count: ['bg-[rgba(215,183,151,0.25)] text-[#D7B797]', 'bg-[rgba(215,183,151,0.3)] text-[#8A6340]'],
+    icon: ['text-[#D7B797]', 'text-[#6B4D30]'],
+    count: ['bg-[rgba(215,183,151,0.25)] text-[#D7B797]', 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30]'],
     bg: ['bg-[rgba(215,183,151,0.04)]', 'bg-[rgba(215,183,151,0.05)]'],
     border: ['border-[rgba(215,183,151,0.2)]', 'border-[rgba(215,183,151,0.3)]'],
   },
@@ -72,7 +72,7 @@ const COLUMN_COLORS = {
 
 // Entity type badge styles
 const ENTITY_COLORS = {
-  budget: ['bg-[rgba(215,183,151,0.15)] text-[#D7B797]', 'bg-[rgba(215,183,151,0.2)] text-[#8A6340]'],
+  budget: ['bg-[rgba(215,183,151,0.15)] text-[#D7B797]', 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'],
   planning: ['bg-[rgba(59,130,246,0.15)] text-[#60A5FA]', 'bg-blue-100 text-blue-700'],
   proposal: ['bg-[rgba(16,185,129,0.15)] text-[#34D399]', 'bg-emerald-100 text-emerald-700'],
 };
@@ -122,7 +122,7 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
             {/* Cards Container */}
             <div className="p-3 space-y-3 max-h-[calc(100vh-340px)] overflow-y-auto">
               {columnTickets.length === 0 ? (
-                <div className={`text-center py-8 text-sm font-['Montserrat'] ${darkMode ? 'text-[#444444]' : 'text-gray-400'}`}>
+                <div className={`text-center py-8 text-sm font-['Montserrat'] ${darkMode ? 'text-[#444444]' : 'text-gray-500'}`}>
                   {t('kanban.noTickets')}
                 </div>
               ) : (
@@ -133,7 +133,7 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
                     className={`rounded-lg border p-3 cursor-pointer transition-all duration-150 ${
                       darkMode
                         ? 'border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)] hover:shadow-lg hover:shadow-[rgba(215,183,151,0.05)]'
-                        : 'border-gray-200 hover:border-[#D7B797] hover:shadow-md'
+                        : 'border-gray-300 hover:border-[#D7B797] hover:shadow-md'
                     }`}
                     style={{
                       background: darkMode
@@ -149,7 +149,7 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
                       }`}>
                         {ticket.entityType}
                       </span>
-                      <span className={`text-[10px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+                      <span className={`text-[10px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
                         {ticket.createdOn}
                       </span>
                     </div>
@@ -164,7 +164,7 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
                     {/* Meta Info */}
                     <div className="flex flex-wrap gap-2 text-xs">
                       {ticket.brand && ticket.brand !== '-' && (
-                        <span className={`flex items-center gap-1 ${darkMode ? 'text-[#999999]' : 'text-gray-500'}`}>
+                        <span className={`flex items-center gap-1 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
                           <Building2 size={12} />
                           {ticket.brand}
                         </span>
@@ -180,8 +180,8 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
 
                     {/* Budget Amount */}
                     {ticket.totalBudget > 0 && (
-                      <div className={`mt-2 pt-2 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-100'}`}>
-                        <span className={`text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>
+                      <div className={`mt-2 pt-2 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+                        <span className={`text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                           {formatCurrency(ticket.totalBudget)}
                         </span>
                       </div>
@@ -189,7 +189,7 @@ const TicketKanbanBoard = ({ tickets = [], onTicketClick, darkMode = true }) => 
 
                     {/* Created By */}
                     {ticket.createdBy && ticket.createdBy !== 'System' && (
-                      <div className={`mt-1 text-[10px] ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+                      <div className={`mt-1 text-[10px] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
                         {t('kanban.by')} {ticket.createdBy}
                       </div>
                     )}

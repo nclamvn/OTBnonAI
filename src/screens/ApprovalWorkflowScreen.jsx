@@ -151,7 +151,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
       }}>
         <div className="flex items-center gap-3">
           <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${darkMode ? 'bg-[rgba(215,183,151,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
-            <Settings size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+            <Settings size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
           </div>
           <div className="flex-shrink-0">
             <h1 className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'} leading-tight`}>
@@ -183,7 +183,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
               onClick={fetchSteps}
               disabled={loading}
               className={`p-1.5 rounded-lg transition-colors ${
-                darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666666] hover:text-[#8A6340] hover:bg-[rgba(160,120,75,0.18)]'
+                darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'
               }`}
             >
               <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
@@ -195,7 +195,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                 onClick={() => setViewMode('table')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'table'
-                    ? darkMode ? 'bg-[#2E2E2E] text-[#D7B797]' : 'bg-white text-[#8A6340] shadow-sm'
+                    ? darkMode ? 'bg-[#2E2E2E] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm'
                     : darkMode ? 'text-[#666666]' : 'text-[#999999]'
                 }`}
                 title={t('approval.tableView')}
@@ -206,7 +206,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                 onClick={() => setViewMode('progress')}
                 className={`p-1.5 rounded-md transition-colors ${
                   viewMode === 'progress'
-                    ? darkMode ? 'bg-[#2E2E2E] text-[#D7B797]' : 'bg-white text-[#8A6340] shadow-sm'
+                    ? darkMode ? 'bg-[#2E2E2E] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm'
                     : darkMode ? 'text-[#666666]' : 'text-[#999999]'
                 }`}
                 title={t('approval.progressView')}
@@ -229,7 +229,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
       {/* Content */}
       {loading ? (
         <div className="p-16 text-center">
-          <RefreshCw size={32} className={`animate-spin mx-auto mb-4 ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`} />
+          <RefreshCw size={32} className={`animate-spin mx-auto mb-4 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
           <p className={`text-sm font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.loadingSteps')}</p>
         </div>
       ) : viewMode === 'table' ? (
@@ -268,7 +268,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                     </td>
                     <td className="px-3 py-1.5">
                       <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] font-['JetBrains_Mono'] ${
-                        darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#8A6340]'
+                        darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'
                       }`}>
                         {step.stepNumber}
                       </span>
@@ -289,7 +289,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                       <button
                         onClick={() => openEditModal(step)}
                         className={`p-2 rounded-lg transition-colors ${
-                          darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666666] hover:text-[#8A6340] hover:bg-[rgba(160,120,75,0.18)]'
+                          darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'
                         }`}
                       >
                         <Edit2 size={16} />
@@ -323,7 +323,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
               <h3 className={`text-sm font-semibold font-['Montserrat'] mb-3 flex items-center gap-2 ${
                 darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'
               }`}>
-                <Building2 size={15} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+                <Building2 size={15} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                 {brandName}
               </h3>
               <div className="flex items-center gap-4 flex-wrap">
@@ -333,7 +333,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                       <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${
                         darkMode ? 'bg-[rgba(215,183,151,0.1)] border-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] border-[#D7B797]'
                       }`}>
-                        <span className={`font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{step.stepNumber}</span>
+                        <span className={`font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{step.stepNumber}</span>
                       </div>
                       <span className={`mt-2 text-sm font-medium font-['Montserrat'] text-center max-w-[100px] ${
                         darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'
@@ -435,7 +435,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }) => {
                         formData.roleCode === role.code
                           ? darkMode
                             ? 'bg-[rgba(215,183,151,0.15)] border-[#D7B797] text-[#D7B797]'
-                            : 'bg-[rgba(215,183,151,0.2)] border-[#D7B797] text-[#8A6340]'
+                            : 'bg-[rgba(215,183,151,0.2)] border-[#D7B797] text-[#6B4D30]'
                           : darkMode
                             ? 'border-[#2E2E2E] text-[#999999] hover:border-[rgba(215,183,151,0.25)]'
                             : 'border-[#C4B5A5] text-[#666666] hover:border-[rgba(215,183,151,0.4)]'

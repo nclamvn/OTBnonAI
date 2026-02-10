@@ -53,7 +53,7 @@ const CollectionBarChart = ({ data, darkMode, t }) => (
   <div className={`border rounded-xl shadow-sm p-6 ${
     darkMode
       ? 'bg-[#121212] border-[#2E2E2E]'
-      : 'bg-white border-gray-200'
+      : 'bg-white border-gray-300'
   }`}>
     <h3 className={`text-base font-semibold font-['Montserrat'] ${
       darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
@@ -91,7 +91,7 @@ const GenderBarChart = ({ data, darkMode, t }) => (
   <div className={`border rounded-xl shadow-sm p-6 ${
     darkMode
       ? 'bg-[#121212] border-[#2E2E2E]'
-      : 'bg-white border-gray-200'
+      : 'bg-white border-gray-300'
   }`}>
     <h3 className={`text-base font-semibold font-['Montserrat'] ${
       darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
@@ -133,12 +133,12 @@ const SizingTable = ({ productType, darkMode }) => (
   <div className={`rounded-xl border overflow-hidden ${
     darkMode
       ? 'border-[#2E2E2E] bg-[#121212]'
-      : 'border-gray-200 bg-white'
+      : 'border-gray-300 bg-white'
   }`}>
     <div className={`px-4 py-2.5 text-sm font-semibold border-b font-['Montserrat'] ${
       darkMode
         ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]'
-        : 'text-gray-600 bg-gray-50 border-gray-200'
+        : 'text-gray-600 bg-gray-50 border-gray-300'
     }`}>
       Sizing
     </div>
@@ -155,7 +155,7 @@ const SizingTable = ({ productType, darkMode }) => (
           </tr>
         </thead>
         <tbody>
-          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
             <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>6%</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>33%</td>
@@ -163,7 +163,7 @@ const SizingTable = ({ productType, darkMode }) => (
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>28%</td>
             <td className={`px-3 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
           </tr>
-          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
             <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>50%</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>43%</td>
@@ -174,9 +174,9 @@ const SizingTable = ({ productType, darkMode }) => (
           <tr className={`border-t ${
             darkMode
               ? 'border-[#2E2E2E] bg-[rgba(227,179,65,0.1)]'
-              : 'border-gray-200 bg-[rgba(227,179,65,0.18)]'
+              : 'border-gray-300 bg-[rgba(227,179,65,0.18)]'
           }`}>
-            <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#8A6340]'}`}>Final Choice</td>
+            <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Final Choice</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>0</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>3</td>
             <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>3</td>
@@ -228,7 +228,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                 className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
-                    : 'bg-white/80 border-gray-200 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#8A6340]'
+                    : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
                 }`}
               >
                 {detailsOpen ? 'Hide details' : 'Details'}
@@ -239,7 +239,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                 className={`px-2.5 py-1 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
-                    : 'bg-white/80 border-gray-200 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#8A6340]'
+                    : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
                 }`}
               >
                 <Store size={12} />
@@ -251,7 +251,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                 className={`px-2.5 py-1 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
-                    : 'bg-white/80 border-gray-200 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#8A6340]'
+                    : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
                 }`}
               >
                 <Ruler size={12} />
@@ -268,7 +268,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
               : 'bg-white/60 border-white/50'
           }`}>
             <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Rex</p>
-            <p className="text-base font-bold text-[#D7B797] font-['JetBrains_Mono']">{item.rex}</p>
+            <p className={`text-base font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex}</p>
           </div>
           <div className={`rounded-lg border px-3 py-2.5 ${
             darkMode
@@ -329,10 +329,10 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
 
         {storeOrderOpen && (
           <div className={`mt-4 rounded-xl border overflow-hidden ${
-            darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-200 bg-white'
+            darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-300 bg-white'
           }`}>
             <div className={`px-4 py-2.5 text-sm font-semibold border-b font-['Montserrat'] ${
-              darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-200'
+              darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'
             }`}>Store Order</div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -344,7 +344,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
                     <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#D7B797]" />REX
@@ -353,7 +353,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                     <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.rex || 0}</td>
                     <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
                   </tr>
-                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
                     <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
                       <span className="inline-flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-[#127749]" />TTP
@@ -363,7 +363,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
                     <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
                   </tr>
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30' : 'border-[#D7B797]/40'} ${darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>Total</td>
+                    <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
                     <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || ((item.rex || 0) + (item.ttp || 0))}</td>
                     <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || (item.order || 0) * (item.srp || 0))}</td>
                   </tr>
@@ -406,8 +406,8 @@ const getApprovalStepStatus = (stepId, currentStep, approvalHistory) => {
 };
 
 const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
-  <div className={`border rounded-xl shadow-sm p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}>
-    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-5 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+  <div className={`border rounded-xl shadow-sm p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
+    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-5 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
       {t ? t('ticketDetail.approvalHistory') : 'Approval Progress'}
     </h3>
     <div className="flex items-start">
@@ -420,7 +420,7 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
                 status === 'approved' ? 'bg-[#127749] border-[#127749] text-white' :
                 status === 'rejected' ? 'bg-[#F85149] border-[#F85149] text-white' :
                 status === 'current' ? 'bg-[#D7B797] border-[#D7B797] text-white animate-pulse' :
-                darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#666666]' : 'bg-gray-100 border-gray-300 text-gray-400'
+                darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#666666]' : 'bg-gray-100 border-gray-300 text-gray-500'
               }`}>
                 {status === 'approved' ? <Check size={20} strokeWidth={3} /> :
                  status === 'rejected' ? <X size={20} strokeWidth={3} /> :
@@ -430,8 +430,8 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
               <div className={`text-xs mt-2 font-medium text-center leading-tight ${
                 status === 'approved' ? 'text-[#2A9E6A]' :
                 status === 'rejected' ? 'text-[#FF7B72]' :
-                status === 'current' ? 'text-[#D7B797]' :
-                darkMode ? 'text-[#666666]' : 'text-gray-400'
+                status === 'current' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') :
+                darkMode ? 'text-[#666666]' : 'text-gray-500'
               }`}>
                 {step.label}
               </div>
@@ -467,8 +467,8 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
 );
 
 const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }) => (
-  <div className={`border rounded-xl shadow-sm p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}>
-    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+  <div className={`border rounded-xl shadow-sm p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
+    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
       {t ? t('common.status') : 'Status Tracking'}
     </h3>
 
@@ -496,18 +496,18 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }) => (
                 }`}>
                   {item.action.charAt(0).toUpperCase() + item.action.slice(1)}
                 </span>
-                <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-gray-500'}`}>
+                <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
                   by {item.stepLabel || item.role || '-'}
                 </span>
               </div>
               {item.decidedAt && (
-                <div className={`text-[10px] mt-0.5 font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+                <div className={`text-[10px] mt-0.5 font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
                   {new Date(item.decidedAt).toLocaleString('vi-VN')}
                 </div>
               )}
               {item.comment && (
                 <div className={`mt-1.5 px-3 py-2 rounded-lg text-xs italic ${
-                  darkMode ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E]' : 'bg-gray-50 text-gray-600 border border-gray-200'
+                  darkMode ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E]' : 'bg-gray-50 text-gray-600 border border-gray-300'
                 }`}>
                   "{item.comment}"
                 </div>
@@ -516,15 +516,15 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }) => (
           </div>
         ))
       ) : (
-        <div className={`text-sm italic ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+        <div className={`text-sm italic ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
           {t ? t('ticketDetail.approvalHistory') : 'No approval history yet'}
         </div>
       )}
     </div>
 
-    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
       <div className="flex items-center justify-between">
-        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>{t ? t('common.status') : 'Current Status'}:</span>
+        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>{t ? t('common.status') : 'Current Status'}:</span>
         <span className={`px-3 py-1 text-xs font-bold rounded-full ${
           ['APPROVED', 'LEVEL2_APPROVED', 'FINAL'].includes(ticket?.status?.toUpperCase())
             ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-100 text-emerald-700'
@@ -907,7 +907,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
     return (
       <div className={`p-6 min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50'}`}>
         <div className="flex flex-col items-center gap-3">
-          <Loader2 size={40} className={`animate-spin ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`} />
+          <Loader2 size={40} className={`animate-spin ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
           <span className={darkMode ? 'text-[#999999]' : 'text-gray-700'}>{t('ticketDetail.loadingDetail')}</span>
         </div>
       </div>
@@ -920,7 +920,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
         <div className={`text-center ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>
           <p>{t('common.noData')}</p>
           {onBack && (
-            <button onClick={onBack} className="mt-4 text-[#D7B797] hover:underline">
+            <button onClick={onBack} className={`mt-4 hover:underline ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
               {t('ticketDetail.backToTickets')}
             </button>
           )}
@@ -1013,7 +1013,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
         <div className={`border rounded-xl shadow-sm p-5 ${
           darkMode
             ? 'bg-[#121212] border-[#2E2E2E]'
-            : 'bg-white border-gray-200'
+            : 'bg-white border-gray-300'
         }`}>
           <h3 className={`text-base font-semibold mb-4 font-['Montserrat'] ${
             darkMode ? 'text-[#F2F2F2]' : 'text-gray-600'
@@ -1033,7 +1033,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.totalBudget')}</p>
-              <p className="text-lg font-semibold text-[#D7B797] font-['JetBrains_Mono']">{formatCurrency(budgetData.totalBudget)}</p>
+              <p className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budgetData.totalBudget)}</p>
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.budgetName')}</p>
@@ -1045,7 +1045,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
         <div className={`border rounded-xl shadow-sm p-5 ${
           darkMode
             ? 'bg-[#121212] border-[#2E2E2E]'
-            : 'bg-white border-gray-200'
+            : 'bg-white border-gray-300'
         }`}>
           <h3 className={`text-base font-semibold mb-4 font-['Montserrat'] ${
             darkMode ? 'text-[#F2F2F2]' : 'text-gray-600'
@@ -1065,7 +1065,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>REX</p>
-              <p className="text-lg font-semibold text-[#D7B797] font-['JetBrains_Mono']">{formatCurrency(rexNum)}</p>
+              <p className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(rexNum)}</p>
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTP</p>
@@ -1073,7 +1073,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.total')}</p>
-              <p className="text-lg font-bold text-[#D7B797] font-['JetBrains_Mono']">{formatCurrency(totalRexTtp)}</p>
+              <p className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalRexTtp)}</p>
             </div>
           </div>
         </div>
@@ -1104,7 +1104,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
           <h3 className={`text-lg font-semibold flex items-center gap-2 font-['Montserrat'] ${
             darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'
           }`}>
-            <Package size={20} className={darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'} />
+            <Package size={20} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
             {t('proposal.skuCode')} ({displaySkuData.reduce((sum, b) => sum + b.items.length, 0)})
           </h3>
 
@@ -1115,7 +1115,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
               onClick={() => setSkuViewMode('card')}
               className={`p-2 rounded-md transition-all ${
                 skuViewMode === 'card'
-                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#8A6340] shadow-sm'
+                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
                   : darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-[#999999] hover:text-[#666666]'
               }`}
               title="Card View"
@@ -1127,7 +1127,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
               onClick={() => setSkuViewMode('table')}
               className={`p-2 rounded-md transition-all ${
                 skuViewMode === 'table'
-                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#8A6340] shadow-sm'
+                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
                   : darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-[#999999] hover:text-[#666666]'
               }`}
               title="Table View"
@@ -1138,7 +1138,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
         </div>
         {/* === TABLE VIEW === */}
         {skuViewMode === 'table' && (
-          <div className={`border rounded-2xl shadow-sm overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-200'}`}>
+          <div className={`border rounded-2xl shadow-sm overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -1158,15 +1158,15 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
                   {displaySkuData.flatMap(block => block.items.map((item, idx) => (
                     <tr key={`${item.sku}_${idx}`} className={`transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.1)]'}`}>
                       <td className="px-4 py-3">
-                        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
-                          <ImageIcon size={16} className={darkMode ? 'text-[#666666]' : 'text-gray-400'} />
+                        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-300'}`}>
+                          <ImageIcon size={16} className={darkMode ? 'text-[#666666]' : 'text-gray-500'} />
                         </div>
                       </td>
-                      <td className={`px-4 py-3 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{item.sku}</td>
+                      <td className={`px-4 py-3 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
                       <td className={`px-4 py-3 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
                       <td className={`px-4 py-3 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.productType || block.productType}</td>
                       <td className={`px-4 py-3 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
-                      <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-medium text-[#D7B797]`}>{item.rex || 0}</td>
+                      <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex || 0}</td>
                       <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-medium text-[#127749]`}>{item.ttp || 0}</td>
                       <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
                       <td className={`px-4 py-3 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || 0)}</td>
@@ -1175,8 +1175,8 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
                 </tbody>
                 <tfoot>
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td colSpan="5" className={`px-4 py-3 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#8A6340]'}`}>{t('skuProposal.total')}</td>
-                    <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] text-[#D7B797]`}>
+                    <td colSpan="5" className={`px-4 py-3 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
+                    <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                       {displaySkuData.reduce((s, b) => s + b.items.reduce((ss, i) => ss + (i.rex || 0), 0), 0)}
                     </td>
                     <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] text-[#127749]`}>
@@ -1204,7 +1204,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             <div key={key} className={`border rounded-2xl shadow-sm overflow-hidden ${
               darkMode
                 ? 'bg-[#121212] border-[#2E2E2E]'
-                : 'bg-white border-gray-200'
+                : 'bg-white border-gray-300'
             }`}>
               <button
                 type="button"
@@ -1215,7 +1215,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
                     : 'bg-gradient-to-r from-[#1E3A5F] via-[#2A4A7F] to-[#1E3A5F] text-white hover:from-[#234470] hover:via-[#305490] hover:to-[#234470]'
                 }`}
               >
-                <ChevronDown size={18} className={`transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : ''}`} />
+                <ChevronDown size={18} className={`transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                 <div className="text-left flex-1 min-w-0">
                   <div className="font-semibold text-lg font-['Montserrat']">{block.subCategory}</div>
                   <div className={`text-sm mt-0.5 ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>
@@ -1225,17 +1225,17 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
                 <div className="flex items-center gap-6 shrink-0">
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>% Buy propose</div>
-                    <div className="text-lg font-bold font-['JetBrains_Mono'] text-[#D7B797]">{block.pctBuyPropose}%</div>
+                    <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.pctBuyPropose}%</div>
                   </div>
                   <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>OTB propose</div>
-                    <div className="text-lg font-bold font-['JetBrains_Mono'] text-[#D7B797]">{formatCurrency(block.otbPropose)}</div>
+                    <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(block.otbPropose)}</div>
                   </div>
                   <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>Total SRP</div>
-                    <div className="text-lg font-semibold font-['JetBrains_Mono'] text-[#D7B797]">{formatCurrency(totalSrp)}</div>
+                    <div className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalSrp)}</div>
                   </div>
                 </div>
               </button>
