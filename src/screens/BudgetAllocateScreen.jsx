@@ -54,17 +54,17 @@ const BudgetAllocateScreen = ({
         const groups = [];
         const allBrands = [];
 
-        list.forEach((b, idx) => {
+        list.forEach((b) => {
           const id = b.id || b.brandId;
           const name = b.name || b.brandName || b.code || 'Unknown';
           const groupId = b.groupBrandId || b.groupId || id;
 
-          // Add to group list (dedupe)
+          // Add to group list (dedupe) - use group count for consistent color
           if (!groups.find(g => g.id === groupId)) {
             groups.push({
               id: groupId,
               name: b.groupBrand?.name || b.groupName || name,
-              color: GROUP_BRAND_COLORS[idx % GROUP_BRAND_COLORS.length]
+              color: GROUP_BRAND_COLORS[groups.length % GROUP_BRAND_COLORS.length]
             });
           }
 
@@ -578,6 +578,7 @@ const BudgetAllocateScreen = ({
     }
 
     setIsBudgetNameDropdownOpen(false);
+    setFiltersCollapsed(true);
   };
 
   // Clear budget selection
@@ -614,9 +615,7 @@ const BudgetAllocateScreen = ({
   return (
     <>
       {/* Header Section */}
-      <div className={`backdrop-blur-xl rounded-2xl shadow-xl border p-6 mb-6 relative z-[100] ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-gradient-to-br from-white to-[rgba(215,183,151,0.1)] border-[#C4B5A5]'}`}>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-[rgba(215,183,151,0.15)] to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-[rgba(215,183,151,0.15)] to-transparent rounded-full blur-3xl"></div>
+      <div className={`backdrop-blur-xl rounded-xl shadow-xl border p-3 mb-3 relative z-[100] sticky top-0 ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-gradient-to-br from-white to-[rgba(215,183,151,0.1)] border-[#C4B5A5]'}`}>
 
         <div className="relative">
           {/* Filter Section - Redesigned */}

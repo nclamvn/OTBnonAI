@@ -61,7 +61,7 @@ const CollectionBarChart = ({ data, darkMode, t }) => (
     <p className={`text-xs mb-2 ${
       darkMode ? 'text-[#999999]' : 'text-gray-700'
     }`}>Carry Over vs Seasonal — REX & TTP</p>
-    <div className="h-[200px]" style={{ minWidth: 0, minHeight: 0 }}>
+    <div className="h-[280px]" style={{ minWidth: 0, minHeight: 0 }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
           <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
@@ -99,7 +99,7 @@ const GenderBarChart = ({ data, darkMode, t }) => (
     <p className={`text-xs mb-2 ${
       darkMode ? 'text-[#999999]' : 'text-gray-700'
     }`}>Male vs Female — REX & TTP</p>
-    <div className="h-[200px]" style={{ minWidth: 0, minHeight: 0 }}>
+    <div className="h-[280px]" style={{ minWidth: 0, minHeight: 0 }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
           <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
@@ -415,19 +415,19 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
         const status = getApprovalStepStatus(step.id, currentStep, approvalHistory);
         return (
           <React.Fragment key={step.id}>
-            <div className="flex flex-col items-center" style={{ minWidth: 90 }}>
-              <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all ${
+            <div className="flex flex-col items-center" style={{ minWidth: 100 }}>
+              <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all ${
                 status === 'approved' ? 'bg-[#127749] border-[#127749] text-white' :
                 status === 'rejected' ? 'bg-[#F85149] border-[#F85149] text-white' :
                 status === 'current' ? 'bg-[#D7B797] border-[#D7B797] text-white animate-pulse' :
                 darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#666666]' : 'bg-gray-100 border-gray-300 text-gray-500'
               }`}>
-                {status === 'approved' ? <Check size={20} strokeWidth={3} /> :
-                 status === 'rejected' ? <X size={20} strokeWidth={3} /> :
-                 status === 'current' ? <Clock size={18} /> :
-                 <span className="text-sm font-bold">{index + 1}</span>}
+                {status === 'approved' ? <Check size={24} strokeWidth={3} /> :
+                 status === 'rejected' ? <X size={24} strokeWidth={3} /> :
+                 status === 'current' ? <Clock size={24} /> :
+                 <span className="text-base font-bold">{index + 1}</span>}
               </div>
-              <div className={`text-xs mt-2 font-medium text-center leading-tight ${
+              <div className={`text-sm mt-2 font-medium text-center leading-tight ${
                 status === 'approved' ? 'text-[#2A9E6A]' :
                 status === 'rejected' ? 'text-[#FF7B72]' :
                 status === 'current' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') :
@@ -453,7 +453,7 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }) => (
               )}
             </div>
             {index < APPROVAL_STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mt-5 mx-1 rounded-full transition-all ${
+              <div className={`flex-1 h-0.5 mt-7 mx-1 rounded-full transition-all ${
                 getApprovalStepStatus(APPROVAL_STEPS[index + 1].id, currentStep, approvalHistory) !== 'waiting'
                   ? 'bg-[#127749]'
                   : darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-200'
@@ -1069,7 +1069,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTP</p>
-              <p className="text-lg font-semibold text-[#127749] font-['JetBrains_Mono']">{formatCurrency(ttpNum)}</p>
+              <p className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(ttpNum)}</p>
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.total')}</p>

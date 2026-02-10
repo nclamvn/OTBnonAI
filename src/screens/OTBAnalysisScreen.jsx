@@ -1246,11 +1246,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }) 
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Header Section - Sticky */}
-      <div className={`backdrop-blur-xl rounded-xl shadow-xl border p-4 relative z-[100] sticky top-0 ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-gradient-to-br from-white to-[rgba(215,183,151,0.1)] border-[#C4B5A5]'}`}>
-        <div className={`absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl ${darkMode ? 'bg-gradient-to-br from-[rgba(215,183,151,0.1)] to-transparent' : 'bg-gradient-to-br from-[rgba(215,183,151,0.2)] to-transparent'}`}></div>
-        <div className={`absolute bottom-0 left-0 w-48 h-48 rounded-full blur-3xl ${darkMode ? 'bg-gradient-to-tr from-[rgba(215,183,151,0.05)] to-transparent' : 'bg-gradient-to-tr from-[rgba(215,183,151,0.15)] to-transparent'}`}></div>
+      <div className={`backdrop-blur-xl rounded-xl shadow-xl border p-3 relative z-[100] sticky top-0 ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-gradient-to-br from-white to-[rgba(215,183,151,0.1)] border-[#C4B5A5]'}`}>
 
         <div className="relative">
           {/* Filter Section - Redesigned like Planning page */}
@@ -1379,10 +1377,10 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }) 
                   )}
                 </div>
 
-                {/* Divider */}
+                {/* Season Group Filter - only show after budget selected */}
+                {selectedBudgetId && selectedBudgetId !== 'all' && (
+                <>
                 <div className={`h-10 w-px hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#2E2E2E]/20'}`}></div>
-
-                {/* Season Group Filter */}
                 <div className="relative min-w-[140px]" ref={setDropdownRef('seasonGroup')}>
                   <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
                     {t('otbAnalysis.seasonGroup')}
@@ -1501,6 +1499,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }) 
                     </div>
                   )}
                 </div>
+                </>
+                )}
 
                 {/* Version Filter */}
                 {selectedBudgetId && selectedBudgetId !== 'all' && (
@@ -1731,7 +1731,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }) 
         </div>
 
         {/* Content */}
-        <div className="max-h-[calc(100vh-350px)] overflow-y-auto">
+        <div className="overflow-y-auto">
           {activeTab === 'collection' && renderCollectionTab()}
           {activeTab === 'gender' && renderGenderTab()}
           {activeTab === 'category' && renderCategoryTab()}
