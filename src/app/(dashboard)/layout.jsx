@@ -5,9 +5,9 @@ import { useAppContext } from '@/contexts/AppContext';
 import { useBudget, usePlanning } from '@/hooks';
 import { getScreenIdFromPathname } from '@/utils/routeMap';
 import AuthGuard from '@/components/AuthGuard';
-import { Sidebar } from '@/components/Layout';
-import AppHeader from '@/components/Layout/AppHeader';
-import { BudgetModal } from '@/components/Common';
+import { Sidebar } from '@/components/layout';
+import AppHeader from '@/components/layout/AppHeader';
+import { BudgetModal } from '@/components/ui';
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useCallback } from 'react';
-import { proposalService, masterDataService } from '../services';
+import { proposalService, masterDataService } from '../../../services';
 
 export const useProposal = () => {
   const [proposals, setProposals] = useState([]);

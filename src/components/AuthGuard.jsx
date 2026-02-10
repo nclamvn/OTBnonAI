@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { LoadingSpinner } from '@/components/Common';
+import { LoadingSpinner } from '@/components/ui';
 
 export default function AuthGuard({ children }) {
   const { isAuthenticated, loading } = useAuth();

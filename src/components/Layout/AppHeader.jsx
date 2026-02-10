@@ -595,7 +595,8 @@ const AppHeader = ({
               })}
             </div>
 
-            {/* Save Button */}
+            {/* Save Button - hidden on Tickets pages */}
+            {currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
             <div className="ml-auto relative" ref={saveButtonRef}>
               <div className="inline-flex rounded-lg" style={{
                 boxShadow: '0 2px 8px rgba(215,183,151,0.2)',
@@ -621,6 +622,7 @@ const AppHeader = ({
                 </button>
               </div>
             </div>
+            )}
           </div>
         </div>
       )}
