@@ -1,5 +1,5 @@
 // ============================================================================
-// Database Seed — 3-Year Mock Data (2023-2025)
+// Database Seed — Comprehensive Test Data (2023-2026)
 // DAFC OTB Luxury Fashion Buying Platform
 // Run: npx prisma db seed   or   npm run prisma:seed
 // ============================================================================
@@ -10,7 +10,7 @@ import * as bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 DAFC OTB — Seeding 3-Year Mock Data (2023-2025)');
+  console.log('🌱 DAFC OTB — Seeding Comprehensive Test Data (2023-2026)');
   console.log('═'.repeat(60));
 
   // ─── CLEANUP (delete in reverse-dependency order) ─────────────────────
@@ -323,27 +323,26 @@ async function main() {
   console.log(`  ✅ 8 categories + ${subCategories.length} sub-categories`);
 
   // ─── SKU CATALOG ────────────────────────────────────────────────────────
-  // 30 luxury fashion SKUs across all brands (2023-2025)
   const skuData = [
-    // === FERRAGAMO (20 SKUs) ===
-    // Bags
+    // === FERRAGAMO (24 SKUs) ===
     { skuCode: 'FER-BAG-001', productName: 'Gancini Mini Bag', productType: 'W BAGS', theme: 'SS23 Main', color: 'Nero', composition: 'Calfskin Leather', srp: 32000000, brandId: brandFER.id, seasonGroupId: 'SS', imageUrl: '/products/fer-bag-001.jpg' },
     { skuCode: 'FER-BAG-002', productName: 'Studio Bag Medium', productType: 'W BAGS', theme: 'SS23 Main', color: 'Bone', composition: 'Calfskin Leather', srp: 58000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-BAG-003', productName: 'Vara Bow Shoulder Bag', productType: 'W BAGS', theme: 'SS23 Pre', color: 'Lipstick', composition: 'Patent Leather', srp: 45000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-BAG-004', productName: 'Trifolio Crossbody', productType: 'W BAGS', theme: 'SS24 Main', color: 'Dawn Pink', composition: 'Calfskin Leather', srp: 38000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-BAG-005', productName: 'Wanda Tote Large', productType: 'W BAGS', theme: 'FW24 Main', color: 'Cocoa', composition: 'Grainy Leather', srp: 62000000, brandId: brandFER.id, seasonGroupId: 'FW' },
-    // Shoes
+    { skuCode: 'FER-BAG-006', productName: 'Hug Bag Small', productType: 'W BAGS', theme: 'SS25 Main', color: 'Caramel', composition: 'Calfskin Leather', srp: 42000000, brandId: brandFER.id, seasonGroupId: 'SS' },
+    { skuCode: 'FER-BAG-007', productName: 'Varina Clutch', productType: 'W BAGS', theme: 'FW25 Main', color: 'Gold', composition: 'Metallic Leather', srp: 28000000, brandId: brandFER.id, seasonGroupId: 'FW' },
     { skuCode: 'FER-SHO-001', productName: 'Gancini Pump 70', productType: 'W SHOES', theme: 'SS23 Main', color: 'Nero', composition: 'Calfskin Leather', srp: 22000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-SHO-002', productName: 'Vara Bow Ballet Flat', productType: 'W SHOES', theme: 'SS23 Pre', color: 'Caraway', composition: 'Patent Leather', srp: 18500000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-SHO-003', productName: 'Driver Moccasin', productType: 'M SHOES', theme: 'SS23 Main', color: 'Hickory', composition: 'Suede', srp: 16000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-SHO-004', productName: 'Glam Sandal 85', productType: 'W SHOES', theme: 'SS24 Main', color: 'Gold', composition: 'Metallic Leather', srp: 24000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-SHO-005', productName: 'Combat Boot', productType: 'W SHOES', theme: 'FW24 Main', color: 'Nero', composition: 'Calfskin Leather', srp: 32000000, brandId: brandFER.id, seasonGroupId: 'FW' },
-    // RTW
     { skuCode: 'FER-RTW-001', productName: 'Silk Midi Dress', productType: 'W DRESSES', theme: 'SS23 Main', color: 'Poppy', composition: '100% Silk', srp: 52000000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-RTW-002', productName: 'Cashmere Cardigan', productType: 'W KNITWEAR', theme: 'FW23 Main', color: 'Oatmeal', composition: '100% Cashmere', srp: 38000000, brandId: brandFER.id, seasonGroupId: 'FW' },
     { skuCode: 'FER-RTW-003', productName: 'Tailored Blazer', productType: 'W OUTERWEAR', theme: 'FW24 Main', color: 'Nero', composition: 'Virgin Wool', srp: 58000000, brandId: brandFER.id, seasonGroupId: 'FW' },
     { skuCode: 'FER-RTW-004', productName: 'Wide Leg Trouser', productType: 'W BOTTOMS', theme: 'FW24 Main', color: 'Nero', composition: 'Virgin Wool', srp: 32000000, brandId: brandFER.id, seasonGroupId: 'FW' },
-    // Accessories & SLG
+    { skuCode: 'FER-RTW-005', productName: 'Knit Polo Shirt', productType: 'M TOPS', theme: 'SS25 Main', color: 'Navy', composition: 'Cotton Piqué', srp: 18000000, brandId: brandFER.id, seasonGroupId: 'SS' },
+    { skuCode: 'FER-RTW-006', productName: 'Gancini Bomber Jacket', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Nylon + Leather', srp: 68000000, brandId: brandFER.id, seasonGroupId: 'FW' },
     { skuCode: 'FER-ACC-001', productName: 'Gancini Reversible Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Black/Brown', composition: 'Calfskin Leather', srp: 12500000, brandId: brandFER.id },
     { skuCode: 'FER-ACC-002', productName: 'Silk Scarf', productType: 'W ACCESSORIES', theme: 'SS25 Main', color: 'Multicolor Print', composition: '100% Silk Twill', srp: 8500000, brandId: brandFER.id, seasonGroupId: 'SS' },
     { skuCode: 'FER-ACC-003', productName: 'Aviator Sunglasses', productType: 'ACCESSORIES', theme: 'SS25 Main', color: 'Gold/Brown', composition: 'Metal Frame', srp: 9800000, brandId: brandFER.id, seasonGroupId: 'SS' },
@@ -351,18 +350,34 @@ async function main() {
     { skuCode: 'FER-SLG-002', productName: 'Card Case', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Calfskin Leather', srp: 6500000, brandId: brandFER.id },
     { skuCode: 'FER-SLG-003', productName: 'Gancini Key Ring', productType: 'SLG', theme: 'Carryover', color: 'Palladium', composition: 'Metal', srp: 4200000, brandId: brandFER.id },
 
-    // === BURBERRY (5 SKUs) ===
+    // === BURBERRY (17 SKUs) ===
     { skuCode: 'BUR-BAG-001', productName: 'TB Shoulder Bag', productType: 'W BAGS', theme: 'SS23 Main', color: 'Black', composition: 'Grainy Leather', srp: 48000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
     { skuCode: 'BUR-BAG-002', productName: 'Lola Bag Medium', productType: 'W BAGS', theme: 'SS23 Main', color: 'Vintage Check', composition: 'Cotton Canvas', srp: 55000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
+    { skuCode: 'BUR-BAG-003', productName: 'Pocket Bag Medium', productType: 'W BAGS', theme: 'SS25 Main', color: 'Archive Beige', composition: 'Cotton Canvas', srp: 52000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
     { skuCode: 'BUR-SHO-001', productName: 'Vintage Check Sneaker', productType: 'SHOES', theme: 'SS23 Main', color: 'Archive Beige', composition: 'Cotton Canvas & Leather', srp: 22000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
+    { skuCode: 'BUR-SHO-002', productName: 'Check Rubber Boot', productType: 'W SHOES', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Rubber', srp: 18000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
     { skuCode: 'BUR-RTW-001', productName: 'Heritage Trench Coat', productType: 'W OUTERWEAR', theme: 'FW23 Main', color: 'Honey', composition: 'Cotton Gabardine', srp: 78000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
+    { skuCode: 'BUR-RTW-002', productName: 'Check Wool Skirt', productType: 'W BOTTOMS', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Wool Check', srp: 32000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
+    { skuCode: 'BUR-RTW-003', productName: 'TB Monogram Polo', productType: 'M TOPS', theme: 'SS25 Main', color: 'White', composition: 'Cotton Piqué', srp: 22000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
     { skuCode: 'BUR-ACC-001', productName: 'Giant Check Cashmere Scarf', productType: 'ACCESSORIES', theme: 'FW23 Main', color: 'Classic Check', composition: '100% Cashmere', srp: 15000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
+    { skuCode: '8116333', productName: 'FITZROVIA DK SHT', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'WINE RED', composition: '100% COTTON', srp: 87900000, brandId: brandBUR.id },
+    { skuCode: '8113543', productName: 'FLORISTON S', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'MAHOGANY', composition: '100% POLYAMIDE (NYLON)', srp: 65900000, brandId: brandBUR.id },
+    { skuCode: '8115960', productName: 'OLDHAM CHK', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'POPPY IP CHECK', composition: '100% COTTON', srp: 71900000, brandId: brandBUR.id },
+    { skuCode: '8116500', productName: 'KENSINGTON TRENCH', productType: 'W OUTERWEAR', theme: 'SEPTEMBER (09)', color: 'HONEY', composition: '100% COTTON', srp: 95000000, brandId: brandBUR.id },
+    { skuCode: '8116501', productName: 'CHELSEA COAT', productType: 'W OUTERWEAR', theme: 'SEPTEMBER (09)', color: 'BLACK', composition: '80% WOOL 20% CASHMERE', srp: 120000000, brandId: brandBUR.id },
+    { skuCode: '9201001', productName: 'HERITAGE TOTE', productType: 'M BAGS', theme: 'OCTOBER (10)', color: 'BLACK', composition: '100% LEATHER', srp: 65000000, brandId: brandBUR.id },
+    { skuCode: '9201002', productName: 'MESSENGER BAG', productType: 'M BAGS', theme: 'OCTOBER (10)', color: 'TAN', composition: '100% LEATHER', srp: 55000000, brandId: brandBUR.id },
+    { skuCode: '9101001', productName: 'LOLA BAG', productType: 'W BAGS', theme: 'AUGUST (08)', color: 'BURGUNDY', composition: '100% LEATHER', srp: 78000000, brandId: brandBUR.id },
 
-    // === GUCCI (4 SKUs) ===
+    // === GUCCI (8 SKUs) ===
     { skuCode: 'GUC-BAG-001', productName: 'GG Marmont Mini Bag', productType: 'W BAGS', theme: 'SS24 Main', color: 'Nero', composition: 'Matelassé Leather', srp: 42000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
     { skuCode: 'GUC-BAG-002', productName: 'Dionysus GG Supreme', productType: 'W BAGS', theme: 'SS24 Main', color: 'Beige/Ebony', composition: 'GG Supreme Canvas', srp: 65000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
+    { skuCode: 'GUC-BAG-003', productName: 'Jackie 1961 Small', productType: 'W BAGS', theme: 'FW24 Main', color: 'Nero', composition: 'Leather', srp: 55000000, brandId: brandGUC.id, seasonGroupId: 'FW' },
     { skuCode: 'GUC-SHO-001', productName: 'Horsebit Loafer', productType: 'W SHOES', theme: 'SS24 Carryover', color: 'Nero', composition: 'Calfskin Leather', srp: 28000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
+    { skuCode: 'GUC-RTW-001', productName: 'GG Canvas Jacket', productType: 'W OUTERWEAR', theme: 'SS25 Main', color: 'Beige/Ebony', composition: 'GG Canvas', srp: 72000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
+    { skuCode: 'GUC-RTW-002', productName: 'Horsebit Loafer Men', productType: 'M SHOES', theme: 'Carryover', color: 'Nero', composition: 'Calfskin', srp: 32000000, brandId: brandGUC.id },
     { skuCode: 'GUC-ACC-001', productName: 'GG Supreme Belt', productType: 'ACCESSORIES', theme: 'SS24 Carryover', color: 'Beige/Ebony', composition: 'GG Supreme Canvas', srp: 14000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
+    { skuCode: 'GUC-SLG-001', productName: 'GG Marmont Card Case', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Matelassé Leather', srp: 8500000, brandId: brandGUC.id },
 
     // === PRADA (10 SKUs) ===
     { skuCode: 'PRA-BAG-001', productName: 'Re-Edition 2005 Nylon Bag', productType: 'W BAGS', theme: 'SS24 Main', color: 'Nero', composition: 'Recycled Nylon', srp: 35000000, brandId: brandPRA.id, seasonGroupId: 'SS' },
@@ -417,39 +432,6 @@ async function main() {
     { skuCode: 'BAL-SHO-001', productName: 'Track Runner Sneaker', productType: 'W SHOES', theme: 'SS24 Main', color: 'Multi', composition: 'Mesh + Nylon', srp: 28000000, brandId: brandBAL.id, seasonGroupId: 'SS' },
     { skuCode: 'BAL-ACC-001', productName: 'BB Logo Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Nero', composition: 'Leather + Metal', srp: 12000000, brandId: brandBAL.id },
     { skuCode: 'BAL-SLG-001', productName: 'Cash Mini Wallet', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Arena Leather', srp: 9800000, brandId: brandBAL.id },
-
-    // === Additional FER SKUs for 2025 ===
-    { skuCode: 'FER-BAG-006', productName: 'Hug Bag Small', productType: 'W BAGS', theme: 'SS25 Main', color: 'Caramel', composition: 'Calfskin Leather', srp: 42000000, brandId: brandFER.id, seasonGroupId: 'SS' },
-    { skuCode: 'FER-BAG-007', productName: 'Varina Clutch', productType: 'W BAGS', theme: 'FW25 Main', color: 'Gold', composition: 'Metallic Leather', srp: 28000000, brandId: brandFER.id, seasonGroupId: 'FW' },
-    { skuCode: 'FER-RTW-005', productName: 'Knit Polo Shirt', productType: 'M TOPS', theme: 'SS25 Main', color: 'Navy', composition: 'Cotton Piqué', srp: 18000000, brandId: brandFER.id, seasonGroupId: 'SS' },
-    { skuCode: 'FER-RTW-006', productName: 'Gancini Bomber Jacket', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Nylon + Leather', srp: 68000000, brandId: brandFER.id, seasonGroupId: 'FW' },
-    // === Additional BUR SKUs for 2025 ===
-    { skuCode: 'BUR-BAG-003', productName: 'Pocket Bag Medium', productType: 'W BAGS', theme: 'SS25 Main', color: 'Archive Beige', composition: 'Cotton Canvas', srp: 52000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
-    { skuCode: 'BUR-RTW-002', productName: 'Check Wool Skirt', productType: 'W BOTTOMS', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Wool Check', srp: 32000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
-    { skuCode: 'BUR-RTW-003', productName: 'TB Monogram Polo', productType: 'M TOPS', theme: 'SS25 Main', color: 'White', composition: 'Cotton Piqué', srp: 22000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
-    { skuCode: 'BUR-SHO-002', productName: 'Check Rubber Boot', productType: 'W SHOES', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Rubber', srp: 18000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
-    // === Additional GUC SKUs ===
-    { skuCode: 'GUC-BAG-003', productName: 'Jackie 1961 Small', productType: 'W BAGS', theme: 'FW24 Main', color: 'Nero', composition: 'Leather', srp: 55000000, brandId: brandGUC.id, seasonGroupId: 'FW' },
-    { skuCode: 'GUC-RTW-001', productName: 'GG Canvas Jacket', productType: 'W OUTERWEAR', theme: 'SS25 Main', color: 'Beige/Ebony', composition: 'GG Canvas', srp: 72000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
-    { skuCode: 'GUC-RTW-002', productName: 'Horsebit Loafer Men', productType: 'M SHOES', theme: 'Carryover', color: 'Nero', composition: 'Calfskin', srp: 32000000, brandId: brandGUC.id },
-    { skuCode: 'GUC-SLG-001', productName: 'GG Marmont Card Case', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Matelassé Leather', srp: 8500000, brandId: brandGUC.id },
-
-    // === Keep existing SKUs from old seed (Burberry detailed) ===
-    { skuCode: '8116333', productName: 'FITZROVIA DK SHT', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'WINE RED', composition: '100% COTTON', srp: 87900000, brandId: brandBUR.id },
-    { skuCode: '8113543', productName: 'FLORISTON S', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'MAHOGANY', composition: '100% POLYAMIDE (NYLON)', srp: 65900000, brandId: brandBUR.id },
-    { skuCode: '8115960', productName: 'OLDHAM CHK', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'POPPY IP CHECK', composition: '100% COTTON', srp: 71900000, brandId: brandBUR.id },
-    { skuCode: '8116500', productName: 'KENSINGTON TRENCH', productType: 'W OUTERWEAR', theme: 'SEPTEMBER (09)', color: 'HONEY', composition: '100% COTTON', srp: 95000000, brandId: brandBUR.id },
-    { skuCode: '8116501', productName: 'CHELSEA COAT', productType: 'W OUTERWEAR', theme: 'SEPTEMBER (09)', color: 'BLACK', composition: '80% WOOL 20% CASHMERE', srp: 120000000, brandId: brandBUR.id },
-    { skuCode: '8114202', productName: 'GILLIAN WCHK', productType: 'W TOPS', theme: 'SEPTEMBER (09)', color: 'TRUFFLE IP CHECK', composition: '70% WOOL 30% CASHMERE', srp: 49900000, brandId: brandBUR.id },
-    { skuCode: '8115254', productName: 'GEORGETTE WCHK', productType: 'W TOPS', theme: 'SEPTEMBER (09)', color: 'TRUFFLE IP CHECK', composition: '70% WOOL 30% CASHMERE', srp: 58900000, brandId: brandBUR.id },
-    { skuCode: '8115640', productName: 'SCARLETT EKD', productType: 'W TOPS', theme: 'SEPTEMBER (09)', color: 'CAMEL', composition: '70% WOOL 30% CASHMERE', srp: 44900000, brandId: brandBUR.id },
-    { skuCode: '8115700', productName: 'VICTORIA BLOUSE', productType: 'W TOPS', theme: 'OCTOBER (10)', color: 'IVORY', composition: '100% SILK', srp: 38000000, brandId: brandBUR.id },
-    { skuCode: '8115701', productName: 'EMMA SHIRT', productType: 'W TOPS', theme: 'OCTOBER (10)', color: 'WHITE', composition: '100% COTTON', srp: 28000000, brandId: brandBUR.id },
-    { skuCode: '9201001', productName: 'HERITAGE TOTE', productType: 'M BAGS', theme: 'OCTOBER (10)', color: 'BLACK', composition: '100% LEATHER', srp: 65000000, brandId: brandBUR.id },
-    { skuCode: '9201002', productName: 'MESSENGER BAG', productType: 'M BAGS', theme: 'OCTOBER (10)', color: 'TAN', composition: '100% LEATHER', srp: 55000000, brandId: brandBUR.id },
-    { skuCode: '9201003', productName: 'BACKPACK CLASSIC', productType: 'M BAGS', theme: 'NOVEMBER (11)', color: 'NAVY', composition: '100% NYLON', srp: 42000000, brandId: brandBUR.id },
-    { skuCode: '9101001', productName: 'LOLA BAG', productType: 'W BAGS', theme: 'AUGUST (08)', color: 'BURGUNDY', composition: '100% LEATHER', srp: 78000000, brandId: brandBUR.id },
-    { skuCode: '9101002', productName: 'TB BAG SMALL', productType: 'W BAGS', theme: 'SEPTEMBER (09)', color: 'BLACK', composition: '100% LEATHER', srp: 95000000, brandId: brandBUR.id },
   ];
 
   for (const sku of skuData) {
@@ -467,95 +449,73 @@ async function main() {
   const allBrandIds = brands.map(b => b.id);
   const ferBurIds = [brandFER.id, brandBUR.id];
   const gucPraIds = [brandGUC.id, brandPRA.id];
+  const lvDgIds = [brandLV.id, brandDG.id];
+  const verBalIds = [brandVER.id, brandBAL.id];
 
   const users = await Promise.all([
-    // Admin
     prisma.user.upsert({
       where: { email: 'admin@dafc.com' },
       update: {},
-      create: {
-        email: 'admin@dafc.com', name: 'Nguyễn Văn Admin',
-        passwordHash: password, roleId: adminRole.id,
-        storeAccess: allStoreIds, brandAccess: allBrandIds,
-      },
+      create: { email: 'admin@dafc.com', name: 'Nguyễn Văn Admin', passwordHash: password, roleId: adminRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
     }),
-    // Senior Buyer (Ferragamo + Burberry)
     prisma.user.upsert({
       where: { email: 'buyer@dafc.com' },
       update: {},
-      create: {
-        email: 'buyer@dafc.com', name: 'Lê Văn Buyer',
-        passwordHash: password, roleId: buyerRole.id,
-        storeAccess: allStoreIds, brandAccess: ferBurIds,
-      },
+      create: { email: 'buyer@dafc.com', name: 'Lê Văn Buyer', passwordHash: password, roleId: buyerRole.id, storeAccess: allStoreIds, brandAccess: ferBurIds },
     }),
-    // Junior Buyer (Gucci + Prada)
     prisma.user.upsert({
       where: { email: 'buyer.junior@dafc.com' },
       update: {},
-      create: {
-        email: 'buyer.junior@dafc.com', name: 'Phạm Thị Junior',
-        passwordHash: password, roleId: buyerRole.id,
-        storeAccess: allStoreIds, brandAccess: gucPraIds,
-      },
+      create: { email: 'buyer.junior@dafc.com', name: 'Phạm Thị Junior', passwordHash: password, roleId: buyerRole.id, storeAccess: allStoreIds, brandAccess: gucPraIds },
     }),
-    // Merchandiser / Planner
     prisma.user.upsert({
       where: { email: 'merch@dafc.com' },
       update: {},
-      create: {
-        email: 'merch@dafc.com', name: 'Hoàng Văn Planner',
-        passwordHash: password, roleId: merchRole.id,
-        storeAccess: allStoreIds, brandAccess: allBrandIds,
-      },
+      create: { email: 'merch@dafc.com', name: 'Hoàng Văn Planner', passwordHash: password, roleId: merchRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
     }),
-    // Merch Manager (L1 Approver)
     prisma.user.upsert({
       where: { email: 'manager@dafc.com' },
       update: {},
-      create: {
-        email: 'manager@dafc.com', name: 'Trần Thị Manager',
-        passwordHash: password, roleId: merchMgrRole.id,
-        storeAccess: allStoreIds, brandAccess: allBrandIds,
-      },
+      create: { email: 'manager@dafc.com', name: 'Trần Thị Manager', passwordHash: password, roleId: merchMgrRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
     }),
-    // Finance Director (L2 Approver)
     prisma.user.upsert({
       where: { email: 'finance@dafc.com' },
       update: {},
-      create: {
-        email: 'finance@dafc.com', name: 'Pham Director',
-        passwordHash: password, roleId: finDirRole.id,
-        storeAccess: allStoreIds, brandAccess: allBrandIds,
-      },
+      create: { email: 'finance@dafc.com', name: 'Pham Director', passwordHash: password, roleId: finDirRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
     }),
-    // Store Manager REX
     prisma.user.upsert({
       where: { email: 'store.rex@dafc.com' },
       update: {},
-      create: {
-        email: 'store.rex@dafc.com', name: 'Ngô Thị Store REX',
-        passwordHash: password, roleId: buyerRole.id,
-        storeAccess: [storeREX.id, storeDN.id], brandAccess: allBrandIds,
-      },
+      create: { email: 'store.rex@dafc.com', name: 'Ngô Thị Store REX', passwordHash: password, roleId: buyerRole.id, storeAccess: [storeREX.id, storeDN.id], brandAccess: allBrandIds },
     }),
-    // Store Manager TTP
     prisma.user.upsert({
       where: { email: 'store.ttp@dafc.com' },
       update: {},
-      create: {
-        email: 'store.ttp@dafc.com', name: 'Đỗ Văn TTP',
-        passwordHash: password, roleId: buyerRole.id,
-        storeAccess: [storeTTP.id, storeHP.id], brandAccess: allBrandIds,
-      },
+      create: { email: 'store.ttp@dafc.com', name: 'Đỗ Văn TTP', passwordHash: password, roleId: buyerRole.id, storeAccess: [storeTTP.id, storeHP.id], brandAccess: allBrandIds },
+    }),
+    // Additional buyers for LV/DG and VER/BAL
+    prisma.user.upsert({
+      where: { email: 'buyer.lv@dafc.com' },
+      update: {},
+      create: { email: 'buyer.lv@dafc.com', name: 'Trương Văn LV', passwordHash: password, roleId: buyerRole.id, storeAccess: allStoreIds, brandAccess: lvDgIds },
+    }),
+    prisma.user.upsert({
+      where: { email: 'buyer.ver@dafc.com' },
+      update: {},
+      create: { email: 'buyer.ver@dafc.com', name: 'Đinh Thị Versace', passwordHash: password, roleId: buyerRole.id, storeAccess: allStoreIds, brandAccess: verBalIds },
     }),
   ]);
   const adminUser = users[0];
   const buyerUser = users[1];
+  const buyerJunior = users[2];
   const merchUser = users[3];
+  const managerUser = users[4];
+  const financeUser = users[5];
+  const buyerLV = users[8];
+  const buyerVER = users[9];
   console.log(`  ✅ ${users.length} users (password: dafc@2026)`);
 
-  // ─── BUDGETS (3 Years × 2 Seasons × Multiple Brands) ───────────────────
+  // ─── BUDGETS — ALL 8 BRANDS × 4 YEARS × ALL STATUSES ─────────────────
   type BudgetSpec = {
     code: string;
     brandId: string;
@@ -564,32 +524,67 @@ async function main() {
     year: number;
     total: number;
     status: 'DRAFT' | 'SUBMITTED' | 'LEVEL1_APPROVED' | 'APPROVED' | 'REJECTED';
+    createdBy?: string;
   };
 
   const budgetSpecs: BudgetSpec[] = [
-    // 2023
+    // ── FY2023 (all APPROVED — historical) ──
     { code: 'BUD-FER-SS-pre-2023', brandId: brandFER.id, season: 'SS', type: 'pre', year: 2023, total: 1400000000, status: 'APPROVED' },
     { code: 'BUD-FER-SS-main-2023', brandId: brandFER.id, season: 'SS', type: 'main', year: 2023, total: 2100000000, status: 'APPROVED' },
     { code: 'BUD-FER-FW-pre-2023', brandId: brandFER.id, season: 'FW', type: 'pre', year: 2023, total: 1470000000, status: 'APPROVED' },
     { code: 'BUD-FER-FW-main-2023', brandId: brandFER.id, season: 'FW', type: 'main', year: 2023, total: 2730000000, status: 'APPROVED' },
     { code: 'BUD-BUR-SS-pre-2023', brandId: brandBUR.id, season: 'SS', type: 'pre', year: 2023, total: 1260000000, status: 'APPROVED' },
     { code: 'BUD-BUR-SS-main-2023', brandId: brandBUR.id, season: 'SS', type: 'main', year: 2023, total: 1540000000, status: 'APPROVED' },
-    // 2024
+    { code: 'BUD-GUC-SS-main-2023', brandId: brandGUC.id, season: 'SS', type: 'main', year: 2023, total: 1100000000, status: 'APPROVED' },
+    { code: 'BUD-LV-FW-main-2023', brandId: brandLV.id, season: 'FW', type: 'main', year: 2023, total: 1800000000, status: 'APPROVED' },
+
+    // ── FY2024 (mostly APPROVED) ──
     { code: 'BUD-FER-SS-pre-2024', brandId: brandFER.id, season: 'SS', type: 'pre', year: 2024, total: 1520000000, status: 'APPROVED' },
     { code: 'BUD-FER-SS-main-2024', brandId: brandFER.id, season: 'SS', type: 'main', year: 2024, total: 2280000000, status: 'APPROVED' },
     { code: 'BUD-FER-FW-pre-2024', brandId: brandFER.id, season: 'FW', type: 'pre', year: 2024, total: 1710000000, status: 'APPROVED' },
     { code: 'BUD-FER-FW-main-2024', brandId: brandFER.id, season: 'FW', type: 'main', year: 2024, total: 2790000000, status: 'APPROVED' },
+    { code: 'BUD-BUR-SS-main-2024', brandId: brandBUR.id, season: 'SS', type: 'main', year: 2024, total: 1450000000, status: 'APPROVED' },
     { code: 'BUD-BUR-FW-main-2024', brandId: brandBUR.id, season: 'FW', type: 'main', year: 2024, total: 1800000000, status: 'APPROVED' },
     { code: 'BUD-GUC-SS-main-2024', brandId: brandGUC.id, season: 'SS', type: 'main', year: 2024, total: 1200000000, status: 'APPROVED' },
-    // 2025
+    { code: 'BUD-GUC-FW-main-2024', brandId: brandGUC.id, season: 'FW', type: 'main', year: 2024, total: 1150000000, status: 'APPROVED' },
+    { code: 'BUD-PRA-SS-main-2024', brandId: brandPRA.id, season: 'SS', type: 'main', year: 2024, total: 950000000, status: 'APPROVED' },
+    { code: 'BUD-LV-SS-main-2024', brandId: brandLV.id, season: 'SS', type: 'main', year: 2024, total: 2100000000, status: 'APPROVED' },
+    { code: 'BUD-LV-FW-main-2024', brandId: brandLV.id, season: 'FW', type: 'main', year: 2024, total: 2300000000, status: 'APPROVED' },
+    { code: 'BUD-DG-SS-main-2024', brandId: brandDG.id, season: 'SS', type: 'main', year: 2024, total: 1350000000, status: 'APPROVED' },
+    { code: 'BUD-VER-FW-main-2024', brandId: brandVER.id, season: 'FW', type: 'main', year: 2024, total: 1100000000, status: 'APPROVED' },
+    { code: 'BUD-BAL-SS-main-2024', brandId: brandBAL.id, season: 'SS', type: 'main', year: 2024, total: 900000000, status: 'APPROVED' },
+
+    // ── FY2025 (mixed statuses — current year) ──
     { code: 'BUD-FER-SS-pre-2025', brandId: brandFER.id, season: 'SS', type: 'pre', year: 2025, total: 1680000000, status: 'APPROVED' },
     { code: 'BUD-FER-SS-main-2025', brandId: brandFER.id, season: 'SS', type: 'main', year: 2025, total: 2320000000, status: 'APPROVED' },
     { code: 'BUD-FER-FW-pre-2025', brandId: brandFER.id, season: 'FW', type: 'pre', year: 2025, total: 1920000000, status: 'LEVEL1_APPROVED' },
     { code: 'BUD-FER-FW-main-2025', brandId: brandFER.id, season: 'FW', type: 'main', year: 2025, total: 2880000000, status: 'DRAFT' },
+    { code: 'BUD-BUR-SS-pre-2025', brandId: brandBUR.id, season: 'SS', type: 'pre', year: 2025, total: 1320000000, status: 'APPROVED' },
     { code: 'BUD-BUR-SS-main-2025', brandId: brandBUR.id, season: 'SS', type: 'main', year: 2025, total: 1600000000, status: 'APPROVED' },
+    { code: 'BUD-BUR-FW-pre-2025', brandId: brandBUR.id, season: 'FW', type: 'pre', year: 2025, total: 1400000000, status: 'SUBMITTED' },
     { code: 'BUD-BUR-FW-main-2025', brandId: brandBUR.id, season: 'FW', type: 'main', year: 2025, total: 1850000000, status: 'SUBMITTED' },
+    { code: 'BUD-GUC-SS-pre-2025', brandId: brandGUC.id, season: 'SS', type: 'pre', year: 2025, total: 1050000000, status: 'APPROVED' },
     { code: 'BUD-GUC-SS-main-2025', brandId: brandGUC.id, season: 'SS', type: 'main', year: 2025, total: 1350000000, status: 'APPROVED' },
+    { code: 'BUD-GUC-FW-main-2025', brandId: brandGUC.id, season: 'FW', type: 'main', year: 2025, total: 1280000000, status: 'LEVEL1_APPROVED' },
+    { code: 'BUD-PRA-SS-main-2025', brandId: brandPRA.id, season: 'SS', type: 'main', year: 2025, total: 1100000000, status: 'APPROVED' },
     { code: 'BUD-PRA-FW-main-2025', brandId: brandPRA.id, season: 'FW', type: 'main', year: 2025, total: 800000000, status: 'DRAFT' },
+    { code: 'BUD-LV-SS-pre-2025', brandId: brandLV.id, season: 'SS', type: 'pre', year: 2025, total: 1800000000, status: 'APPROVED' },
+    { code: 'BUD-LV-SS-main-2025', brandId: brandLV.id, season: 'SS', type: 'main', year: 2025, total: 2400000000, status: 'APPROVED' },
+    { code: 'BUD-LV-FW-main-2025', brandId: brandLV.id, season: 'FW', type: 'main', year: 2025, total: 2600000000, status: 'SUBMITTED' },
+    { code: 'BUD-DG-SS-main-2025', brandId: brandDG.id, season: 'SS', type: 'main', year: 2025, total: 1500000000, status: 'APPROVED' },
+    { code: 'BUD-DG-FW-main-2025', brandId: brandDG.id, season: 'FW', type: 'main', year: 2025, total: 1600000000, status: 'LEVEL1_APPROVED' },
+    { code: 'BUD-VER-SS-main-2025', brandId: brandVER.id, season: 'SS', type: 'main', year: 2025, total: 1200000000, status: 'APPROVED' },
+    { code: 'BUD-VER-FW-main-2025', brandId: brandVER.id, season: 'FW', type: 'main', year: 2025, total: 1350000000, status: 'SUBMITTED' },
+    { code: 'BUD-BAL-SS-main-2025', brandId: brandBAL.id, season: 'SS', type: 'main', year: 2025, total: 980000000, status: 'APPROVED' },
+    { code: 'BUD-BAL-FW-main-2025', brandId: brandBAL.id, season: 'FW', type: 'main', year: 2025, total: 1050000000, status: 'REJECTED' },
+
+    // ── FY2026 (future — mostly DRAFT) ──
+    { code: 'BUD-FER-SS-pre-2026', brandId: brandFER.id, season: 'SS', type: 'pre', year: 2026, total: 1800000000, status: 'DRAFT' },
+    { code: 'BUD-FER-SS-main-2026', brandId: brandFER.id, season: 'SS', type: 'main', year: 2026, total: 2500000000, status: 'DRAFT' },
+    { code: 'BUD-BUR-SS-main-2026', brandId: brandBUR.id, season: 'SS', type: 'main', year: 2026, total: 1700000000, status: 'DRAFT' },
+    { code: 'BUD-GUC-SS-main-2026', brandId: brandGUC.id, season: 'SS', type: 'main', year: 2026, total: 1400000000, status: 'SUBMITTED' },
+    { code: 'BUD-LV-SS-main-2026', brandId: brandLV.id, season: 'SS', type: 'main', year: 2026, total: 2700000000, status: 'DRAFT' },
+    { code: 'BUD-PRA-SS-main-2026', brandId: brandPRA.id, season: 'SS', type: 'main', year: 2026, total: 1200000000, status: 'DRAFT' },
   ];
 
   const createdBudgets: any[] = [];
@@ -605,69 +600,118 @@ async function main() {
         fiscalYear: spec.year,
         totalBudget: spec.total,
         status: spec.status,
-        createdById: merchUser.id,
+        createdById: spec.createdBy || merchUser.id,
       },
     });
     createdBudgets.push(budget);
   }
-  console.log(`  ✅ ${createdBudgets.length} budgets (2023-2025)`);
+  console.log(`  ✅ ${createdBudgets.length} budgets (2023-2026, all 8 brands, all statuses)`);
 
-  // ─── BUDGET DETAILS (per-store allocation) ──────────────────────────────
+  // ─── BUDGET DETAILS — All 5 stores with realistic splits ──────────────
+  // Store allocation: REX 35%, TTP 30%, REX-DN 15%, TTP-HP 12%, ONLINE 8%
+  const storeWeights = [
+    { store: storeREX, pct: 0.35 },
+    { store: storeTTP, pct: 0.30 },
+    { store: storeDN, pct: 0.15 },
+    { store: storeHP, pct: 0.12 },
+    { store: storeOnline, pct: 0.08 },
+  ];
+
   let budgetDetailCount = 0;
   for (const budget of createdBudgets) {
-    const halfBudget = Number(budget.totalBudget) / 2;
-    for (const store of [storeREX, storeTTP]) {
+    const total = Number(budget.totalBudget);
+    for (const sw of storeWeights) {
       await prisma.budgetDetail.upsert({
         where: {
-          budgetId_storeId: { budgetId: budget.id, storeId: store.id },
+          budgetId_storeId: { budgetId: budget.id, storeId: sw.store.id },
         },
-        update: { budgetAmount: halfBudget },
+        update: { budgetAmount: Math.round(total * sw.pct) },
         create: {
           budgetId: budget.id,
-          storeId: store.id,
-          budgetAmount: halfBudget,
+          storeId: sw.store.id,
+          budgetAmount: Math.round(total * sw.pct),
         },
       });
       budgetDetailCount++;
     }
   }
-  console.log(`  ✅ ${budgetDetailCount} budget details`);
+  console.log(`  ✅ ${budgetDetailCount} budget details (5 stores per budget)`);
 
-  // ─── PLANNING VERSIONS (for approved/L1 budgets across all years) ─────
+  // ─── PLANNING VERSIONS — Multiple versions per budget ─────────────────
   const budgetsWithPlanning = createdBudgets.filter(b =>
     b.status === 'APPROVED' || b.status === 'LEVEL1_APPROVED'
   );
 
   let planningCount = 0;
   for (const budget of budgetsWithPlanning) {
-    // Get budget details for this budget
     const details = await prisma.budgetDetail.findMany({
       where: { budgetId: budget.id },
     });
-    for (const detail of details) {
+    // Only create planning for main stores (REX, TTP) to keep manageable
+    const mainDetails = details.filter(d =>
+      d.storeId === storeREX.id || d.storeId === storeTTP.id
+    );
+    for (const detail of mainDetails) {
       const store = stores.find(s => s.id === detail.storeId);
       const storeCode = store?.code || 'UNK';
-      const planCode = `PLN-${budget.budgetCode}-${storeCode}-V1`;
 
+      // V1 — APPROVED (baseline)
+      const v1Code = `PLN-${budget.budgetCode}-${storeCode}-V1`;
       await prisma.planningVersion.upsert({
-        where: { planningCode: planCode },
+        where: { planningCode: v1Code },
         update: {},
         create: {
-          planningCode: planCode,
+          planningCode: v1Code,
           budgetDetailId: detail.id,
           versionNumber: 1,
           versionName: 'Initial Planning',
-          status: budget.status === 'APPROVED' ? 'APPROVED' : 'DRAFT',
+          status: 'APPROVED',
           createdById: merchUser.id,
         },
       });
       planningCount++;
+
+      // V2 — SUBMITTED (revised) — only for 2025 budgets
+      if (budget.fiscalYear >= 2025) {
+        const v2Code = `PLN-${budget.budgetCode}-${storeCode}-V2`;
+        await prisma.planningVersion.upsert({
+          where: { planningCode: v2Code },
+          update: {},
+          create: {
+            planningCode: v2Code,
+            budgetDetailId: detail.id,
+            versionNumber: 2,
+            versionName: 'Revised Planning',
+            status: 'SUBMITTED',
+            createdById: merchUser.id,
+          },
+        });
+        planningCount++;
+      }
+
+      // V3 — DRAFT + isFinal — only for current approved 2025 budgets
+      if (budget.fiscalYear === 2025 && budget.status === 'APPROVED') {
+        const v3Code = `PLN-${budget.budgetCode}-${storeCode}-V3`;
+        await prisma.planningVersion.upsert({
+          where: { planningCode: v3Code },
+          update: {},
+          create: {
+            planningCode: v3Code,
+            budgetDetailId: detail.id,
+            versionNumber: 3,
+            versionName: 'Final Version',
+            status: 'APPROVED',
+            isFinal: true,
+            createdById: merchUser.id,
+          },
+        });
+        planningCount++;
+      }
     }
   }
-  console.log(`  ✅ ${planningCount} planning versions`);
+  console.log(`  ✅ ${planningCount} planning versions (V1/V2/V3)`);
 
-  // ─── PLANNING DETAILS (per planning version) ─────────────────────────
-  // Create detail rows for each planning version across dimensions
+  // ─── PLANNING DETAILS ─────────────────────────────────────────────────
   const allPlanningVersions = await prisma.planningVersion.findMany();
   const allCollections = await prisma.collection.findMany();
   const allGenders = await prisma.gender.findMany();
@@ -681,7 +725,7 @@ async function main() {
 
     // Collection dimension (2 rows)
     for (let i = 0; i < allCollections.length; i++) {
-      const pct = i === 0 ? 0.35 : 0.65; // 35% carry-over, 65% seasonal
+      const pct = i === 0 ? 0.35 : 0.65;
       await prisma.planningDetail.create({
         data: {
           planningVersionId: pv.id,
@@ -700,7 +744,7 @@ async function main() {
 
     // Gender dimension (2 rows)
     for (let i = 0; i < allGenders.length; i++) {
-      const pct = i === 0 ? 0.6 : 0.4; // 60% Female, 40% Male
+      const pct = i === 0 ? 0.6 : 0.4;
       await prisma.planningDetail.create({
         data: {
           planningVersionId: pv.id,
@@ -718,7 +762,7 @@ async function main() {
     }
 
     // Category dimension (all categories)
-    const catPcts = [0.30, 0.20, 0.30, 0.12, 0.04, 0.02, 0.01, 0.01];
+    const catPcts = [0.25, 0.15, 0.10, 0.12, 0.08, 0.12, 0.10, 0.08];
     for (let i = 0; i < allCategories.length; i++) {
       const pct = catPcts[i] || 0.05;
       await prisma.planningDetail.create({
@@ -737,21 +781,62 @@ async function main() {
       });
       planningDetailCount++;
     }
-  }
-  console.log(`  ✅ ${planningDetailCount} planning details`);
 
-  // ─── PROPOSALS (10 across brands & seasons) ───────────────────────────
+    // Subcategory dimension (key subcategories)
+    const keySubcats = allSubCategories.slice(0, 12); // First 12 subcategories
+    const subPcts = [0.08, 0.06, 0.07, 0.05, 0.04, 0.06, 0.08, 0.06, 0.12, 0.05, 0.08, 0.04];
+    for (let i = 0; i < keySubcats.length; i++) {
+      const pct = subPcts[i] || 0.03;
+      await prisma.planningDetail.create({
+        data: {
+          planningVersionId: pv.id,
+          dimensionType: 'subcategory',
+          subCategoryId: keySubcats[i].id,
+          categoryId: keySubcats[i].categoryId,
+          lastSeasonSales: totalBudget * pct * 0.85,
+          lastSeasonPct: pct * 100,
+          systemBuyPct: pct * 100,
+          userBuyPct: pct * 100 + (Math.random() * 3 - 1.5),
+          otbValue: totalBudget * pct,
+          variancePct: Math.random() * 10 - 5,
+        },
+      });
+      planningDetailCount++;
+    }
+  }
+  console.log(`  ✅ ${planningDetailCount} planning details (collection/gender/category/subcategory)`);
+
+  // ─── PROPOSALS — ALL 8 BRANDS, ALL STATUSES ────────────────────────────
   const proposalSpecs = [
-    { id: 'prop-fer-ss25-001', ticket: 'FER SS25 Main — Bags & Shoes Selection', budgetCode: 'BUD-FER-SS-main-2025', status: 'APPROVED' as const, skuCount: 8, qty: 240, value: 580000000 },
-    { id: 'prop-fer-ss25-002', ticket: 'FER SS25 Pre — RTW Selection', budgetCode: 'BUD-FER-SS-pre-2025', status: 'APPROVED' as const, skuCount: 5, qty: 150, value: 420000000 },
-    { id: 'prop-fer-fw25-001', ticket: 'FER FW25 Pre — Pre-Season Selection', budgetCode: 'BUD-FER-FW-pre-2025', status: 'DRAFT' as const, skuCount: 6, qty: 180, value: 384000000 },
-    { id: 'prop-fer-fw24-001', ticket: 'FER FW24 Main — Full Collection', budgetCode: 'BUD-FER-FW-main-2024', status: 'APPROVED' as const, skuCount: 10, qty: 300, value: 750000000 },
-    { id: 'prop-bur-ss25-001', ticket: 'BUR SS25 Main — Full Collection', budgetCode: 'BUD-BUR-SS-main-2025', status: 'SUBMITTED' as const, skuCount: 12, qty: 360, value: 720000000 },
-    { id: 'prop-bur-fw25-001', ticket: 'BUR FW25 Main — Seasonal Buy', budgetCode: 'BUD-BUR-FW-main-2025', status: 'DRAFT' as const, skuCount: 8, qty: 200, value: 480000000 },
-    { id: 'prop-bur-fw24-001', ticket: 'BUR FW24 Main — Heritage Line', budgetCode: 'BUD-BUR-FW-main-2024', status: 'APPROVED' as const, skuCount: 7, qty: 210, value: 560000000 },
-    { id: 'prop-guc-ss25-001', ticket: 'GUC SS25 Main — Bags & Accessories', budgetCode: 'BUD-GUC-SS-main-2025', status: 'LEVEL1_APPROVED' as const, skuCount: 4, qty: 120, value: 350000000 },
-    { id: 'prop-guc-ss24-001', ticket: 'GUC SS24 Main — Full Collection', budgetCode: 'BUD-GUC-SS-main-2024', status: 'APPROVED' as const, skuCount: 4, qty: 100, value: 280000000 },
-    { id: 'prop-pra-fw25-001', ticket: 'PRA FW25 Main — Launch Collection', budgetCode: 'BUD-PRA-FW-main-2025', status: 'DRAFT' as const, skuCount: 5, qty: 150, value: 320000000 },
+    // Ferragamo
+    { id: 'prop-fer-ss25-001', ticket: 'FER SS25 Main — Bags & Shoes', budgetCode: 'BUD-FER-SS-main-2025', status: 'APPROVED' as const, skuCount: 8, qty: 240, value: 580000000, user: buyerUser.id },
+    { id: 'prop-fer-ss25-002', ticket: 'FER SS25 Pre — RTW Selection', budgetCode: 'BUD-FER-SS-pre-2025', status: 'APPROVED' as const, skuCount: 5, qty: 150, value: 420000000, user: buyerUser.id },
+    { id: 'prop-fer-fw25-001', ticket: 'FER FW25 Pre — Pre-Season', budgetCode: 'BUD-FER-FW-pre-2025', status: 'DRAFT' as const, skuCount: 6, qty: 180, value: 384000000, user: buyerUser.id },
+    { id: 'prop-fer-fw24-001', ticket: 'FER FW24 Main — Full Collection', budgetCode: 'BUD-FER-FW-main-2024', status: 'APPROVED' as const, skuCount: 10, qty: 300, value: 750000000, user: buyerUser.id },
+    // Burberry
+    { id: 'prop-bur-ss25-001', ticket: 'BUR SS25 Main — Full Collection', budgetCode: 'BUD-BUR-SS-main-2025', status: 'SUBMITTED' as const, skuCount: 8, qty: 360, value: 720000000, user: buyerUser.id },
+    { id: 'prop-bur-fw24-001', ticket: 'BUR FW24 Main — Heritage Line', budgetCode: 'BUD-BUR-FW-main-2024', status: 'APPROVED' as const, skuCount: 7, qty: 210, value: 560000000, user: buyerUser.id },
+    { id: 'prop-bur-ss25-002', ticket: 'BUR SS25 Pre — Pre-Season', budgetCode: 'BUD-BUR-SS-pre-2025', status: 'LEVEL1_APPROVED' as const, skuCount: 5, qty: 120, value: 380000000, user: buyerUser.id },
+    // Gucci
+    { id: 'prop-guc-ss25-001', ticket: 'GUC SS25 Main — Bags & Accessories', budgetCode: 'BUD-GUC-SS-main-2025', status: 'LEVEL1_APPROVED' as const, skuCount: 4, qty: 120, value: 350000000, user: buyerJunior.id },
+    { id: 'prop-guc-ss24-001', ticket: 'GUC SS24 Main — Full Collection', budgetCode: 'BUD-GUC-SS-main-2024', status: 'APPROVED' as const, skuCount: 4, qty: 100, value: 280000000, user: buyerJunior.id },
+    { id: 'prop-guc-ss25-002', ticket: 'GUC SS25 Pre — RTW Focus', budgetCode: 'BUD-GUC-SS-pre-2025', status: 'REJECTED' as const, skuCount: 3, qty: 80, value: 200000000, user: buyerJunior.id },
+    // Prada
+    { id: 'prop-pra-fw25-001', ticket: 'PRA FW25 Main — Launch Collection', budgetCode: 'BUD-PRA-FW-main-2025', status: 'DRAFT' as const, skuCount: 5, qty: 150, value: 320000000, user: buyerJunior.id },
+    { id: 'prop-pra-ss25-001', ticket: 'PRA SS25 Main — Bags & RTW', budgetCode: 'BUD-PRA-SS-main-2025', status: 'APPROVED' as const, skuCount: 4, qty: 110, value: 290000000, user: buyerJunior.id },
+    // Louis Vuitton
+    { id: 'prop-lv-ss25-001', ticket: 'LV SS25 Main — Iconic Collection', budgetCode: 'BUD-LV-SS-main-2025', status: 'APPROVED' as const, skuCount: 6, qty: 200, value: 650000000, user: buyerLV.id },
+    { id: 'prop-lv-ss25-002', ticket: 'LV SS25 Pre — Carryover Selection', budgetCode: 'BUD-LV-SS-pre-2025', status: 'SUBMITTED' as const, skuCount: 4, qty: 130, value: 420000000, user: buyerLV.id },
+    { id: 'prop-lv-fw24-001', ticket: 'LV FW24 Main — Winter Essentials', budgetCode: 'BUD-LV-FW-main-2024', status: 'APPROVED' as const, skuCount: 5, qty: 160, value: 520000000, user: buyerLV.id },
+    // Dolce & Gabbana
+    { id: 'prop-dg-ss25-001', ticket: 'DG SS25 Main — Sicilian Collection', budgetCode: 'BUD-DG-SS-main-2025', status: 'APPROVED' as const, skuCount: 5, qty: 140, value: 480000000, user: buyerLV.id },
+    { id: 'prop-dg-ss24-001', ticket: 'DG SS24 Main — Classic Line', budgetCode: 'BUD-DG-SS-main-2024', status: 'APPROVED' as const, skuCount: 4, qty: 100, value: 320000000, user: buyerLV.id },
+    // Versace
+    { id: 'prop-ver-ss25-001', ticket: 'VER SS25 Main — Medusa Collection', budgetCode: 'BUD-VER-SS-main-2025', status: 'SUBMITTED' as const, skuCount: 5, qty: 150, value: 450000000, user: buyerVER.id },
+    { id: 'prop-ver-fw24-001', ticket: 'VER FW24 Main — Greca Line', budgetCode: 'BUD-VER-FW-main-2024', status: 'APPROVED' as const, skuCount: 3, qty: 90, value: 280000000, user: buyerVER.id },
+    // Balenciaga
+    { id: 'prop-bal-ss25-001', ticket: 'BAL SS25 Main — Streetwear Edit', budgetCode: 'BUD-BAL-SS-main-2025', status: 'LEVEL1_APPROVED' as const, skuCount: 4, qty: 120, value: 350000000, user: buyerVER.id },
+    { id: 'prop-bal-ss24-001', ticket: 'BAL SS24 Main — Core Collection', budgetCode: 'BUD-BAL-SS-main-2024', status: 'APPROVED' as const, skuCount: 3, qty: 85, value: 250000000, user: buyerVER.id },
   ];
 
   const createdProposals: any[] = [];
@@ -767,35 +852,45 @@ async function main() {
         totalSkuCount: spec.skuCount,
         totalOrderQty: spec.qty,
         totalValue: spec.value,
-        createdById: buyerUser.id,
+        createdById: spec.user,
       },
     });
     createdProposals.push(proposal);
   }
-  console.log(`  ✅ ${createdProposals.length} proposals`);
+  console.log(`  ✅ ${createdProposals.length} proposals (all 8 brands, all statuses)`);
 
   // ─── PROPOSAL PRODUCTS + ALLOCATIONS ──────────────────────────────────
-  // Map proposals to SKU codes that make sense for each brand
   const proposalSkuMap: Record<string, string[]> = {
     'prop-fer-ss25-001': ['FER-BAG-001', 'FER-BAG-002', 'FER-BAG-003', 'FER-BAG-004', 'FER-SHO-001', 'FER-SHO-002', 'FER-SHO-004', 'FER-ACC-002'],
     'prop-fer-ss25-002': ['FER-RTW-001', 'FER-RTW-004', 'FER-ACC-003', 'FER-SLG-001', 'FER-SLG-002'],
     'prop-fer-fw25-001': ['FER-BAG-005', 'FER-SHO-005', 'FER-RTW-002', 'FER-RTW-003', 'FER-RTW-004', 'FER-SLG-003'],
     'prop-fer-fw24-001': ['FER-BAG-001', 'FER-BAG-005', 'FER-SHO-001', 'FER-SHO-005', 'FER-RTW-002', 'FER-RTW-003', 'FER-ACC-001', 'FER-SLG-001', 'FER-SLG-002', 'FER-SLG-003'],
-    'prop-bur-ss25-001': ['BUR-BAG-001', 'BUR-BAG-002', 'BUR-SHO-001', 'BUR-RTW-001', 'BUR-ACC-001', '8116333', '8113543', '8115960', '8114202', '8115254', '8115640', '8115700'],
-    'prop-bur-fw25-001': ['BUR-RTW-001', 'BUR-ACC-001', '8116500', '8116501', '8115701', '9201001', '9201002', '9201003'],
-    'prop-bur-fw24-001': ['9101001', '9101002', '9201001', '9201002', '9201003', '8116500', '8116501'],
+    'prop-bur-ss25-001': ['BUR-BAG-001', 'BUR-BAG-002', 'BUR-BAG-003', 'BUR-SHO-001', 'BUR-RTW-001', 'BUR-RTW-003', 'BUR-ACC-001', '8116333'],
+    'prop-bur-fw24-001': ['9101001', '9201001', '9201002', '8116500', '8116501', 'BUR-RTW-001', 'BUR-ACC-001'],
+    'prop-bur-ss25-002': ['BUR-BAG-001', 'BUR-SHO-001', 'BUR-RTW-003', '8113543', '8115960'],
     'prop-guc-ss25-001': ['GUC-BAG-001', 'GUC-BAG-002', 'GUC-SHO-001', 'GUC-ACC-001'],
     'prop-guc-ss24-001': ['GUC-BAG-001', 'GUC-BAG-002', 'GUC-SHO-001', 'GUC-ACC-001'],
+    'prop-guc-ss25-002': ['GUC-RTW-001', 'GUC-RTW-002', 'GUC-SLG-001'],
     'prop-pra-fw25-001': ['PRA-BAG-001', 'PRA-BAG-003', 'PRA-RTW-001', 'PRA-RTW-004', 'PRA-SHO-001'],
+    'prop-pra-ss25-001': ['PRA-BAG-002', 'PRA-RTW-002', 'PRA-ACC-001', 'PRA-SLG-001'],
+    'prop-lv-ss25-001': ['LV-BAG-001', 'LV-BAG-002', 'LV-RTW-001', 'LV-RTW-002', 'LV-SHO-001', 'LV-SLG-001'],
+    'prop-lv-ss25-002': ['LV-BAG-001', 'LV-BAG-004', 'LV-SLG-002', 'LV-ACC-001'],
+    'prop-lv-fw24-001': ['LV-BAG-003', 'LV-BAG-004', 'LV-RTW-001', 'LV-SLG-001', 'LV-ACC-001'],
+    'prop-dg-ss25-001': ['DG-BAG-001', 'DG-BAG-002', 'DG-RTW-001', 'DG-RTW-003', 'DG-SHO-001'],
+    'prop-dg-ss24-001': ['DG-BAG-001', 'DG-RTW-001', 'DG-ACC-001', 'DG-SLG-001'],
+    'prop-ver-ss25-001': ['VER-BAG-001', 'VER-RTW-001', 'VER-RTW-003', 'VER-SHO-001', 'VER-ACC-001'],
+    'prop-ver-fw24-001': ['VER-BAG-002', 'VER-RTW-002', 'VER-SLG-001'],
+    'prop-bal-ss25-001': ['BAL-BAG-001', 'BAL-BAG-002', 'BAL-RTW-001', 'BAL-SHO-001'],
+    'prop-bal-ss24-001': ['BAL-BAG-001', 'BAL-RTW-003', 'BAL-ACC-001'],
   };
 
-  // Build a lookup from skuCode → sku record
   const allSkus = await prisma.skuCatalog.findMany();
   const skuByCode: Record<string, any> = {};
   for (const s of allSkus) skuByCode[s.skuCode] = s;
 
   let totalProposalProducts = 0;
   let totalAllocations = 0;
+  const customerTargets = ['New', 'Existing', 'VIP'];
 
   for (const proposal of createdProposals) {
     const skuCodes = proposalSkuMap[proposal.id] || [];
@@ -803,16 +898,16 @@ async function main() {
     for (const code of skuCodes) {
       const sku = skuByCode[code];
       if (!sku) continue;
-      const orderQty = Math.floor(Math.random() * 20) + 10; // 10-29 units
-      const unitCost = Number(sku.srp) * 0.45; // ~45% of SRP
+      const orderQty = Math.floor(Math.random() * 25) + 8;
+      const unitCost = Number(sku.srp) * 0.45;
       const product = await prisma.proposalProduct.create({
         data: {
           proposalId: proposal.id,
           skuId: sku.id,
           skuCode: sku.skuCode,
           productName: sku.productName,
-          collection: sku.theme?.includes('Carryover') || sku.theme?.includes('arryover') ? 'Carry Over' : 'Seasonal',
-          gender: sku.productType?.startsWith('W') ? 'Female' : 'Male',
+          collection: sku.theme?.includes('arryover') ? 'Carry Over' : 'Seasonal',
+          gender: sku.productType?.startsWith('W') || sku.productType?.startsWith('w') ? 'Female' : 'Male',
           category: sku.productType,
           subCategory: sku.productType,
           theme: sku.theme,
@@ -822,71 +917,157 @@ async function main() {
           srp: Number(sku.srp),
           orderQty: orderQty,
           totalValue: unitCost * orderQty,
-          customerTarget: ['New', 'Existing', 'VIP'][Math.floor(Math.random() * 3)],
+          customerTarget: customerTargets[Math.floor(Math.random() * 3)],
           sortOrder: sortOrder++,
         },
       });
       totalProposalProducts++;
 
-      // Allocations: REX 60%, TTP 40%
-      const rexQty = Math.round(orderQty * 0.6);
-      const ttpQty = orderQty - rexQty;
-      await prisma.productAllocation.create({
-        data: { proposalProductId: product.id, storeId: storeREX.id, quantity: rexQty },
-      });
-      await prisma.productAllocation.create({
-        data: { proposalProductId: product.id, storeId: storeTTP.id, quantity: ttpQty },
-      });
-      totalAllocations += 2;
+      // Allocations: REX 40%, TTP 30%, DN 15%, HP 10%, Online 5%
+      const allocWeights = [
+        { store: storeREX, pct: 0.40 },
+        { store: storeTTP, pct: 0.30 },
+        { store: storeDN, pct: 0.15 },
+        { store: storeHP, pct: 0.10 },
+        { store: storeOnline, pct: 0.05 },
+      ];
+      let remaining = orderQty;
+      for (let i = 0; i < allocWeights.length; i++) {
+        const qty = i === allocWeights.length - 1 ? remaining : Math.round(orderQty * allocWeights[i].pct);
+        if (qty > 0) {
+          await prisma.productAllocation.create({
+            data: { proposalProductId: product.id, storeId: allocWeights[i].store.id, quantity: qty },
+          });
+          totalAllocations++;
+          remaining -= qty;
+        }
+      }
     }
   }
   console.log(`  ✅ ${totalProposalProducts} proposal products`);
-  console.log(`  ✅ ${totalAllocations} product allocations`);
+  console.log(`  ✅ ${totalAllocations} product allocations (5 stores)`);
 
-  // ─── APPROVALS (for approved budgets) ───────────────────────────────────
-  const approvedBudgets = createdBudgets.filter(b => b.status === 'APPROVED');
+  // ─── APPROVALS — Budget + Planning + Proposal ─────────────────────────
   let approvalCount = 0;
-  const managerUser = users[4]; // manager@dafc.com
-  const financeUser = users[5]; // finance@dafc.com
+  const approvalComments = {
+    budgetL1: ['Budget within target margins — approved', 'Allocation looks good, proceed', 'Reviewed — numbers are realistic'],
+    budgetL2: ['Final approval granted', 'Finance sign-off complete', 'Approved for execution'],
+    planningL1: ['Planning allocation approved', 'Category mix looks balanced', 'Proceed with planning'],
+    planningL2: ['Planning figures confirmed', 'Approved — aligned with strategy'],
+    proposalL1: ['SKU selection approved', 'Good product mix — proceed', 'Assortment approved'],
+    proposalL2: ['Final proposal approval', 'Approved for ordering', 'Purchase authorized'],
+    rejected: ['Over budget — please revise', 'Category allocation needs review', 'Insufficient margin — rejected'],
+  };
 
+  // Budget approvals
+  const approvedBudgets = createdBudgets.filter(b => b.status === 'APPROVED');
   for (const budget of approvedBudgets) {
-    // L1 approval
-    const l1Id = `appr-l1-${budget.budgetCode}`;
-    await prisma.approval.upsert({
-      where: { id: l1Id },
-      update: {},
-      create: {
-        id: l1Id,
-        entityType: 'budget',
-        entityId: budget.id,
-        level: 1,
-        deciderId: managerUser.id,
-        action: 'APPROVED',
-        comment: 'Budget approved — within target margins',
+    await prisma.approval.create({
+      data: {
+        entityType: 'budget', entityId: budget.id, level: 1,
+        deciderId: managerUser.id, action: 'APPROVED',
+        comment: approvalComments.budgetL1[approvalCount % 3],
       },
     });
-    // L2 approval
-    const l2Id = `appr-l2-${budget.budgetCode}`;
-    await prisma.approval.upsert({
-      where: { id: l2Id },
-      update: {},
-      create: {
-        id: l2Id,
-        entityType: 'budget',
-        entityId: budget.id,
-        level: 2,
-        deciderId: financeUser.id,
-        action: 'APPROVED',
-        comment: 'Final approval granted',
+    await prisma.approval.create({
+      data: {
+        entityType: 'budget', entityId: budget.id, level: 2,
+        deciderId: financeUser.id, action: 'APPROVED',
+        comment: approvalComments.budgetL2[approvalCount % 3],
       },
     });
     approvalCount += 2;
   }
-  console.log(`  ✅ ${approvalCount} approval records`);
 
-  // (AI-related seed data removed: salesHistory, allocationHistory, skuPerformance, attributeTrend, budgetSnapshot, budgetAlert)
-  // ─── APPROVAL WORKFLOW STEPS ────────────────────────────────────────────
-  for (const brand of [brandFER, brandBUR, brandGUC, brandPRA]) {
+  // L1-approved budgets (only L1)
+  const l1Budgets = createdBudgets.filter(b => b.status === 'LEVEL1_APPROVED');
+  for (const budget of l1Budgets) {
+    await prisma.approval.create({
+      data: {
+        entityType: 'budget', entityId: budget.id, level: 1,
+        deciderId: managerUser.id, action: 'APPROVED',
+        comment: 'Approved at L1 — pending finance review',
+      },
+    });
+    approvalCount++;
+  }
+
+  // Rejected budget approval
+  const rejectedBudgets = createdBudgets.filter(b => b.status === 'REJECTED');
+  for (const budget of rejectedBudgets) {
+    await prisma.approval.create({
+      data: {
+        entityType: 'budget', entityId: budget.id, level: 1,
+        deciderId: managerUser.id, action: 'REJECTED',
+        comment: approvalComments.rejected[0],
+      },
+    });
+    approvalCount++;
+  }
+
+  // Proposal approvals
+  const approvedProposals = createdProposals.filter(p => p.status === 'APPROVED');
+  for (const proposal of approvedProposals) {
+    await prisma.approval.create({
+      data: {
+        entityType: 'proposal', entityId: proposal.id, level: 1,
+        deciderId: managerUser.id, action: 'APPROVED',
+        comment: approvalComments.proposalL1[approvalCount % 3],
+      },
+    });
+    await prisma.approval.create({
+      data: {
+        entityType: 'proposal', entityId: proposal.id, level: 2,
+        deciderId: financeUser.id, action: 'APPROVED',
+        comment: approvalComments.proposalL2[approvalCount % 3],
+      },
+    });
+    approvalCount += 2;
+  }
+
+  // L1-approved proposals
+  const l1Proposals = createdProposals.filter(p => p.status === 'LEVEL1_APPROVED');
+  for (const proposal of l1Proposals) {
+    await prisma.approval.create({
+      data: {
+        entityType: 'proposal', entityId: proposal.id, level: 1,
+        deciderId: managerUser.id, action: 'APPROVED',
+        comment: 'Proposal approved at L1 — awaiting finance',
+      },
+    });
+    approvalCount++;
+  }
+
+  // Rejected proposals
+  const rejectedProposals = createdProposals.filter(p => p.status === 'REJECTED');
+  for (const proposal of rejectedProposals) {
+    await prisma.approval.create({
+      data: {
+        entityType: 'proposal', entityId: proposal.id, level: 1,
+        deciderId: managerUser.id, action: 'REJECTED',
+        comment: approvalComments.rejected[1],
+      },
+    });
+    approvalCount++;
+  }
+
+  // Planning approvals (for approved planning versions)
+  const approvedPlannings = allPlanningVersions.filter(p => p.status === 'APPROVED');
+  for (const pv of approvedPlannings.slice(0, 20)) { // first 20 to avoid huge count
+    await prisma.approval.create({
+      data: {
+        entityType: 'planning', entityId: pv.id, level: 1,
+        deciderId: managerUser.id, action: 'APPROVED',
+        comment: approvalComments.planningL1[approvalCount % 3],
+      },
+    });
+    approvalCount++;
+  }
+
+  console.log(`  ✅ ${approvalCount} approval records (budget/planning/proposal, L1/L2, approved/rejected)`);
+
+  // ─── APPROVAL WORKFLOW STEPS — ALL 8 BRANDS ──────────────────────────
+  for (const brand of brands) {
     await prisma.approvalWorkflowStep.upsert({
       where: { brandId_stepNumber: { brandId: brand.id, stepNumber: 1 } },
       update: {},
@@ -912,12 +1093,12 @@ async function main() {
       },
     });
   }
-  console.log('  ✅ 8 approval workflow steps');
+  console.log(`  ✅ ${brands.length * 2} approval workflow steps (all 8 brands)`);
 
   // ─── SUMMARY ────────────────────────────────────────────────────────────
   console.log('');
   console.log('═'.repeat(60));
-  console.log('🎉 Seed completed successfully!');
+  console.log('🎉 Comprehensive seed completed successfully!');
   console.log('');
   console.log('📊 Summary:');
   console.log(`   Roles:              ${roles.length}`);
@@ -927,24 +1108,32 @@ async function main() {
   console.log(`   Sub-categories:     ${subCategories.length}`);
   console.log(`   SKUs:               ${skuData.length}`);
   console.log(`   Users:              ${users.length}`);
-  console.log(`   Budgets:            ${createdBudgets.length}`);
-  console.log(`   Budget Details:     ${budgetDetailCount}`);
-  console.log(`   Planning Versions:  ${planningCount}`);
-  console.log(`   Planning Details:   ${planningDetailCount}`);
-  console.log(`   Proposals:          ${createdProposals.length}`);
+  console.log(`   Budgets:            ${createdBudgets.length} (4 years, 8 brands, all statuses)`);
+  console.log(`   Budget Details:     ${budgetDetailCount} (5 stores per budget)`);
+  console.log(`   Planning Versions:  ${planningCount} (V1/V2/V3)`);
+  console.log(`   Planning Details:   ${planningDetailCount} (collection/gender/category/subcategory)`);
+  console.log(`   Proposals:          ${createdProposals.length} (8 brands, all statuses)`);
   console.log(`   Proposal Products:  ${totalProposalProducts}`);
-  console.log(`   Prod. Allocations:  ${totalAllocations}`);
-  console.log(`   Approvals:          ${approvalCount}`);
+  console.log(`   Prod. Allocations:  ${totalAllocations} (5 stores)`);
+  console.log(`   Approvals:          ${approvalCount} (budget/planning/proposal)`);
+  console.log(`   Workflow Steps:     ${brands.length * 2} (all brands)`);
   console.log('');
-  console.log('🔑 Login credentials:');
-  console.log('   admin@dafc.com      / dafc@2026 (Admin)');
-  console.log('   buyer@dafc.com      / dafc@2026 (Senior Buyer - FER/BUR)');
-  console.log('   buyer.junior@dafc.com / dafc@2026 (Junior Buyer - GUC/PRA)');
-  console.log('   merch@dafc.com      / dafc@2026 (Merchandiser/Planner)');
-  console.log('   manager@dafc.com    / dafc@2026 (L1 Approver)');
-  console.log('   finance@dafc.com    / dafc@2026 (L2 Approver)');
-  console.log('   store.rex@dafc.com  / dafc@2026 (REX Store)');
-  console.log('   store.ttp@dafc.com  / dafc@2026 (TTP Store)');
+  console.log('📋 Status coverage:');
+  console.log('   DRAFT, SUBMITTED, LEVEL1_APPROVED, APPROVED, REJECTED');
+  console.log('');
+  console.log('📅 Year coverage: 2023, 2024, 2025, 2026');
+  console.log('');
+  console.log('🔑 Login credentials (password: dafc@2026):');
+  console.log('   admin@dafc.com         (Admin)');
+  console.log('   buyer@dafc.com         (Senior Buyer - FER/BUR)');
+  console.log('   buyer.junior@dafc.com  (Junior Buyer - GUC/PRA)');
+  console.log('   buyer.lv@dafc.com      (Buyer - LV/DG)');
+  console.log('   buyer.ver@dafc.com     (Buyer - VER/BAL)');
+  console.log('   merch@dafc.com         (Merchandiser/Planner)');
+  console.log('   manager@dafc.com       (L1 Approver)');
+  console.log('   finance@dafc.com       (L2 Approver)');
+  console.log('   store.rex@dafc.com     (REX Store)');
+  console.log('   store.ttp@dafc.com     (TTP Store)');
 }
 
 main()
