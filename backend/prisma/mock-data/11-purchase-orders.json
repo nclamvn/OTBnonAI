@@ -1,0 +1,253 @@
+{
+  "purchaseOrders": [
+    {
+      "id": "po-2023-001",
+      "poNumber": "PO-2023-FER-SS-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2023-ss",
+      "fiscalYearId": "fy-2023",
+      "phase": "PRE",
+      "status": "COMPLETED",
+      "orderDate": "2022-10-15",
+      "deliveryDate": "2023-01-20",
+      "totalAmount": 1400000000,
+      "totalUnits": 280,
+      "currency": "VND",
+      "buyingSessionId": "bs-2022-fw",
+      "lineItems": [
+        {"skuId": "sku-001", "quantity": 45, "unitPrice": 12800000, "lineTotal": 576000000},
+        {"skuId": "sku-002", "quantity": 25, "unitPrice": 23200000, "lineTotal": 580000000},
+        {"skuId": "sku-003", "quantity": 30, "unitPrice": 18000000, "lineTotal": 540000000}
+      ],
+      "channelAllocation": {"REX": 140, "TTP": 140},
+      "receivedUnits": 280,
+      "receivedAmount": 1400000000,
+      "discrepancies": [],
+      "createdBy": "user-001",
+      "approvedBy": "user-002",
+      "approvedAt": "2022-10-20T10:00:00Z"
+    },
+    {
+      "id": "po-2023-002",
+      "poNumber": "PO-2023-FER-SS-002",
+      "brandId": "brand-001",
+      "seasonId": "season-2023-ss",
+      "fiscalYearId": "fy-2023",
+      "phase": "MAIN",
+      "status": "COMPLETED",
+      "orderDate": "2023-02-10",
+      "deliveryDate": "2023-04-15",
+      "totalAmount": 2100000000,
+      "totalUnits": 420,
+      "currency": "VND",
+      "lineItems": [
+        {"skuId": "sku-001", "quantity": 60, "unitPrice": 12800000, "lineTotal": 768000000},
+        {"skuId": "sku-004", "quantity": 80, "unitPrice": 8800000, "lineTotal": 704000000},
+        {"skuId": "sku-005", "quantity": 100, "unitPrice": 7400000, "lineTotal": 740000000}
+      ],
+      "receivedUnits": 415,
+      "receivedAmount": 2070000000,
+      "discrepancies": [
+        {"skuId": "sku-005", "orderedQty": 100, "receivedQty": 95, "reason": "SHORTAGE"}
+      ],
+      "createdBy": "user-001",
+      "approvedBy": "user-002"
+    },
+    {
+      "id": "po-2023-003",
+      "poNumber": "PO-2023-FER-FW-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2023-fw",
+      "fiscalYearId": "fy-2023",
+      "phase": "PRE",
+      "status": "COMPLETED",
+      "orderDate": "2023-04-20",
+      "deliveryDate": "2023-07-25",
+      "totalAmount": 1470000000,
+      "totalUnits": 294,
+      "currency": "VND",
+      "receivedUnits": 294,
+      "receivedAmount": 1470000000
+    },
+    {
+      "id": "po-2023-004",
+      "poNumber": "PO-2023-FER-FW-002",
+      "brandId": "brand-001",
+      "seasonId": "season-2023-fw",
+      "fiscalYearId": "fy-2023",
+      "phase": "MAIN",
+      "status": "COMPLETED",
+      "orderDate": "2023-07-15",
+      "deliveryDate": "2023-10-20",
+      "totalAmount": 2730000000,
+      "totalUnits": 546,
+      "currency": "VND",
+      "receivedUnits": 540,
+      "receivedAmount": 2700000000
+    },
+    {
+      "id": "po-2024-001",
+      "poNumber": "PO-2024-FER-SS-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2024-ss",
+      "fiscalYearId": "fy-2024",
+      "phase": "PRE",
+      "status": "COMPLETED",
+      "orderDate": "2023-10-20",
+      "deliveryDate": "2024-01-25",
+      "totalAmount": 1520000000,
+      "totalUnits": 304,
+      "currency": "VND",
+      "lineItems": [
+        {"skuId": "sku-021", "quantity": 50, "unitPrice": 15200000, "lineTotal": 760000000},
+        {"skuId": "sku-023", "quantity": 65, "unitPrice": 9600000, "lineTotal": 624000000}
+      ],
+      "receivedUnits": 304,
+      "receivedAmount": 1520000000
+    },
+    {
+      "id": "po-2024-002",
+      "poNumber": "PO-2024-FER-SS-002",
+      "brandId": "brand-001",
+      "seasonId": "season-2024-ss",
+      "fiscalYearId": "fy-2024",
+      "phase": "MAIN",
+      "status": "COMPLETED",
+      "orderDate": "2024-02-15",
+      "deliveryDate": "2024-04-20",
+      "totalAmount": 2280000000,
+      "totalUnits": 456,
+      "currency": "VND",
+      "receivedUnits": 450,
+      "receivedAmount": 2250000000
+    },
+    {
+      "id": "po-2024-003",
+      "poNumber": "PO-2024-FER-FW-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2024-fw",
+      "fiscalYearId": "fy-2024",
+      "phase": "PRE",
+      "status": "COMPLETED",
+      "orderDate": "2024-04-25",
+      "deliveryDate": "2024-07-30",
+      "totalAmount": 1710000000,
+      "totalUnits": 342,
+      "currency": "VND",
+      "receivedUnits": 342,
+      "receivedAmount": 1710000000
+    },
+    {
+      "id": "po-2024-004",
+      "poNumber": "PO-2024-FER-FW-002",
+      "brandId": "brand-001",
+      "seasonId": "season-2024-fw",
+      "fiscalYearId": "fy-2024",
+      "phase": "MAIN",
+      "status": "COMPLETED",
+      "orderDate": "2024-07-20",
+      "deliveryDate": "2024-10-25",
+      "totalAmount": 2790000000,
+      "totalUnits": 558,
+      "currency": "VND",
+      "lineItems": [
+        {"skuId": "sku-022", "quantity": 40, "unitPrice": 24800000, "lineTotal": 992000000},
+        {"skuId": "sku-024", "quantity": 75, "unitPrice": 12800000, "lineTotal": 960000000},
+        {"skuId": "sku-025", "quantity": 30, "unitPrice": 23200000, "lineTotal": 696000000}
+      ],
+      "receivedUnits": 555,
+      "receivedAmount": 2775000000
+    },
+    {
+      "id": "po-2025-001",
+      "poNumber": "PO-2025-FER-SS-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-ss",
+      "fiscalYearId": "fy-2025",
+      "phase": "PRE",
+      "status": "PARTIALLY_RECEIVED",
+      "orderDate": "2024-10-25",
+      "deliveryDate": "2025-01-30",
+      "totalAmount": 1680000000,
+      "totalUnits": 336,
+      "currency": "VND",
+      "lineItems": [
+        {"skuId": "sku-001", "quantity": 50, "unitPrice": 12800000, "lineTotal": 640000000},
+        {"skuId": "sku-021", "quantity": 45, "unitPrice": 15200000, "lineTotal": 684000000},
+        {"skuId": "sku-029", "quantity": 40, "unitPrice": 3400000, "lineTotal": 136000000},
+        {"skuId": "sku-030", "quantity": 35, "unitPrice": 3920000, "lineTotal": 137200000}
+      ],
+      "channelAllocation": {"REX": 168, "TTP": 168},
+      "receivedUnits": 280,
+      "receivedAmount": 1400000000,
+      "pendingUnits": 56,
+      "expectedDelivery": "2025-02-15",
+      "createdBy": "user-001",
+      "approvedBy": "user-002"
+    },
+    {
+      "id": "po-2025-002",
+      "poNumber": "PO-2025-FER-SS-002",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-ss",
+      "fiscalYearId": "fy-2025",
+      "phase": "MAIN",
+      "status": "CONFIRMED",
+      "orderDate": "2025-01-10",
+      "deliveryDate": "2025-04-15",
+      "totalAmount": 2320000000,
+      "totalUnits": 464,
+      "currency": "VND",
+      "channelAllocation": {"REX": 232, "TTP": 232},
+      "receivedUnits": 0,
+      "receivedAmount": 0,
+      "createdBy": "user-001",
+      "approvedBy": "user-002"
+    },
+    {
+      "id": "po-2025-003",
+      "poNumber": "PO-2025-FER-FW-001",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-fw",
+      "fiscalYearId": "fy-2025",
+      "phase": "PRE",
+      "status": "DRAFT",
+      "orderDate": null,
+      "deliveryDate": null,
+      "totalAmount": 1920000000,
+      "totalUnits": 384,
+      "currency": "VND",
+      "createdBy": "user-001"
+    }
+  ],
+  "poSummaryByYear": {
+    "2023": {
+      "totalPOs": 4,
+      "totalAmount": 7700000000,
+      "totalUnits": 1540,
+      "completedPOs": 4,
+      "avgLeadTime": 95
+    },
+    "2024": {
+      "totalPOs": 4,
+      "totalAmount": 8300000000,
+      "totalUnits": 1660,
+      "completedPOs": 4,
+      "avgLeadTime": 92
+    },
+    "2025": {
+      "totalPOs": 3,
+      "totalAmount": 5920000000,
+      "totalUnits": 1184,
+      "completedPOs": 0,
+      "inProgressPOs": 2,
+      "draftPOs": 1
+    }
+  },
+  "metadata": {
+    "totalPOs": 11,
+    "dateRange": {"from": "2022-10-15", "to": "2025-07-30"},
+    "currency": "VND",
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

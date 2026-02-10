@@ -1,0 +1,231 @@
+{
+  "users": [
+    {
+      "id": "user-001",
+      "email": "admin@dafc.vn",
+      "username": "admin",
+      "fullName": "Nguyễn Văn Admin",
+      "displayName": "Admin",
+      "phone": "+84 28 3829 1000",
+      "avatar": "/avatars/admin.jpg",
+      "role": "ADMIN",
+      "department": "Management",
+      "position": "System Administrator",
+      "permissions": ["*"],
+      "isActive": true,
+      "lastLogin": "2025-02-09T08:30:00Z",
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "user-002",
+      "email": "director@dafc.vn",
+      "username": "director",
+      "fullName": "Trần Thị Director",
+      "displayName": "Director",
+      "phone": "+84 28 3829 1001",
+      "avatar": "/avatars/director.jpg",
+      "role": "DIRECTOR",
+      "department": "Executive",
+      "position": "Buying Director",
+      "permissions": [
+        "budget:approve",
+        "proposal:approve",
+        "po:approve",
+        "report:view",
+        "analysis:full"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T09:15:00Z",
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "user-003",
+      "email": "buyer.senior@dafc.vn",
+      "username": "buyersenior",
+      "fullName": "Lê Văn Buyer",
+      "displayName": "Senior Buyer",
+      "phone": "+84 28 3829 1002",
+      "avatar": "/avatars/buyer1.jpg",
+      "role": "BUYER",
+      "department": "Buying",
+      "position": "Senior Buyer",
+      "assignedBrands": ["brand-001", "brand-002"],
+      "permissions": [
+        "budget:view",
+        "budget:edit",
+        "proposal:create",
+        "proposal:edit",
+        "proposal:submit",
+        "po:create",
+        "po:edit",
+        "inventory:view",
+        "report:view"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T08:45:00Z",
+      "createdAt": "2022-03-15T00:00:00Z"
+    },
+    {
+      "id": "user-004",
+      "email": "buyer.junior@dafc.vn",
+      "username": "buyerjunior",
+      "fullName": "Phạm Thị Junior",
+      "displayName": "Junior Buyer",
+      "phone": "+84 28 3829 1003",
+      "avatar": "/avatars/buyer2.jpg",
+      "role": "BUYER",
+      "department": "Buying",
+      "position": "Junior Buyer",
+      "assignedBrands": ["brand-003", "brand-004"],
+      "permissions": [
+        "budget:view",
+        "proposal:create",
+        "proposal:edit",
+        "inventory:view",
+        "report:view"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-08T17:30:00Z",
+      "createdAt": "2023-06-01T00:00:00Z"
+    },
+    {
+      "id": "user-005",
+      "email": "planner@dafc.vn",
+      "username": "planner",
+      "fullName": "Hoàng Văn Planner",
+      "displayName": "Planner",
+      "phone": "+84 28 3829 1004",
+      "avatar": "/avatars/planner.jpg",
+      "role": "PLANNER",
+      "department": "Planning",
+      "position": "Merchandise Planner",
+      "permissions": [
+        "budget:view",
+        "budget:edit",
+        "otb:view",
+        "otb:edit",
+        "inventory:view",
+        "inventory:edit",
+        "report:view",
+        "analysis:view"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T09:00:00Z",
+      "createdAt": "2022-06-01T00:00:00Z"
+    },
+    {
+      "id": "user-006",
+      "email": "store.rex@dafc.vn",
+      "username": "storerex",
+      "fullName": "Ngô Thị Store",
+      "displayName": "REX Store Manager",
+      "phone": "+84 28 3829 1234",
+      "avatar": "/avatars/store1.jpg",
+      "role": "STORE_MANAGER",
+      "department": "Retail",
+      "position": "Store Manager",
+      "assignedStores": ["store-001", "store-002"],
+      "permissions": [
+        "inventory:view",
+        "sales:view",
+        "report:store"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T07:30:00Z",
+      "createdAt": "2022-01-15T00:00:00Z"
+    },
+    {
+      "id": "user-007",
+      "email": "store.ttp@dafc.vn",
+      "username": "storettp",
+      "fullName": "Đỗ Văn TTP",
+      "displayName": "TTP Store Manager",
+      "phone": "+84 24 3935 1234",
+      "avatar": "/avatars/store2.jpg",
+      "role": "STORE_MANAGER",
+      "department": "Retail",
+      "position": "Store Manager",
+      "assignedStores": ["store-004", "store-005"],
+      "permissions": [
+        "inventory:view",
+        "sales:view",
+        "report:store"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T08:00:00Z",
+      "createdAt": "2022-01-15T00:00:00Z"
+    },
+    {
+      "id": "user-008",
+      "email": "analyst@dafc.vn",
+      "username": "analyst",
+      "fullName": "Vũ Thị Analyst",
+      "displayName": "Business Analyst",
+      "phone": "+84 28 3829 1005",
+      "avatar": "/avatars/analyst.jpg",
+      "role": "ANALYST",
+      "department": "Analytics",
+      "position": "Senior Business Analyst",
+      "permissions": [
+        "report:view",
+        "report:create",
+        "analysis:view",
+        "analysis:create",
+        "dashboard:view"
+      ],
+      "isActive": true,
+      "lastLogin": "2025-02-09T09:30:00Z",
+      "createdAt": "2023-01-10T00:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "code": "ADMIN",
+      "name": "Administrator",
+      "nameVi": "Quản trị viên",
+      "level": 1,
+      "description": "Full system access"
+    },
+    {
+      "code": "DIRECTOR",
+      "name": "Director",
+      "nameVi": "Giám đốc",
+      "level": 2,
+      "description": "Approval authority and full view access"
+    },
+    {
+      "code": "BUYER",
+      "name": "Buyer",
+      "nameVi": "Nhân viên mua hàng",
+      "level": 3,
+      "description": "Create and manage proposals and POs"
+    },
+    {
+      "code": "PLANNER",
+      "name": "Planner",
+      "nameVi": "Nhân viên kế hoạch",
+      "level": 3,
+      "description": "Manage budgets and OTB planning"
+    },
+    {
+      "code": "STORE_MANAGER",
+      "name": "Store Manager",
+      "nameVi": "Quản lý cửa hàng",
+      "level": 4,
+      "description": "View store-specific data"
+    },
+    {
+      "code": "ANALYST",
+      "name": "Analyst",
+      "nameVi": "Nhân viên phân tích",
+      "level": 4,
+      "description": "View and create reports"
+    }
+  ],
+  "metadata": {
+    "totalUsers": 8,
+    "activeUsers": 8,
+    "totalRoles": 6,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

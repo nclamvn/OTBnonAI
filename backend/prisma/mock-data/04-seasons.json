@@ -1,0 +1,248 @@
+{
+  "fiscalYears": [
+    {
+      "id": "fy-2023",
+      "code": "FY2023",
+      "name": "Fiscal Year 2023",
+      "startDate": "2023-01-01",
+      "endDate": "2023-12-31",
+      "isClosed": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "fy-2024",
+      "code": "FY2024",
+      "name": "Fiscal Year 2024",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "isClosed": true,
+      "status": "CLOSED"
+    },
+    {
+      "id": "fy-2025",
+      "code": "FY2025",
+      "name": "Fiscal Year 2025",
+      "startDate": "2025-01-01",
+      "endDate": "2025-12-31",
+      "isClosed": false,
+      "status": "ACTIVE"
+    }
+  ],
+  "seasons": [
+    {
+      "id": "season-2023-ss",
+      "fiscalYearId": "fy-2023",
+      "code": "SS23",
+      "name": "Spring Summer 2023",
+      "nameVi": "Xuân Hè 2023",
+      "type": "SPRING_SUMMER",
+      "deliveryStart": "2023-01-15",
+      "deliveryEnd": "2023-06-30",
+      "sellingStart": "2023-02-01",
+      "sellingEnd": "2023-07-31",
+      "markdownStart": "2023-06-15",
+      "markdownEnd": "2023-08-31",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2023-01-15",
+          "endDate": "2023-03-31"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2023-04-01",
+          "endDate": "2023-06-30"
+        }
+      ],
+      "status": "CLOSED"
+    },
+    {
+      "id": "season-2023-fw",
+      "fiscalYearId": "fy-2023",
+      "code": "FW23",
+      "name": "Fall Winter 2023",
+      "nameVi": "Thu Đông 2023",
+      "type": "FALL_WINTER",
+      "deliveryStart": "2023-07-15",
+      "deliveryEnd": "2023-12-31",
+      "sellingStart": "2023-08-01",
+      "sellingEnd": "2024-01-31",
+      "markdownStart": "2023-12-15",
+      "markdownEnd": "2024-02-28",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2023-07-15",
+          "endDate": "2023-09-30"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2023-10-01",
+          "endDate": "2023-12-31"
+        }
+      ],
+      "status": "CLOSED"
+    },
+    {
+      "id": "season-2024-ss",
+      "fiscalYearId": "fy-2024",
+      "code": "SS24",
+      "name": "Spring Summer 2024",
+      "nameVi": "Xuân Hè 2024",
+      "type": "SPRING_SUMMER",
+      "deliveryStart": "2024-01-15",
+      "deliveryEnd": "2024-06-30",
+      "sellingStart": "2024-02-01",
+      "sellingEnd": "2024-07-31",
+      "markdownStart": "2024-06-15",
+      "markdownEnd": "2024-08-31",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2024-01-15",
+          "endDate": "2024-03-31"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2024-04-01",
+          "endDate": "2024-06-30"
+        }
+      ],
+      "status": "CLOSED"
+    },
+    {
+      "id": "season-2024-fw",
+      "fiscalYearId": "fy-2024",
+      "code": "FW24",
+      "name": "Fall Winter 2024",
+      "nameVi": "Thu Đông 2024",
+      "type": "FALL_WINTER",
+      "deliveryStart": "2024-07-15",
+      "deliveryEnd": "2024-12-31",
+      "sellingStart": "2024-08-01",
+      "sellingEnd": "2025-01-31",
+      "markdownStart": "2024-12-15",
+      "markdownEnd": "2025-02-28",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2024-07-15",
+          "endDate": "2024-09-30"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2024-10-01",
+          "endDate": "2024-12-31"
+        }
+      ],
+      "status": "CLOSED"
+    },
+    {
+      "id": "season-2025-ss",
+      "fiscalYearId": "fy-2025",
+      "code": "SS25",
+      "name": "Spring Summer 2025",
+      "nameVi": "Xuân Hè 2025",
+      "type": "SPRING_SUMMER",
+      "deliveryStart": "2025-01-15",
+      "deliveryEnd": "2025-06-30",
+      "sellingStart": "2025-02-01",
+      "sellingEnd": "2025-07-31",
+      "markdownStart": "2025-06-15",
+      "markdownEnd": "2025-08-31",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2025-01-15",
+          "endDate": "2025-03-31"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2025-04-01",
+          "endDate": "2025-06-30"
+        }
+      ],
+      "status": "ACTIVE"
+    },
+    {
+      "id": "season-2025-fw",
+      "fiscalYearId": "fy-2025",
+      "code": "FW25",
+      "name": "Fall Winter 2025",
+      "nameVi": "Thu Đông 2025",
+      "type": "FALL_WINTER",
+      "deliveryStart": "2025-07-15",
+      "deliveryEnd": "2025-12-31",
+      "sellingStart": "2025-08-01",
+      "sellingEnd": "2026-01-31",
+      "markdownStart": "2025-12-15",
+      "markdownEnd": "2026-02-28",
+      "phases": [
+        {
+          "code": "PRE",
+          "name": "Pre",
+          "nameVi": "Đầu mùa",
+          "startDate": "2025-07-15",
+          "endDate": "2025-09-30"
+        },
+        {
+          "code": "MAIN",
+          "name": "Main/Show",
+          "nameVi": "Chính vụ",
+          "startDate": "2025-10-01",
+          "endDate": "2025-12-31"
+        }
+      ],
+      "status": "PLANNING"
+    }
+  ],
+  "seasonGroups": [
+    {
+      "id": "sg-all-2023",
+      "code": "ALL_2023",
+      "name": "All Season Groups 2023",
+      "fiscalYearId": "fy-2023",
+      "seasons": ["season-2023-ss", "season-2023-fw"]
+    },
+    {
+      "id": "sg-all-2024",
+      "code": "ALL_2024",
+      "name": "All Season Groups 2024",
+      "fiscalYearId": "fy-2024",
+      "seasons": ["season-2024-ss", "season-2024-fw"]
+    },
+    {
+      "id": "sg-all-2025",
+      "code": "ALL_2025",
+      "name": "All Season Groups 2025",
+      "fiscalYearId": "fy-2025",
+      "seasons": ["season-2025-ss", "season-2025-fw"]
+    }
+  ],
+  "metadata": {
+    "totalFiscalYears": 3,
+    "totalSeasons": 6,
+    "totalSeasonGroups": 3,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

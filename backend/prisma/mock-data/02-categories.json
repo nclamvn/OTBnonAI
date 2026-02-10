@@ -1,0 +1,391 @@
+{
+  "categories": [
+    {
+      "id": "cat-001",
+      "code": "BAG",
+      "name": "Bags",
+      "nameVi": "Túi xách",
+      "description": "Handbags, shoulder bags, totes, clutches",
+      "icon": "shopping-bag",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "cat-002",
+      "code": "SHO",
+      "name": "Shoes",
+      "nameVi": "Giày dép",
+      "description": "Footwear including heels, flats, sneakers, boots",
+      "icon": "shoe",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "cat-003",
+      "code": "RTW",
+      "name": "Ready-to-Wear",
+      "nameVi": "Thời trang may sẵn",
+      "description": "Clothing, dresses, suits, jackets, pants",
+      "icon": "shirt",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "cat-004",
+      "code": "ACC",
+      "name": "Accessories",
+      "nameVi": "Phụ kiện",
+      "description": "Belts, scarves, hats, sunglasses, jewelry",
+      "icon": "gem",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "cat-005",
+      "code": "SLG",
+      "name": "Small Leather Goods",
+      "nameVi": "Đồ da nhỏ",
+      "description": "Wallets, card holders, key chains, phone cases",
+      "icon": "wallet",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "cat-006",
+      "code": "WAT",
+      "name": "Watches",
+      "nameVi": "Đồng hồ",
+      "description": "Luxury timepieces and watch accessories",
+      "icon": "watch",
+      "sortOrder": 6,
+      "isActive": true
+    }
+  ],
+  "subcategories": [
+    {
+      "id": "subcat-001",
+      "categoryId": "cat-001",
+      "code": "BAG-HND",
+      "name": "Handbags",
+      "nameVi": "Túi xách tay",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-002",
+      "categoryId": "cat-001",
+      "code": "BAG-SHD",
+      "name": "Shoulder Bags",
+      "nameVi": "Túi đeo vai",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "subcat-003",
+      "categoryId": "cat-001",
+      "code": "BAG-TOT",
+      "name": "Totes",
+      "nameVi": "Túi tote",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "subcat-004",
+      "categoryId": "cat-001",
+      "code": "BAG-CLU",
+      "name": "Clutches",
+      "nameVi": "Ví cầm tay",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "subcat-005",
+      "categoryId": "cat-001",
+      "code": "BAG-BCK",
+      "name": "Backpacks",
+      "nameVi": "Ba lô",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "subcat-006",
+      "categoryId": "cat-001",
+      "code": "BAG-CRS",
+      "name": "Crossbody Bags",
+      "nameVi": "Túi đeo chéo",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "subcat-010",
+      "categoryId": "cat-002",
+      "code": "SHO-HEL",
+      "name": "Heels",
+      "nameVi": "Giày cao gót",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-011",
+      "categoryId": "cat-002",
+      "code": "SHO-FLT",
+      "name": "Flats",
+      "nameVi": "Giày bệt",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "subcat-012",
+      "categoryId": "cat-002",
+      "code": "SHO-SNK",
+      "name": "Sneakers",
+      "nameVi": "Giày thể thao",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "subcat-013",
+      "categoryId": "cat-002",
+      "code": "SHO-BOT",
+      "name": "Boots",
+      "nameVi": "Bốt",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "subcat-014",
+      "categoryId": "cat-002",
+      "code": "SHO-LOF",
+      "name": "Loafers",
+      "nameVi": "Giày lười",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "subcat-015",
+      "categoryId": "cat-002",
+      "code": "SHO-SAN",
+      "name": "Sandals",
+      "nameVi": "Sandal",
+      "sizeType": "SHOE_EU",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "subcat-020",
+      "categoryId": "cat-003",
+      "code": "RTW-DRS",
+      "name": "Dresses",
+      "nameVi": "Váy đầm",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-021",
+      "categoryId": "cat-003",
+      "code": "RTW-TOP",
+      "name": "Tops & Blouses",
+      "nameVi": "Áo",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "subcat-022",
+      "categoryId": "cat-003",
+      "code": "RTW-PNT",
+      "name": "Pants & Trousers",
+      "nameVi": "Quần",
+      "sizeType": "CLOTHING_NUMERIC",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "subcat-023",
+      "categoryId": "cat-003",
+      "code": "RTW-SKT",
+      "name": "Skirts",
+      "nameVi": "Váy ngắn",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "subcat-024",
+      "categoryId": "cat-003",
+      "code": "RTW-JKT",
+      "name": "Jackets & Coats",
+      "nameVi": "Áo khoác",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "subcat-025",
+      "categoryId": "cat-003",
+      "code": "RTW-SUT",
+      "name": "Suits",
+      "nameVi": "Vest & Suit",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "subcat-026",
+      "categoryId": "cat-003",
+      "code": "RTW-KNT",
+      "name": "Knitwear",
+      "nameVi": "Đồ len",
+      "sizeType": "CLOTHING_ALPHA",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "subcat-030",
+      "categoryId": "cat-004",
+      "code": "ACC-BLT",
+      "name": "Belts",
+      "nameVi": "Thắt lưng",
+      "sizeType": "BELT_SIZE",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-031",
+      "categoryId": "cat-004",
+      "code": "ACC-SCF",
+      "name": "Scarves & Shawls",
+      "nameVi": "Khăn choàng",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "subcat-032",
+      "categoryId": "cat-004",
+      "code": "ACC-HAT",
+      "name": "Hats & Caps",
+      "nameVi": "Mũ nón",
+      "sizeType": "HAT_SIZE",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "subcat-033",
+      "categoryId": "cat-004",
+      "code": "ACC-SUN",
+      "name": "Sunglasses",
+      "nameVi": "Kính mát",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "subcat-034",
+      "categoryId": "cat-004",
+      "code": "ACC-JWL",
+      "name": "Jewelry",
+      "nameVi": "Trang sức",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "subcat-035",
+      "categoryId": "cat-004",
+      "code": "ACC-TIE",
+      "name": "Ties & Bow Ties",
+      "nameVi": "Cà vạt",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "subcat-040",
+      "categoryId": "cat-005",
+      "code": "SLG-WAL",
+      "name": "Wallets",
+      "nameVi": "Ví",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-041",
+      "categoryId": "cat-005",
+      "code": "SLG-CRD",
+      "name": "Card Holders",
+      "nameVi": "Ví đựng thẻ",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "subcat-042",
+      "categoryId": "cat-005",
+      "code": "SLG-KEY",
+      "name": "Key Chains",
+      "nameVi": "Móc khóa",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "subcat-043",
+      "categoryId": "cat-005",
+      "code": "SLG-PHN",
+      "name": "Phone Cases",
+      "nameVi": "Ốp điện thoại",
+      "sizeType": "PHONE_MODEL",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "subcat-044",
+      "categoryId": "cat-005",
+      "code": "SLG-PSP",
+      "name": "Passport Holders",
+      "nameVi": "Bao hộ chiếu",
+      "sizeType": "ONE_SIZE",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "subcat-050",
+      "categoryId": "cat-006",
+      "code": "WAT-MEN",
+      "name": "Men's Watches",
+      "nameVi": "Đồng hồ nam",
+      "sizeType": "WATCH_SIZE",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "subcat-051",
+      "categoryId": "cat-006",
+      "code": "WAT-WMN",
+      "name": "Women's Watches",
+      "nameVi": "Đồng hồ nữ",
+      "sizeType": "WATCH_SIZE",
+      "sortOrder": 2,
+      "isActive": true
+    }
+  ],
+  "metadata": {
+    "totalCategories": 6,
+    "totalSubcategories": 32,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dafc-otb-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: dafc_otb
+      POSTGRES_USER: dafc
+      POSTGRES_PASSWORD: dafc2026
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

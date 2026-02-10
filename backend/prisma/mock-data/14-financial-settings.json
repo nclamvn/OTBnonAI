@@ -1,0 +1,74 @@
+{
+  "exchangeRates": {
+    "baseCurrency": "VND",
+    "rates": {
+      "2023-01-01": {"EUR": 25450, "USD": 23750, "GBP": 28650},
+      "2023-04-01": {"EUR": 25800, "USD": 23500, "GBP": 29100},
+      "2023-07-01": {"EUR": 26200, "USD": 23800, "GBP": 30250},
+      "2023-10-01": {"EUR": 25950, "USD": 24200, "GBP": 29800},
+      "2024-01-01": {"EUR": 26350, "USD": 24500, "GBP": 31200},
+      "2024-04-01": {"EUR": 26800, "USD": 25100, "GBP": 31850},
+      "2024-07-01": {"EUR": 27150, "USD": 25400, "GBP": 32500},
+      "2024-10-01": {"EUR": 27500, "USD": 25200, "GBP": 32100},
+      "2025-01-01": {"EUR": 27850, "USD": 25600, "GBP": 32450},
+      "2025-02-01": {"EUR": 28100, "USD": 25750, "GBP": 32800}
+    },
+    "currentRates": {
+      "EUR": 28100,
+      "USD": 25750,
+      "GBP": 32800,
+      "CHF": 29500,
+      "JPY": 171,
+      "effectiveDate": "2025-02-09"
+    }
+  },
+  "financialSettings": {
+    "defaultCurrency": "VND",
+    "fiscalYearStart": "01-01",
+    "fiscalYearEnd": "12-31",
+    "taxSettings": {
+      "vatRate": 10,
+      "importDutyRate": {
+        "BAG": 25,
+        "SHO": 30,
+        "RTW": 20,
+        "ACC": 25,
+        "SLG": 25,
+        "WAT": 20
+      },
+      "specialConsumptionTax": 0
+    },
+    "pricingRules": {
+      "defaultMargin": 60,
+      "minMargin": 45,
+      "maxMarkdown": 50,
+      "roundingRule": "UP_TO_NEAREST_100000"
+    },
+    "costComponents": {
+      "productCost": 40,
+      "importDuty": 10,
+      "shipping": 3,
+      "insurance": 1,
+      "handling": 2,
+      "overhead": 4,
+      "targetMargin": 40
+    }
+  },
+  "markdownSchedule": {
+    "SS": {
+      "phase1": {"week": 20, "discount": 20, "description": "First markdown"},
+      "phase2": {"week": 24, "discount": 30, "description": "Mid-season"},
+      "phase3": {"week": 28, "discount": 40, "description": "End of season"},
+      "phase4": {"week": 32, "discount": 50, "description": "Final clearance"}
+    },
+    "FW": {
+      "phase1": {"week": 46, "discount": 20, "description": "First markdown"},
+      "phase2": {"week": 50, "discount": 30, "description": "Holiday sales"},
+      "phase3": {"week": 2, "discount": 40, "description": "New year clearance"},
+      "phase4": {"week": 6, "discount": 50, "description": "Final clearance"}
+    }
+  },
+  "metadata": {
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

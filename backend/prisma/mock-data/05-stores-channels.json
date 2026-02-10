@@ -1,0 +1,225 @@
+{
+  "channels": [
+    {
+      "id": "channel-001",
+      "code": "REX",
+      "name": "REX",
+      "fullName": "REX Department Store",
+      "nameVi": "Trung tâm thương mại REX",
+      "type": "DEPARTMENT_STORE",
+      "description": "Premium department store channel",
+      "budgetAllocation": 50,
+      "isActive": true
+    },
+    {
+      "id": "channel-002",
+      "code": "TTP",
+      "name": "TTP",
+      "fullName": "Trang Tien Plaza",
+      "nameVi": "Tràng Tiền Plaza",
+      "type": "DEPARTMENT_STORE",
+      "description": "Luxury shopping mall in Hanoi",
+      "budgetAllocation": 50,
+      "isActive": true
+    },
+    {
+      "id": "channel-003",
+      "code": "ONLINE",
+      "name": "Online",
+      "fullName": "E-commerce Platform",
+      "nameVi": "Kênh trực tuyến",
+      "type": "ECOMMERCE",
+      "description": "Online retail channel",
+      "budgetAllocation": 0,
+      "isActive": true
+    },
+    {
+      "id": "channel-004",
+      "code": "WHOLESALE",
+      "name": "Wholesale",
+      "fullName": "Wholesale Partners",
+      "nameVi": "Kênh bán sỉ",
+      "type": "WHOLESALE",
+      "description": "B2B wholesale channel",
+      "budgetAllocation": 0,
+      "isActive": true
+    }
+  ],
+  "stores": [
+    {
+      "id": "store-001",
+      "channelId": "channel-001",
+      "code": "REX-SGN-01",
+      "name": "REX Saigon Floor 1",
+      "nameVi": "REX Sài Gòn Tầng 1",
+      "address": "141 Nguyễn Huệ, Quận 1, TP.HCM",
+      "city": "Ho Chi Minh City",
+      "country": "Vietnam",
+      "area": 250,
+      "areaUnit": "sqm",
+      "type": "FLAGSHIP",
+      "tier": "A",
+      "openDate": "2018-01-15",
+      "isActive": true,
+      "manager": "Nguyễn Văn An",
+      "phone": "+84 28 3829 1234",
+      "email": "rex.sgn.f1@dafc.vn",
+      "operatingHours": {
+        "weekday": "09:30-21:30",
+        "weekend": "09:00-22:00"
+      }
+    },
+    {
+      "id": "store-002",
+      "channelId": "channel-001",
+      "code": "REX-SGN-02",
+      "name": "REX Saigon Floor 2",
+      "nameVi": "REX Sài Gòn Tầng 2",
+      "address": "141 Nguyễn Huệ, Quận 1, TP.HCM",
+      "city": "Ho Chi Minh City",
+      "country": "Vietnam",
+      "area": 180,
+      "areaUnit": "sqm",
+      "type": "STANDARD",
+      "tier": "A",
+      "openDate": "2018-03-01",
+      "isActive": true,
+      "manager": "Trần Thị Bình",
+      "phone": "+84 28 3829 1235",
+      "email": "rex.sgn.f2@dafc.vn"
+    },
+    {
+      "id": "store-003",
+      "channelId": "channel-001",
+      "code": "REX-DN-01",
+      "name": "REX Da Nang",
+      "nameVi": "REX Đà Nẵng",
+      "address": "123 Hùng Vương, Quận Hải Châu, Đà Nẵng",
+      "city": "Da Nang",
+      "country": "Vietnam",
+      "area": 150,
+      "areaUnit": "sqm",
+      "type": "STANDARD",
+      "tier": "B",
+      "openDate": "2020-06-15",
+      "isActive": true,
+      "manager": "Lê Văn Cường",
+      "phone": "+84 236 382 1234",
+      "email": "rex.dn@dafc.vn"
+    },
+    {
+      "id": "store-004",
+      "channelId": "channel-002",
+      "code": "TTP-HN-01",
+      "name": "TTP Hanoi Boutique 1",
+      "nameVi": "TTP Hà Nội Boutique 1",
+      "address": "24 Hai Bà Trưng, Hoàn Kiếm, Hà Nội",
+      "city": "Hanoi",
+      "country": "Vietnam",
+      "area": 300,
+      "areaUnit": "sqm",
+      "type": "FLAGSHIP",
+      "tier": "A+",
+      "openDate": "2015-09-01",
+      "isActive": true,
+      "manager": "Phạm Thị Dung",
+      "phone": "+84 24 3935 1234",
+      "email": "ttp.hn.b1@dafc.vn",
+      "operatingHours": {
+        "weekday": "10:00-22:00",
+        "weekend": "09:30-22:30"
+      }
+    },
+    {
+      "id": "store-005",
+      "channelId": "channel-002",
+      "code": "TTP-HN-02",
+      "name": "TTP Hanoi Boutique 2",
+      "nameVi": "TTP Hà Nội Boutique 2",
+      "address": "24 Hai Bà Trưng, Hoàn Kiếm, Hà Nội",
+      "city": "Hanoi",
+      "country": "Vietnam",
+      "area": 200,
+      "areaUnit": "sqm",
+      "type": "STANDARD",
+      "tier": "A",
+      "openDate": "2017-03-01",
+      "isActive": true,
+      "manager": "Hoàng Văn Em",
+      "phone": "+84 24 3935 1235",
+      "email": "ttp.hn.b2@dafc.vn"
+    },
+    {
+      "id": "store-006",
+      "channelId": "channel-002",
+      "code": "TTP-HP-01",
+      "name": "TTP Hai Phong",
+      "nameVi": "TTP Hải Phòng",
+      "address": "45 Lê Hồng Phong, Ngô Quyền, Hải Phòng",
+      "city": "Hai Phong",
+      "country": "Vietnam",
+      "area": 120,
+      "areaUnit": "sqm",
+      "type": "STANDARD",
+      "tier": "B",
+      "openDate": "2021-12-01",
+      "isActive": true,
+      "manager": "Ngô Thị Phương",
+      "phone": "+84 225 382 1234",
+      "email": "ttp.hp@dafc.vn"
+    },
+    {
+      "id": "store-007",
+      "channelId": "channel-003",
+      "code": "ONLINE-VN",
+      "name": "DAFC Online Vietnam",
+      "nameVi": "DAFC Trực tuyến Việt Nam",
+      "address": "Online",
+      "city": "Vietnam",
+      "country": "Vietnam",
+      "type": "ECOMMERCE",
+      "tier": "A",
+      "openDate": "2019-01-01",
+      "isActive": true,
+      "website": "https://dafc.vn",
+      "email": "online@dafc.vn"
+    }
+  ],
+  "storeGroups": [
+    {
+      "id": "sg-hcm",
+      "code": "HCM",
+      "name": "Ho Chi Minh City Stores",
+      "nameVi": "Cửa hàng TP.HCM",
+      "storeIds": ["store-001", "store-002"]
+    },
+    {
+      "id": "sg-hn",
+      "code": "HN",
+      "name": "Hanoi Stores",
+      "nameVi": "Cửa hàng Hà Nội",
+      "storeIds": ["store-004", "store-005"]
+    },
+    {
+      "id": "sg-other",
+      "code": "OTHER",
+      "name": "Other Cities",
+      "nameVi": "Các thành phố khác",
+      "storeIds": ["store-003", "store-006"]
+    },
+    {
+      "id": "sg-flagship",
+      "code": "FLAGSHIP",
+      "name": "Flagship Stores",
+      "nameVi": "Cửa hàng chính",
+      "storeIds": ["store-001", "store-004"]
+    }
+  ],
+  "metadata": {
+    "totalChannels": 4,
+    "totalStores": 7,
+    "totalStoreGroups": 4,
+    "activeStores": 7,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

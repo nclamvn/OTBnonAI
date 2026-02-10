@@ -1,0 +1,191 @@
+{
+  "proposals": [
+    {
+      "id": "prop-2025-001",
+      "proposalNumber": "SKU-2025-SS-001",
+      "name": "SS25 Ferragamo Pre Collection",
+      "nameVi": "Bộ sưu tập đầu mùa Xuân Hè 2025 Ferragamo",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-ss",
+      "phase": "PRE",
+      "budgetPlanId": "bp-2025-a-ss",
+      "status": "APPROVED",
+      "version": 3,
+      "totalBudget": 1680000000,
+      "totalRetail": 2800000000,
+      "totalUnits": 336,
+      "totalSkus": 25,
+      "categories": {
+        "BAG": {"units": 95, "budget": 554400000, "percentage": 33},
+        "SHO": {"units": 105, "budget": 453600000, "percentage": 27},
+        "RTW": {"units": 45, "budget": 403200000, "percentage": 24},
+        "ACC": {"units": 55, "budget": 184800000, "percentage": 11},
+        "SLG": {"units": 36, "budget": 84000000, "percentage": 5}
+      },
+      "channelSplit": {
+        "REX": {"units": 168, "percentage": 50},
+        "TTP": {"units": 168, "percentage": 50}
+      },
+      "skuLines": [
+        {
+          "skuId": "sku-001",
+          "skuCode": "FER-BAG-001",
+          "name": "Gancini Mini Bag",
+          "colorName": "Nero",
+          "quantity": 50,
+          "unitCost": 12800000,
+          "unitRetail": 32000000,
+          "totalCost": 640000000,
+          "totalRetail": 1600000000,
+          "margin": 60,
+          "sizeBreakdown": {"OS": 50},
+          "channelSplit": {"REX": 25, "TTP": 25},
+          "status": "CONFIRMED"
+        },
+        {
+          "skuId": "sku-021",
+          "skuCode": "FER-BAG-004",
+          "name": "Trifolio Crossbody",
+          "colorName": "Dawn Pink",
+          "quantity": 45,
+          "unitCost": 15200000,
+          "unitRetail": 38000000,
+          "totalCost": 684000000,
+          "totalRetail": 1710000000,
+          "margin": 60,
+          "sizeBreakdown": {"OS": 45},
+          "channelSplit": {"REX": 23, "TTP": 22},
+          "status": "CONFIRMED"
+        },
+        {
+          "skuId": "sku-029",
+          "skuCode": "FER-ACC-002",
+          "name": "Silk Scarf",
+          "colorName": "Multicolor Print",
+          "quantity": 40,
+          "unitCost": 3400000,
+          "unitRetail": 8500000,
+          "totalCost": 136000000,
+          "totalRetail": 340000000,
+          "margin": 60,
+          "sizeBreakdown": {"OS": 40},
+          "channelSplit": {"REX": 20, "TTP": 20},
+          "status": "CONFIRMED"
+        },
+        {
+          "skuId": "sku-030",
+          "skuCode": "FER-ACC-003",
+          "name": "Aviator Sunglasses",
+          "colorName": "Gold/Brown",
+          "quantity": 35,
+          "unitCost": 3920000,
+          "unitRetail": 9800000,
+          "totalCost": 137200000,
+          "totalRetail": 343000000,
+          "margin": 60,
+          "sizeBreakdown": {"OS": 35},
+          "channelSplit": {"REX": 18, "TTP": 17},
+          "status": "CONFIRMED"
+        }
+      ],
+      "aiRecommendations": {
+        "topPerformers": ["sku-001", "sku-021"],
+        "underPerformers": [],
+        "suggestedAdjustments": [
+          {"skuId": "sku-029", "currentQty": 40, "suggestedQty": 50, "reason": "Strong SS seasonal demand for scarves"},
+          {"skuId": "sku-030", "currentQty": 35, "suggestedQty": 45, "reason": "Sunglasses trending +15% YoY"}
+        ],
+        "riskAssessment": {
+          "overallRisk": "LOW",
+          "sizeRisk": "LOW",
+          "seasonalRisk": "LOW",
+          "competitorRisk": "MEDIUM"
+        }
+      },
+      "createdBy": "user-001",
+      "createdAt": "2024-10-01T00:00:00Z",
+      "submittedAt": "2024-10-15T10:00:00Z",
+      "approvedBy": "user-002",
+      "approvedAt": "2024-10-20T14:00:00Z"
+    },
+    {
+      "id": "prop-2025-002",
+      "proposalNumber": "SKU-2025-SS-002",
+      "name": "SS25 Ferragamo Main Collection",
+      "nameVi": "Bộ sưu tập chính vụ Xuân Hè 2025 Ferragamo",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-ss",
+      "phase": "MAIN",
+      "budgetPlanId": "bp-2025-a-ss",
+      "status": "PENDING_APPROVAL",
+      "version": 2,
+      "totalBudget": 2320000000,
+      "totalRetail": 3867000000,
+      "totalUnits": 464,
+      "totalSkus": 35,
+      "categories": {
+        "BAG": {"units": 128, "budget": 765600000, "percentage": 33},
+        "SHO": {"units": 142, "budget": 626400000, "percentage": 27},
+        "RTW": {"units": 65, "budget": 556800000, "percentage": 24},
+        "ACC": {"units": 78, "budget": 255200000, "percentage": 11},
+        "SLG": {"units": 51, "budget": 116000000, "percentage": 5}
+      },
+      "aiRecommendations": {
+        "overallScore": 85,
+        "suggestedAdjustments": [
+          {"skuId": "sku-022", "currentQty": 30, "suggestedQty": 40, "reason": "Wanda Tote showing strong demand signals"}
+        ],
+        "riskAssessment": {
+          "overallRisk": "LOW",
+          "sizeRisk": "MEDIUM",
+          "seasonalRisk": "LOW"
+        }
+      },
+      "createdBy": "user-001",
+      "createdAt": "2025-01-05T00:00:00Z",
+      "submittedAt": "2025-01-15T10:00:00Z"
+    },
+    {
+      "id": "prop-2025-003",
+      "proposalNumber": "SKU-2025-FW-001",
+      "name": "FW25 Ferragamo Pre Collection",
+      "nameVi": "Bộ sưu tập đầu mùa Thu Đông 2025 Ferragamo",
+      "brandId": "brand-001",
+      "seasonId": "season-2025-fw",
+      "phase": "PRE",
+      "budgetPlanId": "bp-2025-a-fw",
+      "status": "DRAFT",
+      "version": 1,
+      "totalBudget": 1920000000,
+      "totalRetail": 3200000000,
+      "totalUnits": 384,
+      "totalSkus": 28,
+      "createdBy": "user-001",
+      "createdAt": "2025-02-01T00:00:00Z"
+    }
+  ],
+  "proposalHistory": {
+    "2023": {
+      "totalProposals": 8,
+      "approved": 8,
+      "rejected": 0,
+      "avgApprovalTime": 5.2
+    },
+    "2024": {
+      "totalProposals": 10,
+      "approved": 9,
+      "rejected": 1,
+      "avgApprovalTime": 4.8
+    },
+    "2025": {
+      "totalProposals": 3,
+      "approved": 1,
+      "pending": 1,
+      "draft": 1
+    }
+  },
+  "metadata": {
+    "totalProposals": 3,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "salesSummaryByMonth": [
+    {"yearMonth": "2023-01", "revenue": 850000000, "units": 165, "transactions": 142, "avgBasket": 5985915, "storeBreakdown": {"REX": 425000000, "TTP": 400000000, "ONLINE": 25000000}},
+    {"yearMonth": "2023-02", "revenue": 1250000000, "units": 245, "transactions": 198, "avgBasket": 6313131, "storeBreakdown": {"REX": 600000000, "TTP": 580000000, "ONLINE": 70000000}},
+    {"yearMonth": "2023-03", "revenue": 1480000000, "units": 288, "transactions": 235, "avgBasket": 6297872, "storeBreakdown": {"REX": 710000000, "TTP": 690000000, "ONLINE": 80000000}},
+    {"yearMonth": "2023-04", "revenue": 1380000000, "units": 270, "transactions": 220, "avgBasket": 6272727, "storeBreakdown": {"REX": 660000000, "TTP": 640000000, "ONLINE": 80000000}},
+    {"yearMonth": "2023-05", "revenue": 1520000000, "units": 298, "transactions": 242, "avgBasket": 6280992, "storeBreakdown": {"REX": 730000000, "TTP": 710000000, "ONLINE": 80000000}},
+    {"yearMonth": "2023-06", "revenue": 1680000000, "units": 335, "transactions": 268, "avgBasket": 6268657, "storeBreakdown": {"REX": 810000000, "TTP": 780000000, "ONLINE": 90000000}},
+    {"yearMonth": "2023-07", "revenue": 1450000000, "units": 285, "transactions": 232, "avgBasket": 6250000, "storeBreakdown": {"REX": 700000000, "TTP": 670000000, "ONLINE": 80000000}},
+    {"yearMonth": "2023-08", "revenue": 1280000000, "units": 252, "transactions": 205, "avgBasket": 6243902, "storeBreakdown": {"REX": 620000000, "TTP": 590000000, "ONLINE": 70000000}},
+    {"yearMonth": "2023-09", "revenue": 1350000000, "units": 265, "transactions": 215, "avgBasket": 6279070, "storeBreakdown": {"REX": 650000000, "TTP": 620000000, "ONLINE": 80000000}},
+    {"yearMonth": "2023-10", "revenue": 1620000000, "units": 318, "transactions": 258, "avgBasket": 6279070, "storeBreakdown": {"REX": 780000000, "TTP": 750000000, "ONLINE": 90000000}},
+    {"yearMonth": "2023-11", "revenue": 1880000000, "units": 368, "transactions": 298, "avgBasket": 6308725, "storeBreakdown": {"REX": 900000000, "TTP": 870000000, "ONLINE": 110000000}},
+    {"yearMonth": "2023-12", "revenue": 2150000000, "units": 420, "transactions": 340, "avgBasket": 6323529, "storeBreakdown": {"REX": 1030000000, "TTP": 1000000000, "ONLINE": 120000000}},
+    {"yearMonth": "2024-01", "revenue": 920000000, "units": 178, "transactions": 152, "avgBasket": 6052632, "storeBreakdown": {"REX": 450000000, "TTP": 430000000, "ONLINE": 40000000}},
+    {"yearMonth": "2024-02", "revenue": 1420000000, "units": 275, "transactions": 222, "avgBasket": 6396396, "storeBreakdown": {"REX": 680000000, "TTP": 660000000, "ONLINE": 80000000}},
+    {"yearMonth": "2024-03", "revenue": 1650000000, "units": 318, "transactions": 258, "avgBasket": 6395349, "storeBreakdown": {"REX": 790000000, "TTP": 770000000, "ONLINE": 90000000}},
+    {"yearMonth": "2024-04", "revenue": 1520000000, "units": 295, "transactions": 240, "avgBasket": 6333333, "storeBreakdown": {"REX": 730000000, "TTP": 710000000, "ONLINE": 80000000}},
+    {"yearMonth": "2024-05", "revenue": 1680000000, "units": 325, "transactions": 265, "avgBasket": 6339623, "storeBreakdown": {"REX": 810000000, "TTP": 780000000, "ONLINE": 90000000}},
+    {"yearMonth": "2024-06", "revenue": 1850000000, "units": 358, "transactions": 292, "avgBasket": 6335616, "storeBreakdown": {"REX": 890000000, "TTP": 860000000, "ONLINE": 100000000}},
+    {"yearMonth": "2024-07", "revenue": 1580000000, "units": 305, "transactions": 248, "avgBasket": 6370968, "storeBreakdown": {"REX": 760000000, "TTP": 730000000, "ONLINE": 90000000}},
+    {"yearMonth": "2024-08", "revenue": 1420000000, "units": 275, "transactions": 224, "avgBasket": 6339286, "storeBreakdown": {"REX": 680000000, "TTP": 660000000, "ONLINE": 80000000}},
+    {"yearMonth": "2024-09", "revenue": 1520000000, "units": 295, "transactions": 240, "avgBasket": 6333333, "storeBreakdown": {"REX": 730000000, "TTP": 710000000, "ONLINE": 80000000}},
+    {"yearMonth": "2024-10", "revenue": 1780000000, "units": 345, "transactions": 280, "avgBasket": 6357143, "storeBreakdown": {"REX": 850000000, "TTP": 830000000, "ONLINE": 100000000}},
+    {"yearMonth": "2024-11", "revenue": 2050000000, "units": 398, "transactions": 322, "avgBasket": 6366459, "storeBreakdown": {"REX": 980000000, "TTP": 950000000, "ONLINE": 120000000}},
+    {"yearMonth": "2024-12", "revenue": 2380000000, "units": 462, "transactions": 375, "avgBasket": 6346667, "storeBreakdown": {"REX": 1140000000, "TTP": 1100000000, "ONLINE": 140000000}},
+    {"yearMonth": "2025-01", "revenue": 980000000, "units": 188, "transactions": 162, "avgBasket": 6049383, "storeBreakdown": {"REX": 480000000, "TTP": 450000000, "ONLINE": 50000000}},
+    {"yearMonth": "2025-02", "revenue": 420000000, "units": 82, "transactions": 68, "avgBasket": 6176471, "storeBreakdown": {"REX": 200000000, "TTP": 190000000, "ONLINE": 30000000}, "note": "Partial month (1-9 Feb)"}
+  ],
+  "salesByCategory": {
+    "2023": {
+      "BAG": {"revenue": 6250000000, "units": 1245, "avgPrice": 5020080, "percentage": 35.8},
+      "SHO": {"revenue": 4850000000, "units": 1520, "avgPrice": 3190789, "percentage": 27.8},
+      "RTW": {"revenue": 3680000000, "units": 425, "avgPrice": 8658824, "percentage": 21.1},
+      "ACC": {"revenue": 1580000000, "units": 680, "avgPrice": 2323529, "percentage": 9.1},
+      "SLG": {"revenue": 1080000000, "units": 639, "avgPrice": 1690141, "percentage": 6.2}
+    },
+    "2024": {
+      "BAG": {"revenue": 6950000000, "units": 1385, "avgPrice": 5018051, "percentage": 35.2},
+      "SHO": {"revenue": 5420000000, "units": 1698, "avgPrice": 3192579, "percentage": 27.5},
+      "RTW": {"revenue": 4280000000, "units": 495, "avgPrice": 8646465, "percentage": 21.7},
+      "ACC": {"revenue": 1780000000, "units": 765, "avgPrice": 2326797, "percentage": 9.0},
+      "SLG": {"revenue": 1300000000, "units": 771, "avgPrice": 1686122, "percentage": 6.6}
+    },
+    "2025": {
+      "BAG": {"revenue": 520000000, "units": 102, "avgPrice": 5098039, "percentage": 37.1},
+      "SHO": {"revenue": 380000000, "units": 118, "avgPrice": 3220339, "percentage": 27.1},
+      "RTW": {"revenue": 280000000, "units": 32, "avgPrice": 8750000, "percentage": 20.0},
+      "ACC": {"revenue": 140000000, "units": 58, "avgPrice": 2413793, "percentage": 10.0},
+      "SLG": {"revenue": 80000000, "units": 45, "avgPrice": 1777778, "percentage": 5.7},
+      "note": "YTD Jan 1 - Feb 9, 2025"
+    }
+  },
+  "salesByBrand": {
+    "2023": {
+      "Ferragamo": {"revenue": 10500000000, "percentage": 60.2},
+      "Burberry": {"revenue": 3850000000, "percentage": 22.1},
+      "Gucci": {"revenue": 1980000000, "percentage": 11.4},
+      "Prada": {"revenue": 850000000, "percentage": 4.9},
+      "Others": {"revenue": 260000000, "percentage": 1.5}
+    },
+    "2024": {
+      "Ferragamo": {"revenue": 11850000000, "percentage": 60.1},
+      "Burberry": {"revenue": 4350000000, "percentage": 22.0},
+      "Gucci": {"revenue": 2280000000, "percentage": 11.6},
+      "Prada": {"revenue": 980000000, "percentage": 5.0},
+      "Others": {"revenue": 270000000, "percentage": 1.4}
+    },
+    "2025": {
+      "Ferragamo": {"revenue": 850000000, "percentage": 60.7},
+      "Burberry": {"revenue": 310000000, "percentage": 22.1},
+      "Gucci": {"revenue": 160000000, "percentage": 11.4},
+      "Prada": {"revenue": 65000000, "percentage": 4.6},
+      "Others": {"revenue": 15000000, "percentage": 1.1},
+      "note": "YTD Jan 1 - Feb 9, 2025"
+    }
+  },
+  "topSellingSkus": {
+    "2023": [
+      {"rank": 1, "skuId": "sku-001", "name": "Gancini Mini Bag", "units": 185, "revenue": 592000000},
+      {"rank": 2, "skuId": "sku-005", "name": "Vara Bow Ballet Flat", "units": 210, "revenue": 388500000},
+      {"rank": 3, "skuId": "sku-003", "name": "Vara Bow Shoulder Bag", "units": 125, "revenue": 562500000},
+      {"rank": 4, "skuId": "sku-009", "name": "Gancini Reversible Belt", "units": 165, "revenue": 206250000},
+      {"rank": 5, "skuId": "sku-010", "name": "Gancini Compact Wallet", "units": 142, "revenue": 134900000}
+    ],
+    "2024": [
+      {"rank": 1, "skuId": "sku-001", "name": "Gancini Mini Bag", "units": 205, "revenue": 656000000},
+      {"rank": 2, "skuId": "sku-021", "name": "Trifolio Crossbody", "units": 168, "revenue": 638400000},
+      {"rank": 3, "skuId": "sku-005", "name": "Vara Bow Ballet Flat", "units": 235, "revenue": 434750000},
+      {"rank": 4, "skuId": "sku-016", "name": "GG Marmont Mini Bag", "units": 145, "revenue": 609000000},
+      {"rank": 5, "skuId": "sku-009", "name": "Gancini Reversible Belt", "units": 188, "revenue": 235000000}
+    ],
+    "2025": [
+      {"rank": 1, "skuId": "sku-021", "name": "Trifolio Crossbody", "units": 28, "revenue": 106400000},
+      {"rank": 2, "skuId": "sku-001", "name": "Gancini Mini Bag", "units": 25, "revenue": 80000000},
+      {"rank": 3, "skuId": "sku-029", "name": "Silk Scarf", "units": 22, "revenue": 18700000},
+      {"rank": 4, "skuId": "sku-027", "name": "Card Case", "units": 18, "revenue": 11700000},
+      {"rank": 5, "skuId": "sku-005", "name": "Vara Bow Ballet Flat", "units": 15, "revenue": 27750000}
+    ]
+  },
+  "yearOverYearGrowth": {
+    "2023vs2022": {"revenueGrowth": 12.5, "unitsGrowth": 8.2, "avgBasketGrowth": 4.0},
+    "2024vs2023": {"revenueGrowth": 13.2, "unitsGrowth": 9.5, "avgBasketGrowth": 3.4},
+    "2025vs2024YTD": {"revenueGrowth": 8.5, "unitsGrowth": 5.8, "avgBasketGrowth": 2.6, "note": "Projected based on Jan-Feb data"}
+  },
+  "metadata": {
+    "totalRecords": 26,
+    "dateRange": {"from": "2023-01-01", "to": "2025-02-09"},
+    "currency": "VND",
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

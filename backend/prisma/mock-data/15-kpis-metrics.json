@@ -1,0 +1,263 @@
+{
+  "kpiDashboard": {
+    "asOfDate": "2025-02-09",
+    "currentSeason": "SS25",
+    "currentPhase": "PRE"
+  },
+  "annualKPIs": {
+    "2023": {
+      "revenue": {
+        "total": 17440000000,
+        "target": 17000000000,
+        "achievement": 102.6,
+        "yoyGrowth": 12.5
+      },
+      "grossMargin": {
+        "percentage": 57.8,
+        "target": 55.0,
+        "achievement": 105.1
+      },
+      "sellThrough": {
+        "percentage": 85.6,
+        "target": 82.0,
+        "achievement": 104.4
+      },
+      "inventory": {
+        "turnover": 4.2,
+        "weeksCover": 8.5,
+        "target": 4.0
+      },
+      "markdown": {
+        "percentage": 12.8,
+        "target": 15.0,
+        "achievement": 114.7
+      },
+      "unitsPerTransaction": 1.95,
+      "averageSellingPrice": 5520000,
+      "footfall": 285000,
+      "conversionRate": 42.5
+    },
+    "2024": {
+      "revenue": {
+        "total": 19730000000,
+        "target": 19000000000,
+        "achievement": 103.8,
+        "yoyGrowth": 13.2
+      },
+      "grossMargin": {
+        "percentage": 60.2,
+        "target": 58.0,
+        "achievement": 103.8
+      },
+      "sellThrough": {
+        "percentage": 88.5,
+        "target": 85.0,
+        "achievement": 104.1
+      },
+      "inventory": {
+        "turnover": 4.5,
+        "weeksCover": 7.8,
+        "target": 4.2
+      },
+      "markdown": {
+        "percentage": 10.2,
+        "target": 12.0,
+        "achievement": 117.6
+      },
+      "unitsPerTransaction": 2.02,
+      "averageSellingPrice": 5680000,
+      "footfall": 312000,
+      "conversionRate": 44.8
+    },
+    "2025YTD": {
+      "revenue": {
+        "total": 1400000000,
+        "target": 1500000000,
+        "achievement": 93.3,
+        "note": "Jan 1 - Feb 9"
+      },
+      "grossMargin": {
+        "percentage": 62.2,
+        "target": 60.0,
+        "achievement": 103.7
+      },
+      "sellThrough": {
+        "percentage": 60.0,
+        "target": 55.0,
+        "achievement": 109.1,
+        "note": "Season in progress"
+      },
+      "inventory": {
+        "currentValue": 4850000000,
+        "weeksCover": 6.5
+      },
+      "markdown": {
+        "percentage": 0,
+        "note": "No markdowns yet"
+      },
+      "unitsPerTransaction": 2.08,
+      "averageSellingPrice": 5850000
+    }
+  },
+  "monthlyTrends": {
+    "revenue": [
+      {"month": "2024-01", "value": 920000000},
+      {"month": "2024-02", "value": 1420000000},
+      {"month": "2024-03", "value": 1650000000},
+      {"month": "2024-04", "value": 1520000000},
+      {"month": "2024-05", "value": 1680000000},
+      {"month": "2024-06", "value": 1850000000},
+      {"month": "2024-07", "value": 1580000000},
+      {"month": "2024-08", "value": 1420000000},
+      {"month": "2024-09", "value": 1520000000},
+      {"month": "2024-10", "value": 1780000000},
+      {"month": "2024-11", "value": 2050000000},
+      {"month": "2024-12", "value": 2380000000},
+      {"month": "2025-01", "value": 980000000},
+      {"month": "2025-02", "value": 420000000, "note": "Partial"}
+    ],
+    "sellThrough": [
+      {"month": "2024-01", "value": 45.2},
+      {"month": "2024-02", "value": 58.5},
+      {"month": "2024-03", "value": 72.3},
+      {"month": "2024-04", "value": 78.5},
+      {"month": "2024-05", "value": 85.2},
+      {"month": "2024-06", "value": 92.1},
+      {"month": "2024-07", "value": 48.5},
+      {"month": "2024-08", "value": 62.3},
+      {"month": "2024-09", "value": 75.8},
+      {"month": "2024-10", "value": 82.5},
+      {"month": "2024-11", "value": 88.2},
+      {"month": "2024-12", "value": 94.5}
+    ]
+  },
+  "channelPerformance": {
+    "2024": {
+      "REX": {
+        "revenue": 9450000000,
+        "contribution": 47.9,
+        "sellThrough": 89.2,
+        "grossMargin": 60.8,
+        "footfall": 156000,
+        "conversionRate": 45.2
+      },
+      "TTP": {
+        "revenue": 9150000000,
+        "contribution": 46.4,
+        "sellThrough": 88.1,
+        "grossMargin": 59.8,
+        "footfall": 142000,
+        "conversionRate": 44.5
+      },
+      "ONLINE": {
+        "revenue": 1130000000,
+        "contribution": 5.7,
+        "sellThrough": 85.5,
+        "grossMargin": 58.5,
+        "conversionRate": 3.2
+      }
+    }
+  },
+  "brandPerformance": {
+    "2024": {
+      "Ferragamo": {
+        "revenue": 11850000000,
+        "contribution": 60.1,
+        "sellThrough": 89.5,
+        "grossMargin": 61.2,
+        "topCategory": "BAG"
+      },
+      "Burberry": {
+        "revenue": 4350000000,
+        "contribution": 22.0,
+        "sellThrough": 87.8,
+        "grossMargin": 59.5,
+        "topCategory": "RTW"
+      },
+      "Gucci": {
+        "revenue": 2280000000,
+        "contribution": 11.6,
+        "sellThrough": 88.2,
+        "grossMargin": 60.0,
+        "topCategory": "BAG"
+      },
+      "Prada": {
+        "revenue": 980000000,
+        "contribution": 5.0,
+        "sellThrough": 86.5,
+        "grossMargin": 58.8,
+        "topCategory": "BAG"
+      }
+    }
+  },
+  "categoryPerformance": {
+    "2024": {
+      "BAG": {
+        "revenue": 6950000000,
+        "contribution": 35.2,
+        "sellThrough": 90.2,
+        "grossMargin": 62.5,
+        "avgPrice": 5018051,
+        "topBrand": "Ferragamo"
+      },
+      "SHO": {
+        "revenue": 5420000000,
+        "contribution": 27.5,
+        "sellThrough": 88.5,
+        "grossMargin": 59.8,
+        "avgPrice": 3192579,
+        "topBrand": "Ferragamo"
+      },
+      "RTW": {
+        "revenue": 4280000000,
+        "contribution": 21.7,
+        "sellThrough": 85.2,
+        "grossMargin": 58.5,
+        "avgPrice": 8646465,
+        "topBrand": "Burberry"
+      },
+      "ACC": {
+        "revenue": 1780000000,
+        "contribution": 9.0,
+        "sellThrough": 92.5,
+        "grossMargin": 61.0,
+        "avgPrice": 2326797,
+        "topBrand": "Ferragamo"
+      },
+      "SLG": {
+        "revenue": 1300000000,
+        "contribution": 6.6,
+        "sellThrough": 94.2,
+        "grossMargin": 63.5,
+        "avgPrice": 1686122,
+        "topBrand": "Ferragamo"
+      }
+    }
+  },
+  "alerts": [
+    {
+      "type": "LOW_STOCK",
+      "severity": "HIGH",
+      "message": "Gancini Mini Bag running low - 14 units remaining",
+      "skuId": "sku-001",
+      "actionRequired": "Reorder 30 units"
+    },
+    {
+      "type": "OVERSTOCK",
+      "severity": "MEDIUM",
+      "message": "Silk Midi Dress SS23 aged 695 days",
+      "skuId": "sku-007",
+      "actionRequired": "Apply 40% markdown"
+    },
+    {
+      "type": "BUDGET",
+      "severity": "INFO",
+      "message": "SS25 Main phase budget 84% committed",
+      "budgetPlanId": "bp-2025-a-ss"
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2025-02-09T10:00:00Z",
+    "refreshInterval": "15min"
+  }
+}

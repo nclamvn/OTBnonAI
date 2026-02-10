@@ -1,0 +1,294 @@
+{
+  "budgetGroups": [
+    {
+      "id": "bg-001",
+      "code": "A",
+      "name": "Group A",
+      "nameVi": "Nhóm A",
+      "description": "Premium segment - flagship products and top-tier brands",
+      "priority": 1,
+      "color": "#D7B797",
+      "icon": "crown",
+      "targetMargin": 65,
+      "maxMarkdown": 30,
+      "isActive": true
+    },
+    {
+      "id": "bg-002",
+      "code": "B",
+      "name": "Group B",
+      "nameVi": "Nhóm B",
+      "description": "Core segment - essential collections and mid-tier brands",
+      "priority": 2,
+      "color": "#8B9DC3",
+      "icon": "star",
+      "targetMargin": 55,
+      "maxMarkdown": 40,
+      "isActive": true
+    },
+    {
+      "id": "bg-003",
+      "code": "C",
+      "name": "Group C",
+      "nameVi": "Nhóm C",
+      "description": "Value segment - entry-level products and promotional items",
+      "priority": 3,
+      "color": "#7CAC7A",
+      "icon": "tag",
+      "targetMargin": 45,
+      "maxMarkdown": 50,
+      "isActive": true
+    }
+  ],
+  "budgetTypes": [
+    {
+      "id": "bt-001",
+      "code": "Q1_MARKETING",
+      "name": "Q1 Marketing Budget",
+      "nameVi": "Ngân sách Marketing Q1",
+      "description": "First quarter marketing and promotional budget",
+      "fiscalQuarter": "Q1"
+    },
+    {
+      "id": "bt-002",
+      "code": "Q2_MARKETING",
+      "name": "Q2 Marketing Budget",
+      "nameVi": "Ngân sách Marketing Q2",
+      "fiscalQuarter": "Q2"
+    },
+    {
+      "id": "bt-003",
+      "code": "Q3_MARKETING",
+      "name": "Q3 Marketing Budget",
+      "nameVi": "Ngân sách Marketing Q3",
+      "fiscalQuarter": "Q3"
+    },
+    {
+      "id": "bt-004",
+      "code": "Q4_MARKETING",
+      "name": "Q4 Marketing Budget",
+      "nameVi": "Ngân sách Marketing Q4",
+      "fiscalQuarter": "Q4"
+    },
+    {
+      "id": "bt-005",
+      "code": "ANNUAL_OTB",
+      "name": "Annual OTB Budget",
+      "nameVi": "Ngân sách OTB cả năm",
+      "fiscalQuarter": null
+    }
+  ],
+  "budgetPlans": [
+    {
+      "id": "bp-2023-a-ss",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2023",
+      "seasonId": "season-2023-ss",
+      "budgetTypeId": "bt-001",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo SS23",
+      "totalBudget": 3500000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 50, "amount": 1750000000 },
+        "TTP": { "percentage": 50, "amount": 1750000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 40, "amount": 1400000000 },
+        "MAIN": { "percentage": 60, "amount": 2100000000 }
+      },
+      "categoryAllocation": {
+        "BAG": { "percentage": 35, "amount": 1225000000 },
+        "SHO": { "percentage": 30, "amount": 1050000000 },
+        "RTW": { "percentage": 20, "amount": 700000000 },
+        "ACC": { "percentage": 10, "amount": 350000000 },
+        "SLG": { "percentage": 5, "amount": 175000000 }
+      },
+      "status": "APPROVED",
+      "version": 3,
+      "isFinal": true,
+      "approvedBy": "user-001",
+      "approvedAt": "2023-01-10T10:00:00Z",
+      "createdAt": "2023-01-01T00:00:00Z",
+      "updatedAt": "2023-01-10T10:00:00Z"
+    },
+    {
+      "id": "bp-2023-a-fw",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2023",
+      "seasonId": "season-2023-fw",
+      "budgetTypeId": "bt-003",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo FW23",
+      "totalBudget": 4200000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 50, "amount": 2100000000 },
+        "TTP": { "percentage": 50, "amount": 2100000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 35, "amount": 1470000000 },
+        "MAIN": { "percentage": 65, "amount": 2730000000 }
+      },
+      "categoryAllocation": {
+        "BAG": { "percentage": 30, "amount": 1260000000 },
+        "SHO": { "percentage": 25, "amount": 1050000000 },
+        "RTW": { "percentage": 25, "amount": 1050000000 },
+        "ACC": { "percentage": 12, "amount": 504000000 },
+        "SLG": { "percentage": 8, "amount": 336000000 }
+      },
+      "status": "APPROVED",
+      "version": 2,
+      "isFinal": true,
+      "approvedBy": "user-001",
+      "approvedAt": "2023-07-05T14:00:00Z",
+      "createdAt": "2023-07-01T00:00:00Z",
+      "updatedAt": "2023-07-05T14:00:00Z"
+    },
+    {
+      "id": "bp-2023-b-ss",
+      "budgetGroupId": "bg-002",
+      "fiscalYearId": "fy-2023",
+      "seasonId": "season-2023-ss",
+      "budgetTypeId": "bt-001",
+      "brandId": "brand-002",
+      "name": "Group B - Burberry SS23",
+      "totalBudget": 2800000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 45, "amount": 1260000000 },
+        "TTP": { "percentage": 55, "amount": 1540000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 45, "amount": 1260000000 },
+        "MAIN": { "percentage": 55, "amount": 1540000000 }
+      },
+      "status": "APPROVED",
+      "version": 2,
+      "isFinal": true,
+      "approvedBy": "user-002",
+      "approvedAt": "2023-01-12T09:00:00Z",
+      "createdAt": "2023-01-02T00:00:00Z"
+    },
+    {
+      "id": "bp-2024-a-ss",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2024",
+      "seasonId": "season-2024-ss",
+      "budgetTypeId": "bt-001",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo SS24",
+      "totalBudget": 3800000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 50, "amount": 1900000000 },
+        "TTP": { "percentage": 50, "amount": 1900000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 40, "amount": 1520000000 },
+        "MAIN": { "percentage": 60, "amount": 2280000000 }
+      },
+      "categoryAllocation": {
+        "BAG": { "percentage": 35, "amount": 1330000000 },
+        "SHO": { "percentage": 28, "amount": 1064000000 },
+        "RTW": { "percentage": 22, "amount": 836000000 },
+        "ACC": { "percentage": 10, "amount": 380000000 },
+        "SLG": { "percentage": 5, "amount": 190000000 }
+      },
+      "status": "APPROVED",
+      "version": 4,
+      "isFinal": true,
+      "approvedBy": "user-001",
+      "approvedAt": "2024-01-08T11:00:00Z",
+      "createdAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "bp-2024-a-fw",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2024",
+      "seasonId": "season-2024-fw",
+      "budgetTypeId": "bt-003",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo FW24",
+      "totalBudget": 4500000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 48, "amount": 2160000000 },
+        "TTP": { "percentage": 52, "amount": 2340000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 38, "amount": 1710000000 },
+        "MAIN": { "percentage": 62, "amount": 2790000000 }
+      },
+      "status": "APPROVED",
+      "version": 3,
+      "isFinal": true,
+      "approvedBy": "user-001",
+      "approvedAt": "2024-07-10T10:30:00Z",
+      "createdAt": "2024-07-01T00:00:00Z"
+    },
+    {
+      "id": "bp-2025-a-ss",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2025",
+      "seasonId": "season-2025-ss",
+      "budgetTypeId": "bt-001",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo SS25",
+      "totalBudget": 4000000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 50, "amount": 2000000000 },
+        "TTP": { "percentage": 50, "amount": 2000000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 42, "amount": 1680000000 },
+        "MAIN": { "percentage": 58, "amount": 2320000000 }
+      },
+      "categoryAllocation": {
+        "BAG": { "percentage": 33, "amount": 1320000000 },
+        "SHO": { "percentage": 27, "amount": 1080000000 },
+        "RTW": { "percentage": 24, "amount": 960000000 },
+        "ACC": { "percentage": 11, "amount": 440000000 },
+        "SLG": { "percentage": 5, "amount": 200000000 }
+      },
+      "status": "APPROVED",
+      "version": 2,
+      "isFinal": true,
+      "approvedBy": "user-001",
+      "approvedAt": "2025-01-06T09:00:00Z",
+      "createdAt": "2025-01-01T00:00:00Z"
+    },
+    {
+      "id": "bp-2025-a-fw",
+      "budgetGroupId": "bg-001",
+      "fiscalYearId": "fy-2025",
+      "seasonId": "season-2025-fw",
+      "budgetTypeId": "bt-003",
+      "brandId": "brand-001",
+      "name": "Group A - Ferragamo FW25",
+      "totalBudget": 4800000000,
+      "currency": "VND",
+      "channelAllocation": {
+        "REX": { "percentage": 50, "amount": 2400000000 },
+        "TTP": { "percentage": 50, "amount": 2400000000 }
+      },
+      "phaseAllocation": {
+        "PRE": { "percentage": 40, "amount": 1920000000 },
+        "MAIN": { "percentage": 60, "amount": 2880000000 }
+      },
+      "status": "DRAFT",
+      "version": 1,
+      "isFinal": false,
+      "createdAt": "2025-02-01T00:00:00Z"
+    }
+  ],
+  "metadata": {
+    "totalBudgetGroups": 3,
+    "totalBudgetTypes": 5,
+    "totalBudgetPlans": 7,
+    "totalBudgetValue3Years": 27600000000,
+    "currency": "VND",
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}

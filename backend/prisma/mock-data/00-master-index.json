@@ -1,0 +1,144 @@
+{
+  "masterDataIndex": {
+    "name": "DAFC OTB Master Data - 3 Year Dataset",
+    "nameVi": "Bộ dữ liệu Master DAFC OTB - 3 năm",
+    "version": "1.0.0",
+    "description": "Complete mock dataset for DAFC OTB luxury fashion buying platform",
+    "dateRange": {
+      "from": "2023-01-01",
+      "to": "2025-12-31"
+    },
+    "generatedAt": "2025-02-09T00:00:00Z"
+  },
+  "files": [
+    {
+      "file": "01-brands.json",
+      "description": "Luxury brand master data",
+      "records": 8,
+      "tables": ["brands"]
+    },
+    {
+      "file": "02-categories.json",
+      "description": "Product categories and subcategories",
+      "records": 38,
+      "tables": ["categories", "subcategories"]
+    },
+    {
+      "file": "03-size-sets.json",
+      "description": "Size configurations for all product types",
+      "records": 10,
+      "tables": ["sizeSets"]
+    },
+    {
+      "file": "04-seasons.json",
+      "description": "Fiscal years, seasons, and phases",
+      "records": 12,
+      "tables": ["fiscalYears", "seasons", "seasonGroups"]
+    },
+    {
+      "file": "05-stores-channels.json",
+      "description": "Retail channels and store locations",
+      "records": 15,
+      "tables": ["channels", "stores", "storeGroups"]
+    },
+    {
+      "file": "06-budget-groups-plans.json",
+      "description": "Budget groups, types, and allocation plans",
+      "records": 15,
+      "tables": ["budgetGroups", "budgetTypes", "budgetPlans"]
+    },
+    {
+      "file": "07-skus.json",
+      "description": "Product SKU master data",
+      "records": 30,
+      "tables": ["skus"]
+    },
+    {
+      "file": "08-otb-analysis.json",
+      "description": "Open-to-Buy analysis records",
+      "records": 10,
+      "tables": ["otbRecords", "otbSummaryByYear"]
+    },
+    {
+      "file": "09-sales-history.json",
+      "description": "Monthly sales, category, brand breakdown",
+      "records": 26,
+      "tables": ["salesSummaryByMonth", "salesByCategory", "salesByBrand", "topSellingSkus"]
+    },
+    {
+      "file": "10-inventory.json",
+      "description": "Current inventory status and alerts",
+      "records": 10,
+      "tables": ["inventorySummary", "inventoryDetails", "lowStockAlerts", "overstockAlerts"]
+    },
+    {
+      "file": "11-purchase-orders.json",
+      "description": "Purchase order history",
+      "records": 11,
+      "tables": ["purchaseOrders", "poSummaryByYear"]
+    },
+    {
+      "file": "12-sku-proposals.json",
+      "description": "SKU proposals and buying recommendations",
+      "records": 3,
+      "tables": ["proposals", "proposalHistory"]
+    },
+    {
+      "file": "13-users.json",
+      "description": "Users, roles, and permissions",
+      "records": 14,
+      "tables": ["users", "roles"]
+    },
+    {
+      "file": "14-financial-settings.json",
+      "description": "Exchange rates and financial configurations",
+      "records": 3,
+      "tables": ["exchangeRates", "financialSettings", "markdownSchedule"]
+    },
+    {
+      "file": "15-kpis-metrics.json",
+      "description": "KPI dashboard and performance metrics",
+      "records": 8,
+      "tables": ["annualKPIs", "monthlyTrends", "channelPerformance", "brandPerformance", "categoryPerformance", "alerts"]
+    }
+  ],
+  "statistics": {
+    "totalFiles": 15,
+    "totalRecords": 203,
+    "totalTables": 35,
+    "fiscalYears": 3,
+    "seasons": 6,
+    "brands": 8,
+    "categories": 6,
+    "subcategories": 32,
+    "stores": 7,
+    "channels": 4,
+    "skus": 30,
+    "users": 8,
+    "purchaseOrders": 11,
+    "proposals": 3
+  },
+  "financialSummary": {
+    "currency": "VND",
+    "threeYearRevenue": 38570000000,
+    "threeYearBudget": 24600000000,
+    "averageGrossMargin": 60.1,
+    "averageSellThrough": 87.1
+  },
+  "relationships": {
+    "brand_to_sku": "one-to-many",
+    "category_to_subcategory": "one-to-many",
+    "season_to_budgetPlan": "one-to-many",
+    "budgetPlan_to_otbRecord": "one-to-many",
+    "budgetPlan_to_purchaseOrder": "one-to-many",
+    "store_to_channel": "many-to-one",
+    "sku_to_inventory": "one-to-many",
+    "user_to_role": "many-to-one"
+  },
+  "dataQuality": {
+    "completeness": 100,
+    "consistency": 100,
+    "accuracy": "mock_data",
+    "validation": "passed"
+  }
+}

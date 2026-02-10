@@ -1,0 +1,122 @@
+{
+  "brands": [
+    {
+      "id": "brand-001",
+      "code": "FER",
+      "name": "Ferragamo",
+      "fullName": "Salvatore Ferragamo S.p.A.",
+      "country": "Italy",
+      "category": "Luxury",
+      "foundedYear": 1927,
+      "description": "Italian luxury goods company specializing in shoes, leather goods and ready-to-wear",
+      "logo": "/brands/ferragamo.png",
+      "primaryColor": "#8B4513",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-002",
+      "code": "BUR",
+      "name": "Burberry",
+      "fullName": "Burberry Group plc",
+      "country": "United Kingdom",
+      "category": "Luxury",
+      "foundedYear": 1856,
+      "description": "British luxury fashion house focusing on trench coats, ready-to-wear, and accessories",
+      "logo": "/brands/burberry.png",
+      "primaryColor": "#D4A574",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-003",
+      "code": "GUC",
+      "name": "Gucci",
+      "fullName": "Guccio Gucci S.p.A.",
+      "country": "Italy",
+      "category": "Luxury",
+      "foundedYear": 1921,
+      "description": "Italian luxury brand of fashion and leather goods",
+      "logo": "/brands/gucci.png",
+      "primaryColor": "#006400",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-004",
+      "code": "PRA",
+      "name": "Prada",
+      "fullName": "Prada S.p.A.",
+      "country": "Italy",
+      "category": "Luxury",
+      "foundedYear": 1913,
+      "description": "Italian luxury fashion house specializing in leather handbags, travel accessories, shoes",
+      "logo": "/brands/prada.png",
+      "primaryColor": "#000000",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-005",
+      "code": "LV",
+      "name": "Louis Vuitton",
+      "fullName": "Louis Vuitton Malletier",
+      "country": "France",
+      "category": "Luxury",
+      "foundedYear": 1854,
+      "description": "French fashion house and luxury goods company",
+      "logo": "/brands/lv.png",
+      "primaryColor": "#8B4513",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-006",
+      "code": "DG",
+      "name": "Dolce & Gabbana",
+      "fullName": "Dolce & Gabbana S.r.l.",
+      "country": "Italy",
+      "category": "Luxury",
+      "foundedYear": 1985,
+      "description": "Italian luxury fashion house known for bold Mediterranean-inspired designs",
+      "logo": "/brands/dg.png",
+      "primaryColor": "#C41E3A",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-007",
+      "code": "VER",
+      "name": "Versace",
+      "fullName": "Gianni Versace S.r.l.",
+      "country": "Italy",
+      "category": "Luxury",
+      "foundedYear": 1978,
+      "description": "Italian luxury fashion company known for glamorous designs",
+      "logo": "/brands/versace.png",
+      "primaryColor": "#FFD700",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    },
+    {
+      "id": "brand-008",
+      "code": "BAL",
+      "name": "Balenciaga",
+      "fullName": "Balenciaga SA",
+      "country": "Spain",
+      "category": "Luxury",
+      "foundedYear": 1919,
+      "description": "Spanish luxury fashion house known for avant-garde designs",
+      "logo": "/brands/balenciaga.png",
+      "primaryColor": "#000000",
+      "isActive": true,
+      "createdAt": "2022-01-01T00:00:00Z"
+    }
+  ],
+  "metadata": {
+    "totalBrands": 8,
+    "activeBrands": 8,
+    "generatedAt": "2025-02-09T00:00:00Z",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "sizeSets": [
+    {
+      "id": "sizeset-001",
+      "code": "CLOTHING_ALPHA",
+      "name": "Clothing Alpha Sizes",
+      "nameVi": "Size chữ (Quần áo)",
+      "description": "Standard alpha sizing for ready-to-wear",
+      "sizes": ["XXS", "XS", "S", "M", "L", "XL", "XXL"],
+      "defaultDistribution": {
+        "XXS": 5,
+        "XS": 10,
+        "S": 20,
+        "M": 30,
+        "L": 20,
+        "XL": 10,
+        "XXL": 5
+      }
+    },
+    {
+      "id": "sizeset-002",
+      "code": "CLOTHING_NUMERIC",
+      "name": "Clothing Numeric Sizes",
+      "nameVi": "Size số (Quần áo)",
+      "description": "Numeric sizing for pants and trousers",
+      "sizes": ["36", "38", "40", "42", "44", "46", "48", "50"],
+      "defaultDistribution": {
+        "36": 5,
+        "38": 10,
+        "40": 20,
+        "42": 25,
+        "44": 20,
+        "46": 12,
+        "48": 5,
+        "50": 3
+      }
+    },
+    {
+      "id": "sizeset-003",
+      "code": "SHOE_EU",
+      "name": "European Shoe Sizes",
+      "nameVi": "Size giày EU",
+      "description": "European shoe sizing",
+      "sizes": ["35", "35.5", "36", "36.5", "37", "37.5", "38", "38.5", "39", "39.5", "40", "40.5", "41", "41.5", "42", "42.5", "43", "44", "45"],
+      "defaultDistribution": {
+        "35": 3,
+        "35.5": 4,
+        "36": 8,
+        "36.5": 10,
+        "37": 12,
+        "37.5": 12,
+        "38": 12,
+        "38.5": 10,
+        "39": 8,
+        "39.5": 6,
+        "40": 5,
+        "40.5": 4,
+        "41": 3,
+        "41.5": 2,
+        "42": 1
+      }
+    },
+    {
+      "id": "sizeset-004",
+      "code": "SHOE_EU_MEN",
+      "name": "Men's European Shoe Sizes",
+      "nameVi": "Size giày nam EU",
+      "description": "European men's shoe sizing",
+      "sizes": ["39", "39.5", "40", "40.5", "41", "41.5", "42", "42.5", "43", "43.5", "44", "44.5", "45", "46"],
+      "defaultDistribution": {
+        "39": 3,
+        "39.5": 5,
+        "40": 8,
+        "40.5": 10,
+        "41": 12,
+        "41.5": 12,
+        "42": 15,
+        "42.5": 12,
+        "43": 10,
+        "43.5": 6,
+        "44": 4,
+        "44.5": 2,
+        "45": 1
+      }
+    },
+    {
+      "id": "sizeset-005",
+      "code": "ONE_SIZE",
+      "name": "One Size",
+      "nameVi": "Free size",
+      "description": "Single size products",
+      "sizes": ["OS"],
+      "defaultDistribution": {
+        "OS": 100
+      }
+    },
+    {
+      "id": "sizeset-006",
+      "code": "BELT_SIZE",
+      "name": "Belt Sizes",
+      "nameVi": "Size thắt lưng",
+      "description": "Belt sizing in cm",
+      "sizes": ["75", "80", "85", "90", "95", "100", "105", "110"],
+      "defaultDistribution": {
+        "75": 5,
+        "80": 12,
+        "85": 20,
+        "90": 25,
+        "95": 20,
+        "100": 12,
+        "105": 4,
+        "110": 2
+      }
+    },
+    {
+      "id": "sizeset-007",
+      "code": "HAT_SIZE",
+      "name": "Hat Sizes",
+      "nameVi": "Size mũ",
+      "description": "Hat sizing",
+      "sizes": ["S", "M", "L"],
+      "defaultDistribution": {
+        "S": 25,
+        "M": 50,
+        "L": 25
+      }
+    },
+    {
+      "id": "sizeset-008",
+      "code": "WATCH_SIZE",
+      "name": "Watch Case Sizes",
+      "nameVi": "Size mặt đồng hồ",
+      "description": "Watch case diameter in mm",
+      "sizes": ["28mm", "32mm", "36mm", "38mm", "40mm", "42mm", "44mm"],
+      "defaultDistribution": {
+        "28mm": 5,
+        "32mm": 10,
+        "36mm": 20,
+        "38mm": 25,
+        "40mm": 20,
+        "42mm": 15,
+        "44mm": 5
+      }
+    },
+    {
+      "id": "sizeset-009",
+      "code": "PHONE_MODEL",
+      "name": "Phone Models",
+      "nameVi": "Dòng điện thoại",
+      "description": "Phone case compatibility",
+      "sizes": ["iPhone 14", "iPhone 14 Pro", "iPhone 14 Pro Max", "iPhone 15", "iPhone 15 Pro", "iPhone 15 Pro Max"],
+      "defaultDistribution": {
+        "iPhone 14": 15,
+        "iPhone 14 Pro": 15,
+        "iPhone 14 Pro Max": 15,
+        "iPhone 15": 20,
+        "iPhone 15 Pro": 20,
+        "iPhone 15 Pro Max": 15
+      }
+    },
+    {
+      "id": "sizeset-010",
+      "code": "RING_SIZE",
+      "name": "Ring Sizes",
+      "nameVi": "Size nhẫn",
+      "description": "Ring sizing",
+      "sizes": ["5", "6", "7", "8", "9", "10", "11"],
+      "defaultDistribution": {
+        "5": 8,
+        "6": 15,
+        "7": 25,
+        "8": 25,
+        "9": 15,
+        "10": 8,
+        "11": 4
+      }
+    }
+  ],
+  "metadata": {
+    "totalSizeSets": 10,
+    "generatedAt": "2025-02-09T00:00:00Z"
+  }
+}
