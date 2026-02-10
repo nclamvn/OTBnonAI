@@ -4,7 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
   FileCheck, CheckCircle, XCircle, Clock, Loader2,
   Filter, Search, ChevronDown, Eye, MessageSquare,
-  X, AlertTriangle, Shield, ArrowUpRight
+  X, AlertTriangle, Shield, ArrowUpRight,
+  Wallet, BarChart3, Package, ClipboardList
 } from 'lucide-react';
 import { approvalService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -26,9 +27,9 @@ const STATUS_CONFIG = {
 };
 
 const ENTITY_ICONS = {
-  budget: '💰',
-  planning: '📊',
-  proposal: '📦',
+  budget: Wallet,
+  planning: BarChart3,
+  proposal: Package,
 };
 
 /* ═══════════════════════════════════════════════
@@ -313,7 +314,7 @@ const ApprovalsScreen = ({ darkMode }) => {
                       {/* Type */}
                       <td className="px-3 py-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-base">{ENTITY_ICONS[item.entityType] || '📋'}</span>
+                          {(() => { const Icon = ENTITY_ICONS[item.entityType] || ClipboardList; return <Icon size={16} strokeWidth={2} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />; })()}
                           <span className={`text-sm font-medium font-['Montserrat'] capitalize ${textPrimary}`}>
                             {item.entityType}
                           </span>
