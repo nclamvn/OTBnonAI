@@ -501,9 +501,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
   };
 
   return (
-    <div className="space-y-5">
-      <div className={`rounded-2xl shadow-sm border p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
-        <div className="flex items-center justify-between mb-4">
+    <div className="space-y-3">
+      <div className={`rounded-xl shadow-sm border p-3 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+        <div className="flex items-center justify-between mb-2">
           
 
           {/* Context Banner from OTB Analysis */}
@@ -545,13 +545,13 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
           )}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className={`rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-            <div className={`flex items-center gap-2 mb-3 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-              <Filter size={14} />
-              <span className="text-sm font-semibold font-['Montserrat']">{t('skuProposal.filters')}</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+          <div className={`rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
+            <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+              <Filter size={12} />
+              <span className="text-xs font-semibold font-['Montserrat']">{t('skuProposal.filters')}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.budget')}</label>
                 <select
@@ -591,12 +591,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
             </div>
           </div>
 
-          <div className={`rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
-            <div className={`flex items-center gap-2 mb-3 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-              <Filter size={14} />
-              <span className="text-sm font-semibold font-['Montserrat']">{t('common.filters')}</span>
+          <div className={`rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+            <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+              <Filter size={12} />
+              <span className="text-xs font-semibold font-['Montserrat']">{t('common.filters')}</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.gender')}</label>
                 <select
@@ -638,12 +638,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
         </div>
 
         {/* Versions Section */}
-        <div className={`mt-4 rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-          <div className={`flex items-center gap-2 mb-3 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-            <Package size={14} />
-            <span className="text-sm font-semibold font-['Montserrat']">{t('skuProposal.version')}</span>
+        <div className={`mt-2 rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
+          <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+            <Package size={12} />
+            <span className="text-xs font-semibold font-['Montserrat']">{t('skuProposal.version')}</span>
           </div>
-          <div className="flex flex-wrap items-center gap-6">
+          <div className="flex flex-wrap items-center gap-4">
             {/* SKU Version Dropdown */}
             <div className="flex items-center gap-3">
               <span className={`text-sm font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.version')}</span>

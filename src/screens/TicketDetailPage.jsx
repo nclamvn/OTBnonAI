@@ -50,18 +50,18 @@ const CARD_STYLES_LIGHT = [
 ========================= */
 
 const CollectionBarChart = ({ data, darkMode, t }) => (
-  <div className={`border rounded-xl shadow-sm p-6 ${
+  <div className={`border rounded-xl shadow-sm p-4 ${
     darkMode
       ? 'bg-[#121212] border-[#2E2E2E]'
       : 'bg-white border-gray-300'
   }`}>
-    <h3 className={`text-base font-semibold font-['Montserrat'] ${
+    <h3 className={`text-sm font-semibold font-['Montserrat'] ${
       darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
     }`}>{t ? t('planningDetail.collection') : 'Collection Allocation'}</h3>
-    <p className={`text-sm mb-4 ${
+    <p className={`text-xs mb-2 ${
       darkMode ? 'text-[#999999]' : 'text-gray-700'
-    }`}>Carry Over vs Seasonal — REX & TTP by collection</p>
-    <div className="h-[300px]" style={{ minWidth: 0, minHeight: 0 }}>
+    }`}>Carry Over vs Seasonal — REX & TTP</p>
+    <div className="h-[200px]" style={{ minWidth: 0, minHeight: 0 }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
           <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
@@ -88,18 +88,18 @@ const CollectionBarChart = ({ data, darkMode, t }) => (
 );
 
 const GenderBarChart = ({ data, darkMode, t }) => (
-  <div className={`border rounded-xl shadow-sm p-6 ${
+  <div className={`border rounded-xl shadow-sm p-4 ${
     darkMode
       ? 'bg-[#121212] border-[#2E2E2E]'
       : 'bg-white border-gray-300'
   }`}>
-    <h3 className={`text-base font-semibold font-['Montserrat'] ${
+    <h3 className={`text-sm font-semibold font-['Montserrat'] ${
       darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
     }`}>{t ? t('planningDetail.gender') : 'Gender Allocation'}</h3>
-    <p className={`text-sm mb-4 ${
+    <p className={`text-xs mb-2 ${
       darkMode ? 'text-[#999999]' : 'text-gray-700'
-    }`}>Male vs Female — REX & TTP by gender</p>
-    <div className="h-[300px]" style={{ minWidth: 0, minHeight: 0 }}>
+    }`}>Male vs Female — REX & TTP</p>
+    <div className="h-[200px]" style={{ minWidth: 0, minHeight: 0 }}>
       <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
           <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
@@ -321,7 +321,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode }) => {
               </div>
               <div>
                 <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>SRP</span>
-                <div className={`font-medium text-lg font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.srp)}</div>
+                <div className={`font-medium text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.srp)}</div>
               </div>
             </div>
           </div>
@@ -948,7 +948,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
               <ArrowLeft size={24} />
             </button>
             <div>
-              <h1 className="text-lg font-semibold font-['Montserrat'] text-white">
+              <h1 className="text-sm font-semibold font-['Montserrat'] text-white">
                 {t('ticketDetail.title')}
               </h1>
               <p className="text-xs text-white/70">
@@ -1033,7 +1033,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.totalBudget')}</p>
-              <p className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budgetData.totalBudget)}</p>
+              <p className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budgetData.totalBudget)}</p>
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.budgetName')}</p>
@@ -1065,7 +1065,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>REX</p>
-              <p className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(rexNum)}</p>
+              <p className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(rexNum)}</p>
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTP</p>
@@ -1073,7 +1073,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
             </div>
             <div>
               <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.total')}</p>
-              <p className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalRexTtp)}</p>
+              <p className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalRexTtp)}</p>
             </div>
           </div>
         </div>
@@ -1091,7 +1091,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
 
       {/* 3. Charts - Collection & Gender (grouped bar: REX, TTP per category) */}
       {(collectionData.length > 0 || genderData.length > 0) && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
           {collectionData.length > 0 && <CollectionBarChart data={collectionData} darkMode={darkMode} t={t} />}
           {genderData.length > 0 && <GenderBarChart data={genderData} darkMode={darkMode} t={t} />}
         </div>
@@ -1217,7 +1217,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
               >
                 <ChevronDown size={18} className={`transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                 <div className="text-left flex-1 min-w-0">
-                  <div className="font-semibold text-lg font-['Montserrat']">{block.subCategory}</div>
+                  <div className="font-semibold text-sm font-['Montserrat']">{block.subCategory}</div>
                   <div className={`text-sm mt-0.5 ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>
                     {block.gender} • {block.productType} • <span className="font-['JetBrains_Mono']">{block.items.length}</span> SKUs
                   </div>
@@ -1225,17 +1225,17 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }) {
                 <div className="flex items-center gap-6 shrink-0">
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>% Buy propose</div>
-                    <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.pctBuyPropose}%</div>
+                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.pctBuyPropose}%</div>
                   </div>
                   <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>OTB propose</div>
-                    <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(block.otbPropose)}</div>
+                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(block.otbPropose)}</div>
                   </div>
                   <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
                   <div className="text-right">
                     <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>Total SRP</div>
-                    <div className={`text-lg font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalSrp)}</div>
+                    <div className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalSrp)}</div>
                   </div>
                 </div>
               </button>
