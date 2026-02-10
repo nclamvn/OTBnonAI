@@ -47,3 +47,9 @@ next-env.d.ts
 backend/dist
 backend/node_modules
 backend/.env
+
+# performance testing reports (generated)
+performance-testing/reports/*.json
+performance-testing/reports/*.md
+!performance-testing/reports/COMPARISON_TEMPLATE.md
+performance-testing/reports/lighthouse/
