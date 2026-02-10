@@ -34,6 +34,10 @@ export class ProposalService {
           budget: { include: { groupBrand: true } },
           planningVersion: { select: { id: true, planningCode: true, versionNumber: true } },
           createdBy: { select: { id: true, name: true, email: true } },
+          products: {
+            orderBy: { sortOrder: 'asc' },
+            include: { allocations: true },
+          },
           _count: { select: { products: true } },
         },
         skip: (page - 1) * pageSize,

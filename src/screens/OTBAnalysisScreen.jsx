@@ -216,29 +216,48 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }) 
         // Transform categories into hierarchy
         const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data || []);
         if (categories.length > 0) {
-          const genderMap = {};
-          categories.forEach(cat => {
-            const genderId = (cat.gender?.id || cat.genderId || 'unknown').toLowerCase();
-            const genderName = cat.gender?.name || cat.genderName || genderId;
-            if (!genderMap[genderId]) {
-              genderMap[genderId] = { gender: { id: genderId, name: genderName }, categories: [] };
-            }
-            const catId = cat.id || cat.categoryId;
-            const catName = cat.name || cat.categoryName;
-            let existingCat = genderMap[genderId].categories.find(c => c.id === catId);
-            if (!existingCat) {
-              existingCat = { id: catId, name: catName, subCategories: [] };
-              genderMap[genderId].categories.push(existingCat);
-            }
-            if (cat.subCategories && cat.subCategories.length > 0) {
-              cat.subCategories.forEach(sub => {
-                if (!existingCat.subCategories.find(s => s.id === (sub.id || sub.subCategoryId))) {
-                  existingCat.subCategories.push({ id: sub.id || sub.subCategoryId, name: sub.name || sub.subCategoryName });
-                }
-              });
-            }
-          });
-          setCategoryStructure(Object.values(genderMap));
+          // Check if API returns gender-level hierarchy (each item has .categories[])
+          const isGenderHierarchy = categories[0]?.categories && Array.isArray(categories[0].categories);
+          if (isGenderHierarchy) {
+            // API returns: [{ id, name: "Female", categories: [{ id, name, subCategories: [...] }] }]
+            const structure = categories.map(genderObj => ({
+              gender: { id: genderObj.id, name: genderObj.name },
+              categories: (genderObj.categories || []).map(cat => ({
+                id: cat.id,
+                name: cat.name,
+                subCategories: (cat.subCategories || []).map(sub => ({
+                  id: sub.id || sub.subCategoryId,
+                  name: sub.name || sub.subCategoryName,
+                })),
+              })),
+            }));
+            setCategoryStructure(structure);
+          } else {
+            // Flat list: each item is a category with gender ref
+            const genderMap = {};
+            categories.forEach(cat => {
+              const genderId = (cat.gender?.id || cat.genderId || 'unknown').toLowerCase();
+              const genderName = cat.gender?.name || cat.genderName || genderId;
+              if (!genderMap[genderId]) {
+                genderMap[genderId] = { gender: { id: genderId, name: genderName }, categories: [] };
+              }
+              const catId = cat.id || cat.categoryId;
+              const catName = cat.name || cat.categoryName;
+              let existingCat = genderMap[genderId].categories.find(c => c.id === catId);
+              if (!existingCat) {
+                existingCat = { id: catId, name: catName, subCategories: [] };
+                genderMap[genderId].categories.push(existingCat);
+              }
+              if (cat.subCategories && cat.subCategories.length > 0) {
+                cat.subCategories.forEach(sub => {
+                  if (!existingCat.subCategories.find(s => s.id === (sub.id || sub.subCategoryId))) {
+                    existingCat.subCategories.push({ id: sub.id || sub.subCategoryId, name: sub.name || sub.subCategoryName });
+                  }
+                });
+              }
+            });
+            setCategoryStructure(Object.values(genderMap));
+          }
         }
 
         // Transform collections into sections

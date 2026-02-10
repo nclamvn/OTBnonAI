@@ -108,6 +108,10 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
               block = { gender, category, subCategory, items: [] };
               blocks.push(block);
             }
+            // Extract store allocations from product allocations
+            const allocations = prod.allocations || [];
+            const rexAlloc = allocations.find(a => (a.store?.code || '').toUpperCase() === 'REX');
+            const ttpAlloc = allocations.find(a => (a.store?.code || '').toUpperCase() === 'TTP');
             block.items.push({
               sku: prod.skuCode || prod.sku,
               name: prod.productName || prod.name,
@@ -118,8 +122,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }) => {
               unitCost: Number(prod.unitCost) || 0,
               srp: Number(prod.srp) || 0,
               order: prod.orderQty || 0,
-              rex: prod.rex || 0,
-              ttp: prod.ttp || 0,
+              rex: rexAlloc?.quantity || prod.rex || 0,
+              ttp: ttpAlloc?.quantity || prod.ttp || 0,
               ttlValue: Number(prod.totalValue) || 0,
               customerTarget: prod.customerTarget || 'New'
             });

@@ -13,6 +13,29 @@ async function main() {
   console.log('🌱 DAFC OTB — Seeding 3-Year Mock Data (2023-2025)');
   console.log('═'.repeat(60));
 
+  // ─── CLEANUP (delete in reverse-dependency order) ─────────────────────
+  console.log('  🧹 Cleaning existing data...');
+  await prisma.productAllocation.deleteMany();
+  await prisma.proposalProduct.deleteMany();
+  await prisma.proposal.deleteMany();
+  await prisma.approval.deleteMany();
+  await prisma.approvalWorkflowStep.deleteMany();
+  await prisma.planningDetail.deleteMany();
+  await prisma.planningVersion.deleteMany();
+  await prisma.budgetDetail.deleteMany();
+  await prisma.budget.deleteMany();
+  await prisma.skuCatalog.deleteMany();
+  await prisma.subCategory.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.gender.deleteMany();
+  await prisma.collection.deleteMany();
+  await prisma.groupBrand.deleteMany();
+  await prisma.store.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.role.deleteMany();
+  console.log('  ✅ Database cleaned');
+
   // ─── ROLES ──────────────────────────────────────────────────────────────
   const roles = await Promise.all([
     prisma.role.upsert({
@@ -341,8 +364,75 @@ async function main() {
     { skuCode: 'GUC-SHO-001', productName: 'Horsebit Loafer', productType: 'W SHOES', theme: 'SS24 Carryover', color: 'Nero', composition: 'Calfskin Leather', srp: 28000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
     { skuCode: 'GUC-ACC-001', productName: 'GG Supreme Belt', productType: 'ACCESSORIES', theme: 'SS24 Carryover', color: 'Beige/Ebony', composition: 'GG Supreme Canvas', srp: 14000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
 
-    // === PRADA (1 SKU) ===
+    // === PRADA (10 SKUs) ===
     { skuCode: 'PRA-BAG-001', productName: 'Re-Edition 2005 Nylon Bag', productType: 'W BAGS', theme: 'SS24 Main', color: 'Nero', composition: 'Recycled Nylon', srp: 35000000, brandId: brandPRA.id, seasonGroupId: 'SS' },
+    { skuCode: 'PRA-BAG-002', productName: 'Galleria Saffiano Tote', productType: 'W BAGS', theme: 'SS25 Main', color: 'Cipria', composition: 'Saffiano Leather', srp: 72000000, brandId: brandPRA.id, seasonGroupId: 'SS' },
+    { skuCode: 'PRA-BAG-003', productName: 'Cleo Brushed Leather Bag', productType: 'W BAGS', theme: 'FW24 Main', color: 'Nero', composition: 'Brushed Leather', srp: 55000000, brandId: brandPRA.id, seasonGroupId: 'FW' },
+    { skuCode: 'PRA-RTW-001', productName: 'Re-Nylon Puffer Jacket', productType: 'W OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Re-Nylon', srp: 89000000, brandId: brandPRA.id, seasonGroupId: 'FW' },
+    { skuCode: 'PRA-RTW-002', productName: 'Silk Crepe Blouse', productType: 'W TOPS', theme: 'SS25 Main', color: 'Bianco', composition: '100% Silk', srp: 42000000, brandId: brandPRA.id, seasonGroupId: 'SS' },
+    { skuCode: 'PRA-RTW-003', productName: 'Wool Tailored Trouser', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Virgin Wool', srp: 38000000, brandId: brandPRA.id, seasonGroupId: 'FW' },
+    { skuCode: 'PRA-RTW-004', productName: 'Cashmere Crew Neck', productType: 'M TOPS', theme: 'FW24 Main', color: 'Camel', composition: '100% Cashmere', srp: 45000000, brandId: brandPRA.id, seasonGroupId: 'FW' },
+    { skuCode: 'PRA-SHO-001', productName: 'Monolith Chelsea Boot', productType: 'W SHOES', theme: 'FW25 Main', color: 'Nero', composition: 'Brushed Leather', srp: 38000000, brandId: brandPRA.id, seasonGroupId: 'FW' },
+    { skuCode: 'PRA-ACC-001', productName: 'Saffiano Triangle Logo Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Nero', composition: 'Saffiano Leather', srp: 14000000, brandId: brandPRA.id },
+    { skuCode: 'PRA-SLG-001', productName: 'Small Saffiano Wallet', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Saffiano Leather', srp: 12000000, brandId: brandPRA.id },
+
+    // === LOUIS VUITTON (10 SKUs) ===
+    { skuCode: 'LV-BAG-001', productName: 'Neverfull MM Monogram', productType: 'W BAGS', theme: 'Carryover', color: 'Monogram', composition: 'Monogram Canvas', srp: 48000000, brandId: brandLV.id },
+    { skuCode: 'LV-BAG-002', productName: 'Speedy 25 Bandoulière', productType: 'W BAGS', theme: 'SS25 Main', color: 'Monogram', composition: 'Monogram Canvas', srp: 42000000, brandId: brandLV.id, seasonGroupId: 'SS' },
+    { skuCode: 'LV-BAG-003', productName: 'Alma BB Epi', productType: 'W BAGS', theme: 'FW24 Main', color: 'Noir', composition: 'Epi Leather', srp: 52000000, brandId: brandLV.id, seasonGroupId: 'FW' },
+    { skuCode: 'LV-BAG-004', productName: 'Keepall 45 Monogram', productType: 'M BAGS', theme: 'Carryover', color: 'Monogram', composition: 'Monogram Canvas', srp: 58000000, brandId: brandLV.id },
+    { skuCode: 'LV-RTW-001', productName: 'Monogram Denim Jacket', productType: 'W OUTERWEAR', theme: 'SS25 Main', color: 'Blue', composition: 'Monogram Denim', srp: 72000000, brandId: brandLV.id, seasonGroupId: 'SS' },
+    { skuCode: 'LV-RTW-002', productName: 'Silk Monogram Scarf Top', productType: 'W TOPS', theme: 'SS25 Main', color: 'Multicolor', composition: '100% Silk', srp: 38000000, brandId: brandLV.id, seasonGroupId: 'SS' },
+    { skuCode: 'LV-SHO-001', productName: 'Archlight Sneaker', productType: 'W SHOES', theme: 'SS24 Main', color: 'White', composition: 'Technical Fabric', srp: 32000000, brandId: brandLV.id, seasonGroupId: 'SS' },
+    { skuCode: 'LV-SLG-001', productName: 'Zippy Wallet Monogram', productType: 'SLG', theme: 'Carryover', color: 'Monogram', composition: 'Monogram Canvas', srp: 22000000, brandId: brandLV.id },
+    { skuCode: 'LV-SLG-002', productName: 'Card Holder Damier', productType: 'SLG', theme: 'Carryover', color: 'Damier Ebene', composition: 'Damier Canvas', srp: 8500000, brandId: brandLV.id },
+    { skuCode: 'LV-ACC-001', productName: 'Initiales Belt 40mm', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Monogram/Nero', composition: 'Monogram Canvas', srp: 16000000, brandId: brandLV.id },
+
+    // === DOLCE & GABBANA (8 SKUs) ===
+    { skuCode: 'DG-BAG-001', productName: 'Sicily Medium', productType: 'W BAGS', theme: 'SS24 Main', color: 'Nero', composition: 'Dauphine Leather', srp: 55000000, brandId: brandDG.id, seasonGroupId: 'SS' },
+    { skuCode: 'DG-BAG-002', productName: 'Devotion Crossbody', productType: 'W BAGS', theme: 'SS25 Main', color: 'Rosso', composition: 'Quilted Nappa', srp: 48000000, brandId: brandDG.id, seasonGroupId: 'SS' },
+    { skuCode: 'DG-RTW-001', productName: 'Lace Midi Dress', productType: 'W DRESSES', theme: 'SS25 Main', color: 'Nero', composition: 'Cotton Lace', srp: 98000000, brandId: brandDG.id, seasonGroupId: 'SS' },
+    { skuCode: 'DG-RTW-002', productName: 'Brocade Blazer', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Gold/Nero', composition: 'Silk Brocade', srp: 120000000, brandId: brandDG.id, seasonGroupId: 'FW' },
+    { skuCode: 'DG-RTW-003', productName: 'Silk Printed Shirt', productType: 'M TOPS', theme: 'SS25 Main', color: 'Maiolica Print', composition: '100% Silk Twill', srp: 38000000, brandId: brandDG.id, seasonGroupId: 'SS' },
+    { skuCode: 'DG-SHO-001', productName: 'DG Logo Pump', productType: 'W SHOES', theme: 'SS24 Main', color: 'Nero', composition: 'Patent Leather', srp: 28000000, brandId: brandDG.id, seasonGroupId: 'SS' },
+    { skuCode: 'DG-ACC-001', productName: 'Crown Buckle Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Nero', composition: 'Leather + Metal', srp: 18000000, brandId: brandDG.id },
+    { skuCode: 'DG-SLG-001', productName: 'DG Logo Wallet', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Dauphine Leather', srp: 14000000, brandId: brandDG.id },
+
+    // === VERSACE (8 SKUs) ===
+    { skuCode: 'VER-BAG-001', productName: 'La Medusa Medium', productType: 'W BAGS', theme: 'SS24 Main', color: 'Nero', composition: 'Calf Leather', srp: 58000000, brandId: brandVER.id, seasonGroupId: 'SS' },
+    { skuCode: 'VER-BAG-002', productName: 'Virtus Shoulder Bag', productType: 'W BAGS', theme: 'FW24 Main', color: 'Nero', composition: 'Quilted Leather', srp: 65000000, brandId: brandVER.id, seasonGroupId: 'FW' },
+    { skuCode: 'VER-RTW-001', productName: 'Medusa Chain Dress', productType: 'W DRESSES', theme: 'SS25 Main', color: 'Versace Gold', composition: 'Silk Blend', srp: 85000000, brandId: brandVER.id, seasonGroupId: 'SS' },
+    { skuCode: 'VER-RTW-002', productName: 'Greca Border Jacket', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Wool Blend', srp: 95000000, brandId: brandVER.id, seasonGroupId: 'FW' },
+    { skuCode: 'VER-RTW-003', productName: 'Barocco Silk Shirt', productType: 'M TOPS', theme: 'SS25 Main', color: 'Gold Print', composition: '100% Silk Twill', srp: 42000000, brandId: brandVER.id, seasonGroupId: 'SS' },
+    { skuCode: 'VER-SHO-001', productName: 'Platform Medusa Pump', productType: 'W SHOES', theme: 'SS25 Main', color: 'Nero', composition: 'Satin + Crystal', srp: 35000000, brandId: brandVER.id, seasonGroupId: 'SS' },
+    { skuCode: 'VER-ACC-001', productName: 'Medusa Head Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Nero/Gold', composition: 'Leather + Metal', srp: 15000000, brandId: brandVER.id },
+    { skuCode: 'VER-SLG-001', productName: 'Medusa Biggie Card Case', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Calf Leather', srp: 8500000, brandId: brandVER.id },
+
+    // === BALENCIAGA (8 SKUs) ===
+    { skuCode: 'BAL-BAG-001', productName: 'Le City Medium', productType: 'W BAGS', theme: 'Carryover', color: 'Nero', composition: 'Arena Leather', srp: 62000000, brandId: brandBAL.id },
+    { skuCode: 'BAL-BAG-002', productName: 'Hourglass XS Bag', productType: 'W BAGS', theme: 'SS25 Main', color: 'Bright Red', composition: 'Shiny Calfskin', srp: 52000000, brandId: brandBAL.id, seasonGroupId: 'SS' },
+    { skuCode: 'BAL-RTW-001', productName: 'Oversized Denim Jacket', productType: 'W OUTERWEAR', theme: 'SS25 Main', color: 'Washed Blue', composition: '100% Cotton Denim', srp: 48000000, brandId: brandBAL.id, seasonGroupId: 'SS' },
+    { skuCode: 'BAL-RTW-002', productName: 'Political Campaign Hoodie', productType: 'M TOPS', theme: 'FW25 Main', color: 'Black', composition: '100% Cotton Fleece', srp: 32000000, brandId: brandBAL.id, seasonGroupId: 'FW' },
+    { skuCode: 'BAL-RTW-003', productName: 'Destroyed Tailored Blazer', productType: 'M OUTERWEAR', theme: 'FW24 Main', color: 'Navy', composition: 'Wool Twill', srp: 85000000, brandId: brandBAL.id, seasonGroupId: 'FW' },
+    { skuCode: 'BAL-SHO-001', productName: 'Track Runner Sneaker', productType: 'W SHOES', theme: 'SS24 Main', color: 'Multi', composition: 'Mesh + Nylon', srp: 28000000, brandId: brandBAL.id, seasonGroupId: 'SS' },
+    { skuCode: 'BAL-ACC-001', productName: 'BB Logo Belt', productType: 'M ACCESSORIES', theme: 'Carryover', color: 'Nero', composition: 'Leather + Metal', srp: 12000000, brandId: brandBAL.id },
+    { skuCode: 'BAL-SLG-001', productName: 'Cash Mini Wallet', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Arena Leather', srp: 9800000, brandId: brandBAL.id },
+
+    // === Additional FER SKUs for 2025 ===
+    { skuCode: 'FER-BAG-006', productName: 'Hug Bag Small', productType: 'W BAGS', theme: 'SS25 Main', color: 'Caramel', composition: 'Calfskin Leather', srp: 42000000, brandId: brandFER.id, seasonGroupId: 'SS' },
+    { skuCode: 'FER-BAG-007', productName: 'Varina Clutch', productType: 'W BAGS', theme: 'FW25 Main', color: 'Gold', composition: 'Metallic Leather', srp: 28000000, brandId: brandFER.id, seasonGroupId: 'FW' },
+    { skuCode: 'FER-RTW-005', productName: 'Knit Polo Shirt', productType: 'M TOPS', theme: 'SS25 Main', color: 'Navy', composition: 'Cotton Piqué', srp: 18000000, brandId: brandFER.id, seasonGroupId: 'SS' },
+    { skuCode: 'FER-RTW-006', productName: 'Gancini Bomber Jacket', productType: 'M OUTERWEAR', theme: 'FW25 Main', color: 'Nero', composition: 'Nylon + Leather', srp: 68000000, brandId: brandFER.id, seasonGroupId: 'FW' },
+    // === Additional BUR SKUs for 2025 ===
+    { skuCode: 'BUR-BAG-003', productName: 'Pocket Bag Medium', productType: 'W BAGS', theme: 'SS25 Main', color: 'Archive Beige', composition: 'Cotton Canvas', srp: 52000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
+    { skuCode: 'BUR-RTW-002', productName: 'Check Wool Skirt', productType: 'W BOTTOMS', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Wool Check', srp: 32000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
+    { skuCode: 'BUR-RTW-003', productName: 'TB Monogram Polo', productType: 'M TOPS', theme: 'SS25 Main', color: 'White', composition: 'Cotton Piqué', srp: 22000000, brandId: brandBUR.id, seasonGroupId: 'SS' },
+    { skuCode: 'BUR-SHO-002', productName: 'Check Rubber Boot', productType: 'W SHOES', theme: 'FW25 Main', color: 'Archive Beige', composition: 'Rubber', srp: 18000000, brandId: brandBUR.id, seasonGroupId: 'FW' },
+    // === Additional GUC SKUs ===
+    { skuCode: 'GUC-BAG-003', productName: 'Jackie 1961 Small', productType: 'W BAGS', theme: 'FW24 Main', color: 'Nero', composition: 'Leather', srp: 55000000, brandId: brandGUC.id, seasonGroupId: 'FW' },
+    { skuCode: 'GUC-RTW-001', productName: 'GG Canvas Jacket', productType: 'W OUTERWEAR', theme: 'SS25 Main', color: 'Beige/Ebony', composition: 'GG Canvas', srp: 72000000, brandId: brandGUC.id, seasonGroupId: 'SS' },
+    { skuCode: 'GUC-RTW-002', productName: 'Horsebit Loafer Men', productType: 'M SHOES', theme: 'Carryover', color: 'Nero', composition: 'Calfskin', srp: 32000000, brandId: brandGUC.id },
+    { skuCode: 'GUC-SLG-001', productName: 'GG Marmont Card Case', productType: 'SLG', theme: 'Carryover', color: 'Nero', composition: 'Matelassé Leather', srp: 8500000, brandId: brandGUC.id },
 
     // === Keep existing SKUs from old seed (Burberry detailed) ===
     { skuCode: '8116333', productName: 'FITZROVIA DK SHT', productType: 'W OUTERWEAR', theme: 'AUGUST (08)', color: 'WINE RED', composition: '100% COTTON', srp: 87900000, brandId: brandBUR.id },
@@ -543,13 +633,13 @@ async function main() {
   }
   console.log(`  ✅ ${budgetDetailCount} budget details`);
 
-  // ─── PLANNING VERSIONS (sample for 2025 budgets) ───────────────────────
-  const budgets2025Approved = createdBudgets.filter(b =>
-    b.fiscalYear === 2025 && (b.status === 'APPROVED' || b.status === 'LEVEL1_APPROVED')
+  // ─── PLANNING VERSIONS (for approved/L1 budgets across all years) ─────
+  const budgetsWithPlanning = createdBudgets.filter(b =>
+    b.status === 'APPROVED' || b.status === 'LEVEL1_APPROVED'
   );
 
   let planningCount = 0;
-  for (const budget of budgets2025Approved) {
+  for (const budget of budgetsWithPlanning) {
     // Get budget details for this budget
     const details = await prisma.budgetDetail.findMany({
       where: { budgetId: budget.id },
@@ -576,62 +666,182 @@ async function main() {
   }
   console.log(`  ✅ ${planningCount} planning versions`);
 
-  // ─── PROPOSALS (sample for 2025) ───────────────────────────────────────
-  const ferSS25Budget = createdBudgets.find(b => b.budgetCode === 'BUD-FER-SS-main-2025');
-  const burSS25Budget = createdBudgets.find(b => b.budgetCode === 'BUD-BUR-SS-main-2025');
+  // ─── PLANNING DETAILS (per planning version) ─────────────────────────
+  // Create detail rows for each planning version across dimensions
+  const allPlanningVersions = await prisma.planningVersion.findMany();
+  const allCollections = await prisma.collection.findMany();
+  const allGenders = await prisma.gender.findMany();
+  const allCategories = await prisma.category.findMany();
+  const allSubCategories = await prisma.subCategory.findMany();
 
-  if (ferSS25Budget) {
-    await prisma.proposal.upsert({
-      where: { id: 'prop-fer-ss25-001' },
-      update: {},
-      create: {
-        id: 'prop-fer-ss25-001',
-        ticketName: 'FER SS25 Main — Bags & Shoes Selection',
-        budgetId: ferSS25Budget.id,
-        status: 'APPROVED',
-        totalSkuCount: 8,
-        totalOrderQty: 240,
-        totalValue: 580000000,
+  let planningDetailCount = 0;
+  for (const pv of allPlanningVersions) {
+    const budgetDetail = await prisma.budgetDetail.findUnique({ where: { id: pv.budgetDetailId } });
+    const totalBudget = budgetDetail ? Number(budgetDetail.budgetAmount) : 500000000;
+
+    // Collection dimension (2 rows)
+    for (let i = 0; i < allCollections.length; i++) {
+      const pct = i === 0 ? 0.35 : 0.65; // 35% carry-over, 65% seasonal
+      await prisma.planningDetail.create({
+        data: {
+          planningVersionId: pv.id,
+          dimensionType: 'collection',
+          collectionId: allCollections[i].id,
+          lastSeasonSales: totalBudget * pct * 0.9,
+          lastSeasonPct: pct * 100,
+          systemBuyPct: pct * 100,
+          userBuyPct: pct * 100 + (Math.random() * 4 - 2),
+          otbValue: totalBudget * pct,
+          variancePct: Math.random() * 6 - 3,
+        },
+      });
+      planningDetailCount++;
+    }
+
+    // Gender dimension (2 rows)
+    for (let i = 0; i < allGenders.length; i++) {
+      const pct = i === 0 ? 0.6 : 0.4; // 60% Female, 40% Male
+      await prisma.planningDetail.create({
+        data: {
+          planningVersionId: pv.id,
+          dimensionType: 'gender',
+          genderId: allGenders[i].id,
+          lastSeasonSales: totalBudget * pct * 0.88,
+          lastSeasonPct: pct * 100,
+          systemBuyPct: pct * 100,
+          userBuyPct: pct * 100 + (Math.random() * 4 - 2),
+          otbValue: totalBudget * pct,
+          variancePct: Math.random() * 6 - 3,
+        },
+      });
+      planningDetailCount++;
+    }
+
+    // Category dimension (all categories)
+    const catPcts = [0.30, 0.20, 0.30, 0.12, 0.04, 0.02, 0.01, 0.01];
+    for (let i = 0; i < allCategories.length; i++) {
+      const pct = catPcts[i] || 0.05;
+      await prisma.planningDetail.create({
+        data: {
+          planningVersionId: pv.id,
+          dimensionType: 'category',
+          categoryId: allCategories[i].id,
+          genderId: allCategories[i].genderId,
+          lastSeasonSales: totalBudget * pct * 0.92,
+          lastSeasonPct: pct * 100,
+          systemBuyPct: pct * 100,
+          userBuyPct: pct * 100 + (Math.random() * 4 - 2),
+          otbValue: totalBudget * pct,
+          variancePct: Math.random() * 8 - 4,
+        },
+      });
+      planningDetailCount++;
+    }
+  }
+  console.log(`  ✅ ${planningDetailCount} planning details`);
+
+  // ─── PROPOSALS (10 across brands & seasons) ───────────────────────────
+  const proposalSpecs = [
+    { id: 'prop-fer-ss25-001', ticket: 'FER SS25 Main — Bags & Shoes Selection', budgetCode: 'BUD-FER-SS-main-2025', status: 'APPROVED' as const, skuCount: 8, qty: 240, value: 580000000 },
+    { id: 'prop-fer-ss25-002', ticket: 'FER SS25 Pre — RTW Selection', budgetCode: 'BUD-FER-SS-pre-2025', status: 'APPROVED' as const, skuCount: 5, qty: 150, value: 420000000 },
+    { id: 'prop-fer-fw25-001', ticket: 'FER FW25 Pre — Pre-Season Selection', budgetCode: 'BUD-FER-FW-pre-2025', status: 'DRAFT' as const, skuCount: 6, qty: 180, value: 384000000 },
+    { id: 'prop-fer-fw24-001', ticket: 'FER FW24 Main — Full Collection', budgetCode: 'BUD-FER-FW-main-2024', status: 'APPROVED' as const, skuCount: 10, qty: 300, value: 750000000 },
+    { id: 'prop-bur-ss25-001', ticket: 'BUR SS25 Main — Full Collection', budgetCode: 'BUD-BUR-SS-main-2025', status: 'SUBMITTED' as const, skuCount: 12, qty: 360, value: 720000000 },
+    { id: 'prop-bur-fw25-001', ticket: 'BUR FW25 Main — Seasonal Buy', budgetCode: 'BUD-BUR-FW-main-2025', status: 'DRAFT' as const, skuCount: 8, qty: 200, value: 480000000 },
+    { id: 'prop-bur-fw24-001', ticket: 'BUR FW24 Main — Heritage Line', budgetCode: 'BUD-BUR-FW-main-2024', status: 'APPROVED' as const, skuCount: 7, qty: 210, value: 560000000 },
+    { id: 'prop-guc-ss25-001', ticket: 'GUC SS25 Main — Bags & Accessories', budgetCode: 'BUD-GUC-SS-main-2025', status: 'LEVEL1_APPROVED' as const, skuCount: 4, qty: 120, value: 350000000 },
+    { id: 'prop-guc-ss24-001', ticket: 'GUC SS24 Main — Full Collection', budgetCode: 'BUD-GUC-SS-main-2024', status: 'APPROVED' as const, skuCount: 4, qty: 100, value: 280000000 },
+    { id: 'prop-pra-fw25-001', ticket: 'PRA FW25 Main — Launch Collection', budgetCode: 'BUD-PRA-FW-main-2025', status: 'DRAFT' as const, skuCount: 5, qty: 150, value: 320000000 },
+  ];
+
+  const createdProposals: any[] = [];
+  for (const spec of proposalSpecs) {
+    const budget = createdBudgets.find(b => b.budgetCode === spec.budgetCode);
+    if (!budget) continue;
+    const proposal = await prisma.proposal.create({
+      data: {
+        id: spec.id,
+        ticketName: spec.ticket,
+        budgetId: budget.id,
+        status: spec.status,
+        totalSkuCount: spec.skuCount,
+        totalOrderQty: spec.qty,
+        totalValue: spec.value,
         createdById: buyerUser.id,
       },
     });
+    createdProposals.push(proposal);
   }
+  console.log(`  ✅ ${createdProposals.length} proposals`);
 
-  if (burSS25Budget) {
-    await prisma.proposal.upsert({
-      where: { id: 'prop-bur-ss25-001' },
-      update: {},
-      create: {
-        id: 'prop-bur-ss25-001',
-        ticketName: 'BUR SS25 Main — Full Collection',
-        budgetId: burSS25Budget.id,
-        status: 'SUBMITTED',
-        totalSkuCount: 12,
-        totalOrderQty: 360,
-        totalValue: 720000000,
-        createdById: buyerUser.id,
-      },
-    });
-  }
+  // ─── PROPOSAL PRODUCTS + ALLOCATIONS ──────────────────────────────────
+  // Map proposals to SKU codes that make sense for each brand
+  const proposalSkuMap: Record<string, string[]> = {
+    'prop-fer-ss25-001': ['FER-BAG-001', 'FER-BAG-002', 'FER-BAG-003', 'FER-BAG-004', 'FER-SHO-001', 'FER-SHO-002', 'FER-SHO-004', 'FER-ACC-002'],
+    'prop-fer-ss25-002': ['FER-RTW-001', 'FER-RTW-004', 'FER-ACC-003', 'FER-SLG-001', 'FER-SLG-002'],
+    'prop-fer-fw25-001': ['FER-BAG-005', 'FER-SHO-005', 'FER-RTW-002', 'FER-RTW-003', 'FER-RTW-004', 'FER-SLG-003'],
+    'prop-fer-fw24-001': ['FER-BAG-001', 'FER-BAG-005', 'FER-SHO-001', 'FER-SHO-005', 'FER-RTW-002', 'FER-RTW-003', 'FER-ACC-001', 'FER-SLG-001', 'FER-SLG-002', 'FER-SLG-003'],
+    'prop-bur-ss25-001': ['BUR-BAG-001', 'BUR-BAG-002', 'BUR-SHO-001', 'BUR-RTW-001', 'BUR-ACC-001', '8116333', '8113543', '8115960', '8114202', '8115254', '8115640', '8115700'],
+    'prop-bur-fw25-001': ['BUR-RTW-001', 'BUR-ACC-001', '8116500', '8116501', '8115701', '9201001', '9201002', '9201003'],
+    'prop-bur-fw24-001': ['9101001', '9101002', '9201001', '9201002', '9201003', '8116500', '8116501'],
+    'prop-guc-ss25-001': ['GUC-BAG-001', 'GUC-BAG-002', 'GUC-SHO-001', 'GUC-ACC-001'],
+    'prop-guc-ss24-001': ['GUC-BAG-001', 'GUC-BAG-002', 'GUC-SHO-001', 'GUC-ACC-001'],
+    'prop-pra-fw25-001': ['PRA-BAG-001', 'PRA-BAG-003', 'PRA-RTW-001', 'PRA-RTW-004', 'PRA-SHO-001'],
+  };
 
-  const ferFW25Budget = createdBudgets.find(b => b.budgetCode === 'BUD-FER-FW-pre-2025');
-  if (ferFW25Budget) {
-    await prisma.proposal.upsert({
-      where: { id: 'prop-fer-fw25-001' },
-      update: {},
-      create: {
-        id: 'prop-fer-fw25-001',
-        ticketName: 'FER FW25 Pre — Pre-Season Selection',
-        budgetId: ferFW25Budget.id,
-        status: 'DRAFT',
-        totalSkuCount: 6,
-        totalOrderQty: 180,
-        totalValue: 384000000,
-        createdById: buyerUser.id,
-      },
-    });
+  // Build a lookup from skuCode → sku record
+  const allSkus = await prisma.skuCatalog.findMany();
+  const skuByCode: Record<string, any> = {};
+  for (const s of allSkus) skuByCode[s.skuCode] = s;
+
+  let totalProposalProducts = 0;
+  let totalAllocations = 0;
+
+  for (const proposal of createdProposals) {
+    const skuCodes = proposalSkuMap[proposal.id] || [];
+    let sortOrder = 1;
+    for (const code of skuCodes) {
+      const sku = skuByCode[code];
+      if (!sku) continue;
+      const orderQty = Math.floor(Math.random() * 20) + 10; // 10-29 units
+      const unitCost = Number(sku.srp) * 0.45; // ~45% of SRP
+      const product = await prisma.proposalProduct.create({
+        data: {
+          proposalId: proposal.id,
+          skuId: sku.id,
+          skuCode: sku.skuCode,
+          productName: sku.productName,
+          collection: sku.theme?.includes('Carryover') || sku.theme?.includes('arryover') ? 'Carry Over' : 'Seasonal',
+          gender: sku.productType?.startsWith('W') ? 'Female' : 'Male',
+          category: sku.productType,
+          subCategory: sku.productType,
+          theme: sku.theme,
+          color: sku.color,
+          composition: sku.composition,
+          unitCost: unitCost,
+          srp: Number(sku.srp),
+          orderQty: orderQty,
+          totalValue: unitCost * orderQty,
+          customerTarget: ['New', 'Existing', 'VIP'][Math.floor(Math.random() * 3)],
+          sortOrder: sortOrder++,
+        },
+      });
+      totalProposalProducts++;
+
+      // Allocations: REX 60%, TTP 40%
+      const rexQty = Math.round(orderQty * 0.6);
+      const ttpQty = orderQty - rexQty;
+      await prisma.productAllocation.create({
+        data: { proposalProductId: product.id, storeId: storeREX.id, quantity: rexQty },
+      });
+      await prisma.productAllocation.create({
+        data: { proposalProductId: product.id, storeId: storeTTP.id, quantity: ttpQty },
+      });
+      totalAllocations += 2;
+    }
   }
-  console.log('  ✅ 3 proposals');
+  console.log(`  ✅ ${totalProposalProducts} proposal products`);
+  console.log(`  ✅ ${totalAllocations} product allocations`);
 
   // ─── APPROVALS (for approved budgets) ───────────────────────────────────
   const approvedBudgets = createdBudgets.filter(b => b.status === 'APPROVED');
@@ -713,17 +923,18 @@ async function main() {
   console.log(`   Roles:              ${roles.length}`);
   console.log(`   Stores:             ${stores.length}`);
   console.log(`   Brands:             ${brands.length}`);
-  console.log(`   Categories:         8`);
+  console.log(`   Categories:         ${allCategories.length}`);
   console.log(`   Sub-categories:     ${subCategories.length}`);
   console.log(`   SKUs:               ${skuData.length}`);
   console.log(`   Users:              ${users.length}`);
   console.log(`   Budgets:            ${createdBudgets.length}`);
   console.log(`   Budget Details:     ${budgetDetailCount}`);
   console.log(`   Planning Versions:  ${planningCount}`);
-  console.log(`   Proposals:          3`);
+  console.log(`   Planning Details:   ${planningDetailCount}`);
+  console.log(`   Proposals:          ${createdProposals.length}`);
+  console.log(`   Proposal Products:  ${totalProposalProducts}`);
+  console.log(`   Prod. Allocations:  ${totalAllocations}`);
   console.log(`   Approvals:          ${approvalCount}`);
-  console.log(`   Sales History:      ${salesData.length}`);
-  console.log(`   Allocation History: ${allocationData.length}`);
   console.log('');
   console.log('🔑 Login credentials:');
   console.log('   admin@dafc.com      / dafc@2026 (Admin)');
