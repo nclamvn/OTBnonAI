@@ -61,7 +61,7 @@ const OrderConfirmationScreen = ({ darkMode }) => {
           brandName: p.brand?.name || p.brandName || '-',
           season: p.seasonGroup || p.season || '-',
           skuCount: p.items?.length || p.skuCount || 0,
-          totalValue: p.totalValue || p.amount || 0,
+          totalValue: Number(p.totalValue || p.amount || 0),
           status: 'PENDING',
           createdAt: p.updatedAt || p.createdAt || new Date().toISOString(),
           proposalId: p.id,
