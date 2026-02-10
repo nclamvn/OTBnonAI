@@ -49,6 +49,9 @@ const vi = {
     chartsComingSoon: 'Biểu đồ sắp ra mắt',
     entryPointSidebar: 'Điểm vào: Thanh bên',
     endOfFlow: 'Kết thúc luồng',
+    gender: 'Giới tính',
+    category: 'Danh mục',
+    subCategories: 'Danh mục phụ',
   },
 
   // ──────────────────────────────────────────────
@@ -295,6 +298,7 @@ const vi = {
     loadingBudgets: 'Đang tải ngân sách...',
     failedToLoadBudgets: 'Tải ngân sách thất bại. Vui lòng kiểm tra kết nối và thử lại.',
     selectBrand: 'Chọn thương hiệu',
+    categoryBreakdown: 'Phân tích theo danh mục',
   },
 
   // ──────────────────────────────────────────────

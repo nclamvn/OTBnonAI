@@ -49,6 +49,9 @@ const en = {
     chartsComingSoon: 'Charts coming soon',
     entryPointSidebar: 'Entry point: Sidebar',
     endOfFlow: 'End of flow',
+    gender: 'Gender',
+    category: 'Category',
+    subCategories: 'Sub-Categories',
   },
 
   // ──────────────────────────────────────────────
@@ -295,6 +298,7 @@ const en = {
     loadingBudgets: 'Loading budgets...',
     failedToLoadBudgets: 'Failed to load budgets. Please check your connection and try again.',
     selectBrand: 'Select Brand',
+    categoryBreakdown: 'Category Breakdown',
   },
 
   // ──────────────────────────────────────────────
