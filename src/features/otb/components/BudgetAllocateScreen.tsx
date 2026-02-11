@@ -251,7 +251,11 @@ const BudgetAllocateScreen = ({
 
       // Set filters from allocation data
       if (allocationData.year) setSelectedYear(allocationData.year);
-      if (allocationData.groupBrand) setSelectedGroupBrand(allocationData.groupBrand);
+      if (allocationData.groupBrand) {
+        // Resolve group brand name to actual ID from groupBrandList (may not be loaded yet)
+        const resolvedGroup = groupBrandList.find((g: any) => g.id === allocationData.groupBrand || g.name === allocationData.groupBrand);
+        setSelectedGroupBrand(resolvedGroup?.id || allocationData.groupBrand);
+      }
       if (allocationData.totalBudget) setTotalBudget(allocationData.totalBudget);
 
       // Set budget ID directly if available
@@ -261,8 +265,9 @@ const BudgetAllocateScreen = ({
 
       // Find and set brand
       if (allocationData.brandName && allocationData.groupBrand) {
+        const resolvedGroupForBrand = groupBrandList.find((g: any) => g.id === allocationData.groupBrand || g.name === allocationData.groupBrand);
         const matchingBrand = brandList.find(
-          b => b.groupBrandId === allocationData.groupBrand && b.name === allocationData.brandName
+          b => b.groupBrandId === (resolvedGroupForBrand?.id || allocationData.groupBrand) && b.name === allocationData.brandName
         );
         if (matchingBrand) setSelectedBrand(matchingBrand.id);
       }
@@ -535,21 +540,26 @@ const BudgetAllocateScreen = ({
     }));
   };
 
-  // Get brands to display based on filters
+  // Get brands to display based on filters (resolve group brand by ID or name)
   const displayBrands = useMemo(() => {
     if (selectedBrand) {
       return brandList.filter((b: any) => b.id === selectedBrand);
     }
     if (selectedGroupBrand) {
+      const matchedGroup = groupBrandList.find((g: any) => g.id === selectedGroupBrand || g.name === selectedGroupBrand);
+      if (matchedGroup) {
+        return brandList.filter((b: any) => b.groupBrandId === matchedGroup.id);
+      }
       return brandList.filter((b: any) => b.groupBrandId === selectedGroupBrand);
     }
     return brandList;
-  }, [selectedBrand, selectedGroupBrand, brandList]);
+  }, [selectedBrand, selectedGroupBrand, brandList, groupBrandList]);
 
-  // Get groups to display based on filters
+  // Get groups to display based on filters (match by ID or name to handle both UUID and name-string values)
   const displayGroups = useMemo(() => {
     if (selectedGroupBrand) {
-      return groupBrandList.filter((g: any) => g.id === selectedGroupBrand);
+      const filtered = groupBrandList.filter((g: any) => g.id === selectedGroupBrand || g.name === selectedGroupBrand);
+      return filtered.length > 0 ? filtered : groupBrandList;
     }
     return groupBrandList;
   }, [selectedGroupBrand, groupBrandList]);
@@ -570,12 +580,17 @@ const BudgetAllocateScreen = ({
 
     // Auto-set other filters based on selected budget
     if (budget.fiscalYear) setSelectedYear(budget.fiscalYear);
-    if (budget.groupBrand) setSelectedGroupBrand(budget.groupBrand);
+    if (budget.groupBrand) {
+      // Resolve group brand name to actual ID from groupBrandList
+      const resolvedGroup = groupBrandList.find((g: any) => g.id === budget.groupBrand || g.name === budget.groupBrand);
+      setSelectedGroupBrand(resolvedGroup?.id || budget.groupBrand);
+    }
 
     // Find matching brand
     if (budget.brandName && budget.groupBrand) {
+      const resolvedGroupForBrand = groupBrandList.find((g: any) => g.id === budget.groupBrand || g.name === budget.groupBrand);
       const matchingBrand = brandList.find(
-        b => b.groupBrandId === budget.groupBrand && b.name === budget.brandName
+        b => b.groupBrandId === (resolvedGroupForBrand?.id || budget.groupBrand) && b.name === budget.brandName
       );
       if (matchingBrand) {
         setSelectedBrand(matchingBrand.id);
@@ -614,8 +629,8 @@ const BudgetAllocateScreen = ({
 
   const selectedVersion = versions.find((v: any) => v.id === selectedVersionId);
 
-  // Get selected group brand object
-  const selectedGroupBrandObj = groupBrandList.find((b: any) => b.id === selectedGroupBrand);
+  // Get selected group brand object (match by ID or name)
+  const selectedGroupBrandObj = groupBrandList.find((b: any) => b.id === selectedGroupBrand || b.name === selectedGroupBrand);
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
