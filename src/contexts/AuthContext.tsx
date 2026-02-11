@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { authService } from '../services';
+import { clearCache } from '../services/api';
 
 interface AuthUser {
   id: string;
@@ -72,6 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Logout function
   const logout = useCallback(() => {
     authService.logout();
+    clearCache();
     setUser(null);
   }, []);
 
