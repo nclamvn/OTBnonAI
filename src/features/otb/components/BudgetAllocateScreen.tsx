@@ -1425,7 +1425,7 @@ const BudgetAllocateScreen = ({
                                                 className="inline-flex items-center gap-1 px-2 py-1 bg-[#127749] hover:bg-[#0d5a37] text-white rounded-md font-medium text-xs font-['Montserrat'] transition-colors"
                                               >
                                                 <Edit size={14} />
-                                                {t('nav.otbAnalysis') || 'OTB Planning'}
+                                                {t('budget.allocateOTB')}
                                               </button>
 
                                             </td>

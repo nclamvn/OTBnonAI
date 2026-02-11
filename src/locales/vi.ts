@@ -270,6 +270,7 @@ const vi = {
     createBudget: 'Tạo ngân sách',
     totalBudget: 'Tổng ngân sách',
     allocated: 'Đã phân bổ',
+    allocateOTB: 'Phân bổ OTB',
     remaining: 'Còn lại',
     ofTotal: 'trên tổng',
     allBudgetsCombined: 'Tổng hợp tất cả ngân sách',

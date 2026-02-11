@@ -270,6 +270,7 @@ const en = {
     createBudget: 'Create Budget',
     totalBudget: 'Total Budget',
     allocated: 'Allocated',
+    allocateOTB: 'OTB Allocation',
     remaining: 'Remaining',
     ofTotal: 'of total',
     allBudgetsCombined: 'All budgets combined',
