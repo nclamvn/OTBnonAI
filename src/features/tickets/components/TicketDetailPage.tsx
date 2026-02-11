@@ -11,7 +11,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Package, Ruler, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, Store } from 'lucide-react';
+import { Image as ImageIcon, ChevronDown, ChevronUp, Package, Ruler, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, Store, Pencil } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
 import { budgetService, planningService, proposalService } from '../../../services';
@@ -190,10 +190,12 @@ const SizingTable = ({ productType, darkMode }: any) => (
   </div>
 );
 
-const SKUCard = ({ item, block, cardIdx, darkMode }: any) => {
+const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
-  const [storeOrderOpen, setStoreOrderOpen] = useState(false);
+  const [storeOrderOpen, setStoreOrderOpen] = useState(true);
   const [sizingOpen, setSizingOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
   const cardStyles = darkMode ? CARD_STYLES_DARK : CARD_STYLES_LIGHT;
   const style = cardStyles[cardIdx % cardStyles.length];
   const productType = item.productType || block.productType;
@@ -262,41 +264,6 @@ const SKUCard = ({ item, block, cardIdx, darkMode }: any) => {
           </div>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className={`rounded-lg border px-3 py-2.5 ${
-            darkMode
-              ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]'
-              : 'bg-white/60 border-white/50'
-          }`}>
-            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Rex</p>
-            <p className={`text-base font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex}</p>
-          </div>
-          <div className={`rounded-lg border px-3 py-2.5 ${
-            darkMode
-              ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]'
-              : 'bg-white/60 border-white/50'
-          }`}>
-            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTP</p>
-            <p className="text-base font-bold text-[#127749] font-['JetBrains_Mono']">{item.ttp}</p>
-          </div>
-          <div className={`rounded-lg border px-3 py-2.5 ${
-            darkMode
-              ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]'
-              : 'bg-white/60 border-white/50'
-          }`}>
-            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Order</p>
-            <p className={`text-base font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order}</p>
-          </div>
-          <div className={`rounded-lg border px-3 py-2.5 ${
-            darkMode
-              ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]'
-              : 'bg-white/60 border-white/50'
-          }`}>
-            <p className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTL value</p>
-            <p className={`text-base font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue)}</p>
-          </div>
-        </div>
-
         {detailsOpen && (
           <div className={`mt-4 rounded-xl border p-4 ${
             darkMode
@@ -345,28 +312,56 @@ const SKUCard = ({ item, block, cardIdx, darkMode }: any) => {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                    <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#D7B797]" />REX
-                      </span>
-                    </td>
-                    <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.rex || 0}</td>
-                    <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
-                  </tr>
-                  <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                    <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
-                      <span className="inline-flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-[#127749]" />TTP
-                      </span>
-                    </td>
-                    <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.ttp || 0}</td>
-                    <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
-                  </tr>
+                  {[
+                    { key: 'rex', label: 'REX', color: 'bg-[#D7B797]', value: item.rex || 0 },
+                    { key: 'ttp', label: 'TTP', color: 'bg-[#127749]', value: item.ttp || 0 },
+                  ].map((store) => (
+                    <tr key={store.key} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+                      <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
+                        <span className="inline-flex items-center gap-1.5">
+                          <span className={`w-2 h-2 rounded-full ${store.color}`} />{store.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-center">
+                        {editingStore === store.key ? (
+                          <input
+                            type="number"
+                            value={editValue}
+                            onChange={(e) => setEditValue(e.target.value)}
+                            onBlur={() => {
+                              const newVal = parseInt(editValue) || 0;
+                              if (onUpdateItem) onUpdateItem(item.sku, store.key, newVal);
+                              setEditingStore(null);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                const newVal = parseInt(editValue) || 0;
+                                if (onUpdateItem) onUpdateItem(item.sku, store.key, newVal);
+                                setEditingStore(null);
+                              }
+                              if (e.key === 'Escape') setEditingStore(null);
+                            }}
+                            className={`w-16 px-2 py-1 text-center border-2 border-[#D7B797] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.5)] font-['JetBrains_Mono'] font-medium text-sm ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2]' : 'bg-white text-[#1A1A1A]'}`}
+                            autoFocus
+                          />
+                        ) : (
+                          <span
+                            onClick={() => { setEditingStore(store.key); setEditValue(String(store.value)); }}
+                            className={`inline-flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded-md transition-colors font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.1)]' : 'text-gray-800 hover:bg-[rgba(215,183,151,0.15)]'}`}
+                            title="Click to edit"
+                          >
+                            {store.value}
+                            <Pencil size={10} className="opacity-0 group-hover:opacity-60" />
+                          </span>
+                        )}
+                      </td>
+                      <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(store.value * (item.srp || 0))}</td>
+                    </tr>
+                  ))}
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30' : 'border-[#D7B797]/40'} ${darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
                     <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
-                    <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || ((item.rex || 0) + (item.ttp || 0))}</td>
-                    <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || (item.order || 0) * (item.srp || 0))}</td>
+                    <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{(item.rex || 0) + (item.ttp || 0)}</td>
+                    <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(((item.rex || 0) + (item.ttp || 0)) * (item.srp || 0))}</td>
                   </tr>
                 </tbody>
               </table>
