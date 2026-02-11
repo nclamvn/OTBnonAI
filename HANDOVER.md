@@ -7,7 +7,7 @@
 
 ---
 
-## Cap nhat lan cuoi: 10/02/2026 (Session 11 - QA Bug Fixes)
+## Cap nhat lan cuoi: 11/02/2026 (Session 15 - Mobile UI 2.0 Screen Integration)
 
 ---
 
@@ -17,13 +17,16 @@
 
 | Thong tin | Chi tiet |
 |-----------|----------|
-| **Frontend** | Next.js 16.1.6, App Router, React 19 |
+| **Frontend** | Next.js 16.1.6, App Router, React 19, **TypeScript 5.9** |
 | **Styling** | Tailwind CSS v3, custom CSS variables |
 | **Backend** | NestJS (rieng biet, port 4000) |
 | **API Base** | `http://localhost:4000/api/v1` |
 | **Dev Port** | `http://localhost:3006` |
 | **Language** | Bilingual EN/VN with toggle |
 | **Theme** | Dark/Light mode with CSS variables |
+| **Testing** | Vitest 4.0, jsdom, @testing-library/react (114 tests, 5 suites) |
+| **Mobile** | Responsive (useIsMobile hook + MobileBottomNav + Mobile UI 2.0 components) |
+| **Animation** | framer-motion 12.34 (BottomSheet, SwipeAction) |
 
 ### Repositories
 
@@ -51,87 +54,124 @@ finance@dafc.com  / dafc@2026  (Finance Director - L2 Approver)
 ## KIEN TRUC FRONTEND
 
 ```
-DAFC-OTB-NextJS/
+OTBnonAI/
 ├── src/
-│   ├── app/                          # Next.js App Router
-│   │   ├── layout.jsx                # Root layout
-│   │   ├── providers.jsx             # AuthProvider > LanguageProvider > AppProvider
-│   │   ├── globals.css               # Theme CSS variables + component classes
-│   │   ├── login/page.jsx            # Login route
-│   │   └── (dashboard)/              # Protected routes (AuthGuard)
-│   │       ├── layout.jsx            # Sidebar + AppHeader layout
-│   │       ├── page.jsx              # / → HomeScreen
-│   │       ├── budget-management/    # /budget-management
-│   │       ├── planning/             # /planning → BudgetAllocateScreen
-│   │       ├── otb-analysis/         # /otb-analysis
-│   │       ├── proposal/             # /proposal → SKUProposalScreen
-│   │       ├── tickets/              # /tickets
-│   │       ├── approval-config/      # /approval-config
-│   │       ├── approvals/            # /approvals (NEW Session 8)
-│   │       ├── order-confirmation/   # /order-confirmation (NEW Session 8)
-│   │       ├── receipt-confirmation/ # /receipt-confirmation (NEW Session 8)
-│   │       ├── master-data/          # /master-data
-│   │       ├── profile/              # /profile
-│   │       ├── settings/             # /settings
-│   │       └── dev-tickets/          # /dev-tickets
-│   ├── screens/                      # 18 screen components (all 'use client')
-│   │   ├── HomeScreen.jsx            # Dashboard KPI cards + alerts
-│   │   ├── BudgetManagementScreen.jsx
-│   │   ├── BudgetAllocateScreen.jsx
-│   │   ├── OTBAnalysisScreen.jsx
-│   │   ├── SKUProposalScreen.jsx
-│   │   ├── TicketScreen.jsx
-│   │   ├── TicketDetailPage.jsx
-│   │   ├── PlanningDetailPage.jsx
-│   │   ├── ProposalDetailPage.jsx
-│   │   ├── ApprovalWorkflowScreen.jsx
-│   │   ├── MasterDataScreen.jsx
-│   │   ├── ProfileScreen.jsx
-│   │   ├── SettingsScreen.jsx
-│   │   ├── LoginScreen.jsx
-│   │   ├── DevTicketScreen.jsx
-│   │   ├── ApprovalsScreen.jsx          # (NEW Session 8)
-│   │   ├── OrderConfirmationScreen.jsx  # (NEW Session 8)
-│   │   └── ReceiptConfirmationScreen.jsx # (NEW Session 8)
+│   ├── app/                              # Next.js App Router (all .tsx)
+│   │   ├── layout.tsx                    # Root layout
+│   │   ├── providers.tsx                 # AuthProvider > LanguageProvider > AppProvider
+│   │   ├── globals.css                   # Theme CSS variables + component classes
+│   │   ├── login/page.tsx                # Login route
+│   │   └── (dashboard)/                  # Protected routes (AuthGuard)
+│   │       ├── layout.tsx                # Sidebar + AppHeader + MobileBottomNav
+│   │       ├── page.tsx                  # / → HomeScreen
+│   │       ├── budget-management/        # /budget-management
+│   │       ├── planning/                 # /planning → BudgetAllocateScreen
+│   │       ├── otb-analysis/             # /otb-analysis
+│   │       ├── proposal/                 # /proposal → SKUProposalScreen
+│   │       ├── tickets/                  # /tickets
+│   │       ├── approval-config/          # /approval-config
+│   │       ├── approvals/                # /approvals
+│   │       ├── order-confirmation/       # /order-confirmation
+│   │       ├── receipt-confirmation/     # /receipt-confirmation
+│   │       ├── import-data/              # /import-data (NEW Session 14)
+│   │       ├── master-data/              # /master-data
+│   │       ├── profile/                  # /profile
+│   │       ├── settings/                 # /settings
+│   │       └── dev-tickets/              # /dev-tickets
+│   ├── features/                         # Feature-based architecture (NEW Session 14)
+│   │   ├── otb/                          # Budget, Planning, Proposal, OTB Analysis
+│   │   │   ├── components/               # BudgetManagement, BudgetAllocate, OTBAnalysis,
+│   │   │   │                             # PlanningDetail, ProposalDetail, SKUProposal
+│   │   │   ├── hooks/                    # useBudget, usePlanning, useProposal
+│   │   │   └── index.ts
+│   │   ├── tickets/                      # Ticket, TicketDetail, TicketKanbanBoard
+│   │   ├── approvals/                    # ApprovalsScreen, ApprovalWorkflowScreen
+│   │   ├── orders/                       # OrderConfirmation, ReceiptConfirmation
+│   │   ├── master-data/                  # MasterDataScreen
+│   │   ├── import/                       # ImportDataScreen (NEW Session 14)
+│   │   └── index.ts                      # Re-exports all features
+│   ├── screens/                          # Re-export wrappers (backward compat)
+│   │   ├── HomeScreen.tsx                # Dashboard (stays here, not in features)
+│   │   ├── LoginScreen.tsx               # Login (stays here)
+│   │   ├── ProfileScreen.tsx             # Profile (stays here)
+│   │   ├── SettingsScreen.tsx            # Settings (stays here)
+│   │   ├── DevTicketScreen.tsx           # DevTickets (stays here)
+│   │   ├── ImportDataScreen.tsx          # Re-exports from features/import
+│   │   └── *.tsx                         # Others: re-export from features/*
 │   ├── components/
-│   │   ├── Layout/
-│   │   │   ├── Sidebar.jsx           # Navigation sidebar (collapsible)
-│   │   │   └── AppHeader.jsx         # Top header (search, dark mode, lang, notifications)
-│   │   ├── Common/
-│   │   │   ├── LoadingSpinner.jsx
-│   │   │   ├── ErrorMessage.jsx
-│   │   │   ├── EmptyState.jsx
-│   │   │   ├── BudgetModal.jsx
-│   │   │   └── PlanningDetailModal.jsx
-│   │   ├── AuthGuard.jsx             # Route protection
-│   │   ├── BudgetAlertsBanner.jsx    # Premium alert banner
-│   │   ├── RiskScoreCard.jsx         # AI risk assessment
-│   │   ├── OtbAllocationAdvisor.jsx  # AI allocation advisor
-│   │   ├── SkuRecommenderPanel.jsx   # AI SKU recommendations
-│   │   ├── SizeCurveAdvisor.jsx      # AI size curve advisor
-│   │   └── TicketKanbanBoard.jsx     # Kanban board
-│   ├── contexts/
-│   │   ├── AuthContext.js            # JWT auth (login, logout, user)
-│   │   ├── LanguageContext.js        # Bilingual EN/VN with t() function
-│   │   └── AppContext.js             # Shared state (darkMode, allocation data, etc.)
-│   ├── services/
-│   │   ├── api.js                    # Axios instance + JWT interceptor
-│   │   ├── authService.js
-│   │   ├── budgetService.js
-│   │   ├── planningService.js
-│   │   ├── proposalService.js
-│   │   ├── masterDataService.js
-│   │   ├── approvalService.js
-│   │   ├── approvalWorkflowService.js
-│   │   ├── aiService.js
-│   │   └── index.js                  # Re-exports all services
+│   │   ├── layout/                       # RENAMED: Layout/ → layout/ (lowercase)
+│   │   │   ├── Sidebar.tsx               # Navigation sidebar (collapsible)
+│   │   │   ├── AppHeader.tsx             # Top header (search, dark mode, lang)
+│   │   │   ├── MobileBottomNav.tsx       # Bottom nav for mobile (NEW Session 14)
+│   │   │   └── index.ts
+│   │   ├── ui/                           # UI component library
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   ├── ErrorMessage.tsx
+│   │   │   ├── EmptyState.tsx
+│   │   │   ├── BudgetModal.tsx
+│   │   │   ├── ExpandableStatCard.tsx
+│   │   │   ├── KPIDetailModal.tsx
+│   │   │   ├── PlanningDetailModal.tsx
+│   │   │   ├── BottomSheet.tsx           # Draggable bottom sheet (NEW Session 14)
+│   │   │   ├── MobileDataCard.tsx        # Card for mobile data display (NEW)
+│   │   │   ├── MobileFilterSheet.tsx     # Filter panel slide-up (NEW)
+│   │   │   ├── MobileTableView.tsx       # Responsive table/card switcher (NEW)
+│   │   │   ├── SwipeAction.tsx           # Swipe approve/reject (NEW)
+│   │   │   └── index.ts
+│   │   ├── mobile/                      # Mobile UI 2.0 Revolution (NEW Session 14)
+│   │   │   ├── MobileCard.tsx           # Card: avatar, badges, progress, metrics
+│   │   │   ├── MobileList.tsx           # List: expandable rows, skeleton loading
+│   │   │   ├── BottomSheet.tsx          # Draggable sheet + FilterBottomSheet
+│   │   │   ├── PullToRefresh.tsx        # Native pull-to-refresh gesture
+│   │   │   ├── FilterChips.tsx          # Chips + FAB + MobileSearchBar
+│   │   │   └── index.ts                # Barrel exports (components + hooks)
+│   │   └── AuthGuard.tsx                 # Route protection
+│   ├── contexts/                         # All .tsx with typed interfaces
+│   │   ├── AuthContext.tsx               # JWT auth (AuthUser, AuthContextType)
+│   │   ├── LanguageContext.tsx            # Bilingual EN/VN with t()
+│   │   └── AppContext.tsx                # Shared state (AppContextType)
+│   ├── services/                         # All .ts with typed methods
+│   │   ├── api.ts                        # Axios + JWT interceptor + GET caching
+│   │   ├── authService.ts
+│   │   ├── budgetService.ts
+│   │   ├── planningService.ts
+│   │   ├── proposalService.ts
+│   │   ├── masterDataService.ts
+│   │   ├── approvalService.ts
+│   │   ├── approvalWorkflowService.ts
+│   │   ├── importService.ts              # Bulk CSV/Excel import (NEW Session 14)
+│   │   └── index.ts
+│   ├── hooks/                            # Custom hooks
+│   │   ├── useIsMobile.ts                # Responsive breakpoints → {isMobile,isTablet,isDesktop}
+│   │   ├── useMobile.ts                  # Mobile UI 2.0 hooks (NEW Session 14)
+│   │   ├── useKPIBreakdown.ts            # KPI analytics
+│   │   ├── useDataImport.ts              # File parsing + batch import (NEW)
+│   │   └── index.ts
+│   ├── types/
+│   │   └── index.ts                      # 50+ TypeScript interfaces (NEW Session 14)
 │   ├── locales/
-│   │   ├── en.js                     # English translations
-│   │   ├── vi.js                     # Vietnamese translations
-│   │   └── index.js
-│   └── utils/
-│       ├── routeMap.js               # screenId → URL mapping
-│       └── formatters.js             # Currency, date formatters
+│   │   ├── en.ts                         # English translations
+│   │   ├── vi.ts                         # Vietnamese translations
+│   │   └── index.ts
+│   ├── utils/
+│   │   ├── routeMap.ts                   # screenId → URL mapping
+│   │   ├── routeMap.test.ts              # Route tests (NEW Session 14)
+│   │   ├── formatters.ts                 # Currency, date formatters
+│   │   ├── formatters.test.ts            # Formatter tests (NEW Session 14)
+│   │   ├── constants.ts
+│   │   ├── dafc-tokens.ts
+│   │   └── index.ts
+│   ├── styles/
+│   │   └── mobile-design-system.css      # Mobile CSS variables + touch targets (NEW)
+│   ├── constants/
+│   │   ├── index.ts
+│   │   ├── master-data.ts
+│   │   └── routes.ts
+│   └── test/
+│       ├── setup.tsx                     # Vitest test setup (jsdom, mocks)
+│       └── utils.tsx                     # Mock factories + API test helpers
+├── vitest.config.ts                      # Vitest config (jsdom, V8 coverage)
+├── tsconfig.json                         # TypeScript strict mode
 └── public/
     └── dafc-logo.png
 ```
@@ -140,31 +180,73 @@ DAFC-OTB-NextJS/
 
 ## KEY PATTERNS
 
+### TypeScript (Session 14)
+```ts
+// All files are now .ts/.tsx — strict mode enabled
+// Shared types in src/types/index.ts (50+ interfaces)
+// Contexts export typed interfaces: AppContextType, AuthContextType, AuthUser
+// Services use `any` for flexibility: async getAll(filters: any = {})
+// Components use typed props or `any` for complex screens
+```
+
+### Feature-Based Architecture (Session 14)
+```ts
+// Screens organized by domain in src/features/{domain}/components/
+// Re-exports in src/screens/ for backward compatibility:
+//   export { default } from '../features/otb/components/BudgetManagementScreen';
+// Hooks co-located with features: src/features/otb/hooks/useBudget.ts
+```
+
 ### Services
-```js
-// api.js = Axios instance with JWT interceptor (NOT a service with methods)
+```ts
+// api.ts = Axios instance with JWT interceptor + GET request caching (1-min TTL)
 // Domain services use: api.get('/endpoint') → response.data.data || response.data
+const extract = (res: any) => res.data?.data ?? res.data;
 ```
 
 ### API Responses
-```js
+```ts
 // May return { data: { data: [...] } } or { data: [...] } - always handle both
 ```
 
 ### Bilingual (i18n)
-```js
+```ts
 const { t, language, setLanguage } = useLanguage();
 // Usage: t('home.welcomeBack', { name: 'Admin' })
-// Translations in src/locales/en.js and src/locales/vi.js
+// Translations in src/locales/en.ts and src/locales/vi.ts
 // Toggle on AppHeader + Settings page
 // Persisted in localStorage
 ```
 
 ### Dark/Light Mode
-```js
+```ts
 // CSS variables in globals.css (.light / .dark classes)
 // All screens receive darkMode prop from AppContext
 // Pattern: darkMode ? 'dark-classes' : 'light-classes'
+```
+
+### Mobile Responsive (Session 14)
+```ts
+// === V1: Existing hooks (used in 20+ screens) ===
+const { isMobile, isTablet, isDesktop } = useIsMobile(); // from @/hooks/useIsMobile
+// Breakpoints: mobile <768px, tablet 768-1023px, desktop ≥1024px
+// Sidebar hidden on mobile → MobileBottomNav shown instead
+
+// === V1 components: src/components/ui/ ===
+// BottomSheet, MobileDataCard, MobileFilterSheet, MobileTableView, SwipeAction
+
+// === V2: Mobile UI 2.0 Revolution (NEW) ===
+// Import from: @/components/mobile
+import { MobileCard, MobileList, BottomSheet, FilterBottomSheet,
+  PullToRefresh, FilterChips, FloatingActionButton, MobileSearchBar,
+  useIsMobile, useSwipe, useBottomSheet, useScrollLock, usePullToRefresh, useHaptic
+} from '@/components/mobile';
+
+// V2 useIsMobile returns boolean (different from V1 object!)
+const isMobile = useIsMobile({ breakpoint: 768 }); // boolean
+
+// CSS: @/styles/mobile-design-system.css (imported in layout.tsx)
+// Touch targets ≥44px, safe-area padding, skeleton loading, FAB, sticky headers
 ```
 
 ### Premium Card Design
@@ -292,35 +374,43 @@ src/screens/*.jsx                     # i18n + light theme fix + premium cards
 
 ---
 
-## CONTEXTS (State Management)
+## CONTEXTS (State Management) — All TypeScript
 
-### AuthContext.js
-```js
-const { user, loading, error, isAuthenticated, login, logout, hasPermission, hasAnyPermission, canApprove } = useAuth();
-// login(email, password) - Async, sets user on success
-// logout() - Clears tokens + state
-// hasPermission('budget:write') - Check single permission
-// canApprove(1) / canApprove(2) - Check L1/L2 approval permission
+### AuthContext.tsx
+```ts
+interface AuthUser {
+  id: string; email: string; name: string; role: string;
+  permissions: string[]; avatar?: string;
+}
+interface AuthContextType {
+  user: AuthUser | null; loading: boolean; error: string | null;
+  isAuthenticated: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
+  hasPermission: (perm: string) => boolean;
+  hasAnyPermission: (perms: string[]) => boolean;
+  canApprove: (level: number) => boolean;
+}
 // Token: localStorage.accessToken, localStorage.refreshToken
 // Auto-fetch user profile on mount
 ```
 
-### AppContext.js
-```js
-const {
-  darkMode, setDarkMode,                          // Dark/light theme
-  sharedYear, setSharedYear,                       // Filter: fiscal year (default 2025)
-  sharedGroupBrand, setSharedGroupBrand,           // Filter: group brand
-  sharedBrand, setSharedBrand,                     // Filter: brand
-  allocationData, setAllocationData,               // Cross-screen: planning data
-  otbAnalysisContext, setOtbAnalysisContext,        // Cross-screen: OTB analysis
-  skuProposalContext, setSkuProposalContext,        // Cross-screen: SKU proposal
-  kpiData, setKpiData                              // Dashboard KPI values
-} = useAppContext();
+### AppContext.tsx
+```ts
+interface AppContextType {
+  darkMode: boolean; setDarkMode: (v: boolean) => void;
+  sharedYear: number; setSharedYear: (v: number) => void;
+  sharedGroupBrand: string; setSharedGroupBrand: (v: string) => void;
+  sharedBrand: string; setSharedBrand: (v: string) => void;
+  allocationData: any; setAllocationData: (v: any) => void;
+  otbAnalysisContext: any; setOtbAnalysisContext: (v: any) => void;
+  skuProposalContext: any; setSkuProposalContext: (v: any) => void;
+  kpiData: any; setKpiData: (v: any) => void;
+}
 ```
 
-### LanguageContext.js
-```js
+### LanguageContext.tsx
+```ts
 const { language, setLanguage, t } = useLanguage();
 // language: 'en' | 'vi' (default 'vi')
 // t('home.welcomeBack', { name: 'Admin' }) - Translation with {{param}} interpolation
@@ -331,20 +421,45 @@ const { language, setLanguage, t } = useLanguage();
 
 ---
 
-## HOOKS (Domain Logic)
+## HOOKS (Domain Logic) — All TypeScript
 
-### useProposal.js
+### useProposal.ts (src/features/otb/hooks/)
 - State: `proposals`, `loading`, `error`, `showProposalDetail`, `selectedProposal`, `skuCatalog`
 - Actions: `fetchProposals()`, `fetchSkuCatalog()`, `createProposal()`, `addProduct()`, `bulkAddProducts()`, `updateProduct()`, `removeProduct()`, `submitProposal()`, `approveProposal()`, `deleteProposal()`
 
-### useBudget.js
+### useBudget.ts (src/features/otb/hooks/)
 - State: `selectedYear`, `selectedSeasonGroups`, `budgets`, `loading`, `error`, `brands`, `stores`, `seasons`
 - Actions: `handleCellClick()`, `handleStoreAllocationChange()`, `handleSaveBudget()`, `submitBudget()`, `approveBudget()`
 - Auto-fetches master data on mount, budgets on year change
 
-### usePlanning.js
+### usePlanning.ts (src/features/otb/hooks/)
 - State: `plannings`, `loading`, `error`, `collections`, `genders`, `categories`
 - Actions: `handleOpenPlanningDetail()`, `handleSavePlanning()`, `submitPlanning()`, `approvePlanning()`, `markPlanningFinal()`, `copyPlanning()`
+
+### useDataImport.ts (src/hooks/) — NEW Session 14
+- Parse CSV/TSV/Excel files with header detection
+- Import targets: products, otb_budget, wssi, size_profiles, forecasts, clearance, kpi_targets, suppliers, categories
+- Duplicate modes: skip, overwrite, merge
+- Batch processing (BATCH_SIZE=500) with progress tracking + abort control
+- Returns: `{ file, parsedData, headers, previewRows, target, importMode, duplicateHandling, matchKeys, isImporting, progress, result, error, parseFile, startImport, abortImport, fetchData, fetchStats, fetchAllStats, deleteSession, clearTarget, resetUpload }`
+
+### useIsMobile.ts (src/hooks/) — V1, Session 14
+- Returns: `{ isMobile, isTablet, isDesktop }` (object)
+- Breakpoints: mobile <768px, tablet 768-1023px, desktop ≥1024px
+- Uses `window.matchMedia` with event listeners
+- **Used by 20+ screens** — do NOT replace
+
+### useMobile.ts (src/hooks/) — V2 Mobile UI 2.0, Session 14
+- `useIsMobile(options?)` → `boolean` (note: different API from V1!)
+- `useSwipe(options?)` → touch handlers + offset + direction + isSwiping
+- `useBottomSheet(initialState?)` → `{ isOpen, open, close, toggle }`
+- `useScrollLock(locked)` → locks body scroll when true
+- `usePullToRefresh(options)` → isPulling, isRefreshing, pullDistance, handlers
+- `useHaptic()` → `{ trigger(type) }` — vibration feedback (light/medium/heavy/selection/success/warning/error)
+- **Access via:** `import { useSwipe } from '@/components/mobile'` or `from '@/hooks/useMobile'`
+
+### useKPIBreakdown.ts (src/hooks/)
+- Advanced KPI analytics with breakdown calculations
 
 ---
 
@@ -425,23 +540,18 @@ const { language, setLanguage, t } = useLanguage();
 | DELETE | `/approval-workflow/:id` | Delete step |
 | POST | `/approval-workflow/brand/:brandId/reorder` | Reorder steps |
 
-### aiService.js
+### importService.ts (NEW Session 14)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| GET | `/ai/size-curve/:category/:storeId` | AI size curve recommendation |
-| POST | `/ai/size-curve/calculate` | Calculate size curve |
-| POST | `/ai/size-curve/compare` | Compare user vs AI sizing |
-| GET | `/ai/alerts` | Budget variance alerts |
-| PATCH | `/ai/alerts/:id/read` | Mark alert read |
-| POST | `/ai/alerts/check` | Trigger alert check |
-| POST | `/ai/allocation/generate` | Generate OTB allocation |
-| GET | `/ai/allocation/:budgetDetailId` | Get recommendations |
-| POST | `/ai/allocation/:budgetDetailId/apply` | Apply recommendations |
-| POST | `/ai/risk/assess/:entityType/:entityId` | Calculate risk score |
-| GET | `/ai/risk/:entityType/:entityId` | Get risk assessment |
-| POST | `/ai/sku-recommend/generate` | Generate SKU recommendations |
-| GET | `/ai/sku-recommend/:budgetDetailId` | Get SKU recommendations |
-| PATCH | `/ai/sku-recommend/:id/status` | Mark selected/rejected |
+| POST | `/import/batch` | Batch import CSV/Excel data |
+| GET | `/import/data` | Query imported data |
+| GET | `/import/stats` | Import stats for target |
+| GET | `/import/all-stats` | All import stats |
+| DELETE | `/import/data` | Delete import data |
+| DELETE | `/import/session/:sessionId` | Delete import session |
+| DELETE | `/import/clear/:target` | Clear all data for target |
+
+> **Note:** `aiService.js` da bi xoa trong OTBnonAI (non-AI version). Chi co trong DAFC-OTB-NextJS.
 
 ---
 
@@ -562,11 +672,12 @@ CORS_ORIGIN="http://localhost:3000"
 ## COMMANDS
 
 ```bash
-# === FRONTEND (DAFC-OTB-NextJS/) ===
-npm run dev              # Start dev server (port 3006)
+# === FRONTEND (OTBnonAI/) ===
+npm run dev              # Start dev server (port 3006, turbopack)
 npm run build            # Production build
 npm run start            # Start production server (standalone)
 npm run lint             # ESLint
+npm run test             # Run Vitest tests
 
 # === BACKEND (DAFC-Backend/dafc-otb-backend/) ===
 docker compose up -d     # Start PostgreSQL
@@ -598,7 +709,7 @@ npm run start:dev
 # API ready at http://localhost:4000/api/v1
 
 # 3. Start frontend (new terminal)
-cd "/Users/mac/OTBDAFC/DAFC-OTB-NextJS"
+cd "/Users/mac/OTBDAFC/OTBnonAI"
 npm run dev
 # App ready at http://localhost:3006
 ```
@@ -612,11 +723,18 @@ npm run dev
 |---------|---------|---------|
 | next | 16.1.6 | Framework |
 | react | 19.2.3 | UI Library |
+| typescript | 5.9.3 | TypeScript compiler |
 | axios | 1.13.4 | HTTP client |
 | tailwindcss | 3.4.19 | Styling |
 | lucide-react | 0.563.0 | Icons |
 | recharts | 3.7.0 | Charts |
 | react-hot-toast | 2.6.0 | Notifications |
+| framer-motion | 12.34.0 | Animations (BottomSheet, SwipeAction) |
+| @tanstack/react-virtual | 3.13.18 | Virtual scrolling |
+| xlsx | 0.18.5 | Excel file parsing |
+| vitest | 4.0.18 | Testing framework (dev) |
+| happy-dom | 20.6.0 | Test DOM environment (dev) |
+| @testing-library/react | 16.3.2 | React testing utilities (dev) |
 
 ### Backend
 | Package | Version | Purpose |
@@ -628,6 +746,182 @@ npm run dev
 | class-validator | — | DTO validation |
 | helmet | — | HTTP security headers |
 | @nestjs/swagger | — | API documentation |
+
+---
+
+## SESSION 11/02/2026 - Session 15 (Mobile UI 2.0 Screen Integration)
+
+### Thay doi chinh
+Applied Mobile UI 2.0 components to all 9 target screens:
+
+1. **HomeScreen** — Added FilterChips, FilterBottomSheet, PullToRefresh for mobile filters
+2. **TicketScreen** — Replaced MobileDataCard → MobileList + PullToRefresh + FilterChips + FloatingActionButton + FilterBottomSheet
+3. **ApprovalsScreen** — Replaced MobileDataCard/MobileFilterSheet → MobileList + PullToRefresh + FilterBottomSheet
+4. **MasterDataScreen** — Replaced MobileDataCard/MobileFilterSheet → MobileList + MobileSearchBar + PullToRefresh + FilterBottomSheet
+5. **BudgetManagementScreen** — Replaced MobileDataCard/MobileFilterSheet → MobileList + PullToRefresh + FilterChips + FloatingActionButton + FilterBottomSheet
+6. **BudgetAllocateScreen** — Replaced MobileFilterSheet → FilterBottomSheet + useBottomSheet hook
+7. **OTBAnalysisScreen** — Replaced MobileFilterSheet → FilterBottomSheet + useBottomSheet hook
+8. **SKUProposalScreen** — Replaced MobileFilterSheet import → FilterBottomSheet (added missing bottom sheet)
+9. **TicketDetailPage** — No mobile components to replace (uses isMobile for layout only)
+
+### Pattern Applied
+- `showMobileFilters` state → `useBottomSheet()` hook (`{ isOpen, open, close }`)
+- `MobileFilterSheet` → `FilterBottomSheet` (with `filters`, `values`, `onChange`, `onApply`, `onReset` props)
+- `MobileDataCard` loop → `MobileList` with `MobileListItemData[]` items (expandable, status variant)
+- `PullToRefresh` wrapper around mobile list (requires standalone async fetch function)
+- `FilterChips` for quick filter display on mobile
+- `FloatingActionButton` for create actions (with `onClick` not `onPress`)
+
+### Build & Test Status
+- **BUILD OK** — 21 routes, 0 errors
+- **TESTS OK** — 114 tests passed
+
+---
+
+## SESSION 11/02/2026 - Session 14 (TypeScript Migration + Mobile + Import)
+
+### Thay doi chinh
+
+1. **Full TypeScript Migration (.jsx/.js → .tsx/.ts)**
+   - Tat ca 116 files `.jsx`/`.js` → `.tsx`/`.ts` (strict mode)
+   - 50+ TypeScript interfaces trong `src/types/index.ts` (ApiResponse, User, Budget, Planning, Proposal, Approval, Ticket, masterData types, UI types, event handler types, utility types)
+   - Contexts typed: `AuthContextType`, `AppContextType`, `AuthUser`
+   - Services dung `any` cho flexibility, nhung co typed response patterns
+   - tsconfig.json: strict=true, path alias `@/*`, vitest/globals types
+
+2. **Feature-Based Architecture**
+   - Screens to chuc theo domain trong `src/features/`:
+     - `otb/` — Budget, Planning, Proposal, OTB Analysis (6 components + 3 hooks)
+     - `tickets/` — TicketScreen, TicketDetailPage, TicketKanbanBoard
+     - `approvals/` — ApprovalsScreen, ApprovalWorkflowScreen
+     - `orders/` — OrderConfirmation, ReceiptConfirmation
+     - `master-data/` — MasterDataScreen
+     - `import/` — ImportDataScreen (NEW)
+   - `src/screens/*.tsx` giu lai lam re-export wrappers (backward compat)
+   - Pattern: `export { default } from '../features/otb/components/BudgetManagementScreen'`
+
+3. **Mobile-First Components (6 new components)**
+   - `BottomSheet.tsx` — Draggable modal (framer-motion, snap: quarter/half/full)
+   - `MobileDataCard.tsx` — Card cho mobile data display (status badges, metrics, actions)
+   - `MobileFilterSheet.tsx` — Filter panel slide-up (text/select/range/date/checkbox)
+   - `MobileTableView.tsx` — Smart responsive wrapper (desktop table ↔ mobile cards)
+   - `SwipeAction.tsx` — Swipe approve/reject gesture (80px threshold, framer-motion)
+   - `MobileBottomNav.tsx` — Bottom navigation (4 primary tabs + 12 "More" items)
+   - `useIsMobile.ts` hook — Breakpoints: mobile <768px, tablet 768-1023px, desktop ≥1024px
+
+4. **Import Data Feature (NEW)**
+   - `ImportDataScreen.tsx` — 3 tabs: Upload | Data | Stats
+   - Drag-drop file uploader (CSV/TSV/Excel) with progress bar
+   - `importService.ts` — 7 API endpoints (batch, query, stats, delete, clear)
+   - `useDataImport.ts` hook — File parsing, batch processing (500/batch), abort control
+   - 9 import targets: products, otb_budget, wssi, size_profiles, forecasts, clearance, kpi_targets, suppliers, categories
+   - Duplicate handling: skip/overwrite/merge
+   - Route: `/import-data`
+
+5. **Testing Framework (Vitest) — 114 tests**
+   - `vitest.config.ts` — jsdom environment, globals, V8 coverage, path alias
+   - `src/test/setup.tsx` — Mocks: Next.js router/image, localStorage, matchMedia, ResizeObserver, IntersectionObserver, fetch
+   - `src/test/utils.tsx` — Mock factories: mockUser, mockBudget, mockGroupBrand, mockStore, mockBudgetDetail, mockPlanningVersion, mockPlanningDetail, mockProposal, mockTicket, mockAuthResponse + fetch helpers + custom render
+   - **Auth tests** (24): Login, logout, token refresh, getCurrentUser, token storage, token validation (JWT exp), role-based access, email/password validation
+   - **Budget tests** (42): Allocation calculation, committed %, remaining budget, detail totals, season mix, API CRUD, filters (year/brand/status/search), validation
+   - **Planning tests** (37): Version ordering (V0→FINAL), fetch/create/finalize versions, planning details CRUD, bulk update, percentage/collection/gender/category allocation, version comparison, budget constraints, completeness check
+   - **Utils tests** (11): formatCurrency, generateSeasons, getScreenIdFromPathname
+   - `package.json`: `"test": "vitest"`, `"test:run": "vitest run"`, `"test:coverage": "vitest run --coverage"`
+
+6. **Layout Directory Rename**
+   - `src/components/Layout/` → `src/components/layout/` (lowercase, consistent conventions)
+   - `src/components/Common/` → merged into `src/components/ui/`
+
+7. **New Dependencies**
+   - `framer-motion` 12.34.0 — Animations (BottomSheet, SwipeAction, MobileBottomNav)
+   - `@tanstack/react-virtual` 3.13.18 — Virtual scrolling
+   - `xlsx` 0.18.5 — Excel file parsing
+   - `react-is` 19.2.4 — React utilities
+   - `typescript` 5.9.3 — TypeScript compiler
+   - `vitest` 4.0.18 + `happy-dom` 20.6.0 + `@testing-library/*` — Testing
+   - `@types/node`, `@types/react`, `@types/react-dom` — Type definitions
+
+8. **API Service Enhancement**
+   - `api.ts`: Added GET request caching (1-minute TTL) for performance
+
+9. **Mobile UI 2.0 Revolution (NEW — ready for screen integration)**
+   - `src/components/mobile/` — 6 component files + barrel index
+   - **MobileCard** — Avatar, badges, progress bar, metrics grid, action footer
+   - **MobileList** — Table replacement with expandable rows, skeleton loading
+   - **BottomSheet** — Draggable portal-based sheet + **FilterBottomSheet** compound
+   - **PullToRefresh** — Native pull gesture with resistance physics
+   - **FilterChips** — Horizontal chips + **FloatingActionButton** + **MobileSearchBar**
+   - `src/hooks/useMobile.ts` — 6 hooks: useIsMobile(v2), useSwipe, useBottomSheet, useScrollLock, usePullToRefresh, useHaptic
+   - `src/styles/mobile-design-system.css` — CSS variables (spacing, touch targets, typography, radius, shadows, z-index), touch targets ≥44px, safe-area padding, skeleton loading, FAB, sticky headers, swipe actions
+   - CSS imported in `src/app/layout.tsx`
+   - **NOTE:** Coexists with V1 mobile components in `src/components/ui/` — screens to be individually migrated per TASK-MOBILE-UI-REVOLUTION.md checklist
+   - **IMPORTANT:** V1 `useIsMobile()` returns `{isMobile, isTablet, isDesktop}` object — V2 returns `boolean`. Do NOT replace V1 in existing screens without updating destructuring.
+
+### Build & Test Status
+- **BUILD OK** — 21 routes (17 static + 4 dynamic), 0 errors
+- **TESTS OK** — 5 test files, 114 tests passed (1.03s)
+- Fixes applied:
+  - AppContext `kpiData` type annotation
+  - `Season` interface export
+  - `setup.ts` → `setup.tsx` (JSX in setup file)
+  - Generic arrow functions `<T>` → `<T,>` in utils.tsx (TSX disambiguation)
+  - Auth test: unconsumed mock leaking between describe blocks
+- **CHUA COMMIT** — Tat ca changes dang o working directory
+- Migration backup tai: `.migration-backup/src_20260211_022022/`
+
+### Files da thay doi (245 files)
+```
+# Deleted (116 .jsx/.js files)
+src/**/*.jsx → deleted
+src/**/*.js → deleted
+
+# Added (129 .tsx/.ts files)
+src/**/*.tsx                              # All components migrated
+src/**/*.ts                               # All services/hooks/utils migrated
+src/types/index.ts                        # 50+ TypeScript interfaces
+src/features/*/                           # Feature-based architecture
+src/components/ui/BottomSheet.tsx          # Mobile: draggable bottom sheet
+src/components/ui/MobileDataCard.tsx       # Mobile: data card
+src/components/ui/MobileFilterSheet.tsx    # Mobile: filter panel
+src/components/ui/MobileTableView.tsx      # Mobile: responsive table/card
+src/components/ui/SwipeAction.tsx          # Mobile: swipe gesture
+src/components/layout/MobileBottomNav.tsx  # Mobile: bottom navigation
+src/hooks/useIsMobile.ts                  # Mobile: breakpoint hook
+src/hooks/useDataImport.ts               # Import: file parsing hook
+src/services/importService.ts             # Import: API service
+src/features/import/                      # Import: feature module
+src/app/(dashboard)/import-data/page.tsx  # Import: route page
+src/utils/formatters.test.ts              # Test: formatters (7 tests)
+src/utils/routeMap.test.ts               # Test: route mapping (4 tests)
+src/features/auth/__tests__/auth.test.ts # Test: auth (24 tests)
+src/features/budget/__tests__/budget.test.ts   # Test: budget (42 tests)
+src/features/planning/__tests__/planning.test.ts # Test: planning (37 tests)
+src/test/setup.tsx                       # Test: mocks & setup
+src/test/utils.tsx                       # Test: mock factories & helpers
+vitest.config.ts                         # Test: config (jsdom, v8 coverage)
+TASK-CRITICAL-PATH-TESTING.md            # Testing task guide
+TASK-TYPESCRIPT-MIGRATION.md             # TS migration task guide
+COMMON-FIXES.md                          # TS common error fixes guide
+TASK-MOBILE-UI-REVOLUTION.md             # Mobile UI 2.0 task guide
+
+# Mobile UI 2.0 Revolution (NEW)
+src/components/mobile/MobileCard.tsx     # Card: avatar, badges, progress, metrics
+src/components/mobile/MobileList.tsx     # List: expandable rows, skeleton
+src/components/mobile/BottomSheet.tsx    # Draggable sheet + FilterBottomSheet
+src/components/mobile/PullToRefresh.tsx  # Pull-to-refresh gesture
+src/components/mobile/FilterChips.tsx    # Chips + FAB + SearchBar
+src/components/mobile/index.ts          # Barrel exports
+src/hooks/useMobile.ts                  # 6 hooks: useIsMobile(v2), useSwipe, useBottomSheet, useScrollLock, usePullToRefresh, useHaptic
+src/styles/mobile-design-system.css     # Mobile CSS design system
+
+# Modified
+package.json                              # +7 new dependencies, +test script
+package-lock.json                         # Updated
+tsconfig.json                             # strict mode, vitest types, path alias
+tailwind.config.js                        # Updated
+src/app/globals.css                       # Updated styles
+src/app/layout.tsx                        # +mobile-design-system.css import
+```
 
 ---
 
@@ -899,29 +1193,43 @@ src/locales/vi.js                             # 105+ new keys
 - [x] ~~Azure deployment config~~ → Done Session 8
 - [x] ~~Backend security vulnerabilities~~ → 0 vulnerabilities (Session 8)
 - [x] ~~QA Bug Fixes (6 bugs)~~ → Done Session 11
-- [ ] TicketDetailPage.jsx still has MOCK_SKU_DATA and MOCK_DETAIL_DATA (fallback)
-- [ ] TicketScreen.jsx: TODO - Implement create ticket API call (line 546)
+- [x] ~~TypeScript migration~~ → Done Session 14 (full .tsx/.ts migration)
+- [x] ~~Feature-based architecture~~ → Done Session 14
+- [x] ~~Mobile components V1~~ → Done Session 14 (6 components in ui/ + useIsMobile)
+- [x] ~~Mobile UI 2.0 Revolution~~ → Done Session 14 (6 components in mobile/ + 6 hooks + CSS design system)
+- [x] ~~Testing framework setup~~ → Done Session 14 (Vitest + 5 test suites, 114 tests)
+- [ ] **COMMIT Session 14 changes** — 250+ files uncommitted, build + 114 tests verified OK
+- [x] ~~Apply Mobile UI 2.0 to 9 screens~~ → Done Session 15 (HomeScreen, TicketScreen, ApprovalsScreen, MasterDataScreen, BudgetManagementScreen, BudgetAllocateScreen, OTBAnalysisScreen, SKUProposalScreen, TicketDetailPage)
+- [ ] TicketDetailPage.tsx still has MOCK_SKU_DATA and MOCK_DETAIL_DATA (fallback)
+- [ ] TicketScreen.tsx: TODO - Implement create ticket API call
 - [ ] Azure Portal manual config (Node 22 LTS, `node .next/standalone/server.js` / `node dist/src/main.js`, env vars)
-- [ ] E2E testing (test suite co san, chua chay)
-- [ ] Performance tuning
-- [ ] Mobile responsive testing
+- [ ] Backend import endpoints — importService.ts references `/import/*` endpoints chua co trong NestJS backend
+- [ ] Expand test coverage (5 suites/114 tests — chua co proposal, orders, tickets, import tests)
+- [ ] Mobile responsive E2E testing (Mobile UI 2.0 da ready, can kiem tra tren thiet bi thuc)
 - [ ] Hardcoded years (2025) o nhieu noi can dynamic
+- [ ] Performance tuning (virtual scrolling da add @tanstack/react-virtual, can apply)
 
 ---
 
 ## GHI CHU CHO CLAUDE
 
 Khi doc file nay:
-1. **Frontend**: `/Users/mac/OTBDAFC/DAFC-OTB-NextJS/`
-2. **Backend**: `/Users/mac/OTBDAFC/DAFC-Backend/dafc-otb-backend/`
+1. **Frontend**: `/Users/mac/OTBDAFC/OTBnonAI/` (TypeScript, Next.js 16, App Router)
+2. **Backend**: `/Users/mac/OTBDAFC/DAFC-Backend/dafc-otb-backend/` (NestJS)
 3. **API**: `http://localhost:4000/api/v1` | Swagger: `http://localhost:4000/api/docs`
 4. **Database**: PostgreSQL via Docker (port 5432, user=dafc, db=dafc_otb)
-5. Tat ca screen la `'use client'` components
-6. i18n dung `useLanguage()` hook, translations tai `src/locales/`
-7. Dark/light mode qua `darkMode` prop + CSS variables
-8. Premium cards: gradient + watermark icon pattern (xem HomeScreen lam mau)
-9. 2-level approval: DRAFT → SUBMITTED → L1_APPROVED → APPROVED
-10. Permissions: `budget:read`, `budget:write`, `budget:approve_l1`, `budget:approve_l2`, etc.
+5. Tat ca file la `.tsx`/`.ts` — TypeScript strict mode
+6. Feature-based architecture: `src/features/{domain}/components/` + `src/features/{domain}/hooks/`
+7. Screens re-export: `src/screens/*.tsx` → `export { default } from '../features/...'`
+8. Mobile V1: `useIsMobile()` → `{isMobile, isTablet, isDesktop}` (20+ screens), MobileBottomNav khi <768px
+8b. Mobile V2: `@/components/mobile` — MobileCard, MobileList, BottomSheet, FilterChips, PullToRefresh, FAB + 6 hooks trong useMobile.ts
+9. i18n dung `useLanguage()` hook, translations tai `src/locales/`
+10. Dark/light mode qua `darkMode` prop + CSS variables
+11. Premium cards: gradient + watermark icon pattern (xem HomeScreen lam mau)
+12. 2-level approval: DRAFT → SUBMITTED → L1_APPROVED → APPROVED
+13. Permissions: `budget:read`, `budget:write`, `budget:approve_l1`, `budget:approve_l2`, etc.
+14. Testing: `npm run test` (Vitest + jsdom, 114 tests)
+15. Types: `src/types/index.ts` (50+ shared interfaces)
 
 ---
 
