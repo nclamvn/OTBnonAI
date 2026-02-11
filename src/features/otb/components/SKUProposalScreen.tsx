@@ -98,11 +98,23 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         setSkuCatalog(catalog.map((s: any) => ({
           sku: s.skuCode || s.sku || s.code || s.id,
           name: s.productName || s.name,
-          productType: s.productType || s.category || '',
-          theme: s.theme || '',
+          collectionName: s.collectionName || s.collection || '',
           color: s.color || '',
+          colorCode: s.colorCode || '',
+          division: s.division || s.category || '',
+          productType: s.productType || s.category || '',
+          departmentGroup: s.departmentGroup || s.department || '',
+          fsr: s.fsr || '',
+          carryForward: s.carryForward || s.carry || 'NEW',
           composition: s.composition || '',
-          srp: Number(s.srp || s.unitCost) || 0
+          unitCost: Number(s.unitCost) || 0,
+          importTaxPct: Number(s.importTaxPct || s.importTax) || 0,
+          srp: Number(s.srp) || 0,
+          wholesale: Number(s.wholesale) || 0,
+          rrp: Number(s.rrp) || 0,
+          regionalRrp: Number(s.regionalRrp) || 0,
+          theme: s.theme || '',
+          size: s.size || ''
         })));
 
         // Transform proposals into SKU blocks grouped by gender/category
@@ -131,12 +143,23 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             block.items.push({
               sku: prod.skuCode || prod.sku,
               name: prod.productName || prod.name,
-              productType: prod.productType || prod.subCategory || '',
-              theme: prod.theme || '',
+              collectionName: prod.collectionName || prod.collection || '',
               color: prod.color || '',
+              colorCode: prod.colorCode || '',
+              division: prod.division || prod.category || '',
+              productType: prod.productType || prod.subCategory || '',
+              departmentGroup: prod.departmentGroup || prod.department || '',
+              fsr: prod.fsr || '',
+              carryForward: prod.carryForward || 'NEW',
               composition: prod.composition || '',
               unitCost: Number(prod.unitCost) || 0,
+              importTaxPct: Number(prod.importTaxPct || prod.importTax) || 0,
               srp: Number(prod.srp) || 0,
+              wholesale: Number(prod.wholesale) || 0,
+              rrp: Number(prod.rrp) || 0,
+              regionalRrp: Number(prod.regionalRrp) || 0,
+              theme: prod.theme || '',
+              size: prod.size || '',
               order: prod.orderQty || 0,
               storeQty,
               ttlValue: Number(prod.totalValue) || 0,
@@ -517,15 +540,25 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       const newItem = {
         sku: '',
         name: '',
-        productType: block.subCategory.toUpperCase(),
-        theme: '',
+        collectionName: '',
         color: '',
+        colorCode: '',
+        division: block.category || '',
+        productType: block.subCategory || '',
+        departmentGroup: '',
+        fsr: '',
+        carryForward: 'NEW',
         composition: '',
         unitCost: 0,
+        importTaxPct: 0,
         srp: 0,
+        wholesale: 0,
+        rrp: 0,
+        regionalRrp: 0,
+        theme: '',
+        size: '',
         order: 0,
-        rex: 0,
-        ttp: 0,
+        storeQty: {},
         ttlValue: 0,
         customerTarget: 'New',
         isNew: true
@@ -547,11 +580,23 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           ...item,
           sku: skuData.sku,
           name: skuData.name,
-          productType: skuData.productType,
-          theme: skuData.theme,
+          collectionName: skuData.collectionName,
           color: skuData.color,
+          colorCode: skuData.colorCode,
+          division: skuData.division,
+          productType: skuData.productType,
+          departmentGroup: skuData.departmentGroup,
+          fsr: skuData.fsr,
+          carryForward: skuData.carryForward,
           composition: skuData.composition,
+          unitCost: skuData.unitCost,
+          importTaxPct: skuData.importTaxPct,
           srp: skuData.srp,
+          wholesale: skuData.wholesale,
+          rrp: skuData.rrp,
+          regionalRrp: skuData.regionalRrp,
+          theme: skuData.theme,
+          size: skuData.size,
           isNew: false
         };
       });
@@ -1290,40 +1335,62 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     <table className="w-full text-sm">
                       <thead>
                         <tr className={darkMode ? 'bg-[rgba(215,183,151,0.08)] border-b border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.12)] border-b border-[rgba(215,183,151,0.2)]'}>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Image</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>SKU</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Name</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Product type (L3)</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Theme</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Color</th>
-                          <th className={`px-3 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Composition</th>
-                          <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Unit cost</th>
-                          <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>SRP</th>
-                          <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Order</th>
-                          {stores.map((st: any) => (
-                            <th key={st.code} className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{st.code}</th>
+                          {[
+                            { label: 'Image', align: 'left' },
+                            { label: 'SKU', align: 'left' },
+                            { label: 'Name', align: 'left' },
+                            { label: 'Collection', align: 'left' },
+                            { label: 'Color', align: 'left' },
+                            { label: 'Color Code', align: 'left' },
+                            { label: 'Division (L2)', align: 'left' },
+                            { label: 'Product Type (L3)', align: 'left' },
+                            { label: 'Dept/Group (L4)', align: 'left' },
+                            { label: 'FSR', align: 'center' },
+                            { label: 'Carry Forward', align: 'center' },
+                            { label: 'Composition', align: 'left' },
+                            { label: 'Unit Cost', align: 'right' },
+                            { label: 'Freight+Ins (3%)', align: 'right' },
+                            { label: 'Others Tax (2%)', align: 'right' },
+                            { label: 'Import Tax %', align: 'right' },
+                            { label: 'Tax Value', align: 'right' },
+                            { label: 'Landed Cost', align: 'right' },
+                            { label: 'Landed Cost VND', align: 'right' },
+                            { label: 'SRP', align: 'right' },
+                            { label: 'Wholesale', align: 'right' },
+                            { label: 'R.R.P', align: 'right' },
+                            { label: 'Regional RRP', align: 'right' },
+                            { label: 'Theme', align: 'left' },
+                            { label: 'Total Price', align: 'right' },
+                            { label: 'Total Units', align: 'center' },
+                            { label: 'Size', align: 'center' },
+                          ].map((col) => (
+                            <th key={col.label} className={`px-2 py-1.5 text-${col.align} text-[10px] font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{col.label}</th>
                           ))}
-                          <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>TTL value</th>
-                          <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Customer target</th>
-                          <th className={`px-3 py-0.5 text-center text-xs font-semibold w-16 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}></th>
+                          {stores.map((st: any) => (
+                            <th key={st.code} className={`px-2 py-1.5 text-center text-[10px] font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{st.code}</th>
+                          ))}
+                          <th className={`px-2 py-1.5 text-center text-[10px] font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Customer Target</th>
+                          <th className={`px-2 py-1.5 text-center text-[10px] font-semibold w-16 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}></th>
                         </tr>
                       </thead>
                       <tbody>
                         {block.items.map((item: any, idx: any) => {
                           return (
                           <tr key={`${item.sku}_${idx}`} className={`${darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'} ${item.isNew ? (darkMode ? 'bg-[rgba(42,158,106,0.1)]' : 'bg-[rgba(18,119,73,0.05)]') : ''}`}>
-                            <td className="px-3 py-0.5">
+                            {/* Image */}
+                            <td className="px-2 py-1">
                               <div className={`w-10 h-10 rounded-md border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.25)]'}`}>
-                                <ImageIcon size={16} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                                <ImageIcon size={14} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
                               </div>
                             </td>
+                            {/* SKU + Name */}
                             {item.isNew ? (
                               <>
-                                <td colSpan={2} className="px-3 py-0.5">
+                                <td colSpan={2} className="px-2 py-1">
                                   <select
                                     value={item.sku}
                                     onChange={(e) => handleSkuSelect(key, idx, e.target.value)}
-                                    className={`w-full px-3 py-0.5 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 font-['JetBrains_Mono'] ${darkMode ? 'border-[#2A9E6A] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(42,158,106,0.3)]' : 'border-[#127749] bg-white text-[#333333] focus:ring-[rgba(18,119,73,0.3)]'}`}
+                                    className={`w-full px-2 py-1 rounded-lg border-2 text-xs focus:outline-none focus:ring-2 font-['JetBrains_Mono'] ${darkMode ? 'border-[#2A9E6A] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(42,158,106,0.3)]' : 'border-[#127749] bg-white text-[#333333] focus:ring-[rgba(18,119,73,0.3)]'}`}
                                   >
                                     <option value="">{t('proposal.selectSku')}</option>
                                     {skuCatalog.map((sku: any) => (
@@ -1336,27 +1403,85 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                               </>
                             ) : (
                               <>
-                                <td className={`px-3 py-0.5 font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.sku}</td>
-                                <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.name}</td>
+                                <td className={`px-2 py-1 text-xs font-semibold font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.sku}</td>
+                                <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.name}</td>
                               </>
                             )}
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.productType}</td>
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.theme}</td>
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.color}</td>
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.composition}</td>
-                            <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.unitCost)}</td>
-                            <td className={`px-3 py-0.5 text-right font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp)}</td>
-                            <td className="px-3 py-0.5 text-center">
-                              <div className={`px-2.5 py-0.5 rounded-md font-semibold font-['JetBrains_Mono'] inline-block ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'}`}>
+                            {/* Collection Name */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.collectionName}</td>
+                            {/* Color */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.color}</td>
+                            {/* Color Code */}
+                            <td className={`px-2 py-1 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.colorCode}</td>
+                            {/* Division (L2) */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.division || block.category}</td>
+                            {/* Product Type (L3) */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.productType}</td>
+                            {/* Dept/Group (L4) */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.departmentGroup || block.subCategory}</td>
+                            {/* FSR */}
+                            <td className={`px-2 py-1 text-xs text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.fsr}</td>
+                            {/* Carry Forward */}
+                            <td className="px-2 py-1 text-center">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                                (item.carryForward || '').toUpperCase() === 'NEW'
+                                  ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.1)] text-[#127749]'
+                                  : darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.15)] text-[#6B4D30]'
+                              }`}>{item.carryForward || 'NEW'}</span>
+                            </td>
+                            {/* Composition */}
+                            <td className={`px-2 py-1 text-xs max-w-[120px] truncate ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} title={item.composition}>{item.composition}</td>
+                            {/* Unit Cost */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(item.unitCost)}</td>
+                            {/* Freight + Insurance (3%) */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.unitCost * 0.03)}</td>
+                            {/* Others Tax (2%) */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.unitCost * 0.02)}</td>
+                            {/* Import Tax % */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.importTaxPct || 0}%</td>
+                            {/* Tax Value */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.unitCost * (item.importTaxPct || 0) / 100)}</td>
+                            {/* Landed Cost */}
+                            {(() => {
+                              const freight = item.unitCost * 0.03;
+                              const othersTax = item.unitCost * 0.02;
+                              const taxVal = item.unitCost * (item.importTaxPct || 0) / 100;
+                              const landedCost = item.unitCost + freight + othersTax + taxVal;
+                              const landedCostVnd = landedCost * 25000;
+                              return (
+                                <>
+                                  <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(landedCost)}</td>
+                                  <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(landedCostVnd)}</td>
+                                </>
+                              );
+                            })()}
+                            {/* SRP */}
+                            <td className={`px-2 py-1 text-right text-xs font-medium font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp)}</td>
+                            {/* Wholesale */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.wholesale || 0)}</td>
+                            {/* R.R.P */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.rrp || 0)}</td>
+                            {/* Regional RRP */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{formatCurrency(item.regionalRrp || 0)}</td>
+                            {/* Theme */}
+                            <td className={`px-2 py-1 text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.theme}</td>
+                            {/* Total Price */}
+                            <td className={`px-2 py-1 text-right text-xs font-['JetBrains_Mono'] whitespace-nowrap ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue || (item.order * (item.srp || 0)))}</td>
+                            {/* Total Units */}
+                            <td className="px-2 py-1 text-center">
+                              <div className={`px-2 py-0.5 rounded-md font-semibold font-['JetBrains_Mono'] text-xs inline-block ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'}`}>
                                 {item.order}
                               </div>
                             </td>
+                            {/* Size */}
+                            <td className={`px-2 py-1 text-center text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.size}</td>
+                            {/* Store columns */}
                             {stores.map((st: any) => {
                               const storeKey = `${key}|${idx}|store_${st.code}`;
                               const isEditingStore = editingCell === storeKey;
                               const storeVal = (item.storeQty || {})[st.code] || 0;
                               return (
-                                <td key={st.code} className="px-3 py-0.5 text-center">
+                                <td key={st.code} className="px-2 py-1 text-center">
                                   {isEditingStore ? (
                                     <input
                                       type="number"
@@ -1364,51 +1489,52 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                                       onChange={(e) => setEditValue(e.target.value)}
                                       onBlur={() => handleSaveEdit(storeKey)}
                                       onKeyDown={(e) => handleKeyDown(e, storeKey)}
-                                      className={`w-16 px-1 py-0.5 text-center border-2 rounded-md focus:outline-none focus:ring-2 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)]' : 'border-[#D7B797] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)]'}`}
+                                      className={`w-14 px-1 py-0.5 text-center border-2 rounded-md focus:outline-none focus:ring-2 text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)]' : 'border-[#D7B797] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)]'}`}
                                       autoFocus
                                     />
                                   ) : (
                                     <button
                                       type="button"
                                       onClick={() => handleStartEdit(storeKey, storeVal)}
-                                      className={`px-2 py-0.5 rounded-md inline-flex items-center gap-1 font-['JetBrains_Mono'] transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
+                                      className={`px-1.5 py-0.5 rounded-md inline-flex items-center gap-1 text-xs font-['JetBrains_Mono'] transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
                                       title={`Edit ${st.code}`}
                                     >
                                       {storeVal}
-                                      <Pencil size={10} className={darkMode ? 'text-[#999999]' : 'text-[#6B4D30]'} />
+                                      <Pencil size={8} className={darkMode ? 'text-[#999999]' : 'text-[#6B4D30]'} />
                                     </button>
                                   )}
                                 </td>
                               );
                             })}
-                            <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue)}</td>
-                            <td className="px-3 py-0.5 text-center">
+                            {/* Customer Target */}
+                            <td className="px-2 py-1 text-center">
                               <select
                                 value={item.customerTarget}
                                 onChange={(e) => handleSelectChange(key, idx, 'customerTarget', e.target.value)}
-                                className={`px-2.5 py-0.5 rounded-md border text-sm focus:outline-none focus:ring-2 ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'border-[rgba(215,183,151,0.3)] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
+                                className={`px-1.5 py-0.5 rounded-md border text-xs focus:outline-none focus:ring-2 ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'border-[rgba(215,183,151,0.3)] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
                               >
                                 <option value="New">New</option>
                                 <option value="Existing">Existing</option>
                               </select>
                             </td>
-                            <td className="px-3 py-0.5 text-center">
-                              <div className="flex items-center justify-center gap-1">
+                            {/* Actions */}
+                            <td className="px-2 py-1 text-center">
+                              <div className="flex items-center justify-center gap-0.5">
                                 <button
                                   type="button"
                                   onClick={() => handleOpenSizing(key, idx, item)}
-                                  className={`p-1.5 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                                  className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                                   title="Sizing"
                                 >
-                                  <Ruler size={16} />
+                                  <Ruler size={14} />
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteSkuRow(key, idx)}
-                                  className={`p-1.5 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`}
+                                  className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`}
                                   title={t('proposal.deleteSku')}
                                 >
-                                  <Trash2 size={16} />
+                                  <Trash2 size={14} />
                                 </button>
                               </div>
                             </td>
@@ -1417,29 +1543,48 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         })}
                         {/* Rail Subtotal */}
                         <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.08)]' : 'border-[#D7B797]/40 bg-[rgba(215,183,151,0.12)]'}`}>
-                          <td className="px-3 py-2" colSpan={2}></td>
-                          <td className={`px-3 py-2 text-xs font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} colSpan={6}>
+                          <td className="px-2 py-2" colSpan={2}></td>
+                          <td className={`px-2 py-2 text-[10px] font-bold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} colSpan={10}>
                             SUBTOTAL — {block.items.length} SKUs
                           </td>
-                          <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                          {/* Unit Cost sum */}
+                          <td className={`px-2 py-2 text-right font-bold font-['JetBrains_Mono'] text-[10px] whitespace-nowrap ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
+                            {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.unitCost || 0), 0))}
+                          </td>
+                          {/* Freight, OthersTax, ImportTax%, TaxValue — skip */}
+                          <td colSpan={4}></td>
+                          {/* Landed Cost, Landed Cost VND — skip */}
+                          <td colSpan={2}></td>
+                          {/* SRP sum */}
+                          <td className={`px-2 py-2 text-right font-bold font-['JetBrains_Mono'] text-[10px] whitespace-nowrap ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
                             {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.srp || 0), 0))}
                           </td>
-                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                          {/* Wholesale, RRP, RegionalRRP — skip */}
+                          <td colSpan={3}></td>
+                          {/* Theme — skip */}
+                          <td></td>
+                          {/* Total Price */}
+                          <td className={`px-2 py-2 text-right font-bold font-['JetBrains_Mono'] text-[10px] whitespace-nowrap ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                            {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.ttlValue || (i.order * (i.srp || 0))), 0))}
+                          </td>
+                          {/* Total Units */}
+                          <td className={`px-2 py-2 text-center font-bold font-['JetBrains_Mono'] text-[10px] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                             {block.items.reduce((s: number, i: any) => s + (i.order || 0), 0)}
                           </td>
+                          {/* Size — skip */}
+                          <td></td>
+                          {/* Store columns */}
                           {stores.map((st: any) => (
-                            <td key={st.code} className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            <td key={st.code} className={`px-2 py-2 text-center font-bold font-['JetBrains_Mono'] text-[10px] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                               {block.items.reduce((s: number, i: any) => s + ((i.storeQty || {})[st.code] || 0), 0)}
                             </td>
                           ))}
-                          <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
-                            {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.ttlValue || 0), 0))}
-                          </td>
+                          {/* Customer target + actions — skip */}
                           <td colSpan={2}></td>
                         </tr>
                         {/* Add new row button */}
                         <tr className={`border-t border-dashed ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
-                          <td colSpan={15} className="px-3 py-0.5">
+                          <td colSpan={99} className="px-2 py-1">
                             <button
                               type="button"
                               onClick={() => handleAddSkuRow(key)}
