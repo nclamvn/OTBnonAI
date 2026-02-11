@@ -160,6 +160,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
   const [comparisonType, setComparisonType] = useState<'same' | 'different'>('same');
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
+  const [seasonCount, setSeasonCount] = useState<number>(1);
 
   // Auto-select first budget when budgets are loaded and none selected
   useEffect(() => {
@@ -538,14 +539,14 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     }
   }, [selectedSeason]);
 
-  // Toggle budget selection for multi-compare (max 3)
+  // Toggle budget selection for multi-compare (max = seasonCount)
   const toggleBudgetSelection = (budgetId: string) => {
     setSelectedBudgetIds(prev => {
       if (prev.includes(budgetId)) {
         return prev.filter(id => id !== budgetId);
       }
-      if (prev.length >= 3) {
-        toast.error(t('otbAnalysis.maxBudgets') || 'Maximum 3 budgets can be compared');
+      if (prev.length >= seasonCount) {
+        toast.error(t('otbAnalysis.maxBudgets') || `Maximum ${seasonCount} budgets can be compared`);
         return prev;
       }
       return [...prev, budgetId];
@@ -563,6 +564,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     setSelectedYear('all');
     setComparisonType('same');
     setSelectedBudgetIds([]);
+    setSeasonCount(1);
   };
 
   const hasActiveFilters = selectedBudgetId !== 'all' || selectedSeasonGroup !== 'all' || selectedSeason !== 'all' || selectedVersionId || selectedYear !== 'all' || selectedBudgetIds.length > 0;
@@ -1596,7 +1598,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       }`}
                     >
                       <ArrowLeftRight size={12} />
-                      Same
+                      {t('otbAnalysis.same') || 'Same'}
                     </button>
                     <button
                       type="button"
@@ -1612,9 +1614,61 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       }`}
                     >
                       <ArrowLeftRight size={12} className="rotate-45" />
-                      Different
+                      {t('otbAnalysis.different') || 'Different'}
                     </button>
                   </div>
+                </div>
+
+                {/* Number of Seasons Dropdown */}
+                <div className="relative min-w-[120px]" ref={setDropdownRef('seasonCount')}>
+                  <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                    {t('otbAnalysis.numberOfSeasons') || 'Number of Seasons'}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenDropdown((prev: any) => (prev === 'seasonCount' ? null : 'seasonCount'));
+                      setOpenCategoryDropdown(null);
+                    }}
+                    className={`w-full px-3 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                      darkMode
+                        ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
+                        : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                      <span>{seasonCount}</span>
+                    </div>
+                    <ChevronDown size={12} className={`transition-transform duration-200 ${openDropdown === 'seasonCount' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openDropdown === 'seasonCount' && (
+                    <div className={`absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-[9999] overflow-hidden ${
+                      darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
+                    }`}>
+                      {[1, 2, 3].map((n) => (
+                        <div
+                          key={n}
+                          onClick={() => {
+                            setSeasonCount(n);
+                            // Trim selected budgets if they exceed the new count
+                            if (selectedBudgetIds.length > n) {
+                              setSelectedBudgetIds(prev => prev.slice(0, n));
+                            }
+                            setOpenDropdown(null);
+                          }}
+                          className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                            seasonCount === n
+                              ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
+                              : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
+                          }`}
+                        >
+                          <span className="font-medium">{n}</span>
+                          {seasonCount === n && <Check size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className={`h-10 w-px hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#2E2E2E]/20'}`} />
@@ -1622,7 +1676,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 {/* Budget Season Multi-Select */}
                 <div className="relative min-w-[240px]" ref={setDropdownRef('budgetSeason')}>
                   <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                    {t('otbAnalysis.budgetSeason') || 'Budget Season'} <span className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>(max 3)</span>
+                    {t('otbAnalysis.budgetSeason') || 'Budget Season'} <span className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>(max {seasonCount})</span>
                   </label>
                   <button
                     type="button"
@@ -1688,7 +1742,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         )}
                         {!loadingBudgets && filteredBudgets.map((budget: any) => {
                           const isSelected = selectedBudgetIds.includes(budget.id);
-                          const isDisabled = !isSelected && selectedBudgetIds.length >= 3;
+                          const isDisabled = !isSelected && selectedBudgetIds.length >= seasonCount;
                           return (
                             <div
                               key={budget.id}
@@ -2176,6 +2230,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
             ],
           },
           {
+            key: 'seasonCount',
+            label: t('otbAnalysis.numberOfSeasons') || 'Number of Seasons',
+            type: 'single',
+            options: [
+              { label: '1', value: '1' },
+              { label: '2', value: '2' },
+              { label: '3', value: '3' },
+            ],
+          },
+          {
             key: 'budget',
             label: t('otbAnalysis.budgetSeason') || 'Budget Season',
             type: 'single',
@@ -2208,6 +2272,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           }
           if (mobileFilterValues.type) {
             setComparisonType(mobileFilterValues.type as 'same' | 'different');
+          }
+          if (mobileFilterValues.seasonCount) {
+            setSeasonCount(Number(mobileFilterValues.seasonCount) || 1);
           }
           if (mobileFilterValues.budget) {
             setSelectedBudgetIds([mobileFilterValues.budget as string]);
