@@ -165,38 +165,69 @@ const OrderDetailPanel = ({ order, darkMode }: any) => {
                     </div>
                   </div>
 
-                  {/* Store Allocation */}
-                  <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                    <div className={`px-3 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
-                      Store Allocation
-                    </div>
-                    <table className="w-full text-xs">
-                      <thead>
-                        <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
-                          <th className="px-3 py-0.5 text-left">Store</th>
-                          <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">Qty</th>
-                          <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D7B797]" />REX</span></td>
-                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex || 0}</td>
-                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
-                        </tr>
-                        <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#127749]" />TTP</span></td>
-                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.ttp || 0}</td>
-                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
-                        </tr>
-                        <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.08)]'}`}>
-                          <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
-                          <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
-                          <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
+                  {/* Store × Size Allocation Grid */}
+                  {(() => {
+                    const sizes = item.sizes || {};
+                    const sizeKeys = Object.keys(sizes);
+                    const storeRows = [
+                      { key: 'rex', label: 'REX', color: 'bg-[#D7B797]', qty: item.rex || 0 },
+                      { key: 'ttp', label: 'TTP', color: 'bg-[#127749]', qty: item.ttp || 0 },
+                    ];
+                    return (
+                      <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+                        <div className={`px-3 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+                          Store × Size Allocation
+                        </div>
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
+                                <th className="px-3 py-0.5 text-left">Store</th>
+                                {sizeKeys.length > 0
+                                  ? sizeKeys.map(s => <th key={s} className="px-2 py-0.5 text-center font-['JetBrains_Mono']">{s}</th>)
+                                  : <th className="px-2 py-0.5 text-center font-['JetBrains_Mono']">-</th>
+                                }
+                                <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">TTL Qty</th>
+                                <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">Value</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {storeRows.map((store) => (
+                                <tr key={store.key} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
+                                  <td className={`px-3 py-0.5 ${textPrimary}`}>
+                                    <span className="inline-flex items-center gap-1.5">
+                                      <span className={`w-1.5 h-1.5 rounded-full ${store.color}`} />{store.label}
+                                    </span>
+                                  </td>
+                                  {sizeKeys.length > 0
+                                    ? sizeKeys.map(s => {
+                                        const sizeQty = Math.round(store.qty * (sizes[s]?.salesMix || 0) / 100);
+                                        return <td key={s} className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{sizeQty}</td>;
+                                      })
+                                    : <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{store.qty}</td>
+                                  }
+                                  <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{store.qty}</td>
+                                  <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(store.qty * (item.srp || 0))}</td>
+                                </tr>
+                              ))}
+                              <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.08)]'}`}>
+                                <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
+                                {sizeKeys.length > 0
+                                  ? sizeKeys.map(s => {
+                                      const totalSizeQty = storeRows.reduce((sum, st) => sum + Math.round(st.qty * (sizes[s]?.salesMix || 0) / 100), 0);
+                                      return <td key={s} className={`px-2 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalSizeQty}</td>;
+                                    })
+                                  : <td className={`px-2 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
+                                }
+                                <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
+                                <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Sizing */}
                   <SizingTable item={item} darkMode={darkMode} />

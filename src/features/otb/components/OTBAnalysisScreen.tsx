@@ -161,6 +161,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [comparisonType, setComparisonType] = useState<'same' | 'different'>('same');
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
 
+  // Auto-select first budget when budgets are loaded and none selected
+  useEffect(() => {
+    if (apiBudgets.length > 0 && selectedBudgetIds.length === 0 && selectedBudgetId === 'all') {
+      const first = apiBudgets[0];
+      setSelectedBudgetIds([first.id]);
+      setSelectedBudgetId(first.id);
+      if (first.fiscalYear) setSelectedYear(first.fiscalYear);
+    }
+  }, [apiBudgets]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Sync single-budget mode when exactly 1 budget selected in multi-select
   useEffect(() => {
     if (selectedBudgetIds.length === 1) {
@@ -1126,7 +1136,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   />
                 </button>
                 <Users size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`font-bold text-base md:text-lg font-['Montserrat'] ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{genderGroup.gender.name}</span>
+                <span className={`font-bold text-sm md:text-base font-['Montserrat'] ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{genderGroup.gender.name}</span>
                 <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-white/80' : 'text-[#6B4D30]'}`}>
                   {genderGroup.categories.length} categories
                 </span>

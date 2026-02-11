@@ -284,7 +284,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   useEffect(() => {
     if (contextBanner?.subCategory && skuCatalog.length > 0 && skuBlocks.length === 0 && !skuDataLoading) {
       const subCat = contextBanner.subCategory;
-      const matchingItems = skuCatalog.filter((item: any) => item.productType === subCat);
+      const matchingItems = skuCatalog.filter((item: any) => (item.productType || '').toLowerCase() === subCat.toLowerCase());
       if (matchingItems.length > 0) {
         const genderKey = (contextBanner.gender || '').toLowerCase();
         setSkuBlocks([{

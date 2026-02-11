@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Eye, Loader2, Plus, X, LayoutList, LayoutGrid, Ticket, CircleCheckBig, DollarSign } from 'lucide-react';
+import { Eye, Loader2, Plus, X, LayoutList, LayoutGrid, Ticket, CircleCheckBig, DollarSign, Search } from 'lucide-react';
 import TicketKanbanBoard from './TicketKanbanBoard';
 import { ExpandableStatCard } from '../../../components/ui';
 import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, useBottomSheet, FilterBottomSheet } from '../../../components/mobile';
@@ -77,6 +77,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
   const [budgetOptions, setBudgetOptions] = useState<any[]>([]);
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilters, setMobileFilters] = useState<Record<string, string | string[]>>({});
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Fetch all tickets (budgets, plannings, proposals)
   const fetchTickets = async () => {
@@ -194,6 +195,21 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
     };
   }, [tickets]);
 
+  // Filter tickets by search term
+  const filteredTickets = useMemo(() => {
+    if (!searchTerm.trim()) return tickets;
+    const q = searchTerm.toLowerCase();
+    return tickets.filter((tk: any) =>
+      (tk.name || '').toLowerCase().includes(q) ||
+      (tk.brand || '').toLowerCase().includes(q) ||
+      (tk.seasonGroup || '').toLowerCase().includes(q) ||
+      (tk.season || '').toLowerCase().includes(q) ||
+      (tk.createdBy || '').toLowerCase().includes(q) ||
+      getDisplayStatus(tk.status, t).toLowerCase().includes(q) ||
+      getEntityTypeLabel(tk.entityType, t).toLowerCase().includes(q)
+    );
+  }, [tickets, searchTerm, t]);
+
   // Status styles for dark/light mode
   const getStatusStyle = (status: any) => {
     const displayStatus = getDisplayStatus(status, t);
@@ -249,6 +265,30 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
           </p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Search Box */}
+          <div className={`relative flex items-center ${darkMode ? '' : ''}`}>
+            <Search size={14} className={`absolute left-3 ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t('common.search') + '...'}
+              className={`pl-9 pr-8 py-2 text-sm rounded-lg border w-48 focus:outline-none focus:ring-2 transition-all ${
+                darkMode
+                  ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666666] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
+                  : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
+              }`}
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className={`absolute right-2 p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
           {/* View Toggle */}
           <div className={`flex items-center gap-1 p-1 rounded-lg ${
             darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-gray-100 border border-gray-300'
@@ -351,7 +391,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
         </div>
       ) : viewMode === 'kanban' ? (
         <TicketKanbanBoard
-          tickets={tickets}
+          tickets={filteredTickets}
           onTicketClick={onOpenTicketDetail}
           darkMode={darkMode}
         />
@@ -375,7 +415,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
 
             <PullToRefresh onRefresh={fetchTickets}>
               <MobileList
-                items={tickets.map((ticket) => ({
+                items={filteredTickets.map((ticket) => ({
                   id: `${ticket.entityType}-${ticket.id}`,
                   avatar: ticket.entityType === 'budget' ? '💰' : ticket.entityType === 'planning' ? '📊' : '📦',
                   title: ticket.name,
@@ -394,7 +434,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
                   ],
                 }))}
                 onItemPress={(item) => {
-                  const ticket = tickets.find((t: any) => `${t.entityType}-${t.id}` === item.id);
+                  const ticket = filteredTickets.find((t: any) => `${t.entityType}-${t.id}` === item.id);
                   if (ticket) onOpenTicketDetail(ticket);
                 }}
                 expandable
@@ -463,7 +503,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
             </thead>
 
             <tbody className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-gray-200'}`}>
-              {tickets.map((ticket: any) => (
+              {filteredTickets.map((ticket: any) => (
                 <tr
                   key={`${ticket.entityType}-${ticket.id}`}
                   className={`transition-all duration-150 border-l-2 border-transparent ${
@@ -511,7 +551,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
           </table>
           </div>
 
-          {tickets.length === 0 && (
+          {filteredTickets.length === 0 && (
             <div className={`p-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>
               {t('ticket.noTicketsFound')}
             </div>

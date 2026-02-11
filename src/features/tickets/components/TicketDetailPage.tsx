@@ -444,7 +444,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
               ? 'border-[#2E2E2E] bg-[#1A1A1A]/40'
               : 'border-white/50 bg-white/40'
           }`}>
-            <div className="grid grid-cols-2 gap-3 text-base">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-base">
               <div>
                 <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Product type</span>
                 <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{productType}</div>
@@ -456,6 +456,12 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
               <div>
                 <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Color</span>
                 <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.color}</div>
+              </div>
+              <div>
+                <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Size</span>
+                <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
+                  {item.sizing?.sizes?.join(', ') || '-'}
+                </div>
               </div>
               <div>
                 <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>Composition</span>
