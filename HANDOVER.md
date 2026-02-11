@@ -7,7 +7,7 @@
 
 ---
 
-## Cap nhat lan cuoi: 11/02/2026 (Session 15 - Mobile UI 2.0 Screen Integration)
+## Cap nhat lan cuoi: 11/02/2026 (Session 18 - Customer Feedback Fixes)
 
 ---
 
@@ -749,6 +749,142 @@ npm run dev
 
 ---
 
+## SESSION 11/02/2026 - Session 18 (Customer Feedback Fixes)
+
+### Thay doi chinh
+
+**OTB Analysis + SKU Proposal editable orders (`3102552`):**
+- OTB Analysis filter panel: removed `sticky top-0` and `z-[100]` — changed to static `z-[20]`
+- SKU Proposal: removed redundant Rex/TTP/Order/Total Value summary grid
+- SKU Proposal: ORDER column in Store Order table made editable with inline `<input>` fields for REX/TTP quantities
+
+**3 Customer Issues (`2f55d23`):**
+1. **BudgetManagementScreen:** Removed Season Group and Season fields from Create Budget popup per customer request
+2. **SKUProposalScreen:** Fixed gender filter — was using database UUID (`skuContext.gender.id`) but needed to use name string (`skuContext.gender.name.toLowerCase()`); also added logic to build SKU blocks from catalog when no proposals exist for the selected subcategory
+3. **TicketDetailPage:** Gender chart was empty for budget/planning tickets — now shows `MOCK_GENDER_DATA` fallback
+
+### Files chinh
+```
+src/features/otb/components/OTBAnalysisScreen.tsx      # remove sticky filter panel
+src/features/otb/components/SKUProposalScreen.tsx       # remove summary grid, editable store orders, gender filter fix, auto-build blocks from catalog
+src/features/otb/components/BudgetManagementScreen.tsx  # remove Season Group/Season fields from Create Budget
+src/features/tickets/components/TicketDetailPage.tsx    # gender chart fallback data
+```
+
+---
+
+## SESSION 11/02/2026 - Session 17 (Compact UI + Login V2 + QA Polish)
+
+### Thay doi chinh
+
+**Compact UI overhaul (`35dd88a` — 19 files, +464/-266 lines):**
+- Buttons across entire app compacted: `py-3` to `py-2`, `py-2.5` to `py-1.5`
+- AppHeader KPI stepper bar reduced padding
+- BudgetModal, PlanningDetailModal, ApprovalWorkflow buttons compacted
+- All dropdown selects compacted in BudgetAllocate/OTBAnalysis
+- Removed Category Breakdown table from Budget Allocation page
+- Changed "Latest" to "Final" in version badges (both EN and VI locales)
+- Replaced all `Math.random()` with fixed demo data for consistent display
+- Enriched Order/Receipt DEMO_SKUS from 5 to 8 products
+- API store fetching filtered to REX/TTP only (`useBudget`, `BudgetMgmt`, `ProposalDetail`)
+
+**Login Page V2 Redesign (`35dd88a`):**
+- Light theme with glassmorphism card
+- Fashion icon SVGs, Cormorant Garamond font
+- Vietnamese tagline, decorative floating elements
+
+**QA Polish (`2e51ccd` — 26 files, +1117/-932 lines):**
+- Separated `viewport` from `metadata` export in `layout.tsx` (fixes Next.js 16 warnings)
+- Added missing i18n keys: `analytics.*`, `header.notifications`
+- Replaced CSS `scroll-behavior` with `data-scroll-behavior` attribute
+- Skipped non-existent API endpoints (`/approvals/pending`, `/orders`, `/master/sub-categories`) to eliminate 404s
+- Fixed approval names: budgets now show `budgetCode + groupBrand.name` instead of raw CUID
+- Added comprehensive Ticket Detail mockup data (collection/gender charts, 4 SKU blocks, dynamic sizing tables)
+- Fixed `min-height: 44px` global override — wrapped in mobile-only `@media (max-width: 767px)` query
+- Increased sidebar spacing after compact fix
+- Backend `seed.ts`: admin user name changed to "Admin"
+
+**Login Logo Fix (`0a3323f`):**
+- Changed `dafc-logo-full.png` to already-tracked `dafc-logo.png` (was missing on deployment)
+
+**Workflow Bar + SKU Header Polish (`10d39fc`):**
+- AppHeader KPI bar: increased spacing (py, gap, connector width)
+- Mobile KPI bar: icon-only mode with count badge, no text labels (uses `useIsMobile` hook)
+- TicketDetailPage SKU block header: navy blue gradient → brand gold gradient
+
+### Files chinh (30+ files)
+```
+src/app/layout.tsx                          # Cormorant Garamond font, viewport export
+src/app/globals.css                         # compact button/input heights, mobile-only min-height
+src/screens/LoginScreen.tsx                 # V2 redesign, logo fix
+src/components/layout/AppHeader.tsx         # compact KPI bar, mobile icon-only mode
+src/components/layout/Sidebar.tsx           # spacing adjustments
+src/components/ui/BudgetModal.tsx           # compact buttons
+src/components/ui/PlanningDetailModal.tsx   # compact buttons
+src/contexts/AppContext.tsx                 # KPI defaults (no zeros)
+src/features/otb/components/*.tsx           # compact selects, REX/TTP only store filter
+src/features/tickets/components/*.tsx       # realistic default data, gold header
+src/features/approvals/components/*.tsx     # approval name display fix
+src/features/orders/components/*.tsx        # enriched DEMO_SKUS
+src/services/approvalService.ts            # skip non-existent API endpoints
+src/services/masterDataService.ts          # skip non-existent API endpoints
+src/locales/en.ts                          # "Final", analytics keys, notifications
+src/locales/vi.ts                          # "Final", analytics keys, notifications
+src/styles/mobile-design-system.css        # mobile-only adjustments
+backend/prisma/seed.ts                     # admin user name fix
+```
+
+---
+
+## SESSION 11/02/2026 - Session 16 (Build Fix + OTB Terminology + Order/Receipt Detail)
+
+### Thay doi chinh
+
+**Build & CSS Fix:**
+- `tailwind.config.js` content paths only scanned `.{js,jsx}` after TS migration — added `.{ts,tsx}` to fix all pages rendering unstyled (`1193ba0`)
+
+**Sidebar & Layout:**
+- Compact sidebar spacing: group padding `pt-2` to `pt-1`, divider `py-1.5` to `py-0.5` (`f8509c6`)
+- Fixed header scrolling with page — changed root layout to `h-screen overflow-hidden`, added `shrink-0` to AppHeader, only content area scrolls (`9115099`)
+
+**Budget Allocation:**
+- **Bug fix:** Filters showed values but table was empty — `selectedGroupBrand` was a name string but `groupBrandList` uses API UUIDs; added matching by both ID and name (`3315c9b`)
+- Renamed action button "Phan tich OTB" to "Phan bo OTB" with new i18n key (`010f215`)
+
+**OTB Analysis (Phan bo OTB):**
+- Full terminology change: "Phan tich" → "Phan bo" across sidebar, header, title, action buttons; EN: "OTB Analysis" → "OTB Allocation" (`4c9d808`)
+- Tab order changed to Category | Collection | Gender (Category is default); added demo %Buy/%Sales/%ST data (`fa2f267`)
+- Fixed semi-transparent header letting table content bleed through on scroll (`4691e88`)
+- **Gender tab:** Populated with reference data (Female REX/TTP, Male REX/TTP) with realistic Buy%, Sales%, ST%, OTB values (`d60bbaa`)
+- **Collection tab:** Populated Carry Over and Seasonal rows with REX/TTP reference data (`d60bbaa`)
+
+**SKU Card Changes:**
+- Removed redundant 4-cell summary grid (Rex/TTP/Order/Total Value) from SKU cards (`ba97662`)
+- Store Order section defaults to open (`storeOrderOpen = true`) (`ba97662`)
+- ORDER column in Store Order table now editable with click-to-edit qty (`ba97662`)
+
+**Order/Receipt Screens:**
+- Added expandable detail rows with SKU list, store allocation, sizing table, product details (`376743f`)
+- Receipt screen added Ordered/Received tracking with discrepancy indicator (`376743f`)
+- 5 DEMO_SKUs with full sizing data for when API has no products (`376743f`)
+
+### Files chinh
+```
+tailwind.config.js                                       # ts/tsx content paths
+src/components/layout/Sidebar.tsx                        # compact spacing, terminology
+src/components/layout/AppHeader.tsx                      # header shrink-0
+src/app/(dashboard)/layout.tsx                           # h-screen overflow-hidden
+src/features/otb/components/BudgetAllocateScreen.tsx     # filter matching fix, terminology
+src/features/otb/components/OTBAnalysisScreen.tsx        # terminology, tab order, demo data, header bg, Gender/Collection data
+src/features/otb/components/SKUProposalScreen.tsx        # remove summary grid, Store Order default open, editable ORDER
+src/features/orders/components/OrderConfirmationScreen.tsx    # expandable detail + SKU + sizing
+src/features/orders/components/ReceiptConfirmationScreen.tsx  # expandable detail + Ordered/Received tracking
+src/locales/en.ts                                        # "OTB Allocation", "Allocate SKU"
+src/locales/vi.ts                                        # "Phan bo OTB", "Phan bo SKU"
+```
+
+---
+
 ## SESSION 11/02/2026 - Session 15 (Mobile UI 2.0 Screen Integration)
 
 ### Thay doi chinh
@@ -1198,9 +1334,17 @@ src/locales/vi.js                             # 105+ new keys
 - [x] ~~Mobile components V1~~ → Done Session 14 (6 components in ui/ + useIsMobile)
 - [x] ~~Mobile UI 2.0 Revolution~~ → Done Session 14 (6 components in mobile/ + 6 hooks + CSS design system)
 - [x] ~~Testing framework setup~~ → Done Session 14 (Vitest + 5 test suites, 114 tests)
-- [ ] **COMMIT Session 14 changes** — 250+ files uncommitted, build + 114 tests verified OK
-- [x] ~~Apply Mobile UI 2.0 to 9 screens~~ → Done Session 15 (HomeScreen, TicketScreen, ApprovalsScreen, MasterDataScreen, BudgetManagementScreen, BudgetAllocateScreen, OTBAnalysisScreen, SKUProposalScreen, TicketDetailPage)
-- [ ] TicketDetailPage.tsx still has MOCK_SKU_DATA and MOCK_DETAIL_DATA (fallback)
+- [x] ~~Apply Mobile UI 2.0 to 9 screens~~ → Done Session 15
+- [x] ~~Tailwind CSS fix after TS migration~~ → Done Session 16 (ts/tsx content paths)
+- [x] ~~OTB terminology "Phan tich" → "Phan bo"~~ → Done Session 16
+- [x] ~~Budget Allocation filter matching fix~~ → Done Session 16
+- [x] ~~Order/Receipt expandable detail with SKU + sizing~~ → Done Session 16
+- [x] ~~Compact UI overhaul~~ → Done Session 17 (buttons, selects, KPI bar)
+- [x] ~~Login V2 redesign~~ → Done Session 17 (glassmorphism, fashion icons)
+- [x] ~~QA polish (viewport, i18n, API 404s, approval names)~~ → Done Session 17
+- [x] ~~Remove Season fields from Create Budget~~ → Done Session 18
+- [x] ~~SKU data flow fix (gender filter + auto-build from catalog)~~ → Done Session 18
+- [x] ~~Fixed header scrolling~~ → Done Session 16 (h-screen overflow-hidden)
 - [ ] TicketScreen.tsx: TODO - Implement create ticket API call
 - [ ] Azure Portal manual config (Node 22 LTS, `node .next/standalone/server.js` / `node dist/src/main.js`, env vars)
 - [ ] Backend import endpoints — importService.ts references `/import/*` endpoints chua co trong NestJS backend

@@ -1311,45 +1311,38 @@ const BudgetAllocateScreen = ({
                                   {/* Render seasons based on selection */}
                                   {(selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS).map((seasonGroup: any) => (
                                     <Fragment key={`${brand.id}-${seasonGroup}`}>
-                                      {/* Season Group Header */}
-                                      <tr className={darkMode ? 'bg-[#1A1A1A] border-b border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.12)] border-b border-[#C4B5A5]'}>
-                                        <td className="px-3 py-0.5">
+                                      {/* Season Group Header — summary row (non-editable) */}
+                                      <tr className={`border-b ${darkMode ? 'bg-[#1e1a14] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.18)] border-[#C4B5A5]'}`}>
+                                        <td className="px-3 py-1">
                                           <div className="flex items-center gap-2">
-                                            <div className={`w-1 h-3.5 rounded-full ${seasonGroup === 'SS' ? 'bg-[#E3B341]' : 'bg-[#D7B797]'}`}></div>
+                                            <div className={`w-1.5 h-4 rounded-full ${seasonGroup === 'SS' ? 'bg-[#E3B341]' : 'bg-[#D7B797]'}`}></div>
                                             {seasonGroup === 'SS' ? (
                                               <Sun size={14} className="text-[#E3B341]" />
                                             ) : (
                                               <Snowflake size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                                             )}
-                                            <span className={`font-semibold text-sm font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{SEASON_CONFIG[seasonGroup]?.name}</span>
+                                            <span className={`font-bold text-sm font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#4A3728]'}`}>{SEASON_CONFIG[seasonGroup]?.name}</span>
                                           </div>
                                         </td>
                                         {stores.map((store: any) => (
-                                        <td key={store.id} className="px-1.5 py-0.5 text-center">
-                                          <input
-                                            type="text"
-                                            value={formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, store.id) || 0)}
-                                            readOnly
-                                            tabIndex={-1}
-                                            className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-semibold font-['JetBrains_Mono'] cursor-default ${darkMode
-                                              ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212]'
-                                              : 'border-[#C4B5A5] text-[#0A0A0A] bg-[rgba(160,120,75,0.12)]'
-                                            }`}
-                                          />
+                                        <td key={store.id} className="px-1.5 py-1 text-center">
+                                          <div className={`px-1.5 py-0.5 text-center text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#4A3728]'}`}>
+                                            {formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, store.id) || 0)}
+                                          </div>
                                         </td>
                                         ))}
-                                        <td className="px-1.5 py-0.5 text-center">
-                                          <div className={`px-1.5 py-0.5 border rounded font-bold text-xs font-['JetBrains_Mono'] ${darkMode
-                                            ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]'
-                                            : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#0A0A0A]'
+                                        <td className="px-1.5 py-1 text-center">
+                                          <div className={`px-2 py-0.5 rounded font-bold text-xs font-['JetBrains_Mono'] ${darkMode
+                                            ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]'
+                                            : 'bg-[rgba(160,120,75,0.2)] text-[#4A3728]'
                                           }`}>
                                             {formatCurrency(stores.reduce((s: number, st: any) => s + (getSeasonTotalValue(brand.id, seasonGroup, st.id) || 0), 0))}
                                           </div>
                                         </td>
-                                        <td className={`px-2 py-0.5 text-center text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                                        <td className={`px-2 py-1 text-center text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#4A3728]'}`}>
                                           {selectedSeasonGroup ? '100%' : `${calculateMix(stores.reduce((s: number, st: any) => s + (getSeasonTotalValue(brand.id, seasonGroup, st.id) || 0), 0), brand.id)}%`}
                                         </td>
-                                        <td className="px-2 py-0.5"></td>
+                                        <td className="px-2 py-1"></td>
                                       </tr>
 
                                       {/* Sub-Season Rows */}
@@ -1420,36 +1413,32 @@ const BudgetAllocateScreen = ({
                                     </Fragment>
                                   ))}
 
-                                  {/* Total Row */}
-                                  <tr className={`border-t-2 ${darkMode ? 'bg-[rgba(18,119,73,0.15)] border-[#127749]' : 'bg-[rgba(18,119,73,0.1)] border-[#127749]'}`}>
-                                    <td className="px-3 py-0.5">
-                                      <span className={`font-bold text-xs font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>TOTAL</span>
+                                  {/* Total Row — grand total (non-editable) */}
+                                  <tr className={`border-t-2 ${darkMode ? 'bg-[#0d1f15] border-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.12)] border-[#127749]'}`}>
+                                    <td className="px-3 py-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <div className={`w-1.5 h-4 rounded-full ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`}></div>
+                                        <span className={`font-black text-sm font-['Montserrat'] tracking-wider ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>TOTAL</span>
+                                      </div>
                                     </td>
                                     {stores.map((store: any) => (
-                                    <td key={store.id} className="px-1.5 py-0.5 text-center">
-                                      <input
-                                        type="text"
-                                        value={formatCurrency(getBrandTotalValue(brand.id, store.id) || 0)}
-                                        readOnly
-                                        tabIndex={-1}
-                                        className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-bold font-['JetBrains_Mono'] cursor-default ${darkMode
-                                          ? 'border-[#127749] text-[#2A9E6A] bg-[rgba(18,119,73,0.2)]'
-                                          : 'border-[#127749] text-[#127749] bg-[rgba(18,119,73,0.15)]'
-                                        }`}
-                                      />
+                                    <td key={store.id} className="px-1.5 py-1.5 text-center">
+                                      <div className={`px-1.5 py-0.5 text-center text-sm font-black font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                                        {formatCurrency(getBrandTotalValue(brand.id, store.id) || 0)}
+                                      </div>
                                     </td>
                                     ))}
 
-                                    <td className="px-1.5 py-0.5 text-center">
-                                      <div className={`px-2 py-0.5 border rounded font-bold text-sm font-['JetBrains_Mono'] ${darkMode
-                                        ? 'bg-[rgba(18,119,73,0.25)] border-[#2A9E6A] text-[#2A9E6A]'
-                                        : 'bg-[rgba(18,119,73,0.2)] border-[#127749] text-[#127749]'
+                                    <td className="px-1.5 py-1.5 text-center">
+                                      <div className={`px-2 py-1 rounded font-black text-sm font-['JetBrains_Mono'] ${darkMode
+                                        ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A]'
+                                        : 'bg-[rgba(18,119,73,0.18)] text-[#127749]'
                                       }`}>
                                         {formatCurrency(stores.reduce((s: number, st: any) => s + (getBrandTotalValue(brand.id, st.id) || 0), 0))}
                                       </div>
                                     </td>
-                                    <td className={`px-2 py-0.5 text-center text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>100%</td>
-                                    <td className="px-2 py-0.5"></td>
+                                    <td className={`px-2 py-1.5 text-center text-sm font-black font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>100%</td>
+                                    <td className="px-2 py-1.5"></td>
                                   </tr>
                                 </tbody>
                               </table>
