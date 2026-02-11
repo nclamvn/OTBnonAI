@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: any) {
 
   return (
     <AuthGuard>
-      <div className={`min-h-screen ${darkMode ? 'dark bg-canvas' : 'light bg-[hsl(40,25%,96%)]'} flex transition-colors duration-normal`}>
+      <div className={`h-screen overflow-hidden ${darkMode ? 'dark bg-canvas' : 'light bg-[hsl(40,25%,96%)]'} flex transition-colors duration-normal`}>
         <div className="hidden md:block">
           <Sidebar
             currentScreen={currentScreen}

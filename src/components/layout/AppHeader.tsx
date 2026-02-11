@@ -256,7 +256,7 @@ const AppHeader = ({
   }, []);
 
   return (
-    <div className="sticky top-0 z-40" style={{
+    <div className="sticky top-0 z-40 shrink-0" style={{
       background: darkMode
         ? 'linear-gradient(180deg, #0A0A0A 0%, rgba(13,11,9,1) 100%)'
         : 'linear-gradient(180deg, #ffffff 0%, #fdfbf9 100%)',
