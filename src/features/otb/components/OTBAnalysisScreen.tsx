@@ -26,9 +26,9 @@ const SEASONS = [
 ];
 
 const TABS = [
+  { id: 'category', label: 'Category', icon: Tag },
   { id: 'collection', label: 'Collection', icon: Layers },
-  { id: 'gender', label: 'Gender', icon: Users },
-  { id: 'category', label: 'Category', icon: Tag }
+  { id: 'gender', label: 'Gender', icon: Users }
 ];
 
 // Reusable editable cell component (memoized to prevent unnecessary re-renders)
@@ -95,7 +95,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const { isMobile } = useIsMobile();
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
-  const [activeTab, setActiveTab] = useState('collection');
+  const [activeTab, setActiveTab] = useState('category');
 
   // API data states
   const [categoryStructure, setCategoryStructure] = useState<any[]>([]);
@@ -289,21 +289,35 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   useEffect(() => {
     const initialData: Record<string, any> = {};
 
-    // Initialize Category tab data
+    // Initialize Category tab data with sample demo values
+    const sampleCategoryData: Record<string, { buyPct: number; salesPct: number; stPct: number; buyProposed: number; otbProposed: number; varPct: number; otbSubmitted: number; buyActual: number }> = {};
+    let catIndex = 0;
+    const demoValues = [
+      { buyPct: 25, salesPct: 22, stPct: 88, buyProposed: 18, otbProposed: 15, otbSubmitted: 14, buyActual: 16 },
+      { buyPct: 18, salesPct: 20, stPct: 91, buyProposed: 12, otbProposed: 10, otbSubmitted: 9, buyActual: 11 },
+      { buyPct: 15, salesPct: 14, stPct: 85, buyProposed: 22, otbProposed: 20, otbSubmitted: 18, buyActual: 21 },
+      { buyPct: 12, salesPct: 16, stPct: 92, buyProposed: 14, otbProposed: 12, otbSubmitted: 11, buyActual: 13 },
+      { buyPct: 10, salesPct: 8, stPct: 78, buyProposed: 16, otbProposed: 14, otbSubmitted: 13, buyActual: 15 },
+      { buyPct: 8, salesPct: 10, stPct: 82, buyProposed: 8, otbProposed: 7, otbSubmitted: 6, buyActual: 7 },
+      { buyPct: 7, salesPct: 6, stPct: 75, buyProposed: 6, otbProposed: 5, otbSubmitted: 5, buyActual: 6 },
+      { buyPct: 5, salesPct: 4, stPct: 80, buyProposed: 4, otbProposed: 17, otbSubmitted: 16, buyActual: 3 },
+    ];
     categoryStructure.forEach((genderGroup: any) => {
       genderGroup.categories.forEach((cat: any) => {
         cat.subCategories.forEach((subCat: any) => {
           const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
+          const demo = demoValues[catIndex % demoValues.length];
           initialData[key] = {
-            buyPct: 0,
-            salesPct: 0,
-            stPct: 0,
-            buyProposed: 0,
-            otbProposed: 0,
-            varPct: 0,
-            otbSubmitted: 0,
-            buyActual: 0
+            buyPct: demo.buyPct,
+            salesPct: demo.salesPct,
+            stPct: demo.stPct,
+            buyProposed: demo.buyProposed,
+            otbProposed: demo.otbProposed,
+            varPct: demo.buyProposed - demo.salesPct,
+            otbSubmitted: demo.otbSubmitted,
+            buyActual: demo.buyActual
           };
+          catIndex++;
         });
       });
     });
