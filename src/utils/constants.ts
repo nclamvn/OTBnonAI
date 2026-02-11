@@ -11,7 +11,10 @@ export const GROUP_BRANDS = [
 
 export const STORES = [
   { id: 'rex', code: 'REX', name: 'REX' },
-  { id: 'ttp', code: 'TTP', name: 'TTP' }
+  { id: 'ttp', code: 'TTP', name: 'TTP' },
+  { id: 'rex-dn', code: 'REX-DN', name: 'REX-DN' },
+  { id: 'ttp-hp', code: 'TTP-HP', name: 'TTP-HP' },
+  { id: 'online-vn', code: 'ONLINE-VN', name: 'ONLINE-VN' }
 ];
 
 export const SEASON_CONFIG: Record<string, any> = {

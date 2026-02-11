@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
-import { SEASON_GROUPS, STORES, SEASON_CONFIG } from '../../../utils/constants';
+import { SEASON_GROUPS, SEASON_CONFIG } from '../../../utils/constants';
 import { budgetService, masterDataService, planningService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -46,6 +46,7 @@ const BudgetAllocateScreen = ({
   const [brandList, setBrandList] = useState<any[]>([]);
   const [groupBrandList, setGroupBrandList] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [stores, setStores] = useState<any[]>([]);
 
   // Fetch brands (group brands) from API
   useEffect(() => {
@@ -94,6 +95,16 @@ const BudgetAllocateScreen = ({
       const data = res.data || res || [];
       setCategoryData(Array.isArray(data) ? data : []);
     }).catch(() => setCategoryData([]));
+    // Fetch stores
+    masterDataService.getStores().then(res => {
+      const data = res.data || res || [];
+      const list = (Array.isArray(data) ? data : []).map((s: any) => ({
+        id: (s.code || s.storeCode || s.id || '').toLowerCase(),
+        code: s.code || s.storeCode || s.name || '',
+        name: s.name || s.storeName || s.code || '',
+      }));
+      setStores(list.length > 0 ? list : [{ id: 'rex', code: 'REX', name: 'REX' }, { id: 'ttp', code: 'TTP', name: 'TTP' }]);
+    }).catch(() => setStores([{ id: 'rex', code: 'REX', name: 'REX' }, { id: 'ttp', code: 'TTP', name: 'TTP' }]));
   }, []);
 
   // Fetch budgets on mount (with Strict Mode ignore pattern)
@@ -364,31 +375,33 @@ const BudgetAllocateScreen = ({
 
   // Calculate store percentages from budgets
   const storePercentages = useMemo(() => {
-    const totalByStore: Record<string, any> = {};
+    const totalByStore: Record<string, number> = {};
     let grandTotal = 0;
 
-    STORES.forEach((store: any) => {
+    stores.forEach((store: any) => {
       totalByStore[store.id] = 0;
     });
 
     budgets.forEach((budget: any) => {
       if (budget.fiscalYear === selectedYear) {
         budget.details?.forEach((detail: any) => {
-          if (totalByStore[detail.storeId] !== undefined) {
-            totalByStore[detail.storeId] += detail.budgetAmount;
+          const sid = (detail.storeId || '').toLowerCase();
+          if (totalByStore[sid] !== undefined) {
+            totalByStore[sid] += detail.budgetAmount;
             grandTotal += detail.budgetAmount;
           }
         });
       }
     });
 
-    const percentages: Record<string, any> = {};
-    STORES.forEach((store: any) => {
-      percentages[store.id] = grandTotal > 0 ? Math.round((totalByStore[store.id] / grandTotal) * 100) : 50;
+    const percentages: Record<string, number> = {};
+    const defaultPct = stores.length > 0 ? Math.round(100 / stores.length) : 50;
+    stores.forEach((store: any) => {
+      percentages[store.id] = grandTotal > 0 ? Math.round((totalByStore[store.id] / grandTotal) * 100) : defaultPct;
     });
 
     return percentages;
-  }, [budgets, selectedYear]);
+  }, [budgets, selectedYear, stores]);
 
   // Get allocation key for state
   const getAllocationKey = (brandId: any, seasonGroup: any, subSeason: any) => {
@@ -466,39 +479,38 @@ const BudgetAllocateScreen = ({
 
     // Get values from allocation state first, then fall back to budget data
     const key = getAllocationKey(brandId, seasonGroupId, subSeason);
-    const allocatedRex = allocationValues[key]?.rex;
-    const allocatedTtp = allocationValues[key]?.ttp;
+    const hasAnyAllocation = stores.some((s: any) => allocationValues[key]?.[s.id] !== undefined);
 
-    if (!budget && allocatedRex === undefined && allocatedTtp === undefined) {
-      return { rex: 0, ttp: 0, sum: 0, budget: null };
+    if (!budget && !hasAnyAllocation) {
+      const result: Record<string, any> = { sum: 0, budget: null };
+      stores.forEach((s: any) => { result[s.id] = 0; });
+      return result;
     }
 
-    const rexDetail = budget?.details?.find((d: any) => d.storeId === 'rex');
-    const ttpDetail = budget?.details?.find((d: any) => d.storeId === 'ttp');
+    const result: Record<string, any> = { sum: 0, budget };
+    stores.forEach((s: any) => {
+      const allocated = allocationValues[key]?.[s.id];
+      const detail = budget?.details?.find((d: any) => (d.storeId || '').toLowerCase() === s.id);
+      const value = allocated !== undefined ? allocated : (detail?.budgetAmount || 0);
+      result[s.id] = value;
+      result.sum += value;
+    });
 
-    const rex = allocatedRex !== undefined ? allocatedRex : (rexDetail?.budgetAmount || 0);
-    const ttp = allocatedTtp !== undefined ? allocatedTtp : (ttpDetail?.budgetAmount || 0);
-
-    return {
-      rex,
-      ttp,
-      sum: rex + ttp,
-      budget
-    };
+    return result;
   };
 
   // Get season totals for a brand
   const getSeasonTotals = (brandId: any, seasonGroupId: any) => {
-    let rex = 0, ttp = 0, sum = 0;
+    const totals: Record<string, any> = { sum: 0 };
+    stores.forEach((s: any) => { totals[s.id] = 0; });
 
     SEASON_CONFIG[seasonGroupId]?.subSeasons.forEach((subSeason: any) => {
       const data = getBudgetData(brandId, seasonGroupId, subSeason);
-      rex += data.rex;
-      ttp += data.ttp;
-      sum += data.sum;
+      stores.forEach((s: any) => { totals[s.id] += (data[s.id] || 0); });
+      totals.sum += data.sum;
     });
 
-    return { rex, ttp, sum };
+    return totals;
   };
 
   // Get brand totals (handles All Seasons when selectedSeasonGroup is null)
@@ -507,14 +519,14 @@ const BudgetAllocateScreen = ({
       return getSeasonTotals(brandId, selectedSeasonGroup);
     }
     // Sum totals from all season groups
-    let rex = 0, ttp = 0, sum = 0;
+    const result: Record<string, any> = { sum: 0 };
+    stores.forEach((s: any) => { result[s.id] = 0; });
     SEASON_GROUPS.forEach((sg: any) => {
       const totals = getSeasonTotals(brandId, sg);
-      rex += totals.rex;
-      ttp += totals.ttp;
-      sum += totals.sum;
+      stores.forEach((s: any) => { result[s.id] += (totals[s.id] || 0); });
+      result.sum += totals.sum;
     });
-    return { rex, ttp, sum };
+    return result;
   };
 
   // Calculate mix percentage
@@ -1184,12 +1196,10 @@ const BudgetAllocateScreen = ({
             // Calculate group totals
             const groupTotals = groupBrands.reduce((acc: any, brand: any) => {
               const brandTotals = getBrandTotals(brand.id);
-              return {
-                rex: acc.rex + brandTotals.rex,
-                ttp: acc.ttp + brandTotals.ttp,
-                sum: acc.sum + brandTotals.sum
-              };
-            }, { rex: 0, ttp: 0, sum: 0 });
+              stores.forEach((s: any) => { acc[s.id] = (acc[s.id] || 0) + (brandTotals[s.id] || 0); });
+              acc.sum += brandTotals.sum;
+              return acc;
+            }, { sum: 0 } as Record<string, any>);
 
             return (
               <div key={group.id} className={`rounded-xl shadow-sm border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
@@ -1260,14 +1270,12 @@ const BudgetAllocateScreen = ({
                               </div>
                               <div className="flex items-center gap-2 md:gap-4">
                                 <div className="flex items-center gap-2 md:gap-3 flex-wrap">
-                                  <div className="text-right">
-                                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rex')}: </span>
-                                    <span className={`text-xs md:text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals.rex)}</span>
+                                  {stores.map((store: any) => (
+                                  <div key={store.id} className="text-right">
+                                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{store.code}: </span>
+                                    <span className={`text-xs md:text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals[store.id] || 0)}</span>
                                   </div>
-                                  <div className="text-right">
-                                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.ttp')}: </span>
-                                    <span className={`text-xs md:text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals.ttp)}</span>
-                                  </div>
+                                  ))}
                                   <div className="text-right">
                                     <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.total')}: </span>
                                     <span className={`font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(brandTotals.sum)}</span>
@@ -1289,7 +1297,7 @@ const BudgetAllocateScreen = ({
                                         {selectedBrand || groupBrands.length === 1 ? brand.name : ''} FY {selectedYear}
                                       </div>
                                     </th>
-                                    {STORES.map((store: any) => (
+                                    {stores.map((store: any) => (
                                       <th key={store.id} className={`px-2 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-white' : 'text-[#333333]'}`}>
                                         <div>{store.code} <span className={`font-normal font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>({storePercentages[store.id]}%)</span></div>
                                       </th>
@@ -1316,10 +1324,11 @@ const BudgetAllocateScreen = ({
                                             <span className={`font-semibold text-sm font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{SEASON_CONFIG[seasonGroup]?.name}</span>
                                           </div>
                                         </td>
-                                        <td className="px-1.5 py-0.5 text-center">
+                                        {stores.map((store: any) => (
+                                        <td key={store.id} className="px-1.5 py-0.5 text-center">
                                           <input
                                             type="text"
-                                            value={formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, 'rex') || 0)}
+                                            value={formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, store.id) || 0)}
                                             readOnly
                                             tabIndex={-1}
                                             className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-semibold font-['JetBrains_Mono'] cursor-default ${darkMode
@@ -1328,28 +1337,17 @@ const BudgetAllocateScreen = ({
                                             }`}
                                           />
                                         </td>
-                                        <td className="px-1.5 py-0.5 text-center">
-                                          <input
-                                            type="text"
-                                            value={formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, 'ttp') || 0)}
-                                            readOnly
-                                            tabIndex={-1}
-                                            className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-semibold font-['JetBrains_Mono'] cursor-default ${darkMode
-                                              ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212]'
-                                              : 'border-[#C4B5A5] text-[#0A0A0A] bg-[rgba(160,120,75,0.12)]'
-                                            }`}
-                                          />
-                                        </td>
+                                        ))}
                                         <td className="px-1.5 py-0.5 text-center">
                                           <div className={`px-1.5 py-0.5 border rounded font-bold text-xs font-['JetBrains_Mono'] ${darkMode
                                             ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]'
                                             : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#0A0A0A]'
                                           }`}>
-                                            {formatCurrency(getSeasonTotalValue(brand.id, seasonGroup, 'rex') + getSeasonTotalValue(brand.id, seasonGroup, 'ttp'))}
+                                            {formatCurrency(stores.reduce((s: number, st: any) => s + (getSeasonTotalValue(brand.id, seasonGroup, st.id) || 0), 0))}
                                           </div>
                                         </td>
                                         <td className={`px-2 py-0.5 text-center text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                                          {selectedSeasonGroup ? '100%' : `${calculateMix(getSeasonTotalValue(brand.id, seasonGroup, 'rex') + getSeasonTotalValue(brand.id, seasonGroup, 'ttp'), brand.id)}%`}
+                                          {selectedSeasonGroup ? '100%' : `${calculateMix(stores.reduce((s: number, st: any) => s + (getSeasonTotalValue(brand.id, seasonGroup, st.id) || 0), 0), brand.id)}%`}
                                         </td>
                                         <td className="px-2 py-0.5"></td>
                                       </tr>
@@ -1364,12 +1362,13 @@ const BudgetAllocateScreen = ({
                                             <td className="px-3 py-0.5 pl-10">
                                               <span className={`text-xs font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{subSeason}</span>
                                             </td>
-                                            <td className="px-1.5 py-0.5 text-center">
+                                            {stores.map((store: any) => (
+                                            <td key={store.id} className="px-1.5 py-0.5 text-center">
                                               <input
                                                 type="text"
-                                                value={editingCell === `${brand.id}-${seasonGroup}-${subSeason}-rex` ? (data.rex || '') : formatCurrency(data.rex)}
-                                                onChange={(e) => handleAllocationChange(brand.id, seasonGroup, subSeason, 'rex', e.target.value)}
-                                                onFocus={() => setEditingCell(`${brand.id}-${seasonGroup}-${subSeason}-rex`)}
+                                                value={editingCell === `${brand.id}-${seasonGroup}-${subSeason}-${store.id}` ? (data[store.id] || '') : formatCurrency(data[store.id] || 0)}
+                                                onChange={(e) => handleAllocationChange(brand.id, seasonGroup, subSeason, store.id, e.target.value)}
+                                                onFocus={() => setEditingCell(`${brand.id}-${seasonGroup}-${subSeason}-${store.id}`)}
                                                 onBlur={() => setEditingCell(null)}
                                                 className={`w-full px-1.5 py-0.5 text-center border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#D7B797] focus:border-[#D7B797] font-medium font-['JetBrains_Mono'] transition-colors ${darkMode
                                                   ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212] hover:border-[rgba(215,183,151,0.25)]'
@@ -1378,20 +1377,7 @@ const BudgetAllocateScreen = ({
                                                 placeholder="0"
                                               />
                                             </td>
-                                            <td className="px-1.5 py-0.5 text-center">
-                                              <input
-                                                type="text"
-                                                value={editingCell === `${brand.id}-${seasonGroup}-${subSeason}-ttp` ? (data.ttp || '') : formatCurrency(data.ttp)}
-                                                onChange={(e) => handleAllocationChange(brand.id, seasonGroup, subSeason, 'ttp', e.target.value)}
-                                                onFocus={() => setEditingCell(`${brand.id}-${seasonGroup}-${subSeason}-ttp`)}
-                                                onBlur={() => setEditingCell(null)}
-                                                className={`w-full px-1.5 py-0.5 text-center border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#D7B797] focus:border-[#D7B797] font-medium font-['JetBrains_Mono'] transition-colors ${darkMode
-                                                  ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212] hover:border-[rgba(215,183,151,0.25)]'
-                                                  : 'border-[#C4B5A5] text-[#0A0A0A] bg-white hover:border-[rgba(215,183,151,0.4)]'
-                                                }`}
-                                                placeholder="0"
-                                              />
-                                            </td>
+                                            ))}
                                             <td className="px-1.5 py-0.5 text-center">
                                               <div className={`px-1.5 py-0.5 border rounded font-semibold text-xs font-['JetBrains_Mono'] ${darkMode
                                                 ? 'bg-[rgba(18,119,73,0.15)] border-[#127749] text-[#2A9E6A]'
@@ -1417,8 +1403,7 @@ const BudgetAllocateScreen = ({
                                                       status: selectedBudget?.status,
                                                       seasonGroup,
                                                       season: subSeason,
-                                                      rex: data.rex,
-                                                      ttp: data.ttp
+                                                      storeValues: stores.reduce((acc: any, s: any) => ({ ...acc, [s.id]: data[s.id] || 0 }), {})
                                                     });
                                                   }
                                                 }}
@@ -1440,10 +1425,11 @@ const BudgetAllocateScreen = ({
                                     <td className="px-3 py-0.5">
                                       <span className={`font-bold text-xs font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>TOTAL</span>
                                     </td>
-                                    <td className="px-1.5 py-0.5 text-center">
+                                    {stores.map((store: any) => (
+                                    <td key={store.id} className="px-1.5 py-0.5 text-center">
                                       <input
                                         type="text"
-                                        value={formatCurrency(getBrandTotalValue(brand.id, 'rex') || 0)}
+                                        value={formatCurrency(getBrandTotalValue(brand.id, store.id) || 0)}
                                         readOnly
                                         tabIndex={-1}
                                         className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-bold font-['JetBrains_Mono'] cursor-default ${darkMode
@@ -1452,26 +1438,14 @@ const BudgetAllocateScreen = ({
                                         }`}
                                       />
                                     </td>
-
-                                    <td className="px-1.5 py-0.5 text-center">
-                                      <input
-                                        type="text"
-                                        value={formatCurrency(getBrandTotalValue(brand.id, 'ttp') || 0)}
-                                        readOnly
-                                        tabIndex={-1}
-                                        className={`w-full px-1.5 py-0.5 text-center border rounded text-xs font-bold font-['JetBrains_Mono'] cursor-default ${darkMode
-                                          ? 'border-[#127749] text-[#2A9E6A] bg-[rgba(18,119,73,0.2)]'
-                                          : 'border-[#127749] text-[#127749] bg-[rgba(18,119,73,0.15)]'
-                                        }`}
-                                      />
-                                    </td>
+                                    ))}
 
                                     <td className="px-1.5 py-0.5 text-center">
                                       <div className={`px-2 py-0.5 border rounded font-bold text-sm font-['JetBrains_Mono'] ${darkMode
                                         ? 'bg-[rgba(18,119,73,0.25)] border-[#2A9E6A] text-[#2A9E6A]'
                                         : 'bg-[rgba(18,119,73,0.2)] border-[#127749] text-[#127749]'
                                       }`}>
-                                        {formatCurrency(getBrandTotalValue(brand.id, 'rex') + getBrandTotalValue(brand.id, 'ttp'))}
+                                        {formatCurrency(stores.reduce((s: number, st: any) => s + (getBrandTotalValue(brand.id, st.id) || 0), 0))}
                                       </div>
                                     </td>
                                     <td className={`px-2 py-0.5 text-center text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>100%</td>
