@@ -1416,7 +1416,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         </tr>
                         {/* Order row - highlighted */}
                         <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)] !border-r-[#555]' : 'text-[#c0392b] bg-[rgba(160,120,75,0.06)] !border-r-[rgba(160,120,75,0.4)]'}`}>Order</td>
+                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#1a1714] !border-r-[#555]' : 'text-[#c0392b] bg-[#f5efe8] !border-r-[rgba(160,120,75,0.4)]'}`}>Order</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'}`}>{item.order}</td>
                           ))}
@@ -1457,7 +1457,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         ))}
                         {/* TTL value row - highlighted */}
                         <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)] !border-r-[#555]' : 'text-[#6B4D30] bg-[rgba(160,120,75,0.06)] !border-r-[rgba(160,120,75,0.4)]'}`}>TTL value</td>
+                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#1a1714] !border-r-[#555]' : 'text-[#6B4D30] bg-[#f5efe8] !border-r-[rgba(160,120,75,0.4)]'}`}>TTL value</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue || (item.order * (item.srp || 0)))}</td>
                           ))}
