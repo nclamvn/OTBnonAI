@@ -322,31 +322,47 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       });
     });
 
-    // Initialize Collection tab data
-    collectionSections.forEach((section: any) => {
+    // Initialize Collection tab data with reference values
+    const collectionDemoData: Record<string, Record<string, any>> = {
+      rex: { buyPct: 22.5, salesPct: 28, stPct: 67, moc: '3.2', userBuyPct: 28, otbValue: 1179776, varPct: 5 },
+      ttp: { buyPct: 16.3, salesPct: 19, stPct: 64, moc: '3.7', userBuyPct: 19, otbValue: 800562, varPct: 3 },
+    };
+    const collectionDemoData2: Record<string, Record<string, any>> = {
+      rex: { buyPct: 35.5, salesPct: 32, stPct: 48, moc: '7.0', userBuyPct: 32, otbValue: 1348316, varPct: -3 },
+      ttp: { buyPct: 25.7, salesPct: 21, stPct: 45, moc: '8.0', userBuyPct: 21, otbValue: 884832, varPct: -5 },
+    };
+    collectionSections.forEach((section: any, sIdx: number) => {
+      const demoSet = sIdx === 0 ? collectionDemoData : collectionDemoData2;
       STORES.forEach((store: any) => {
         const key = `collection_${section.id}_${store.id}`;
+        const demo = demoSet[store.id] || demoSet.rex;
         initialData[key] = {
-          buyPct: 0,
-          salesPct: 0,
-          stPct: 0,
-          moc: '0.0',
-          userBuyPct: 0,
-          otbValue: 0
+          buyPct: demo.buyPct,
+          salesPct: demo.salesPct,
+          stPct: demo.stPct,
+          moc: demo.moc,
+          userBuyPct: demo.userBuyPct,
+          otbValue: demo.otbValue,
+          varPct: demo.varPct,
         };
       });
     });
 
-    // Initialize Gender tab data
+    // Initialize Gender tab data with reference values
+    const genderDemoData: Record<string, Record<string, any>> = {
+      // Female
+      'gen2_rex': { buyPct: 22, salesPct: 17, stPct: 42, userBuyPct: 17, otbValue: 724121, varPct: -5 },
+      'gen2_ttp': { buyPct: 17, salesPct: 14, stPct: 44, userBuyPct: 14, otbValue: 586263, varPct: -3 },
+      // Male
+      'gen1_rex': { buyPct: 36, salesPct: 42, stPct: 63, userBuyPct: 42, otbValue: 1776427, varPct: 6 },
+      'gen1_ttp': { buyPct: 25, salesPct: 27, stPct: 58, userBuyPct: 27, otbValue: 1126675, varPct: 2 },
+    };
     GENDERS.forEach((gender: any) => {
       STORES.forEach((store: any) => {
         const key = `gender_${gender.id}_${store.id}`;
-        initialData[key] = {
-          buyPct: 0,
-          salesPct: 0,
-          stPct: 0,
-          userBuyPct: 0,
-          otbValue: 0
+        const demo = genderDemoData[`${gender.id}_${store.id}`];
+        initialData[key] = demo ? { ...demo } : {
+          buyPct: 0, salesPct: 0, stPct: 0, userBuyPct: 0, otbValue: 0, varPct: 0,
         };
       });
     });
@@ -654,7 +670,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   const isEditing = editingCell === cellKey;
                   const cellData = localData[cellKey] || {};
                   const userBuyPctValue = cellData.userBuyPct ?? 0;
-                  const variance = userBuyPctValue - (cellData.salesPct || 0);
+                  const variance = cellData.varPct ?? (userBuyPctValue - (cellData.salesPct || 0));
 
                   return (
                     <tr
@@ -746,7 +762,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   const isEditing = editingCell === cellKey;
                   const cellData = localData[cellKey] || {};
                   const userBuyPctValue = cellData.userBuyPct ?? 0;
-                  const variance = userBuyPctValue - (cellData.salesPct || 0);
+                  const variance = cellData.varPct ?? (userBuyPctValue - (cellData.salesPct || 0));
 
                   return (
                     <tr
@@ -760,7 +776,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       <td className="px-3 py-1.5 pl-6">
                         <span className={darkMode ? 'text-[#999999]' : 'text-[#666666]'}>{store.name}</span>
                       </td>
-                      <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.buyPct || 0).toFixed(1)}%</td>
+                      <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.buyPct || 0).toFixed(0)}%</td>
                       <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.salesPct || 0).toFixed(0)}%</td>
                       <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.stPct || 0).toFixed(0)}%</td>
                       <td className={`px-4 py-3 ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
