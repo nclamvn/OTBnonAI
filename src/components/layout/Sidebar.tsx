@@ -251,7 +251,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             {/* Home */}
             <button
               onClick={() => navigateTo('home')}
-              className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+              className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-lg transition-all duration-200"
               style={currentScreen === 'home' ? {
                 background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                 boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
@@ -270,7 +270,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
 
             {/* Menu Groups */}
             {menuGroups.map((group: any) => (
-              <div key={group.id} className="pt-2">
+              <div key={group.id} className="pt-1">
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroup(group.id)}
@@ -347,7 +347,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             ))}
 
             {/* Gradient Divider */}
-            <div className="py-1.5">
+            <div className="py-0.5">
               <div className="h-px" style={{
                 background: darkMode
                   ? 'linear-gradient(90deg, transparent 0%, rgba(215,183,151,0.15) 50%, transparent 100%)'
@@ -437,7 +437,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             {/* Import Data */}
             <button
               onClick={() => navigateTo('import-data')}
-              className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200"
+              className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-lg transition-all duration-200"
               style={currentScreen === 'import-data' ? {
                 background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                 boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
