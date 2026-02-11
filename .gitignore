@@ -48,6 +48,10 @@ backend/dist
 backend/node_modules
 backend/.env
 
+# migration backups & archives
+.migration-backup/
+*.tar.gz
+
 # performance testing reports (generated)
 performance-testing/reports/*.json
 performance-testing/reports/*.md

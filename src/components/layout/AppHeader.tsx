@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { ROUTE_MAP } from '@/utils/routeMap';
+import toast from 'react-hot-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import {
@@ -638,7 +639,7 @@ const AppHeader = ({
                 boxShadow: '0 2px 8px rgba(215,183,151,0.2)',
               }}>
                 <button
-                  onClick={() => console.log('Save')}
+                  onClick={() => toast.success(t('header.save'))}
                   className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-0.5'} text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
                 >
                   <Save size={isMobile ? 14 : 12} />
@@ -677,7 +678,7 @@ const AppHeader = ({
         >
           <button
             onClick={() => {
-              console.log('Save');
+              toast.success(t('header.save'));
               setOpenSaveMenu(false);
             }}
             className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
@@ -691,7 +692,7 @@ const AppHeader = ({
           </button>
           <button
             onClick={() => {
-              console.log('Save As New Version');
+              toast.success(t('header.saveAsNewVersion'));
               setOpenSaveMenu(false);
             }}
             className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${

@@ -46,13 +46,6 @@ export const masterDataService = {
     return response.data;
   },
 
-  // Search SKU catalog
-  async searchSku(search: string, productType: string | null = null, page: number = 1, pageSize: number = 50) {
-    const params: any = { search, page, pageSize };
-    if (productType) params.productType = productType;
-    return this.getSkuCatalog(params);
-  },
-
   // Get all sub-categories (flatten from categories hierarchy — direct endpoint not yet implemented)
   async getSubCategories() {
     const categories: any = await this.getCategories();

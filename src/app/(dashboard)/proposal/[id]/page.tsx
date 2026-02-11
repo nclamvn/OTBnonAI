@@ -23,8 +23,7 @@ export default function ProposalDetailRoute() {
     router.push('/proposal');
   };
 
-  const handleSave = (data: any) => {
-    console.log('Saving proposal:', data);
+  const handleSave = (_data: any) => {
     handleBack();
   };
 

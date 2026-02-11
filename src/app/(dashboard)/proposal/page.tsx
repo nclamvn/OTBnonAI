@@ -27,8 +27,7 @@ export default function ProposalPage() {
     setSelectedProposal(null);
   };
 
-  const handleSaveProposal = (data: any) => {
-    console.log('Saving proposal:', data);
+  const handleSaveProposal = (_data: any) => {
     handleCloseDetail();
   };
 

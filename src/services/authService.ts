@@ -3,22 +3,28 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
 
+const isBrowser = typeof window !== 'undefined';
+
 export const authService = {
   // Login with email and password
   async login(email: string, password: string) {
     const response: any = await api.post('/auth/login', { email, password });
     const { accessToken, refreshToken, user } = response.data.data || response.data;
 
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
+    if (isBrowser) {
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+    }
 
     return { accessToken, refreshToken, user };
   },
 
   // Logout - clear tokens
   logout() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    if (isBrowser) {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+    }
   },
 
   // Get current user profile
@@ -29,24 +35,26 @@ export const authService = {
 
   // Refresh token
   async refresh() {
-    const refreshToken = localStorage.getItem('refreshToken');
+    const refreshToken = isBrowser ? localStorage.getItem('refreshToken') : null;
     const response: any = await api.post('/auth/refresh', { refreshToken });
     const data = response.data.data || response.data;
 
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
+    if (isBrowser) {
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
+    }
 
     return data;
   },
 
   // Check if user is authenticated
   isAuthenticated() {
-    return !!localStorage.getItem('accessToken');
+    return isBrowser ? !!localStorage.getItem('accessToken') : false;
   },
 
   // Get stored access token
   getToken() {
-    return localStorage.getItem('accessToken');
+    return isBrowser ? localStorage.getItem('accessToken') : null;
   }
 };
 

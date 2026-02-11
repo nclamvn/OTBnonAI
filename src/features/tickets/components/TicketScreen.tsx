@@ -654,7 +654,6 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
                 <button
                   onClick={() => {
                     // TODO: Implement create ticket API call
-                    console.log('Creating ticket:', newTicket);
                     setShowCreatePopup(false);
                     setNewTicket({ budgetName: '', seasonGroup: '', season: '' });
                   }}
