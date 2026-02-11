@@ -1332,11 +1332,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
                 {!isCollapsed && (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
+                    <table className={`w-full text-xs border-collapse ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
                       <tbody>
                         {/* Image row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-2 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Image</td>
+                        <tr className="">
+                          <td className={`px-3 py-2 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Image</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-2 text-center min-w-[140px]">
                               <div className={`w-16 h-16 mx-auto rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.25)]'}`}>
@@ -1346,8 +1346,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* SKU row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>SKU</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>SKU</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
                               {item.isNew ? (
@@ -1366,65 +1366,65 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* Name row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Name</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Name</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.name}</td>
                           ))}
                         </tr>
                         {/* Product Type (L3) row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Product Type (L3)</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Product Type (L3)</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.productType}</td>
                           ))}
                         </tr>
                         {/* Theme row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Theme</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Theme</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.theme}</td>
                           ))}
                         </tr>
                         {/* Color row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Color</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Color</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.color}</td>
                           ))}
                         </tr>
                         {/* Composition row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Composition</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Composition</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center max-w-[160px] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} title={item.composition}>{item.composition}</td>
                           ))}
                         </tr>
                         {/* Unit cost row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Unit cost</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Unit cost</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(item.unitCost)}</td>
                           ))}
                         </tr>
                         {/* SRP row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>SRP</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>SRP</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp)}</td>
                           ))}
                         </tr>
                         {/* Order row - highlighted */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.06)]' : 'border-b border-[rgba(215,183,151,0.15)] bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)]' : 'text-[#c0392b] bg-[rgba(160,120,75,0.06)]'}`}>Order</td>
+                        <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
+                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)] !border-r-[#555]' : 'text-[#c0392b] bg-[rgba(160,120,75,0.06)] !border-r-[rgba(160,120,75,0.4)]'}`}>Order</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'}`}>{item.order}</td>
                           ))}
                         </tr>
                         {/* Dynamic store rows */}
                         {stores.map((st: any) => (
-                          <tr key={st.code} className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                            <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>{st.code}</td>
+                          <tr key={st.code} className="">
+                            <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>{st.code}</td>
                             {block.items.map((item: any, idx: number) => {
                               const storeKey = `${key}|${idx}|store_${st.code}`;
                               const isEditingStore = editingCell === storeKey;
@@ -1456,15 +1456,15 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           </tr>
                         ))}
                         {/* TTL value row - highlighted */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.06)]' : 'border-b border-[rgba(215,183,151,0.15)] bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)]' : 'text-[#6B4D30] bg-[rgba(160,120,75,0.06)]'}`}>TTL value</td>
+                        <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
+                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.06)] !border-r-[#555]' : 'text-[#6B4D30] bg-[rgba(160,120,75,0.06)] !border-r-[rgba(160,120,75,0.4)]'}`}>TTL value</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue || (item.order * (item.srp || 0)))}</td>
                           ))}
                         </tr>
                         {/* Customer Target row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212]' : 'text-[#6B4D30] bg-white'}`}>Customer Target</td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Customer Target</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1.5 text-center">
                               <select
@@ -1479,8 +1479,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* Actions row */}
-                        <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'}>
-                          <td className={`px-3 py-1.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}></td>
+                        <tr className="">
+                          <td className={`px-3 py-1.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212] !border-r-[#555]' : 'bg-white !border-r-[rgba(160,120,75,0.4)]'}`}></td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1 text-center">
                               <div className="flex items-center justify-center gap-1">
