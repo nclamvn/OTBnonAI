@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { ROUTE_MAP } from '@/utils/routeMap';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import {
   Wallet,
   DollarSign,
@@ -184,6 +185,7 @@ const AppHeader = ({
 }: any) => {
   const router = useRouter();
   const { t, language, setLanguage } = useLanguage();
+  const { isMobile } = useIsMobile();
   const SCREEN_CONFIG: any = useMemo(() => getScreenConfig(t), [t]);
   const onNavigate = (screenId: any) => {
     const route = ROUTE_MAP[screenId];
@@ -522,15 +524,15 @@ const AppHeader = ({
 
       {/* KPI Tracking Bar - Only show for Planning workflow */}
       {currentScreen !== 'budget-management' && isInPlanningWorkflow && (
-        <div className="px-4 py-0.5" style={{
+        <div className={`px-4 ${isMobile ? 'py-1.5' : 'py-1.5'}`} style={{
           borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
             ? 'linear-gradient(90deg, #0A0A0A 0%, rgba(215,183,151,0.02) 50%, #0A0A0A 100%)'
             : 'linear-gradient(90deg, #FAFAFA 0%, #ffffff 50%, #FAFAFA 100%)',
         }}>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {/* Step Progress */}
-            <div className="flex items-center gap-1">
+            <div className={`flex items-center ${isMobile ? 'gap-1.5 flex-1 justify-between' : 'gap-2'}`}>
               {PLANNING_STEPS.map((step: any, index: any) => {
                 const config = SCREEN_CONFIG[step.id];
                 const Icon = config.icon;
@@ -541,55 +543,89 @@ const AppHeader = ({
                 return (
                   <React.Fragment key={step.id}>
                     {index > 0 && (
-                      <div className={`w-3 h-[1.5px] rounded-full transition-all duration-300`} style={{
+                      <div className={`${isMobile ? 'w-3' : 'w-6'} h-[1.5px] rounded-full transition-all duration-300 shrink-0`} style={{
                         background: isCompleted
                           ? 'linear-gradient(90deg, #127749, #2A9E6A)'
                           : darkMode ? '#1A1A1A' : '#D1D5DB',
                       }} />
                     )}
-                    <button
-                      onClick={() => onNavigate(step.id)}
-                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-all duration-200"
-                      style={{
-                        background: isCurrent
-                          ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
-                          : isCompleted
-                            ? 'linear-gradient(135deg, rgba(18,119,73,0.06) 0%, rgba(18,119,73,0.12) 100%)'
-                            : 'transparent',
-                        border: `1px solid ${
-                          isCurrent ? 'rgba(215,183,151,0.2)' : isCompleted ? 'rgba(18,119,73,0.2)' : 'transparent'
-                        }`,
-                      }}
-                    >
-                      <div className={`p-0.5 rounded ${
-                        isCurrent ? 'bg-[#D7B797]' : isCompleted ? 'bg-[#127749]' : darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-200'
-                      }`}>
-                        {isCompleted ? (
-                          <CheckCircle size={10} className="text-white" strokeWidth={2.5} />
-                        ) : (
-                          <Icon size={10} className={isCurrent ? 'text-[#0A0A0A]' : darkMode ? 'text-[#555555]' : 'text-gray-600'} strokeWidth={2.5} />
-                        )}
-                      </div>
-                      <div className="text-left">
-                        <div className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
-                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#888888]' : 'text-gray-600'
+                    {/* Mobile: icon-only with count badge */}
+                    {isMobile ? (
+                      <button
+                        onClick={() => onNavigate(step.id)}
+                        className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 transition-all duration-200"
+                        style={{
+                          background: isCurrent
+                            ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
+                            : isCompleted
+                              ? 'linear-gradient(135deg, rgba(18,119,73,0.06) 0%, rgba(18,119,73,0.12) 100%)'
+                              : 'transparent',
+                          border: `1px solid ${
+                            isCurrent ? 'rgba(215,183,151,0.25)' : isCompleted ? 'rgba(18,119,73,0.2)' : 'transparent'
+                          }`,
+                        }}
+                      >
+                        <div className={`p-1.5 rounded-lg ${
+                          isCurrent ? 'bg-[#D7B797]' : isCompleted ? 'bg-[#127749]' : darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-200'
                         }`}>
-                          {config.shortLabel}
-                        </div>
-                        <div className="flex items-center gap-0.5">
-                          {kpi.status === 'completed' ? (
-                            <CheckCircle size={7} className="text-[#2A9E6A]" />
-                          ) : kpi.status === 'in-progress' ? (
-                            <Clock size={7} className="text-[#E3B341]" />
+                          {isCompleted ? (
+                            <CheckCircle size={16} className="text-white" strokeWidth={2} />
                           ) : (
-                            <Target size={7} className={darkMode ? 'text-[#444444]' : 'text-gray-500'} />
+                            <Icon size={16} className={isCurrent ? 'text-[#0A0A0A]' : darkMode ? 'text-[#666666]' : 'text-gray-600'} strokeWidth={2} />
                           )}
-                          <span className={`text-[8px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
-                            {kpi.value} {config.kpiLabel}
-                          </span>
                         </div>
-                      </div>
-                    </button>
+                        <span className={`text-[9px] font-bold font-['JetBrains_Mono'] tabular-nums ${
+                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#555555]' : 'text-gray-500'
+                        }`}>
+                          {kpi.value}
+                        </span>
+                      </button>
+                    ) : (
+                      /* Desktop: full label + KPI */
+                      <button
+                        onClick={() => onNavigate(step.id)}
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all duration-200"
+                        style={{
+                          background: isCurrent
+                            ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
+                            : isCompleted
+                              ? 'linear-gradient(135deg, rgba(18,119,73,0.06) 0%, rgba(18,119,73,0.12) 100%)'
+                              : 'transparent',
+                          border: `1px solid ${
+                            isCurrent ? 'rgba(215,183,151,0.2)' : isCompleted ? 'rgba(18,119,73,0.2)' : 'transparent'
+                          }`,
+                        }}
+                      >
+                        <div className={`p-0.5 rounded ${
+                          isCurrent ? 'bg-[#D7B797]' : isCompleted ? 'bg-[#127749]' : darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-200'
+                        }`}>
+                          {isCompleted ? (
+                            <CheckCircle size={10} className="text-white" strokeWidth={2.5} />
+                          ) : (
+                            <Icon size={10} className={isCurrent ? 'text-[#0A0A0A]' : darkMode ? 'text-[#555555]' : 'text-gray-600'} strokeWidth={2.5} />
+                          )}
+                        </div>
+                        <div className="text-left">
+                          <div className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
+                            isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#888888]' : 'text-gray-600'
+                          }`}>
+                            {config.shortLabel}
+                          </div>
+                          <div className="flex items-center gap-0.5">
+                            {kpi.status === 'completed' ? (
+                              <CheckCircle size={7} className="text-[#2A9E6A]" />
+                            ) : kpi.status === 'in-progress' ? (
+                              <Clock size={7} className="text-[#E3B341]" />
+                            ) : (
+                              <Target size={7} className={darkMode ? 'text-[#444444]' : 'text-gray-500'} />
+                            )}
+                            <span className={`text-[8px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
+                              {kpi.value} {config.kpiLabel}
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    )}
                   </React.Fragment>
                 );
               })}
@@ -597,16 +633,16 @@ const AppHeader = ({
 
             {/* Save Button - hidden on Tickets pages */}
             {currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
-            <div className="ml-auto relative" ref={saveButtonRef}>
+            <div className="ml-auto relative shrink-0" ref={saveButtonRef}>
               <div className="inline-flex rounded-lg" style={{
                 boxShadow: '0 2px 8px rgba(215,183,151,0.2)',
               }}>
                 <button
                   onClick={() => console.log('Save')}
-                  className="flex items-center gap-1.5 px-3 py-0.5 text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-0.5'} text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
                 >
-                  <Save size={12} />
-                  {t('header.save')}
+                  <Save size={isMobile ? 14 : 12} />
+                  {!isMobile && t('header.save')}
                 </button>
                 <button
                   onClick={() => {
@@ -616,7 +652,7 @@ const AppHeader = ({
                     }
                     setOpenSaveMenu(!openSaveMenu);
                   }}
-                  className="px-2 py-0.5 rounded-r-lg border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  className={`${isMobile ? 'px-1.5 py-1' : 'px-2 py-0.5'} rounded-r-lg border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
                 >
                   <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
                 </button>

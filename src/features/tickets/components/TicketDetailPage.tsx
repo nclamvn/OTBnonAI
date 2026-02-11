@@ -1376,31 +1376,31 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
                 onClick={() => setCollapsed((p: any) => ({ ...p, [key]: !p[key] }))}
                 className={`w-full flex flex-wrap items-center gap-3 md:gap-4 px-3 md:px-5 py-0.5 md:py-1 transition-all ${
                   darkMode
-                    ? 'bg-gradient-to-r from-[#1B2A4A] via-[#162240] to-[#1B2A4A] text-[#F2F2F2] hover:from-[#1F3058] hover:via-[#1A2848] hover:to-[#1F3058]'
-                    : 'bg-gradient-to-r from-[#1E3A5F] via-[#2A4A7F] to-[#1E3A5F] text-white hover:from-[#234470] hover:via-[#305490] hover:to-[#234470]'
+                    ? 'bg-gradient-to-r from-[#2A2118] via-[#3A2D1E] to-[#2A2118] text-[#F2F2F2] hover:from-[#342820] hover:via-[#443524] hover:to-[#342820]'
+                    : 'bg-gradient-to-r from-[#6B4D30] via-[#8B7355] to-[#6B4D30] text-white hover:from-[#7A5A3A] hover:via-[#9A8060] hover:to-[#7A5A3A]'
                 }`}
               >
-                <ChevronDown size={18} className={`transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+                <ChevronDown size={18} className={`transition-transform shrink-0 ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#F5E6D3]'}`} />
                 <div className="text-left flex-1 min-w-0">
                   <div className="font-semibold text-sm font-['Montserrat']">{block.subCategory}</div>
-                  <div className={`text-sm mt-0.5 ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>
+                  <div className={`text-sm mt-0.5 ${darkMode ? 'text-[#A69076]' : 'text-[#E8D5BE]'}`}>
                     {block.gender} • {block.productType} • <span className="font-['JetBrains_Mono']">{block.items.length}</span> SKUs
                   </div>
                 </div>
                 <div className="hidden md:flex items-center gap-6 shrink-0">
                   <div className="text-right">
-                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>% Buy propose</div>
-                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.pctBuyPropose}%</div>
+                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#A69076]' : 'text-[#E8D5BE]'}`}>% Buy propose</div>
+                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2E8DC]' : 'text-white'}`}>{block.pctBuyPropose}%</div>
                   </div>
-                  <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
+                  <div className={`w-px h-8 ${darkMode ? 'bg-[#4A3A28]' : 'bg-[rgba(255,255,255,0.2)]'}`} />
                   <div className="text-right">
-                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>OTB propose</div>
-                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(block.otbPropose)}</div>
+                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#A69076]' : 'text-[#E8D5BE]'}`}>OTB propose</div>
+                    <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2E8DC]' : 'text-white'}`}>{formatCurrency(block.otbPropose)}</div>
                   </div>
-                  <div className={`w-px h-8 ${darkMode ? 'bg-[#2E3D5A]' : 'bg-blue-400/30'}`} />
+                  <div className={`w-px h-8 ${darkMode ? 'bg-[#4A3A28]' : 'bg-[rgba(255,255,255,0.2)]'}`} />
                   <div className="text-right">
-                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#7A8BA8]' : 'text-blue-200'}`}>Total SRP</div>
-                    <div className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalSrp)}</div>
+                    <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#A69076]' : 'text-[#E8D5BE]'}`}>Total SRP</div>
+                    <div className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2E8DC]' : 'text-white'}`}>{formatCurrency(totalSrp)}</div>
                   </div>
                 </div>
               </button>
