@@ -243,9 +243,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       if (skuContext.season) {
         setSeasonFilter(skuContext.season);
       }
-      // Use lowercase gender id to match SKU data (e.g., 'female', 'male')
-      if (skuContext.gender?.id) {
-        setGenderFilter(skuContext.gender.id.toLowerCase());
+      // Use lowercase gender name to match SKU data (e.g., 'female', 'male')
+      if (skuContext.gender?.name) {
+        setGenderFilter(skuContext.gender.name.toLowerCase());
       }
       // Use category name to match SKU data (e.g., 'RTW', 'Accessories')
       if (skuContext.category?.name) {
@@ -275,7 +275,33 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       }
     }
   }, [skuContext, onContextUsed]);
+
   const [skuBlocks, setSkuBlocks] = useState<any[]>([]);
+
+  // When context is provided and data loads but no proposal blocks exist,
+  // build blocks from the SKU catalog matching the context's subCategory
+  useEffect(() => {
+    if (contextBanner?.subCategory && skuCatalog.length > 0 && skuBlocks.length === 0 && !skuDataLoading) {
+      const subCat = contextBanner.subCategory;
+      const matchingItems = skuCatalog.filter((item: any) => item.productType === subCat);
+      if (matchingItems.length > 0) {
+        const genderKey = (contextBanner.gender || '').toLowerCase();
+        setSkuBlocks([{
+          gender: genderKey,
+          category: contextBanner.category || '',
+          subCategory: subCat,
+          items: matchingItems.map((item: any) => ({
+            ...item,
+            order: 0,
+            rex: 0,
+            ttp: 0,
+            ttlValue: 0,
+            customerTarget: 'New'
+          }))
+        }]);
+      }
+    }
+  }, [contextBanner, skuCatalog, skuBlocks.length, skuDataLoading]);
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
   const [sizingPopup, setSizingPopup] = useState<any>({ open: false, blockKey: null, itemIdx: null, item: null });

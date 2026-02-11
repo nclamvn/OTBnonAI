@@ -981,7 +981,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         collectionData: [
           { name: 'Total Allocation', rex: storeMap['REX'] || storeMap['Rex'] || Object.values(storeMap)[0] || 0, ttp: storeMap['TTP'] || storeMap['Ttp'] || Object.values(storeMap)[1] || 0 }
         ],
-        genderData: [],
+        genderData: MOCK_GENDER_DATA,
         budgetData: {
           id: detailData.id,
           fiscalYear: detailData.fiscalYear,
@@ -1024,7 +1024,9 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
 
       return {
         collectionData: Object.entries(collectionMap).map(([name, data]: any) => ({ name, ...data })),
-        genderData: Object.entries(genderMap).map(([name, data]: any) => ({ name, ...data })),
+        genderData: Object.keys(genderMap).length > 0
+          ? Object.entries(genderMap).map(([name, data]: any) => ({ name, ...data }))
+          : MOCK_GENDER_DATA,
         budgetData: {
           id: detailData.id,
           fiscalYear: detailData.budgetDetail?.budget?.fiscalYear || '-',

@@ -920,35 +920,7 @@ const BudgetManagementScreen = ({
                 </div>
               </div>
 
-              {/* Season Group & Season Type */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-                    {t('otbAnalysis.seasonGroup')} <span className="text-[#F85149]">{t('common.required')}</span>
-                  </label>
-                  <select
-                    value={newBudgetForm.seasonGroup}
-                    onChange={(e) => setNewBudgetForm({ ...newBudgetForm, seasonGroup: e.target.value })}
-                    className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
-                  >
-                    <option value="SS">Spring Summer</option>
-                    <option value="FW">Fall Winter</option>
-                  </select>
-                </div>
-                <div>
-                  <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-                    {t('otbAnalysis.season')} <span className="text-[#F85149]">{t('common.required')}</span>
-                  </label>
-                  <select
-                    value={newBudgetForm.seasonType}
-                    onChange={(e) => setNewBudgetForm({ ...newBudgetForm, seasonType: e.target.value })}
-                    className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
-                  >
-                    <option value="pre">Pre</option>
-                    <option value="main">Main / Show</option>
-                  </select>
-                </div>
-              </div>
+              {/* Season Group & Season Type - removed per customer request */}
 
               {/* Budget Name */}
               <div>
