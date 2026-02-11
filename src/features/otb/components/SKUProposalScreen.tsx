@@ -56,22 +56,26 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [skuCatalog, setSkuCatalog] = useState<any[]>([]);
   const [skuDataLoading, setSkuDataLoading] = useState(true);
 
-  // Master data for filters (genders, categories)
+  // Master data for filters (genders, categories) and stores
   const [masterGenders, setMasterGenders] = useState<any[]>([]);
   const [masterCategories, setMasterCategories] = useState<any[]>([]);
+  const [stores, setStores] = useState<any[]>([]);
 
-  // Fetch master data for filters
+  // Fetch master data for filters + stores
   useEffect(() => {
     const fetchMasterData = async () => {
       try {
-        const [gendersRes, categoriesRes] = await Promise.all([
+        const [gendersRes, categoriesRes, storesRes] = await Promise.all([
           masterDataService.getGenders().catch(() => []),
-          masterDataService.getCategories().catch(() => [])
+          masterDataService.getCategories().catch(() => []),
+          masterDataService.getStores().catch(() => [])
         ]);
         const genders = Array.isArray(gendersRes) ? gendersRes : (gendersRes?.data || []);
         setMasterGenders(genders.map((g: any) => (g.name || g.code || '').toLowerCase()));
         const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data || []);
         setMasterCategories(categories);
+        const storeList = Array.isArray(storesRes) ? storesRes : (storesRes?.data || []);
+        setStores(storeList.length > 0 ? storeList : [{ code: 'REX', name: 'REX' }, { code: 'TTP', name: 'TTP' }]);
       } catch (err: any) {
         console.error('Failed to fetch master data:', err);
       }
@@ -114,10 +118,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               block = { gender, category, subCategory, items: [] };
               blocks.push(block);
             }
-            // Extract store allocations from product allocations
+            // Extract store allocations from product allocations (dynamic)
             const allocations = prod.allocations || [];
-            const rexAlloc = allocations.find((a: any) => (a.store?.code || '').toUpperCase() === 'REX');
-            const ttpAlloc = allocations.find((a: any) => (a.store?.code || '').toUpperCase() === 'TTP');
+            const storeQty: Record<string, number> = {};
+            allocations.forEach((a: any) => {
+              const code = (a.store?.code || '').toUpperCase();
+              if (code) storeQty[code] = (a.quantity || 0);
+            });
+            // Fallback for legacy rex/ttp fields
+            if (!storeQty['REX'] && prod.rex) storeQty['REX'] = prod.rex;
+            if (!storeQty['TTP'] && prod.ttp) storeQty['TTP'] = prod.ttp;
             block.items.push({
               sku: prod.skuCode || prod.sku,
               name: prod.productName || prod.name,
@@ -128,8 +138,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               unitCost: Number(prod.unitCost) || 0,
               srp: Number(prod.srp) || 0,
               order: prod.orderQty || 0,
-              rex: rexAlloc?.quantity || prod.rex || 0,
-              ttp: ttpAlloc?.quantity || prod.ttp || 0,
+              storeQty,
               ttlValue: Number(prod.totalValue) || 0,
               customerTarget: prod.customerTarget || 'New'
             });
@@ -294,8 +303,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           items: matchingItems.map((item: any) => ({
             ...item,
             order: 0,
-            rex: 0,
-            ttp: 0,
+            storeQty: {},
             ttlValue: 0,
             customerTarget: 'New'
           }))
@@ -397,14 +405,17 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       block.items.forEach((item: any) => {
         acc.skuCount += 1;
         acc.order += (item.order || 0);
-        acc.rex += (item.rex || 0);
-        acc.ttp += (item.ttp || 0);
         acc.ttlValue += (item.ttlValue || 0);
         acc.srp += (item.srp || 0);
         acc.unitCost += (item.unitCost || 0);
+        // Aggregate per-store quantities
+        const sq = item.storeQty || {};
+        Object.keys(sq).forEach((code: string) => {
+          acc.storeQty[code] = (acc.storeQty[code] || 0) + (sq[code] || 0);
+        });
       });
       return acc;
-    }, { skuCount: 0, order: 0, rex: 0, ttp: 0, ttlValue: 0, srp: 0, unitCost: 0 });
+    }, { skuCount: 0, order: 0, storeQty: {} as Record<string, number>, ttlValue: 0, srp: 0, unitCost: 0 });
   }, [filteredSkuBlocks]);
 
   // Card view available when there's data to show
@@ -421,10 +432,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     const [blockKey, itemIdx, field] = cellKey.split('|');
 
     setSkuBlocks((prev: any) => prev.map((block: any) => {
-      const key = `${block.gender}_${block.category}_${block.subCategory}`;
-      if (key !== blockKey) return block;
+      const bKey = `${block.gender}_${block.category}_${block.subCategory}`;
+      if (bKey !== blockKey) return block;
       const items = block.items.map((item: any, idx: any) => {
         if (String(idx) !== itemIdx) return item;
+        // Handle store_XXX fields → update storeQty map
+        if (field.startsWith('store_')) {
+          const storeCode = field.replace('store_', '');
+          const newStoreQty = { ...(item.storeQty || {}), [storeCode]: nextValue };
+          return { ...item, storeQty: newStoreQty };
+        }
         return { ...item, [field]: nextValue };
       });
       return { ...block, items };
@@ -462,10 +479,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     const nextValue = Number(value);
     const safeValue = Number.isFinite(nextValue) ? nextValue : 0;
     setSkuBlocks((prev: any) => prev.map((block: any) => {
-      const key = `${block.gender}_${block.category}_${block.subCategory}`;
-      if (key !== blockKey) return block;
+      const bKey = `${block.gender}_${block.category}_${block.subCategory}`;
+      if (bKey !== blockKey) return block;
       const items = block.items.map((item: any, idx: any) => {
         if (String(idx) !== String(itemIdx)) return item;
+        // Handle store_XXX fields → update storeQty map
+        if (field.startsWith('store_')) {
+          const storeCode = field.replace('store_', '');
+          const newStoreQty = { ...(item.storeQty || {}), [storeCode]: safeValue };
+          return { ...item, storeQty: newStoreQty };
+        }
         return { ...item, [field]: safeValue };
       });
       return { ...block, items };
@@ -1035,44 +1058,31 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           </tr>
                         </thead>
                         <tbody>
-                          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
-                              <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#D7B797]" />REX</span>
-                            </td>
-                            <td className="px-3 py-0.5 text-center">
-                              <input
-                                type="number"
-                                min="0"
-                                value={item.rex || Math.floor((item.order || 0) / 2)}
-                                onChange={(e) => handleNumberChange(blockKey, idx, 'rex', e.target.value)}
-                                className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
-                                  darkMode
-                                    ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
-                                    : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
-                                }`}
-                              />
-                            </td>
-                            <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.rex || Math.floor((item.order || 0) / 2)) * (item.srp || 0))}</td>
-                          </tr>
-                          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                            <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
-                              <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#127749]" />TTP</span>
-                            </td>
-                            <td className="px-3 py-0.5 text-center">
-                              <input
-                                type="number"
-                                min="0"
-                                value={item.ttp || Math.ceil((item.order || 0) / 2)}
-                                onChange={(e) => handleNumberChange(blockKey, idx, 'ttp', e.target.value)}
-                                className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
-                                  darkMode
-                                    ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
-                                    : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
-                                }`}
-                              />
-                            </td>
-                            <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.ttp || Math.ceil((item.order || 0) / 2)) * (item.srp || 0))}</td>
-                          </tr>
+                          {stores.map((st: any, si: number) => {
+                            const storeVal = (item.storeQty || {})[st.code] || 0;
+                            const colors = ['bg-[#D7B797]', 'bg-[#127749]', 'bg-[#58A6FF]', 'bg-[#A371F7]', 'bg-[#E3B341]'];
+                            return (
+                              <tr key={st.code} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+                                <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
+                                  <span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${colors[si % colors.length]}`} />{st.code}</span>
+                                </td>
+                                <td className="px-3 py-0.5 text-center">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    value={storeVal}
+                                    onChange={(e) => handleNumberChange(blockKey, idx, `store_${st.code}`, e.target.value)}
+                                    className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                      darkMode
+                                        ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
+                                        : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
+                                    }`}
+                                  />
+                                </td>
+                                <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(storeVal * (item.srp || 0))}</td>
+                              </tr>
+                            );
+                          })}
                           <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
                             <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
                             <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
@@ -1219,8 +1229,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             </div>
             <div className={`flex items-center gap-4 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
               <span>Order: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
-              <span>Rex: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.rex}</span></span>
-              <span>TTP: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.ttp}</span></span>
+              {stores.map((s: any) => (
+                <span key={s.code}>{s.code}: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.storeQty[s.code] || 0}</span></span>
+              ))}
               <span>Value: <span className={`font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span></span>
             </div>
           </div>
@@ -1259,14 +1270,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Order</span>
                         <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.items.reduce((s: number, i: any) => s + (i.order || 0), 0)}</span>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Rex</span>
-                        <span className="font-semibold">{block.items.reduce((s: number, i: any) => s + (i.rex || 0), 0)}</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>TTP</span>
-                        <span className="font-semibold">{block.items.reduce((s: number, i: any) => s + (i.ttp || 0), 0)}</span>
-                      </div>
+                      {stores.map((st: any) => (
+                        <div key={st.code} className="flex flex-col items-center">
+                          <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{st.code}</span>
+                          <span className="font-semibold">{block.items.reduce((s: number, i: any) => s + ((i.storeQty || {})[st.code] || 0), 0)}</span>
+                        </div>
+                      ))}
                       <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.4)]'}`} />
                       <div className="flex flex-col items-center">
                         <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Value</span>
@@ -1291,8 +1300,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Unit cost</th>
                           <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>SRP</th>
                           <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Order</th>
-                          <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Rex</th>
-                          <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>TTP</th>
+                          {stores.map((st: any) => (
+                            <th key={st.code} className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{st.code}</th>
+                          ))}
                           <th className={`px-3 py-0.5 text-right text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>TTL value</th>
                           <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Customer target</th>
                           <th className={`px-3 py-0.5 text-center text-xs font-semibold w-16 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}></th>
@@ -1300,10 +1310,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                       </thead>
                       <tbody>
                         {block.items.map((item: any, idx: any) => {
-                          const rexKey = `${key}|${idx}|rex`;
-                          const ttpKey = `${key}|${idx}|ttp`;
-                          const isEditingRex = editingCell === rexKey;
-                          const isEditingTtp = editingCell === ttpKey;
                           return (
                           <tr key={`${item.sku}_${idx}`} className={`${darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.15)]'} ${item.isNew ? (darkMode ? 'bg-[rgba(42,158,106,0.1)]' : 'bg-[rgba(18,119,73,0.05)]') : ''}`}>
                             <td className="px-3 py-0.5">
@@ -1345,52 +1351,36 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                                 {item.order}
                               </div>
                             </td>
-                            <td className="px-3 py-0.5 text-center">
-                              {isEditingRex ? (
-                                <input
-                                  type="number"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => handleSaveEdit(rexKey)}
-                                  onKeyDown={(e) => handleKeyDown(e, rexKey)}
-                                  className={`w-20 px-2 py-0.5 text-center border-2 rounded-md focus:outline-none focus:ring-2 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)]' : 'border-[#D7B797] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)]'}`}
-                                  autoFocus
-                                />
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleStartEdit(rexKey, item.rex)}
-                                  className={`px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 font-['JetBrains_Mono'] transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
-                                  title="Edit Rex"
-                                >
-                                  {item.rex}
-                                  <Pencil size={12} className={darkMode ? 'text-[#999999]' : 'text-[#6B4D30]'} />
-                                </button>
-                              )}
-                            </td>
-                            <td className="px-3 py-0.5 text-center">
-                              {isEditingTtp ? (
-                                <input
-                                  type="number"
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  onBlur={() => handleSaveEdit(ttpKey)}
-                                  onKeyDown={(e) => handleKeyDown(e, ttpKey)}
-                                  className={`w-20 px-2 py-0.5 text-center border-2 rounded-md focus:outline-none focus:ring-2 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)]' : 'border-[#D7B797] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)]'}`}
-                                  autoFocus
-                                />
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={() => handleStartEdit(ttpKey, item.ttp)}
-                                  className={`px-2.5 py-0.5 rounded-md inline-flex items-center gap-1 font-['JetBrains_Mono'] transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
-                                  title="Edit TTP"
-                                >
-                                  {item.ttp}
-                                  <Pencil size={12} className={darkMode ? 'text-[#999999]' : 'text-[#6B4D30]'} />
-                                </button>
-                              )}
-                            </td>
+                            {stores.map((st: any) => {
+                              const storeKey = `${key}|${idx}|store_${st.code}`;
+                              const isEditingStore = editingCell === storeKey;
+                              const storeVal = (item.storeQty || {})[st.code] || 0;
+                              return (
+                                <td key={st.code} className="px-3 py-0.5 text-center">
+                                  {isEditingStore ? (
+                                    <input
+                                      type="number"
+                                      value={editValue}
+                                      onChange={(e) => setEditValue(e.target.value)}
+                                      onBlur={() => handleSaveEdit(storeKey)}
+                                      onKeyDown={(e) => handleKeyDown(e, storeKey)}
+                                      className={`w-16 px-1 py-0.5 text-center border-2 rounded-md focus:outline-none focus:ring-2 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)]' : 'border-[#D7B797] bg-white text-[#333333] focus:ring-[rgba(215,183,151,0.3)]'}`}
+                                      autoFocus
+                                    />
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleStartEdit(storeKey, storeVal)}
+                                      className={`px-2 py-0.5 rounded-md inline-flex items-center gap-1 font-['JetBrains_Mono'] transition-colors ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)]'}`}
+                                      title={`Edit ${st.code}`}
+                                    >
+                                      {storeVal}
+                                      <Pencil size={10} className={darkMode ? 'text-[#999999]' : 'text-[#6B4D30]'} />
+                                    </button>
+                                  )}
+                                </td>
+                              );
+                            })}
                             <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue)}</td>
                             <td className="px-3 py-0.5 text-center">
                               <select
@@ -1437,12 +1427,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                             {block.items.reduce((s: number, i: any) => s + (i.order || 0), 0)}
                           </td>
-                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                            {block.items.reduce((s: number, i: any) => s + (i.rex || 0), 0)}
-                          </td>
-                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                            {block.items.reduce((s: number, i: any) => s + (i.ttp || 0), 0)}
-                          </td>
+                          {stores.map((st: any) => (
+                            <td key={st.code} className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                              {block.items.reduce((s: number, i: any) => s + ((i.storeQty || {})[st.code] || 0), 0)}
+                            </td>
+                          ))}
                           <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
                             {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.ttlValue || 0), 0))}
                           </td>
@@ -1483,14 +1472,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                       <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Order</span>
                       <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Rex</span>
-                      <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.rex}</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>TTP</span>
-                      <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.ttp}</span>
-                    </div>
+                    {stores.map((st: any) => (
+                      <div key={st.code} className="flex flex-col items-center">
+                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{st.code}</span>
+                        <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.storeQty[st.code] || 0}</span>
+                      </div>
+                    ))}
                     <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
                     <div className="flex flex-col items-center">
                       <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Total Value</span>
