@@ -137,7 +137,7 @@ const LoginScreen = () => {
 
         {/* Logo Section */}
         <div className="text-center mb-10">
-          <img src="/dafc-logo-full.png" alt="DAFC" className="h-16 mx-auto mb-2 object-contain" />
+          <img src="/dafc-logo.png" alt="DAFC" className="h-16 mx-auto mb-2 object-contain" />
           <p className="text-[15px] font-semibold tracking-[0.08em] text-[#8B7355] mb-1"
             style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}>
             Hệ Thống Quản Lý OTB
