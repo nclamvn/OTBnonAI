@@ -1282,8 +1282,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
 
   return (
     <div className="space-y-2">
-      {/* Header Section - Sticky */}
-      <div className={`rounded-xl shadow-xl border p-2 md:p-3 relative z-[100] sticky top-0 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
+      {/* Header Section */}
+      <div className={`rounded-xl shadow-sm border p-2 md:p-3 relative z-[20] ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
 
         <div className="relative">
           {/* Filter Section - Redesigned like Planning page */}

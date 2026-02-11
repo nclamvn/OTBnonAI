@@ -923,42 +923,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   </div>
                 )}
 
-                <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className={`rounded-xl border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                    <p className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.rex')}</p>
-                    <input
-                      type="number"
-                      value={item.rex}
-                      onChange={(e) => handleNumberChange(blockKey, idx, 'rex', e.target.value)}
-                      className={`mt-1 w-full px-3 py-0.5 rounded-lg border text-sm font-['JetBrains_Mono'] focus:outline-none ${
-                        darkMode
-                          ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] placeholder-[#666666] focus:ring-2 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
-                          : 'bg-white border-[rgba(215,183,151,0.4)] text-[#333333] focus:ring-2 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
-                      }`}
-                    />
-                  </div>
-                  <div className={`rounded-xl border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                    <p className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.ttp')}</p>
-                    <input
-                      type="number"
-                      value={item.ttp}
-                      onChange={(e) => handleNumberChange(blockKey, idx, 'ttp', e.target.value)}
-                      className={`mt-1 w-full px-3 py-0.5 rounded-lg border text-sm font-['JetBrains_Mono'] focus:outline-none ${
-                        darkMode
-                          ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] placeholder-[#666666] focus:ring-2 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
-                          : 'bg-white border-[rgba(215,183,151,0.4)] text-[#333333] focus:ring-2 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
-                      }`}
-                    />
-                  </div>
-                  <div className={`rounded-xl border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                    <p className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.order')}</p>
-                    <div className={`mt-1 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.order}</div>
-                  </div>
-                  <div className={`rounded-xl border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                    <p className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.totalValue')}</p>
-                    <div className={`mt-1 text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue)}</div>
-                  </div>
-                </div>
+                {/* Rex/TTP/Order/Total Value summary removed — info shown in Store Order table below */}
 
                 {detailsOpen && (
                   <div className={`mt-4 rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
@@ -1021,14 +986,38 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                             <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
                               <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#D7B797]" />REX</span>
                             </td>
-                            <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.rex || Math.floor((item.order || 0) / 2)}</td>
+                            <td className="px-3 py-0.5 text-center">
+                              <input
+                                type="number"
+                                min="0"
+                                value={item.rex || Math.floor((item.order || 0) / 2)}
+                                onChange={(e) => handleNumberChange(blockKey, idx, 'rex', e.target.value)}
+                                className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                  darkMode
+                                    ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
+                                    : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
+                                }`}
+                              />
+                            </td>
                             <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.rex || Math.floor((item.order || 0) / 2)) * (item.srp || 0))}</td>
                           </tr>
                           <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
                             <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
                               <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#127749]" />TTP</span>
                             </td>
-                            <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.ttp || Math.ceil((item.order || 0) / 2)}</td>
+                            <td className="px-3 py-0.5 text-center">
+                              <input
+                                type="number"
+                                min="0"
+                                value={item.ttp || Math.ceil((item.order || 0) / 2)}
+                                onChange={(e) => handleNumberChange(blockKey, idx, 'ttp', e.target.value)}
+                                className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                  darkMode
+                                    ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
+                                    : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
+                                }`}
+                              />
+                            </td>
                             <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency((item.ttp || Math.ceil((item.order || 0) / 2)) * (item.srp || 0))}</td>
                           </tr>
                           <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
