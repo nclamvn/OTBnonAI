@@ -24,10 +24,6 @@ const CARD_ACCENTS = {
 const BudgetManagementScreen = ({
   selectedYear,
   setSelectedYear,
-  selectedGroupBrand,
-  setSelectedGroupBrand,
-  selectedBrand,
-  setSelectedBrand,
   onAllocate,
   darkMode = false
 }: any) => {
@@ -43,26 +39,7 @@ const BudgetManagementScreen = ({
   const [creating, setCreating] = useState(false);
 
   // Master data for create form
-  const [apiBrands, setApiBrands] = useState<any[]>([]);
   const [apiStores, setApiStores] = useState<any[]>([]);
-
-  // Derived brand list and group categories from API
-  const brandList = useMemo(() => apiBrands.map((b: any) => ({
-    id: b.id,
-    code: b.code,
-    name: b.name,
-    groupId: b.groupId || 'A',
-    color: b.colorConfig?.gradient || 'from-gray-400 to-gray-600',
-  })), [apiBrands]);
-
-  const groupBrandCategories = useMemo(() => {
-    const groups: Record<string, any> = {};
-    brandList.forEach((b: any) => {
-      const gid = b.groupId || 'A';
-      if (!groups[gid]) groups[gid] = { id: gid, name: `Group ${gid}` };
-    });
-    return Object.values(groups).sort((a, b) => a.id.localeCompare(b.id));
-  }, [brandList]);
 
   // Fetch budgets from API
   const fetchBudgets = useCallback(async () => {
@@ -71,16 +48,12 @@ const BudgetManagementScreen = ({
     try {
       const filters: Record<string, any> = {};
       if (selectedYear) filters.fiscalYear = selectedYear;
-      if (selectedBrand) filters.brandId = selectedBrand;
 
       const response = await budgetService.getAll(filters);
       // Map API response to UI format
       const budgets = (response.data || response || []).map((budget: any) => ({
         id: budget.id,
         fiscalYear: budget.fiscalYear,
-        groupBrand: typeof budget.groupBrand === 'object' ? (budget.groupBrand?.name || budget.groupBrand?.code || 'A') : (budget.groupBrand || 'A'),
-        brandId: budget.groupBrandId || budget.brandId,
-        brandName: budget.groupBrand?.name || budget.Brand?.name || budget.brandName || 'Unknown',
         totalBudget: Number(budget.totalBudget || budget.totalAmount) || 0,
         budgetName: budget.budgetCode || budget.name || budget.budgetName || 'Untitled',
         status: (budget.status || 'DRAFT').toLowerCase(),
@@ -95,13 +68,12 @@ const BudgetManagementScreen = ({
     } finally {
       setLoading(false);
     }
-  }, [selectedYear, selectedBrand]);
+  }, [selectedYear]);
 
   // Initial fetch
   useEffect(() => {
     fetchBudgets();
     // Fetch master data for create form
-    masterDataService.getBrands().then(b => setApiBrands(Array.isArray(b) ? b : [])).catch(() => {});
     masterDataService.getStores().then(s => {
       const all = Array.isArray(s) ? s : [];
       // Only show REX and TTP stores
@@ -121,8 +93,6 @@ const BudgetManagementScreen = ({
 
   // Dropdown states
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
-  const [groupBrandDropdownOpen, setGroupBrandDropdownOpen] = useState(false);
-  const [brandDropdownOpen, setBrandDropdownOpen] = useState(false);
 
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<any>(null);
@@ -130,8 +100,6 @@ const BudgetManagementScreen = ({
   // Form state for create budget
   const [newBudgetForm, setNewBudgetForm] = useState({
     fiscalYear: 2026,
-    groupBrand: 'A',
-    brandId: '',
     seasonGroup: 'SS',
     seasonType: 'pre',
     name: '',
@@ -143,12 +111,10 @@ const BudgetManagementScreen = ({
   const filteredBudgets = useMemo(() => {
     return budgetData.filter((budget: any) => {
       if (selectedYear && budget.fiscalYear !== selectedYear) return false;
-      if (selectedGroupBrand && budget.groupBrand !== selectedGroupBrand) return false;
-      if (selectedBrand && budget.brandId !== selectedBrand) return false;
       if (searchQuery && !budget.budgetName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     });
-  }, [budgetData, selectedYear, selectedGroupBrand, selectedBrand, searchQuery]);
+  }, [budgetData, selectedYear, searchQuery]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -157,16 +123,6 @@ const BudgetManagementScreen = ({
     const pending = budgetData.filter((b: any) => b.status === 'pending').reduce((sum: any, b: any) => sum + (Number(b.totalBudget) || 0), 0);
     const draft = budgetData.filter((b: any) => b.status === 'draft').reduce((sum: any, b: any) => sum + (Number(b.totalBudget) || 0), 0);
     const remaining = total - approved;
-
-    // Group by brand for breakdown
-    const byBrand: Record<string, any> = {};
-    budgetData.forEach((b: any) => {
-      const name = b.brandName || b.groupBrand || 'Other';
-      byBrand[name] = (byBrand[name] || 0) + (Number(b.totalBudget) || 0);
-    });
-    const brandBreakdown = Object.entries(byBrand)
-      .map(([label, value]) => ({ label, value, displayValue: formatCurrency(value, { currency }), pct: total > 0 ? Math.round((value / total) * 100) : 0 }))
-      .sort((a, b) => b.value - a.value);
 
     // Status counts
     const statusCounts: Record<string, number> = { approved: 0, pending: 0, draft: 0 };
@@ -185,7 +141,6 @@ const BudgetManagementScreen = ({
       approvedPct: total > 0 ? ((approved / total) * 100).toFixed(1) : 0,
       pendingPct: total > 0 ? ((pending / total) * 100).toFixed(1) : 0,
       remainingPct: total > 0 ? ((remaining / total) * 100).toFixed(1) : 0,
-      brandBreakdown,
       statusCounts,
     };
   }, [budgetData, currency]);
@@ -193,8 +148,6 @@ const BudgetManagementScreen = ({
   // Clear all filters
   const clearFilters = () => {
     setSelectedYear(null);
-    setSelectedGroupBrand(null);
-    setSelectedBrand(null);
     setSearchQuery('');
   };
 
@@ -208,7 +161,7 @@ const BudgetManagementScreen = ({
 );
 
 
-  const hasActiveFilters = selectedYear || selectedGroupBrand || selectedBrand || searchQuery;
+  const hasActiveFilters = selectedYear || searchQuery;
 
   // Loading state
   if (loading) {
@@ -249,7 +202,7 @@ const BudgetManagementScreen = ({
             >
               <Filter size={12} />
               {t('budget.filters')}
-              {(selectedYear || selectedGroupBrand || selectedBrand) && (
+              {selectedYear && (
                 <span className="w-2 h-2 rounded-full bg-[#D7B797]" />
               )}
             </button>
@@ -262,8 +215,6 @@ const BudgetManagementScreen = ({
             <button
               onClick={() => {
                 setYearDropdownOpen(!yearDropdownOpen);
-                setGroupBrandDropdownOpen(false);
-                setBrandDropdownOpen(false);
               }}
               className={`flex items-center justify-between gap-2 px-3 py-0.5 border rounded-lg transition-colors min-w-[110px] ${selectedYear
                 ? darkMode
@@ -298,93 +249,6 @@ const BudgetManagementScreen = ({
             )}
           </div>
 
-          {/* Group Brand Filter */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setGroupBrandDropdownOpen(!groupBrandDropdownOpen);
-                setYearDropdownOpen(false);
-                setBrandDropdownOpen(false);
-              }}
-              className={`flex items-center justify-between gap-2 px-3 py-0.5 border rounded-lg transition-colors min-w-[130px] ${selectedGroupBrand
-                ? darkMode
-                  ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
-                : darkMode
-                  ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
-                  : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
-                }`}
-            >
-              <span className="text-xs font-medium">
-                {selectedGroupBrand
-                  ? groupBrandCategories.find((g: any) => g.id === selectedGroupBrand)?.name
-                  : t('budget.allGroupBrands')}
-              </span>
-              <ChevronDown size={12} className="opacity-50 shrink-0" />
-            </button>
-            {groupBrandDropdownOpen && (
-              <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-lg border py-0.5 z-20 min-w-[150px] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-                <button
-                  onClick={() => { setSelectedGroupBrand(null); setGroupBrandDropdownOpen(false); }}
-                  className={`w-full px-4 py-0.5 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedGroupBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
-                >
-                  {t('budget.allGroupBrands')}
-                </button>
-                {groupBrandCategories.map((group: any) => (
-                  <button
-                    key={group.id}
-                    onClick={() => { setSelectedGroupBrand(group.id); setGroupBrandDropdownOpen(false); }}
-                    className={`w-full px-4 py-0.5 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedGroupBrand === group.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
-                  >
-                    {group.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Brand Filter */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                setBrandDropdownOpen(!brandDropdownOpen);
-                setYearDropdownOpen(false);
-                setGroupBrandDropdownOpen(false);
-              }}
-              className={`flex items-center justify-between gap-2 px-3 py-0.5 border rounded-lg transition-colors min-w-[110px] ${selectedBrand
-                ? darkMode
-                  ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
-                : darkMode
-                  ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
-                  : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
-                }`}
-            >
-              <span className="text-xs font-medium">
-                {selectedBrand ? brandList.find((b: any) => b.id === selectedBrand)?.name : t('budget.allBrands')}
-              </span>
-              <ChevronDown size={12} className="opacity-50 shrink-0" />
-            </button>
-            {brandDropdownOpen && (
-              <div className={`absolute top-full left-0 mt-1 rounded-lg shadow-lg border py-0.5 z-20 min-w-[140px] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-                <button
-                  onClick={() => { setSelectedBrand(null); setBrandDropdownOpen(false); }}
-                  className={`w-full px-4 py-0.5 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${!selectedBrand ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
-                >
-                  {t('budget.allBrands')}
-                </button>
-                {brandList.map((brand: any) => (
-                  <button
-                    key={brand.id}
-                    onClick={() => { setSelectedBrand(brand.id); setBrandDropdownOpen(false); }}
-                    className={`w-full px-4 py-0.5 text-left text-sm transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'} ${selectedBrand === brand.id ? (darkMode ? 'text-[#D7B797] font-medium' : 'text-[#6B4D30] font-medium') : darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}
-                  >
-                    {brand.name}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           </>}
 
           {/* Search */}
@@ -490,8 +354,6 @@ const BudgetManagementScreen = ({
           accent="gold"
           trendLabel={`${summaryStats.count} budgets`}
           trend={1}
-          breakdown={summaryStats.brandBreakdown.slice(0, 5)}
-          expandTitle={t('home.kpiDetail.byBrand')}
         />
         <ExpandableStatCard
           title={t('budget.allocated')}
@@ -535,13 +397,9 @@ const BudgetManagementScreen = ({
             <FilterChips
               chips={[
                 { key: 'year', label: t('budget.fiscalYear') },
-                { key: 'groupBrand', label: t('budget.groupBrand') },
-                { key: 'brand', label: t('budget.brand') },
               ]}
               activeValues={{
                 year: selectedYear ? `FY${selectedYear}` : '',
-                groupBrand: selectedGroupBrand ? (groupBrandCategories.find((g: any) => g.id === selectedGroupBrand)?.name || '') : '',
-                brand: selectedBrand ? (brandList.find((b: any) => b.id === selectedBrand)?.name || '') : '',
               }}
               onChipPress={openFilter}
               onMorePress={openFilter}
@@ -552,16 +410,12 @@ const BudgetManagementScreen = ({
                 id: budget.id,
                 avatar: budget.status === 'approved' ? '✅' : budget.status === 'pending' ? '⏳' : '📝',
                 title: budget.budgetName,
-                subtitle: `FY${budget.fiscalYear} - ${budget.brandName}`,
+                subtitle: `FY${budget.fiscalYear}`,
                 value: formatCurrency(budget.totalBudget, { currency }),
                 valueLabel: t('budget.amount'),
                 status: { text: budget.status, variant: budget.status === 'approved' ? 'success' as const : budget.status === 'pending' ? 'warning' as const : 'default' as const },
                 expandedContent: (
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className={darkMode ? 'text-[#999]' : 'text-[#666]'}>{t('budget.groupBrand')}</span>
-                      <span className="font-medium">{budget.groupBrand}</span>
-                    </div>
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => { setSelectedBudget(budget); setShowViewModal(true); }}
@@ -571,8 +425,7 @@ const BudgetManagementScreen = ({
                       </button>
                       <button
                         onClick={() => onAllocate && onAllocate({
-                          id: budget.id, year: budget.fiscalYear, groupBrand: budget.groupBrand,
-                          brandId: budget.brandId, brandName: budget.brandName,
+                          id: budget.id, year: budget.fiscalYear,
                           totalBudget: budget.totalBudget, budgetName: budget.budgetName,
                         })}
                         className="flex-1 px-3 py-0.5 text-xs font-semibold rounded-lg bg-[#127749] text-white"
@@ -600,12 +453,6 @@ const BudgetManagementScreen = ({
                   {t('budget.fiscalYear')}
                 </th>
                 <th className={`text-left px-3 py-0.5 text-xs font-semibold tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                  {t('budget.groupBrand')}
-                </th>
-                <th className={`text-left px-3 py-0.5 text-xs font-semibold tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                  {t('budget.brand')}
-                </th>
-                <th className={`text-left px-3 py-0.5 text-xs font-semibold tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
                   {t('budget.budgetName')}
                 </th>
                 <th className={`text-left px-3 py-0.5 text-xs font-semibold tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
@@ -624,14 +471,6 @@ const BudgetManagementScreen = ({
                 >
                   <td className="px-3 py-0.5">
                     <span className={`text-sm font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>FY{budget.fiscalYear}</span>
-                  </td>
-                  <td className="px-3 py-0.5">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${darkMode ? 'bg-[#2E2E2E] text-[#F2F2F2]' : 'bg-[#F2F2F2] text-[#0A0A0A]'}`}>
-                      {budget.groupBrand}
-                    </span>
-                  </td>
-                  <td className="px-3 py-0.5">
-                    <span className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{budget.brandName}</span>
                   </td>
                   <td className="px-3 py-0.5">
                     <span className={`text-sm font-medium cursor-pointer transition-colors ${
@@ -670,9 +509,6 @@ const BudgetManagementScreen = ({
                           onAllocate({
                             id: budget.id,
                             year: budget.fiscalYear,
-                            groupBrand: budget.groupBrand,
-                            brandId: budget.brandId,
-                            brandName: budget.brandName,
                             totalBudget: budget.totalBudget,
                             budgetName: budget.budgetName,
                           })
@@ -738,25 +574,11 @@ const BudgetManagementScreen = ({
             type: 'single',
             options: YEARS.map((y: any) => ({ label: `FY${y}`, value: String(y) })),
           },
-          {
-            key: 'groupBrand',
-            label: t('budget.groupBrand'),
-            type: 'single',
-            options: groupBrandCategories.map((g: any) => ({ label: g.name, value: g.id })),
-          },
-          {
-            key: 'brand',
-            label: t('budget.brand'),
-            type: 'single',
-            options: brandList.map((b: any) => ({ label: b.name, value: b.id })),
-          },
         ]}
         values={mobileFilterValues}
         onChange={(key, value) => setMobileFilterValues(prev => ({ ...prev, [key]: value }))}
         onApply={() => {
           setSelectedYear(mobileFilterValues.year ? Number(mobileFilterValues.year) : null);
-          setSelectedGroupBrand((mobileFilterValues.groupBrand as string) || null);
-          setSelectedBrand((mobileFilterValues.brand as string) || null);
         }}
         onReset={() => {
           setMobileFilterValues({});
@@ -795,8 +617,6 @@ const BudgetManagementScreen = ({
               {/* Content */}
               <div className="px-6 py-5 space-y-4 text-sm">
                 <DetailRow label={t('budget.fiscalYear')} value={`FY${selectedBudget.fiscalYear}`} />
-                <DetailRow label={t('budget.groupBrand')} value={selectedBudget.groupBrand} />
-                <DetailRow label={t('budget.brand')} value={selectedBudget.brandName} />
                 <DetailRow label={t('budget.budgetName')} value={selectedBudget.budgetName} />
                 <DetailRow label={t('budget.createdBy')} value="TC Admin" />
                 <DetailRow label={t('budget.createdOn')} value="02/02/2025" />
@@ -854,70 +674,26 @@ const BudgetManagementScreen = ({
             </div>
             <div className="p-3 md:p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-14rem)]">
               {/* Fiscal Year */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-                {/* Fiscal Year */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-                    {t('budget.fiscalYear')} <span className="text-[#F85149]">{t('common.required')}</span>
-                  </label>
-                  <select
-                    value={newBudgetForm.fiscalYear}
-                    onChange={(e) =>
-                      setNewBudgetForm({
-                        ...newBudgetForm,
-                        fiscalYear: parseInt(e.target.value),
-                      })
-                    }
-                    className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
-                  >
-                    {YEARS.map((year: any) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Group Brand */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-                    {t('budget.groupBrand')} <span className="text-[#F85149]">{t('common.required')}</span>
-                  </label>
-                  <select
-                    value={newBudgetForm.groupBrand}
-                    onChange={(e) =>
-                      setNewBudgetForm({ ...newBudgetForm, groupBrand: e.target.value })
-                    }
-                    className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
-                  >
-                    {groupBrandCategories.map((group: any) => (
-                      <option key={group.id} value={group.id}>
-                        {group.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Brand */}
-                <div>
-                  <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-                    {t('budget.brand')} <span className="text-[#F85149]">{t('common.required')}</span>
-                  </label>
-                  <select
-                    value={newBudgetForm.brandId}
-                    onChange={(e) =>
-                      setNewBudgetForm({ ...newBudgetForm, brandId: e.target.value })
-                    }
-                    className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
-                  >
-                    <option value="">{t('budget.selectBrand')}</option>
-                    {apiBrands.map((brand: any) => (
-                      <option key={brand.id} value={brand.id}>
-                        {brand.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div>
+                <label className={`block text-sm font-medium mb-2 font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+                  {t('budget.fiscalYear')} <span className="text-[#F85149]">{t('common.required')}</span>
+                </label>
+                <select
+                  value={newBudgetForm.fiscalYear}
+                  onChange={(e) =>
+                    setNewBudgetForm({
+                      ...newBudgetForm,
+                      fiscalYear: parseInt(e.target.value),
+                    })
+                  }
+                  className={`w-full px-4 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'}`}
+                >
+                  {YEARS.map((year: any) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Season Group & Season Type - removed per customer request */}
@@ -978,7 +754,7 @@ const BudgetManagementScreen = ({
               <button
                 onClick={() => {
                   setShowCreateModal(false);
-                  setNewBudgetForm({ fiscalYear: 2026, groupBrand: 'A', brandId: apiBrands[0]?.id || '', seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
+                  setNewBudgetForm({ fiscalYear: 2026, seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
                 }}
                 className={`px-5 py-0.5 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'text-[#999999] hover:bg-[#2E2E2E]' : 'text-[#666666] hover:bg-[#E5E5E5]'}`}
               >
@@ -986,7 +762,7 @@ const BudgetManagementScreen = ({
               </button>
               <button
                 onClick={async () => {
-                  if (!newBudgetForm.totalBudget || !newBudgetForm.brandId) return;
+                  if (!newBudgetForm.totalBudget) return;
 
                   setCreating(true);
                   try {
@@ -1004,7 +780,6 @@ const BudgetManagementScreen = ({
                     }));
 
                     await budgetService.create({
-                      groupBrandId: newBudgetForm.brandId,
                       seasonGroupId: newBudgetForm.seasonGroup,
                       seasonType: newBudgetForm.seasonType,
                       fiscalYear: newBudgetForm.fiscalYear,
@@ -1013,7 +788,7 @@ const BudgetManagementScreen = ({
                     });
                     toast.success(t('budget.budgetCreatedSuccess'));
                     setShowCreateModal(false);
-                    setNewBudgetForm({ fiscalYear: 2026, groupBrand: 'A', brandId: apiBrands[0]?.id || '', seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
+                    setNewBudgetForm({ fiscalYear: 2026, seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
                     // Refresh the list
                     fetchBudgets();
                   } catch (err: any) {

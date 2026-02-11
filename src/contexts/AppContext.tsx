@@ -11,10 +11,6 @@ interface AppContextType {
   setDarkMode: (value: boolean) => void;
   sharedYear: number;
   setSharedYear: React.Dispatch<React.SetStateAction<number>>;
-  sharedGroupBrand: any;
-  setSharedGroupBrand: React.Dispatch<React.SetStateAction<any>>;
-  sharedBrand: any;
-  setSharedBrand: React.Dispatch<React.SetStateAction<any>>;
   allocationData: any;
   setAllocationData: React.Dispatch<React.SetStateAction<any>>;
   otbAnalysisContext: any;
@@ -46,8 +42,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Shared filter state between Budget Management and Planning screens
   const [sharedYear, setSharedYear] = useState(2025);
-  const [sharedGroupBrand, setSharedGroupBrand] = useState(null);
-  const [sharedBrand, setSharedBrand] = useState(null);
 
   // Cross-screen data passing
   const [allocationData, setAllocationData] = useState(null);
@@ -68,10 +62,6 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setDarkMode,
     sharedYear,
     setSharedYear,
-    sharedGroupBrand,
-    setSharedGroupBrand,
-    sharedBrand,
-    setSharedBrand,
     allocationData,
     setAllocationData,
     otbAnalysisContext,

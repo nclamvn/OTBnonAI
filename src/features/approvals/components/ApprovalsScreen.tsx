@@ -5,10 +5,11 @@ import {
   FileCheck, CheckCircle, XCircle, Clock, Loader2,
   Filter, Search, ChevronDown, Eye, MessageSquare,
   X, AlertTriangle, Shield, ArrowUpRight,
-  Wallet, BarChart3, Package, ClipboardList
+  Wallet, BarChart3, Package, ClipboardList, GitCompare
 } from 'lucide-react';
 import { approvalService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
+import VersionDiffModal from './VersionDiffModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '../../../utils';
 import { ExpandableStatCard, SwipeAction } from '../../../components/ui';
@@ -61,6 +62,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [actionModal, setActionModal] = useState<any>(null); // { item, action: 'approve'|'reject' }
   const [comment, setComment] = useState<string>('');
+  const [diffModal, setDiffModal] = useState<any>(null); // { entityId, entityType }
   const [processing, setProcessing] = useState<boolean>(false);
   const { isOpen: filterOpen, open: openFilterSheet, close: closeFilterSheet } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
@@ -439,6 +441,17 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                       {/* Actions */}
                       <td className="px-3 py-1.5">
                         <div className="flex items-center gap-2">
+                          {/* Compare Versions — only for planning items */}
+                          {item.entityType === 'planning' && (
+                            <button
+                              onClick={() => setDiffModal({ entityId: item.entityId, entityType: item.entityType })}
+                              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.18)]' : 'bg-[rgba(160,120,75,0.1)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                              title="Compare with previous version"
+                            >
+                              <GitCompare size={13} />
+                              Diff
+                            </button>
+                          )}
                           <button
                             onClick={() => { setActionModal({ item, action: 'approve' }); setComment(''); }}
                             className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]"
@@ -491,6 +504,24 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                   <span className={textPrimary}>{getItemDisplayInfo(actionModal.item).name}</span>
                 </div>
               </div>
+              {/* Compare Versions button for planning items */}
+              {actionModal.item.entityType === 'planning' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDiffModal({ entityId: actionModal.item.entityId, entityType: actionModal.item.entityType });
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-4 rounded-xl border text-sm font-semibold font-['Montserrat'] transition-all ${
+                    darkMode
+                      ? 'border-[rgba(215,183,151,0.3)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
+                      : 'border-[rgba(160,120,75,0.3)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.08)]'
+                  }`}
+                >
+                  <GitCompare size={16} />
+                  Compare with previous version
+                </button>
+              )}
+
               <div>
                 <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>
                   {t('approvals.commentOptional')}
@@ -527,6 +558,17 @@ const ApprovalsScreen = ({ darkMode }: any) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Version Diff Modal */}
+      {diffModal && (
+        <VersionDiffModal
+          isOpen={!!diffModal}
+          onClose={() => setDiffModal(null)}
+          entityId={diffModal.entityId}
+          entityType={diffModal.entityType}
+          darkMode={darkMode}
+        />
       )}
 
       {/* Mobile Filter Bottom Sheet */}

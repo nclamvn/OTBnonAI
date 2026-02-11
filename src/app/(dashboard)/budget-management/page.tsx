@@ -9,8 +9,6 @@ export default function BudgetManagementPage() {
   const {
     darkMode,
     sharedYear, setSharedYear,
-    sharedGroupBrand, setSharedGroupBrand,
-    sharedBrand, setSharedBrand,
     setAllocationData,
   } = useAppContext();
   const { budgets } = useBudget();
@@ -25,10 +23,6 @@ export default function BudgetManagementPage() {
       budgets={budgets}
       selectedYear={sharedYear}
       setSelectedYear={setSharedYear}
-      selectedGroupBrand={sharedGroupBrand}
-      setSelectedGroupBrand={setSharedGroupBrand}
-      selectedBrand={sharedBrand}
-      setSelectedBrand={setSharedBrand}
       onAllocate={handleAllocate}
       darkMode={darkMode}
     />

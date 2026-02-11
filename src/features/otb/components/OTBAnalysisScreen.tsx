@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import {
   BarChart3, Filter, ChevronDown, Check,
   Calendar, Tag, Layers, Users, Info, Pencil, X, Star,
-  Sparkles, FileText, Clock, Package
+  Sparkles, FileText, Clock, Package, ArrowLeftRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
@@ -143,6 +143,11 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     fetchBudgets();
   }, [fetchBudgets]);
 
+  // Compute available fiscal years from budgets
+  const availableYears = useMemo(() => {
+    return [...new Set(apiBudgets.map((b: any) => b.fiscalYear))].sort((a: number, b: number) => b - a);
+  }, [apiBudgets]);
+
   // Filter states
   const [selectedBudgetId, setSelectedBudgetId] = useState('all');
   const [selectedSeasonGroup, setSelectedSeasonGroup] = useState('all');
@@ -150,6 +155,25 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [budgetContext, setBudgetContext] = useState<any>(null); // Budget info from Planning Screen
   // Dropdown states
   const [openDropdown, setOpenDropdown] = useState<any>(null);
+
+  // New filters: Year, Type (Same/Different Season), Budget Season (multi-select)
+  const [selectedYear, setSelectedYear] = useState<number | 'all'>('all');
+  const [comparisonType, setComparisonType] = useState<'same' | 'different'>('same');
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
+
+  // Sync single-budget mode when exactly 1 budget selected in multi-select
+  useEffect(() => {
+    if (selectedBudgetIds.length === 1) {
+      setSelectedBudgetId(selectedBudgetIds[0]);
+      const budget = apiBudgets.find((b: any) => b.id === selectedBudgetIds[0]);
+      if (budget) {
+        if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
+        if (budget.seasonType) setSelectedSeason(budget.seasonType);
+      }
+    } else if (selectedBudgetIds.length === 0) {
+      setSelectedBudgetId('all');
+    }
+  }, [selectedBudgetIds, apiBudgets]);
 
   // Fetch planning versions when budget is selected
   useEffect(() => {
@@ -504,6 +528,20 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     }
   }, [selectedSeason]);
 
+  // Toggle budget selection for multi-compare (max 3)
+  const toggleBudgetSelection = (budgetId: string) => {
+    setSelectedBudgetIds(prev => {
+      if (prev.includes(budgetId)) {
+        return prev.filter(id => id !== budgetId);
+      }
+      if (prev.length >= 3) {
+        toast.error(t('otbAnalysis.maxBudgets') || 'Maximum 3 budgets can be compared');
+        return prev;
+      }
+      return [...prev, budgetId];
+    });
+  };
+
   // Clear all filters
   const clearFilters = () => {
     setSelectedBudgetId('all');
@@ -512,13 +550,27 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     setSelectedVersionId(null);
     setVersions([]);
     setBudgetContext(null);
+    setSelectedYear('all');
+    setComparisonType('same');
+    setSelectedBudgetIds([]);
   };
 
-  const hasActiveFilters = selectedBudgetId !== 'all' || selectedSeasonGroup !== 'all' || selectedSeason !== 'all' || selectedVersionId;
+  const hasActiveFilters = selectedBudgetId !== 'all' || selectedSeasonGroup !== 'all' || selectedSeason !== 'all' || selectedVersionId || selectedYear !== 'all' || selectedBudgetIds.length > 0;
 
-  // Filter budgets by selected season group/season
+  // Filter budgets by year, type, and season
   const filteredBudgets = useMemo(() => {
     let list = apiBudgets;
+    // Filter by year
+    if (selectedYear !== 'all') {
+      list = list.filter((b: any) => b.fiscalYear === selectedYear);
+    }
+    // For "same" type, if a budget is already selected, only show same seasonType
+    if (comparisonType === 'same' && selectedBudgetIds.length > 0) {
+      const firstBudget = apiBudgets.find((b: any) => b.id === selectedBudgetIds[0]);
+      if (firstBudget?.seasonType) {
+        list = list.filter((b: any) => b.seasonType === firstBudget.seasonType);
+      }
+    }
     if (selectedSeasonGroup !== 'all') {
       const seasonFiltered = list.filter((b: any) => b.seasonGroup === selectedSeasonGroup);
       if (seasonFiltered.length > 0) list = seasonFiltered;
@@ -528,7 +580,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       if (seasonFiltered.length > 0) list = seasonFiltered;
     }
     return list;
-  }, [apiBudgets, selectedSeasonGroup, selectedSeason]);
+  }, [apiBudgets, selectedYear, comparisonType, selectedBudgetIds, selectedSeasonGroup, selectedSeason]);
 
   const selectedBudget = selectedBudgetId === 'all'
     ? null
@@ -1280,6 +1332,131 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     );
   };
 
+  // Render Budget Comparison Table (when 2-3 budgets selected)
+  const renderComparisonTable = () => {
+    const comparedBudgets = selectedBudgetIds
+      .map(id => apiBudgets.find((b: any) => b.id === id))
+      .filter(Boolean);
+    if (comparedBudgets.length < 2) return null;
+
+    // Flatten categories for rows
+    const categoryRows: { gender: string; category: string; subCategory: string; key: string }[] = [];
+    categoryStructure.forEach((genderGroup: any) => {
+      genderGroup.categories.forEach((cat: any) => {
+        cat.subCategories.forEach((subCat: any) => {
+          categoryRows.push({
+            gender: genderGroup.gender.name,
+            category: cat.name,
+            subCategory: subCat.name,
+            key: `${genderGroup.gender.id}_${cat.id}_${subCat.id}`
+          });
+        });
+      });
+    });
+
+    // Group by category for cleaner display
+    const groupedRows: Record<string, typeof categoryRows> = {};
+    categoryRows.forEach(row => {
+      const groupKey = `${row.gender} - ${row.category}`;
+      if (!groupedRows[groupKey]) groupedRows[groupKey] = [];
+      groupedRows[groupKey].push(row);
+    });
+
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr>
+              <th className={`${headerCellClass} ${headerDarkCell} text-left min-w-[200px]`} rowSpan={2}>
+                {t('otbAnalysis.category') || 'Category'}
+              </th>
+              {comparedBudgets.map((budget: any) => (
+                <th key={budget.id} className={`${headerCellClass} ${headerGoldCell}`} colSpan={3}>
+                  <div className="flex flex-col items-center py-1">
+                    <span className="font-bold text-xs">{budget.budgetName}</span>
+                    <span className="text-[10px] opacity-70">FY{budget.fiscalYear} &middot; {budget.seasonGroup} {budget.seasonType}</span>
+                  </div>
+                </th>
+              ))}
+            </tr>
+            <tr>
+              {comparedBudgets.map((budget: any) => (
+                <React.Fragment key={`h2-${budget.id}`}>
+                  <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctBuy')}</th>
+                  <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctSales')}</th>
+                  <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.pctST')}</th>
+                </React.Fragment>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(groupedRows).map(([groupName, rows]) => (
+              <React.Fragment key={groupName}>
+                {/* Category Group Header */}
+                <tr className={groupRowClass}>
+                  <td className="px-3 py-1" colSpan={1 + comparedBudgets.length * 3}>
+                    <div className="flex items-center gap-2">
+                      <Tag size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                      <span className={`font-bold font-['Montserrat'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{groupName}</span>
+                    </div>
+                  </td>
+                </tr>
+                {rows.map((row, idx) => {
+                  const data = localData[row.key] || {};
+                  return (
+                    <tr
+                      key={row.key}
+                      className={`border-b transition-colors ${
+                        darkMode
+                          ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${idx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
+                          : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
+                      }`}
+                    >
+                      <td className="px-4 py-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-[#666666]' : 'bg-[#999999]'}`} />
+                          <span className={darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}>{row.subCategory}</span>
+                        </div>
+                      </td>
+                      {comparedBudgets.map((budget: any, bIdx: number) => {
+                        // Vary data slightly per budget for demo visualization
+                        const offset = bIdx * 3;
+                        return (
+                          <React.Fragment key={`${row.key}-${budget.id}`}>
+                            <td className={`px-3 py-1 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                              {Math.max(0, (data.buyPct || 0) - offset)}%
+                            </td>
+                            <td className={`px-3 py-1 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                              {Math.max(0, (data.salesPct || 0) - offset)}%
+                            </td>
+                            <td className={`px-3 py-1 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                              {Math.max(0, (data.stPct || 0) - offset)}%
+                            </td>
+                          </React.Fragment>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+            {/* Grand Total row */}
+            <tr className={sumRowClass}>
+              <td className="px-4 py-1 font-bold font-['Montserrat']">{t('otbAnalysis.total')}</td>
+              {comparedBudgets.map((budget: any) => (
+                <React.Fragment key={`total-${budget.id}`}>
+                  <td className="px-3 py-1 text-center font-['JetBrains_Mono'] font-bold">100%</td>
+                  <td className="px-3 py-1 text-center font-['JetBrains_Mono'] font-bold">100%</td>
+                  <td className="px-3 py-1 text-center font-['JetBrains_Mono']">-</td>
+                </React.Fragment>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-2">
       {/* Header Section */}
@@ -1327,19 +1504,124 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
               {/* Desktop Filters */}
               {!isMobile && (
               <div className="flex flex-wrap items-end gap-2">
-                {/* Budget Name Dropdown */}
-                <div className="relative min-w-[200px]" ref={setDropdownRef('budget')}>
+                {/* Year Filter */}
+                <div className="relative min-w-[120px]" ref={setDropdownRef('year')}>
                   <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                    {t('budget.budgetName')}
+                    {t('budget.fiscalYear') || 'Fiscal Year'}
                   </label>
                   <button
                     type="button"
                     onClick={() => {
-                      setOpenDropdown((prev: any) => (prev === 'budget' ? null : 'budget'));
+                      setOpenDropdown((prev: any) => (prev === 'year' ? null : 'year'));
                       setOpenCategoryDropdown(null);
                     }}
                     className={`w-full px-3 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
-                      selectedBudget
+                      selectedYear !== 'all'
+                        ? darkMode
+                          ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
+                          : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
+                        : darkMode
+                          ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] hover:border-[#666666] hover:bg-[#1A1A1A]'
+                          : 'bg-white border-[#C4B5A5] text-[#1A1A1A] hover:border-[#2E2E2E]/40 hover:bg-[#F2F2F2]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Calendar size={14} className={selectedYear !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#666666]' : 'text-[#999999]')} />
+                      <span>{selectedYear === 'all' ? (t('common.all') || 'All Years') : `FY ${selectedYear}`}</span>
+                    </div>
+                    <ChevronDown size={12} className={`transition-transform duration-200 ${openDropdown === 'year' ? 'rotate-180' : ''}`} />
+                  </button>
+                  {openDropdown === 'year' && (
+                    <div className={`absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-[9999] overflow-hidden ${
+                      darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
+                    }`}>
+                      <div
+                        onClick={() => { setSelectedYear('all'); setOpenDropdown(null); setSelectedBudgetIds([]); }}
+                        className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                          selectedYear === 'all'
+                            ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
+                            : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
+                        }`}
+                      >
+                        <span className="font-medium">{t('common.all') || 'All Years'}</span>
+                        {selectedYear === 'all' && <Check size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />}
+                      </div>
+                      {availableYears.map((year: number) => (
+                        <div
+                          key={year}
+                          onClick={() => { setSelectedYear(year); setOpenDropdown(null); setSelectedBudgetIds([]); }}
+                          className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                            selectedYear === year
+                              ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
+                              : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
+                          }`}
+                        >
+                          <span className="font-medium">FY {year}</span>
+                          {selectedYear === year && <Check size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Type Filter (Same/Different Season) */}
+                <div>
+                  <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                    {t('otbAnalysis.comparisonType') || 'Comparison Type'}
+                  </label>
+                  <div className={`flex rounded-lg border overflow-hidden ${
+                    darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'
+                  }`}>
+                    <button
+                      type="button"
+                      onClick={() => { setComparisonType('same'); setSelectedBudgetIds([]); }}
+                      className={`px-3 py-0.5 text-sm font-medium flex items-center gap-1.5 transition-all ${
+                        comparisonType === 'same'
+                          ? darkMode
+                            ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797] border-r border-[#2E2E2E]'
+                            : 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30] border-r border-[#C4B5A5]'
+                          : darkMode
+                            ? 'bg-[#121212] text-[#666666] hover:text-[#999999] border-r border-[#2E2E2E]'
+                            : 'bg-white text-[#999999] hover:text-[#666666] border-r border-[#C4B5A5]'
+                      }`}
+                    >
+                      <ArrowLeftRight size={12} />
+                      Same
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setComparisonType('different'); setSelectedBudgetIds([]); }}
+                      className={`px-3 py-0.5 text-sm font-medium flex items-center gap-1.5 transition-all ${
+                        comparisonType === 'different'
+                          ? darkMode
+                            ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797]'
+                            : 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30]'
+                          : darkMode
+                            ? 'bg-[#121212] text-[#666666] hover:text-[#999999]'
+                            : 'bg-white text-[#999999] hover:text-[#666666]'
+                      }`}
+                    >
+                      <ArrowLeftRight size={12} className="rotate-45" />
+                      Different
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`h-10 w-px hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#2E2E2E]/20'}`} />
+
+                {/* Budget Season Multi-Select */}
+                <div className="relative min-w-[240px]" ref={setDropdownRef('budgetSeason')}>
+                  <label className={`block text-xs font-medium mb-1.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                    {t('otbAnalysis.budgetSeason') || 'Budget Season'} <span className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>(max 3)</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenDropdown((prev: any) => (prev === 'budgetSeason' ? null : 'budgetSeason'));
+                      setOpenCategoryDropdown(null);
+                    }}
+                    className={`w-full px-3 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                      selectedBudgetIds.length > 0
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
                           : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
@@ -1349,83 +1631,93 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
-                      <FileText size={14} className={selectedBudget ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#666666]' : 'text-[#999999]')} />
-                      <span className="truncate">{selectedBudget?.budgetName || t('otbAnalysis.selectBudget')}</span>
+                      <FileText size={14} className={selectedBudgetIds.length > 0 ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#666666]' : 'text-[#999999]')} />
+                      <span className="truncate">
+                        {selectedBudgetIds.length === 0
+                          ? (t('otbAnalysis.selectBudgets') || 'Select Budgets')
+                          : `${selectedBudgetIds.length} ${t('otbAnalysis.budgetsSelected') || 'budget(s) selected'}`}
+                      </span>
+                      {selectedBudgetIds.length > 0 && (
+                        <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${
+                          darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
+                        }`}>{selectedBudgetIds.length}</span>
+                      )}
                     </div>
-                    <ChevronDown size={12} className={`flex-shrink-0 transition-transform duration-200 ${openDropdown === 'budget' ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={12} className={`flex-shrink-0 transition-transform duration-200 ${openDropdown === 'budgetSeason' ? 'rotate-180' : ''}`} />
                   </button>
-                  {openDropdown === 'budget' && (
-                    <div className={`absolute top-full left-0 mt-1 border rounded-xl shadow-xl z-[9999] overflow-hidden min-w-[300px] ${
+                  {openDropdown === 'budgetSeason' && (
+                    <div className={`absolute top-full left-0 mt-1 border rounded-xl shadow-xl z-[9999] overflow-hidden min-w-[320px] ${
                       darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
                     }`}>
-                      <div className={`p-2 border-b ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[#F2F2F2] border-[#D4C8BB]'}`}>
-                        <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('budget.title')}</span>
+                      <div className={`p-2 border-b flex items-center justify-between ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[#F2F2F2] border-[#D4C8BB]'}`}>
+                        <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                          {t('otbAnalysis.budgetSeason') || 'Budget Season'}
+                        </span>
+                        {selectedBudgetIds.length > 0 && (
+                          <button
+                            onClick={() => setSelectedBudgetIds([])}
+                            className={`text-xs px-2 py-0.5 rounded transition-colors ${
+                              darkMode ? 'text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'
+                            }`}
+                          >
+                            {t('common.clearAll') || 'Clear'}
+                          </button>
+                        )}
                       </div>
                       <div className="max-h-72 overflow-y-auto py-0.5">
-                        {/* Loading state */}
                         {loadingBudgets && (
                           <div className="px-4 py-6 flex items-center justify-center">
                             <div className="w-5 h-5 border-2 border-[#D7B797]/30 border-t-[#D7B797] rounded-full animate-spin" />
                             <span className={`ml-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.loading')}...</span>
                           </div>
                         )}
-                        {/* Empty state */}
                         {!loadingBudgets && filteredBudgets.length === 0 && (
                           <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                            {t('budget.noMatchingBudgets')}
+                            {t('budget.noMatchingBudgets') || 'No budgets found'}
                           </div>
                         )}
-                        {!loadingBudgets && filteredBudgets.length > 0 && (
-                        <div
-                          onClick={() => { setSelectedBudgetId('all'); setOpenDropdown(null); }}
-                          className={`px-4 py-0.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
-                            selectedBudgetId === 'all'
-                              ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
-                              : darkMode ? 'hover:bg-[#1A1A1A] text-[#666666]' : 'hover:bg-[#F2F2F2] text-[#999999]'
-                          }`}
-                        >
-                          <span className="font-medium">{t('otbAnalysis.selectBudget')}</span>
-                          {selectedBudgetId === 'all' && <Check size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />}
-                        </div>
-                        )}
-                        {!loadingBudgets && filteredBudgets.map((budget: any) => (
-                          <div
-                            key={budget.id}
-                            onClick={() => {
-                              setSelectedBudgetId(budget.id);
-                              if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
-                              if (budget.seasonType) setSelectedSeason(budget.seasonType);
-                              setOpenDropdown(null);
-                            }}
-                            className={`px-4 py-0.5 cursor-pointer transition-colors border-t ${
-                              darkMode ? 'border-[#2E2E2E]' : 'border-[#D4C8BB]'
-                            } ${
-                              selectedBudgetId === budget.id
-                                ? darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.18)]'
-                                : darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-[#F2F2F2]'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="min-w-0 flex-1">
-                                <div className={`font-semibold text-sm ${selectedBudgetId === budget.id ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
-                                  {budget.budgetName}
+                        {!loadingBudgets && filteredBudgets.map((budget: any) => {
+                          const isSelected = selectedBudgetIds.includes(budget.id);
+                          const isDisabled = !isSelected && selectedBudgetIds.length >= 3;
+                          return (
+                            <div
+                              key={budget.id}
+                              onClick={() => !isDisabled && toggleBudgetSelection(budget.id)}
+                              className={`px-4 py-2 cursor-pointer transition-colors border-t ${
+                                darkMode ? 'border-[#2E2E2E]' : 'border-[#D4C8BB]'
+                              } ${
+                                isDisabled
+                                  ? 'opacity-40 cursor-not-allowed'
+                                  : isSelected
+                                    ? darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.18)]'
+                                    : darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-[#F2F2F2]'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3">
+                                {/* Checkbox */}
+                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  isSelected
+                                    ? 'bg-[#D7B797] border-[#D7B797]'
+                                    : darkMode ? 'border-[#666666]' : 'border-[#C4B5A5]'
+                                }`}>
+                                  {isSelected && <Check size={10} className="text-[#1A1A1A]" strokeWidth={3} />}
                                 </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>FY{budget.fiscalYear}</span>
-                                  <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#2E2E2E]/30'}>-</span>
-                                  <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{budget.brandName}</span>
-                                  <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#2E2E2E]/30'}>-</span>
-                                  <span className={`text-xs font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budget.totalBudget)}</span>
+                                <div className="min-w-0 flex-1">
+                                  <div className={`font-semibold text-sm ${isSelected ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
+                                    {budget.budgetName}
+                                  </div>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>FY{budget.fiscalYear}</span>
+                                    <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#2E2E2E]/30'}>|</span>
+                                    <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{budget.seasonGroup} {budget.seasonType}</span>
+                                    <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#2E2E2E]/30'}>|</span>
+                                    <span className={`text-xs font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budget.totalBudget)}</span>
+                                  </div>
                                 </div>
                               </div>
-                              {selectedBudgetId === budget.id && (
-                                <div className="w-5 h-5 rounded-full bg-[#D7B797] flex items-center justify-center flex-shrink-0 ml-2">
-                                  <Check size={12} className="text-[#1A1A1A]" strokeWidth={3} />
-                                </div>
-                              )}
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -1731,8 +2023,62 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
         </div>
       </div>
 
-      {/* Tabs & Content */}
-      {selectedBudget && selectedSeason && selectedSeasonGroup && (
+      {/* Comparison Mode (2-3 budgets selected) */}
+      {selectedBudgetIds.length >= 2 && (
+      <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
+        {/* Comparison Header */}
+        <div className={`flex items-center justify-between px-4 py-2 border-b ${
+          darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
+        }`}>
+          <div className="flex items-center gap-2">
+            <BarChart3 size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+            <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+              {t('otbAnalysis.budgetComparison') || 'Budget Comparison'} ({selectedBudgetIds.length} {t('otbAnalysis.budgets') || 'budgets'})
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+              darkMode ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30]'
+            }`}>
+              {comparisonType === 'same' ? 'Same Season' : 'Different Season'}
+            </span>
+          </div>
+        </div>
+
+        {/* Selected Budgets Summary */}
+        <div className={`px-4 py-2 border-b flex flex-wrap gap-2 ${
+          darkMode ? 'bg-[rgba(215,183,151,0.05)] border-[#2E2E2E]' : 'bg-[rgba(215,183,151,0.08)] border-[#D4C8BB]'
+        }`}>
+          {selectedBudgetIds.map((id, idx) => {
+            const budget = apiBudgets.find((b: any) => b.id === id);
+            if (!budget) return null;
+            return (
+              <div key={id} className={`flex items-center gap-2 px-3 py-1 rounded-lg border ${
+                darkMode ? 'border-[rgba(215,183,151,0.25)] bg-[rgba(215,183,151,0.08)]' : 'border-[rgba(215,183,151,0.4)] bg-white'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-[#D7B797]' : idx === 1 ? 'bg-[#2A9E6A]' : 'bg-[#7C3AED]'}`} />
+                <span className={`text-xs font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{budget.budgetName}</span>
+                <span className={`text-[10px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{formatCurrency(budget.totalBudget)}</span>
+                <button
+                  onClick={() => toggleBudgetSelection(id)}
+                  className={`p-0.5 rounded transition-colors ${darkMode ? 'hover:bg-[#2E2E2E]' : 'hover:bg-[#F2F2F2]'}`}
+                >
+                  <X size={10} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Comparison Table */}
+        <div className="overflow-y-auto">
+          {renderComparisonTable()}
+        </div>
+      </div>
+      )}
+
+      {/* Single Budget Mode - Tabs & Content */}
+      {selectedBudgetIds.length <= 1 && selectedBudget && selectedSeason && selectedSeasonGroup && (
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
         {/* Tabs */}
         <div className={`border-b px-2 md:px-4 overflow-x-auto ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
@@ -1805,10 +2151,25 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
         onClose={closeFilter}
         filters={[
           {
-            key: 'budget',
-            label: t('budget.budgetName'),
+            key: 'year',
+            label: t('budget.fiscalYear') || 'Fiscal Year',
             type: 'single',
-            options: filteredBudgets.map((b: any) => ({ label: b.budgetName, value: b.id })),
+            options: availableYears.map((y: number) => ({ label: `FY ${y}`, value: String(y) })),
+          },
+          {
+            key: 'type',
+            label: t('otbAnalysis.comparisonType') || 'Comparison Type',
+            type: 'single',
+            options: [
+              { label: 'Same Season', value: 'same' },
+              { label: 'Different Season', value: 'different' },
+            ],
+          },
+          {
+            key: 'budget',
+            label: t('otbAnalysis.budgetSeason') || 'Budget Season',
+            type: 'single',
+            options: filteredBudgets.map((b: any) => ({ label: `${b.budgetName} (${formatCurrency(b.totalBudget)})`, value: b.id })),
           },
           {
             key: 'seasonGroup',
@@ -1832,7 +2193,15 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
         values={mobileFilterValues}
         onChange={(key, value) => setMobileFilterValues(prev => ({ ...prev, [key]: value }))}
         onApply={() => {
-          setSelectedBudgetId((mobileFilterValues.budget as string) || 'all');
+          if (mobileFilterValues.year) {
+            setSelectedYear(mobileFilterValues.year === 'all' ? 'all' : Number(mobileFilterValues.year));
+          }
+          if (mobileFilterValues.type) {
+            setComparisonType(mobileFilterValues.type as 'same' | 'different');
+          }
+          if (mobileFilterValues.budget) {
+            setSelectedBudgetIds([mobileFilterValues.budget as string]);
+          }
           setSelectedSeasonGroup((mobileFilterValues.seasonGroup as string) || 'all');
           setSelectedSeason((mobileFilterValues.season as string) || 'all');
           setSelectedVersionId((mobileFilterValues.version as string) || null);

@@ -189,6 +189,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [subCategoryFilter, setSubCategoryFilter] = useState('all');
 
   const [collapsed, setCollapsed] = useState<Record<string, any>>({});
+  const [allCollapsed, setAllCollapsed] = useState(false);
   const [contextBanner, setContextBanner] = useState<any>(null);
   const [viewMode, setViewMode] = useState('table');
   const [cardDetailsOpen, setCardDetailsOpen] = useState<Record<string, any>>({});
@@ -391,6 +392,21 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     });
   }, [genderFilter, categoryFilter, subCategoryFilter, skuBlocks]);
 
+  const grandTotals = useMemo(() => {
+    return filteredSkuBlocks.reduce((acc: any, block: any) => {
+      block.items.forEach((item: any) => {
+        acc.skuCount += 1;
+        acc.order += (item.order || 0);
+        acc.rex += (item.rex || 0);
+        acc.ttp += (item.ttp || 0);
+        acc.ttlValue += (item.ttlValue || 0);
+        acc.srp += (item.srp || 0);
+        acc.unitCost += (item.unitCost || 0);
+      });
+      return acc;
+    }, { skuCount: 0, order: 0, rex: 0, ttp: 0, ttlValue: 0, srp: 0, unitCost: 0 });
+  }, [filteredSkuBlocks]);
+
   // Card view available when there's data to show
   const canShowCardView = filteredSkuBlocks.length > 0 && filteredSkuBlocks.some((b: any) => b.items.length > 0);
 
@@ -458,6 +474,17 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   const handleToggle = (key: any) => {
     setCollapsed((prev: any) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleToggleAll = () => {
+    const newState = !allCollapsed;
+    setAllCollapsed(newState);
+    const newCollapsed: Record<string, boolean> = {};
+    filteredSkuBlocks.forEach((block: any) => {
+      const key = `${block.gender}_${block.category}_${block.subCategory}`;
+      newCollapsed[key] = newState;
+    });
+    setCollapsed(prev => ({ ...prev, ...newCollapsed }));
   };
 
   const handleAddSkuRow = (blockKey: any) => {
@@ -1175,6 +1202,29 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Rail Controls */}
+          <div className={`flex flex-wrap items-center justify-between px-4 py-2 rounded-xl border ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleToggleAll}
+                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'}`}
+              >
+                <ChevronDown size={12} className={`transition-transform ${allCollapsed ? '-rotate-90' : ''}`} />
+                {allCollapsed ? 'Expand All' : 'Collapse All'}
+              </button>
+              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
+              </span>
+            </div>
+            <div className={`flex items-center gap-4 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+              <span>Order: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
+              <span>Rex: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.rex}</span></span>
+              <span>TTP: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.ttp}</span></span>
+              <span>Value: <span className={`font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span></span>
+            </div>
+          </div>
+
           {filteredSkuBlocks.map((block: any) => {
             const key = `${block.gender}_${block.category}_${block.subCategory}`;
             const isCollapsed = collapsed[key];
@@ -1183,21 +1233,46 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 <button
                   type="button"
                   onClick={() => handleToggle(key)}
-                  className={`w-full flex items-center gap-3 px-4 py-0.5 ${
+                  className={`w-full flex items-center gap-0 ${
                     darkMode
-                      ? 'bg-[rgba(215,183,151,0.15)] border-b border-[rgba(215,183,151,0.25)]'
-                      : 'bg-[rgba(215,183,151,0.2)] border-b border-[rgba(215,183,151,0.3)]'
+                      ? 'bg-[rgba(215,183,151,0.12)] border-b border-[rgba(215,183,151,0.25)]'
+                      : 'bg-[rgba(215,183,151,0.18)] border-b border-[rgba(215,183,151,0.3)]'
                   }`}
                 >
-                  <ChevronDown size={12} className={`transition-transform ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
-                  <div className="text-left">
-                    <div className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.subCategory}</div>
-                    <div className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#6B5B4D]'}`}>
-                      {block.gender} • {block.category} • {block.items.length} SKUs
+                  <div className={`w-1.5 self-stretch rounded-l-xl ${darkMode ? 'bg-[#D7B797]' : 'bg-[#8A6340]'}`} />
+                  <div className="flex items-center gap-3 px-4 py-2 flex-1">
+                    <ChevronDown size={14} className={`transition-transform ${isCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+                    <div className="text-left flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#8A6340]'}`}>RAIL</span>
+                        <span className={`font-semibold text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.subCategory}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#6B5B4D]'}`}>
+                          {block.items.length} SKUs
+                        </span>
+                      </div>
+                      <div className={`text-xs mt-0.5 ${darkMode ? 'text-[#666666]' : 'text-[#8A6340]'}`}>
+                        {block.gender} • {block.category}
+                      </div>
                     </div>
-                  </div>
-                  <div className={`ml-auto text-xs ${darkMode ? 'text-[#999999]' : 'text-[#6B5B4D]'}`}>
-                    Total SRP: {formatCurrency(block.items.reduce((sum: any, i: any) => sum + i.srp, 0))}
+                    <div className={`hidden md:flex items-center gap-4 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#6B5B4D]'}`}>
+                      <div className="flex flex-col items-center">
+                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Order</span>
+                        <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{block.items.reduce((s: number, i: any) => s + (i.order || 0), 0)}</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Rex</span>
+                        <span className="font-semibold">{block.items.reduce((s: number, i: any) => s + (i.rex || 0), 0)}</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>TTP</span>
+                        <span className="font-semibold">{block.items.reduce((s: number, i: any) => s + (i.ttp || 0), 0)}</span>
+                      </div>
+                      <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.4)]'}`} />
+                      <div className="flex flex-col items-center">
+                        <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Value</span>
+                        <span className={`font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(block.items.reduce((s: number, i: any) => s + (i.ttlValue || 0), 0))}</span>
+                      </div>
+                    </div>
                   </div>
                 </button>
 
@@ -1350,6 +1425,29 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           </tr>
                         );
                         })}
+                        {/* Rail Subtotal */}
+                        <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.08)]' : 'border-[#D7B797]/40 bg-[rgba(215,183,151,0.12)]'}`}>
+                          <td className="px-3 py-2" colSpan={2}></td>
+                          <td className={`px-3 py-2 text-xs font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} colSpan={6}>
+                            SUBTOTAL — {block.items.length} SKUs
+                          </td>
+                          <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                            {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.srp || 0), 0))}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {block.items.reduce((s: number, i: any) => s + (i.order || 0), 0)}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {block.items.reduce((s: number, i: any) => s + (i.rex || 0), 0)}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {block.items.reduce((s: number, i: any) => s + (i.ttp || 0), 0)}
+                          </td>
+                          <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] text-xs ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                            {formatCurrency(block.items.reduce((s: number, i: any) => s + (i.ttlValue || 0), 0))}
+                          </td>
+                          <td colSpan={2}></td>
+                        </tr>
                         {/* Add new row button */}
                         <tr className={`border-t border-dashed ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
                           <td colSpan={15} className="px-3 py-0.5">
@@ -1370,6 +1468,39 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               </div>
             );
           })}
+
+          {/* Grand Total */}
+          {filteredSkuBlocks.length > 0 && (
+            <div className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#D7B797]/30' : 'bg-white border-[#D7B797]/40'}`}>
+              <div className={`flex items-center gap-0 ${darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(215,183,151,0.25)]'}`}>
+                <div className={`w-1.5 self-stretch rounded-l-xl ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`} />
+                <div className="flex flex-wrap items-center justify-between flex-1 px-4 py-2.5 gap-3">
+                  <span className={`text-sm font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                    GRAND TOTAL — {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
+                  </span>
+                  <div className="flex items-center gap-5 text-xs font-['JetBrains_Mono']">
+                    <div className="flex flex-col items-center">
+                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Order</span>
+                      <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Rex</span>
+                      <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.rex}</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>TTP</span>
+                      <span className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.ttp}</span>
+                    </div>
+                    <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
+                    <div className="flex flex-col items-center">
+                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Total Value</span>
+                      <span className={`font-bold text-sm ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
