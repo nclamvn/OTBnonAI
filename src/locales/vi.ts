@@ -121,6 +121,19 @@ const vi = {
     kpiUserProfile: 'Hồ sơ người dùng',
     kpiSettings: 'Cài đặt',
     kpiAppSettings: 'Cài đặt ứng dụng',
+    notifications: 'Thông báo',
+  },
+
+  // ──────────────────────────────────────────────
+  // Analytics
+  // ──────────────────────────────────────────────
+  analytics: {
+    salesPerformance: 'Hiệu suất bán hàng',
+    salesDesc: 'Phân tích hiệu suất SKU',
+    budgetAnalytics: 'Phân tích ngân sách',
+    budgetDesc: 'Xu hướng sử dụng ngân sách',
+    categoryTrends: 'Xu hướng danh mục',
+    trendsDesc: 'Xu hướng thuộc tính và so sánh YoY',
   },
 
   // ──────────────────────────────────────────────

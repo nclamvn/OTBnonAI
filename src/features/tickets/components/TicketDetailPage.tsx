@@ -47,6 +47,190 @@ const CARD_STYLES_LIGHT = [
 ];
 
 /* =========================
+   MOCK DATA FOR TICKET DETAIL
+========================= */
+
+const MOCK_COLLECTION_DATA = [
+  { name: 'Carry Over', rex: 1_850_000_000, ttp: 1_420_000_000 },
+  { name: 'Seasonal', rex: 2_150_000_000, ttp: 1_780_000_000 },
+  { name: 'Pre-Collection', rex: 980_000_000, ttp: 750_000_000 },
+];
+
+const MOCK_GENDER_DATA = [
+  { name: "Women's RTW", rex: 2_400_000_000, ttp: 1_950_000_000 },
+  { name: "Women's Hard Acc", rex: 800_000_000, ttp: 730_000_000 },
+  { name: "Men's RTW", rex: 1_280_000_000, ttp: 920_000_000 },
+  { name: "Men's Hard Acc", rex: 500_000_000, ttp: 350_000_000 },
+];
+
+const MOCK_SKU_BLOCKS = [
+  {
+    gender: "Women's",
+    productType: 'W Outerwear',
+    subCategory: "Women's Outerwear",
+    pctBuyPropose: 32,
+    otbPropose: 1_680_000_000,
+    items: [
+      {
+        sku: 'BAL-WO-001', name: 'Oversized Wool Coat', theme: 'Winter Essentials',
+        color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 85_000_000,
+        order: 12, rex: 7, ttp: 5, ttlValue: 1_020_000_000,
+        sizing: {
+          sizes: ['XS', 'S', 'M', 'L', 'XL'],
+          salesMix: [5, 15, 35, 30, 15],
+          sellThrough: [40, 55, 62, 48, 35],
+          finalChoice: [1, 2, 4, 3, 2],
+        },
+      },
+      {
+        sku: 'BAL-WO-002', name: 'Double-Breasted Trench', theme: 'Classic Heritage',
+        color: 'Black', composition: '100% Cotton Gabardine', srp: 72_000_000,
+        order: 10, rex: 6, ttp: 4, ttlValue: 720_000_000,
+        sizing: {
+          sizes: ['XS', 'S', 'M', 'L', 'XL'],
+          salesMix: [8, 20, 30, 28, 14],
+          sellThrough: [45, 60, 58, 52, 38],
+          finalChoice: [1, 2, 3, 3, 1],
+        },
+      },
+      {
+        sku: 'BAL-WO-003', name: 'Quilted Puffer Jacket', theme: 'Urban Sport',
+        color: 'Navy', composition: '100% Nylon, Down Fill', srp: 65_000_000,
+        order: 8, rex: 5, ttp: 3, ttlValue: 520_000_000,
+        sizing: {
+          sizes: ['XS', 'S', 'M', 'L'],
+          salesMix: [10, 30, 35, 25],
+          sellThrough: [50, 65, 60, 42],
+          finalChoice: [1, 2, 3, 2],
+        },
+      },
+    ],
+  },
+  {
+    gender: "Women's",
+    productType: 'W Bags',
+    subCategory: "Women's Hard Accessories — Bags",
+    pctBuyPropose: 28,
+    otbPropose: 1_470_000_000,
+    items: [
+      {
+        sku: 'BAL-WB-001', name: 'Le Cagole Medium', theme: 'Iconic Carry',
+        color: 'Arena Beige', composition: 'Lambskin Leather', srp: 52_000_000,
+        order: 15, rex: 9, ttp: 6, ttlValue: 780_000_000,
+        sizing: {
+          sizes: ['Small', 'Medium', 'Large'],
+          salesMix: [25, 50, 25],
+          sellThrough: [58, 72, 45],
+          finalChoice: [4, 7, 4],
+        },
+      },
+      {
+        sku: 'BAL-WB-002', name: 'Hourglass Top Handle', theme: 'Signature Shape',
+        color: 'Black Croc', composition: 'Croc-Embossed Calfskin', srp: 68_000_000,
+        order: 10, rex: 6, ttp: 4, ttlValue: 680_000_000,
+        sizing: {
+          sizes: ['XS', 'Small', 'Medium'],
+          salesMix: [20, 45, 35],
+          sellThrough: [55, 68, 50],
+          finalChoice: [2, 5, 3],
+        },
+      },
+    ],
+  },
+  {
+    gender: "Men's",
+    productType: 'M Outerwear',
+    subCategory: "Men's Outerwear",
+    pctBuyPropose: 22,
+    otbPropose: 1_155_000_000,
+    items: [
+      {
+        sku: 'BAL-MO-001', name: 'Biker Leather Jacket', theme: 'Moto Heritage',
+        color: 'Black', composition: '100% Lambskin', srp: 95_000_000,
+        order: 8, rex: 5, ttp: 3, ttlValue: 760_000_000,
+        sizing: {
+          sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+          salesMix: [10, 25, 35, 20, 10],
+          sellThrough: [42, 58, 65, 50, 30],
+          finalChoice: [1, 2, 3, 1, 1],
+        },
+      },
+      {
+        sku: 'BAL-MO-002', name: 'Padded Bomber Jacket', theme: 'Urban Sport',
+        color: 'Olive Green', composition: 'Nylon Twill, Polyester Fill', srp: 48_000_000,
+        order: 10, rex: 6, ttp: 4, ttlValue: 480_000_000,
+        sizing: {
+          sizes: ['S', 'M', 'L', 'XL'],
+          salesMix: [15, 30, 35, 20],
+          sellThrough: [48, 62, 55, 40],
+          finalChoice: [1, 3, 4, 2],
+        },
+      },
+    ],
+  },
+  {
+    gender: "Men's",
+    productType: 'M Bags',
+    subCategory: "Men's Hard Accessories — Bags",
+    pctBuyPropose: 18,
+    otbPropose: 945_000_000,
+    items: [
+      {
+        sku: 'BAL-MB-001', name: 'Explorer Backpack', theme: 'Travel Essentials',
+        color: 'Black Nylon', composition: 'Recycled Nylon, Leather Trim', srp: 38_000_000,
+        order: 12, rex: 7, ttp: 5, ttlValue: 456_000_000,
+        sizing: {
+          sizes: ['One Size'],
+          salesMix: [100],
+          sellThrough: [65],
+          finalChoice: [12],
+        },
+      },
+      {
+        sku: 'BAL-MB-002', name: 'Belt Bag XL', theme: 'Streetwear',
+        color: 'Grey Canvas', composition: 'Cotton Canvas, Calfskin', srp: 28_000_000,
+        order: 14, rex: 8, ttp: 6, ttlValue: 392_000_000,
+        sizing: {
+          sizes: ['One Size'],
+          salesMix: [100],
+          sellThrough: [70],
+          finalChoice: [14],
+        },
+      },
+      {
+        sku: 'BAL-MB-003', name: 'Crossbody Messenger', theme: 'Daily Carry',
+        color: 'Dark Brown', composition: 'Full-Grain Calfskin', srp: 32_000_000,
+        order: 9, rex: 5, ttp: 4, ttlValue: 288_000_000,
+        sizing: {
+          sizes: ['Small', 'Medium'],
+          salesMix: [40, 60],
+          sellThrough: [55, 68],
+          finalChoice: [4, 5],
+        },
+      },
+    ],
+  },
+];
+
+const MOCK_BUDGET_DATA = {
+  id: 'mock-budget-001',
+  fiscalYear: 'FY2025',
+  groupBrand: 'Balenciaga',
+  brandName: 'Balenciaga',
+  totalBudget: 5_250_000_000,
+  budgetName: 'BUD-BAL-FW-main-2025',
+  status: 'LEVEL1_APPROVED',
+};
+
+const MOCK_SEASON_DATA = {
+  seasonGroup: 'FW',
+  Season: 'Fall/Winter 2025',
+  rex: 2_980_000_000,
+  ttp: 2_270_000_000,
+  finalVersion: 3,
+};
+
+/* =========================
    GROUPED BAR CHARTS
 ========================= */
 
@@ -130,65 +314,55 @@ const GenderBarChart = ({ data, darkMode, t }: any) => (
    SKU CARD (with sizing)
 ========================= */
 
-const SizingTable = ({ productType, darkMode }: any) => (
-  <div className={`rounded-xl border overflow-hidden ${
-    darkMode
-      ? 'border-[#2E2E2E] bg-[#121212]'
-      : 'border-gray-300 bg-white'
-  }`}>
-    <div className={`px-4 py-2.5 text-sm font-semibold border-b font-['Montserrat'] ${
-      darkMode
-        ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]'
-        : 'text-gray-600 bg-gray-50 border-gray-300'
-    }`}>
-      Sizing
+const SizingTable = ({ productType, darkMode, sizing }: any) => {
+  const data = sizing || { sizes: ['0002', '0004', '0006', '0008'], salesMix: [6, 33, 33, 28], sellThrough: [50, 43, 30, 63], finalChoice: [0, 3, 3, 2] };
+  const sumMix = data.salesMix.reduce((a: number, b: number) => a + b, 0);
+  const sumFinal = data.finalChoice.reduce((a: number, b: number) => a + b, 0);
+
+  return (
+    <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-300 bg-white'}`}>
+      <div className={`px-4 py-0.5 text-sm font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+        Sizing
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.18)] text-[#666666]'}>
+              <th className="px-3 py-0.5 text-left">{productType}</th>
+              {data.sizes.map((s: string) => (
+                <th key={s} className="px-3 py-0.5 text-center font-['JetBrains_Mono']">{s}</th>
+              ))}
+              <th className="px-3 py-0.5 text-center">Sum</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
+              {data.salesMix.map((v: number, i: number) => (
+                <td key={i} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{v}%</td>
+              ))}
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{sumMix}%</td>
+            </tr>
+            <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
+              {data.sellThrough.map((v: number, i: number) => (
+                <td key={i} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{v}%</td>
+              ))}
+              <td className={`px-3 py-0.5 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
+            </tr>
+            <tr className={`border-t ${darkMode ? 'border-[#2E2E2E] bg-[rgba(227,179,65,0.1)]' : 'border-gray-300 bg-[rgba(227,179,65,0.18)]'}`}>
+              <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Final Choice</td>
+              {data.finalChoice.map((v: number, i: number) => (
+                <td key={i} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{v}</td>
+              ))}
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{sumFinal}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.18)] text-[#666666]'}>
-            <th className="px-3 py-2 text-left">{productType}</th>
-            <th className="px-3 py-2 text-center font-['JetBrains_Mono']">0002</th>
-            <th className="px-3 py-2 text-center font-['JetBrains_Mono']">0004</th>
-            <th className="px-3 py-2 text-center font-['JetBrains_Mono']">0006</th>
-            <th className="px-3 py-2 text-center font-['JetBrains_Mono']">0008</th>
-            <th className="px-3 py-2 text-center">Sum</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-            <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>6%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>33%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>33%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>28%</td>
-            <td className={`px-3 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
-          </tr>
-          <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-            <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>50%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>43%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>30%</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>63%</td>
-            <td className={`px-3 py-2 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
-          </tr>
-          <tr className={`border-t ${
-            darkMode
-              ? 'border-[#2E2E2E] bg-[rgba(227,179,65,0.1)]'
-              : 'border-gray-300 bg-[rgba(227,179,65,0.18)]'
-          }`}>
-            <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Final Choice</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>0</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>3</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>3</td>
-            <td className={`px-3 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>2</td>
-            <td className={`px-3 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>8</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-);
+  );
+};
 
 const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -228,7 +402,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
               <button
                 type="button"
                 onClick={() => setDetailsOpen((p) => !p)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                className={`px-2.5 py-0.5 text-xs font-medium rounded-lg border transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
                     : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
@@ -239,7 +413,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
               <button
                 type="button"
                 onClick={() => setStoreOrderOpen((p) => !p)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
+                className={`px-2.5 py-0.5 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
                     : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
@@ -251,7 +425,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
               <button
                 type="button"
                 onClick={() => setSizingOpen((p) => !p)}
-                className={`px-2.5 py-1 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
+                className={`px-2.5 py-0.5 text-xs font-medium rounded-lg border flex items-center gap-1 transition-all ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
                     : 'bg-white/80 border-gray-300 text-gray-600 hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(160,120,75,0.4)] hover:text-[#6B4D30]'
@@ -299,16 +473,16 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
           <div className={`mt-4 rounded-xl border overflow-hidden ${
             darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-300 bg-white'
           }`}>
-            <div className={`px-4 py-2.5 text-sm font-semibold border-b font-['Montserrat'] ${
+            <div className={`px-4 py-0.5 text-sm font-semibold border-b font-['Montserrat'] ${
               darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'
             }`}>Store Order</div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.18)] text-[#666666]'}>
-                    <th className="px-3 py-2 text-left">Store</th>
-                    <th className="px-3 py-2 text-center font-['JetBrains_Mono']">ORDER</th>
-                    <th className="px-3 py-2 text-right font-['JetBrains_Mono']">TTL VALUE</th>
+                    <th className="px-3 py-0.5 text-left">Store</th>
+                    <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">ORDER</th>
+                    <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">TTL VALUE</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -317,12 +491,12 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
                     { key: 'ttp', label: 'TTP', color: 'bg-[#127749]', value: item.ttp || 0 },
                   ].map((store) => (
                     <tr key={store.key} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                      <td className={`px-3 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
+                      <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
                         <span className="inline-flex items-center gap-1.5">
                           <span className={`w-2 h-2 rounded-full ${store.color}`} />{store.label}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-center">
+                      <td className="px-3 py-0.5 text-center">
                         {editingStore === store.key ? (
                           <input
                             type="number"
@@ -341,7 +515,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
                               }
                               if (e.key === 'Escape') setEditingStore(null);
                             }}
-                            className={`w-16 px-2 py-1 text-center border-2 border-[#D7B797] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.5)] font-['JetBrains_Mono'] font-medium text-sm ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2]' : 'bg-white text-[#1A1A1A]'}`}
+                            className={`w-16 px-2 py-0.5 text-center border-2 border-[#D7B797] rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.5)] font-['JetBrains_Mono'] font-medium text-sm ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2]' : 'bg-white text-[#1A1A1A]'}`}
                             autoFocus
                           />
                         ) : (
@@ -355,13 +529,13 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
                           </span>
                         )}
                       </td>
-                      <td className={`px-3 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(store.value * (item.srp || 0))}</td>
+                      <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(store.value * (item.srp || 0))}</td>
                     </tr>
                   ))}
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30' : 'border-[#D7B797]/40'} ${darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td className={`px-3 py-2 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
-                    <td className={`px-3 py-2 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{(item.rex || 0) + (item.ttp || 0)}</td>
-                    <td className={`px-3 py-2 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(((item.rex || 0) + (item.ttp || 0)) * (item.srp || 0))}</td>
+                    <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
+                    <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{(item.rex || 0) + (item.ttp || 0)}</td>
+                    <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(((item.rex || 0) + (item.ttp || 0)) * (item.srp || 0))}</td>
                   </tr>
                 </tbody>
               </table>
@@ -371,7 +545,7 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
 
         {sizingOpen && (
           <div className="mt-4">
-            <SizingTable productType={productType} darkMode={darkMode} />
+            <SizingTable productType={productType} darkMode={darkMode} sizing={item.sizing} />
           </div>
         )}
       </div>
@@ -502,7 +676,7 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }: any) => (
                 </div>
               )}
               {item.comment && (
-                <div className={`mt-1.5 px-3 py-2 rounded-lg text-xs italic ${
+                <div className={`mt-1.5 px-3 py-0.5 rounded-lg text-xs italic ${
                   darkMode ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E]' : 'bg-gray-50 text-gray-600 border border-gray-300'
                 }`}>
                   "{item.comment}"
@@ -521,7 +695,7 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }: any) => (
     <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
       <div className="flex items-center justify-between">
         <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>{t ? t('common.status') : 'Current Status'}:</span>
-        <span className={`px-3 py-1 text-xs font-bold rounded-full ${
+        <span className={`px-3 py-0.5 text-xs font-bold rounded-full ${
           ['APPROVED', 'LEVEL2_APPROVED', 'FINAL'].includes(ticket?.status?.toUpperCase())
             ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-100 text-emerald-700'
           : ['REJECTED', 'LEVEL1_REJECTED', 'LEVEL2_REJECTED'].includes(ticket?.status?.toUpperCase())
@@ -784,10 +958,10 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const { collectionData, genderData, budgetData, budgetSeasonData } = useMemo(() => {
     if (!detailData) {
       return {
-        collectionData: [],
-        genderData: [],
-        budgetData: {},
-        budgetSeasonData: {}
+        collectionData: MOCK_COLLECTION_DATA,
+        genderData: MOCK_GENDER_DATA,
+        budgetData: MOCK_BUDGET_DATA,
+        budgetSeasonData: MOCK_SEASON_DATA,
       };
     }
 
@@ -870,32 +1044,20 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       };
     }
 
-    // Default / proposal
+    // Default / proposal — use rich mock data
     return {
-      collectionData: [
-        { name: 'Carry Over', rex: 178500000, ttp: 142800000 },
-        { name: 'Seasonal', rex: 164500000, ttp: 151200000 },
-      ],
-      genderData: [
-        { name: 'Female', rex: 205200000, ttp: 168400000 },
-        { name: 'Male', rex: 137800000, ttp: 125600000 },
-      ],
-      budgetData: {
+      collectionData: MOCK_COLLECTION_DATA,
+      genderData: MOCK_GENDER_DATA,
+      budgetData: detailData ? {
         id: detailData.id,
-        fiscalYear: ticket?.fiscalYear || '2025',
-        groupBrand: ticket?.brand || 'Balenciaga',
-        brandName: ticket?.brand || 'Balenciaga',
-        totalBudget: 637000000,
-        budgetName: ticket?.name || 'Ticket',
+        fiscalYear: ticket?.fiscalYear || MOCK_BUDGET_DATA.fiscalYear,
+        groupBrand: ticket?.brand || MOCK_BUDGET_DATA.groupBrand,
+        brandName: ticket?.brand || MOCK_BUDGET_DATA.brandName,
+        totalBudget: MOCK_BUDGET_DATA.totalBudget,
+        budgetName: ticket?.name || MOCK_BUDGET_DATA.budgetName,
         status: detailData.status
-      },
-      budgetSeasonData: {
-        seasonGroup: ticket?.seasonGroup || 'SS',
-        Season: ticket?.season || 'Spring/Summer 2025',
-        rex: 343000000,
-        ttp: 294000000,
-        finalVersion: 1
-      }
+      } : MOCK_BUDGET_DATA,
+      budgetSeasonData: MOCK_SEASON_DATA,
     };
   }, [detailData, ticket]);
 
@@ -903,8 +1065,8 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const ttpNum = Number(budgetSeasonData.ttp) || 0;
   const totalRexTtp = rexNum + ttpNum;
 
-  // Use real SKU data or empty
-  const displaySkuData = skuData.length > 0 ? skuData : [];
+  // Use real SKU data or mock fallback
+  const displaySkuData = skuData.length > 0 ? skuData : MOCK_SKU_BLOCKS;
 
   if (loading) {
     return (
@@ -967,7 +1129,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
               <button
                 onClick={handleSubmitTicket}
                 disabled={actionLoading}
-                className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/20 backdrop-blur-sm disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/20 backdrop-blur-sm disabled:opacity-50"
               >
                 <Send size={14} />
                 {t('common.submit')}
@@ -980,7 +1142,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
                 <button
                   onClick={handleRejectTicket}
                   disabled={actionLoading}
-                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-[#F85149]/20 hover:bg-[#F85149]/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-[#F85149]/30 backdrop-blur-sm disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-[#F85149]/20 hover:bg-[#F85149]/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-[#F85149]/30 backdrop-blur-sm disabled:opacity-50"
                 >
                   <XCircle size={14} />
                   {t('ticketDetail.reject')}
@@ -988,7 +1150,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
                 <button
                   onClick={handleApproveTicket}
                   disabled={actionLoading}
-                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-2 bg-white/25 hover:bg-white/35 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/30 backdrop-blur-sm disabled:opacity-50"
+                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-white/25 hover:bg-white/35 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/30 backdrop-blur-sm disabled:opacity-50"
                 >
                   <CheckCircle size={14} />
                   {t('ticketDetail.approve')}
@@ -1146,49 +1308,49 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
               <table className="w-full text-sm">
                 <thead>
                   <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}>
-                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}></th>
-                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.skuCode')}</th>
-                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productName')}</th>
-                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productType')}</th>
-                    <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.color')}</th>
-                    <th className={`px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rex')}</th>
-                    <th className={`px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.ttp')}</th>
-                    <th className={`px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.order')}</th>
-                    <th className={`px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalValue')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}></th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.skuCode')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productName')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productType')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.color')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rex')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.ttp')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.order')}</th>
+                    <th className={`px-4 py-0.5 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalValue')}</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-gray-100'}`}>
                   {displaySkuData.flatMap((block: any) => block.items.map((item: any, idx: any) => (
                     <tr key={`${item.sku}_${idx}`} className={`transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.1)]'}`}>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-0.5">
                         <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-300'}`}>
                           <ImageIcon size={16} className={darkMode ? 'text-[#666666]' : 'text-gray-500'} />
                         </div>
                       </td>
-                      <td className={`px-4 py-3 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
-                      <td className={`px-4 py-3 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
-                      <td className={`px-4 py-3 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.productType || block.productType}</td>
-                      <td className={`px-4 py-3 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
-                      <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex || 0}</td>
-                      <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-medium text-[#127749]`}>{item.ttp || 0}</td>
-                      <td className={`px-4 py-3 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
-                      <td className={`px-4 py-3 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || 0)}</td>
+                      <td className={`px-4 py-0.5 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
+                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.productType || block.productType}</td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex || 0}</td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium text-[#127749]`}>{item.ttp || 0}</td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
+                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || 0)}</td>
                     </tr>
                   )))}
                 </tbody>
                 <tfoot>
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td colSpan={5} className={`px-4 py-3 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
-                    <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                    <td colSpan={5} className={`px-4 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
+                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                       {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.rex || 0), 0), 0)}
                     </td>
-                    <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] text-[#127749]`}>
+                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] text-[#127749]`}>
                       {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttp || 0), 0), 0)}
                     </td>
-                    <td className={`px-4 py-3 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
+                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
                       {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.order || 0), 0), 0)}
                     </td>
-                    <td className={`px-4 py-3 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
+                    <td className={`px-4 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
                       {formatCurrency(displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttlValue || 0), 0), 0))}
                     </td>
                   </tr>
@@ -1212,7 +1374,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
               <button
                 type="button"
                 onClick={() => setCollapsed((p: any) => ({ ...p, [key]: !p[key] }))}
-                className={`w-full flex flex-wrap items-center gap-3 md:gap-4 px-3 md:px-5 py-2 md:py-2.5 transition-all ${
+                className={`w-full flex flex-wrap items-center gap-3 md:gap-4 px-3 md:px-5 py-0.5 md:py-1 transition-all ${
                   darkMode
                     ? 'bg-gradient-to-r from-[#1B2A4A] via-[#162240] to-[#1B2A4A] text-[#F2F2F2] hover:from-[#1F3058] hover:via-[#1A2848] hover:to-[#1F3058]'
                     : 'bg-gradient-to-r from-[#1E3A5F] via-[#2A4A7F] to-[#1E3A5F] text-white hover:from-[#234470] hover:via-[#305490] hover:to-[#234470]'

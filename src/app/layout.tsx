@@ -27,13 +27,14 @@ const cormorantGaramond = Cormorant_Garamond({
 export const metadata = {
   title: 'DAFC OTB Planning System',
   description: 'DAFC OTB Planning Management System',
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: 'cover',
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover' as const,
 };
 
 export default function RootLayout({ children }: any) {
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: any) {
     <html
       lang="en"
       className={`dark ${montserrat.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body>

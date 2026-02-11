@@ -329,7 +329,7 @@ const AppHeader = ({
           <div className="relative" ref={searchRef}>
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border transition-all duration-200 ${
                 darkMode
                   ? 'border-[#1A1A1A] hover:border-[rgba(215,183,151,0.2)] hover:bg-[rgba(160,120,75,0.06)]'
                   : 'border-gray-300 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]'
@@ -384,7 +384,7 @@ const AppHeader = ({
                 </div>
                 {/* Search Results */}
                 {searchQuery.trim() && searchResults.length > 0 ? (
-                  <div className="py-1 max-h-72 overflow-y-auto">
+                  <div className="py-0.5 max-h-72 overflow-y-auto">
                     {searchResults.map((result: any) => {
                       const ResultIcon = result.icon || Home;
                       return (
@@ -395,7 +395,7 @@ const AppHeader = ({
                             setShowSearch(false);
                             setSearchQuery('');
                           }}
-                          className={`w-full flex items-center gap-3 px-4 py-2.5 transition-colors ${
+                          className={`w-full flex items-center gap-3 px-4 py-0.5 transition-colors ${
                             darkMode
                               ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
                               : 'hover:bg-gray-50 text-gray-900'
@@ -603,7 +603,7 @@ const AppHeader = ({
               }}>
                 <button
                   onClick={() => console.log('Save')}
-                  className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  className="flex items-center gap-1.5 px-3 py-0.5 text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
                 >
                   <Save size={12} />
                   {t('header.save')}
@@ -616,7 +616,7 @@ const AppHeader = ({
                     }
                     setOpenSaveMenu(!openSaveMenu);
                   }}
-                  className="px-2 py-1 rounded-r-lg border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  className="px-2 py-0.5 rounded-r-lg border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
                 >
                   <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
                 </button>
@@ -644,7 +644,7 @@ const AppHeader = ({
               console.log('Save');
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-2 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
+            className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
               darkMode
                 ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
                 : 'hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'
@@ -658,7 +658,7 @@ const AppHeader = ({
               console.log('Save As New Version');
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-2 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${
+            className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${
               darkMode
                 ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
                 : 'border-[#C4B5A5] hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'

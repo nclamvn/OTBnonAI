@@ -48,36 +48,36 @@ const SizingTable = ({ item, darkMode }: any) => {
 
   return (
     <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-300 bg-white'}`}>
-      <div className={`px-4 py-2 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+      <div className={`px-4 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
         Sizing — {item.productType}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.18)] text-[#666666]'}>
-              <th className="px-3 py-1.5 text-left">{item.productType}</th>
-              {sizeKeys.map(s => <th key={s} className="px-3 py-1.5 text-center font-['JetBrains_Mono']">{s}</th>)}
-              <th className="px-3 py-1.5 text-center">Sum</th>
+              <th className="px-3 py-0.5 text-left">{item.productType}</th>
+              {sizeKeys.map(s => <th key={s} className="px-3 py-0.5 text-center font-['JetBrains_Mono']">{s}</th>)}
+              <th className="px-3 py-0.5 text-center">Sum</th>
             </tr>
           </thead>
           <tbody>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-              <td className={`px-3 py-1.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
-              {sizeKeys.map(s => <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].salesMix}%</td>)}
-              <td className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
+              {sizeKeys.map(s => <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].salesMix}%</td>)}
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
             </tr>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-              <td className={`px-3 py-1.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
-              {sizeKeys.map(s => <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].st}%</td>)}
-              <td className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
+              {sizeKeys.map(s => <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].st}%</td>)}
+              <td className={`px-3 py-0.5 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
             </tr>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E] bg-[rgba(227,179,65,0.1)]' : 'border-gray-300 bg-[rgba(227,179,65,0.18)]'}`}>
-              <td className={`px-3 py-1.5 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Qty</td>
+              <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Qty</td>
               {sizeKeys.map(s => {
                 const qty = Math.round(totalQty * sizes[s].salesMix / 100);
-                return <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{qty}</td>;
+                return <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{qty}</td>;
               })}
-              <td className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}</td>
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}</td>
             </tr>
           </tbody>
         </table>
@@ -99,7 +99,7 @@ const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
 
   return (
-    <div className={`px-4 py-3 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
+    <div className={`px-4 py-0.5 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
       <div className="space-y-2">
         {products.map((item: any, idx: number) => {
           const isExpanded = expandedSku === (item.sku || `sku-${idx}`);
@@ -113,7 +113,7 @@ const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
             <div key={item.sku || idx} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-200 bg-white'}`}>
               {/* SKU Header */}
               <div
-                className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50'}`}
+                className={`flex items-center gap-3 px-3 py-0.5 cursor-pointer transition-colors ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50'}`}
                 onClick={() => setExpandedSku(isExpanded ? null : (item.sku || `sku-${idx}`))}
               >
                 <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
@@ -145,19 +145,19 @@ const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
               {isExpanded && (
                 <div className={`px-3 pb-3 space-y-2 border-t ${border}`}>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>Composition</p>
                       <p className={`text-xs font-medium ${textPrimary}`}>{item.composition || '-'}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>SRP</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(item.srp || 0)}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>REX / TTP</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex} / {item.ttp}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${hasDiscrepancy ? (darkMode ? 'bg-[rgba(248,81,73,0.1)] border-[rgba(248,81,73,0.3)]' : 'bg-red-50 border-red-200') : (darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200')}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${hasDiscrepancy ? (darkMode ? 'bg-[rgba(248,81,73,0.1)] border-[rgba(248,81,73,0.3)]' : 'bg-red-50 border-red-200') : (darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200')}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>Received</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${hasDiscrepancy ? 'text-[#F85149]' : (darkMode ? 'text-[#2A9E6A]' : 'text-green-600')}`}>
                         {receivedQty} / {orderedQty} {hasDiscrepancy ? '(!)' : ''}
@@ -167,32 +167,32 @@ const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
 
                   {/* Store Allocation */}
                   <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                    <div className={`px-3 py-1.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+                    <div className={`px-3 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
                       Store Allocation
                     </div>
                     <table className="w-full text-xs">
                       <thead>
                         <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
-                          <th className="px-3 py-1.5 text-left">Store</th>
-                          <th className="px-3 py-1.5 text-center font-['JetBrains_Mono']">Qty</th>
-                          <th className="px-3 py-1.5 text-right font-['JetBrains_Mono']">Value</th>
+                          <th className="px-3 py-0.5 text-left">Store</th>
+                          <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">Qty</th>
+                          <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-1.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D7B797]" />REX</span></td>
-                          <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex || 0}</td>
-                          <td className={`px-3 py-1.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
+                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D7B797]" />REX</span></td>
+                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex || 0}</td>
+                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
                         </tr>
                         <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-1.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#127749]" />TTP</span></td>
-                          <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.ttp || 0}</td>
-                          <td className={`px-3 py-1.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
+                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#127749]" />TTP</span></td>
+                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.ttp || 0}</td>
+                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
                         </tr>
                         <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.08)]'}`}>
-                          <td className={`px-3 py-1.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
-                          <td className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
-                          <td className={`px-3 py-1.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
+                          <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
+                          <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
+                          <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -334,7 +334,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   return (
     <div className={`min-h-screen ${bg} p-3 md:p-4`}>
       {/* Header + Filters */}
-      <div className={`border ${border} rounded-xl px-3 py-2 mb-3`} style={{
+      <div className={`border ${border} rounded-xl px-3 py-0.5 mb-3`} style={{
         background: darkMode
           ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.10) 100%)'
           : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 35%, rgba(215,183,151,0.12) 100%)',
@@ -351,13 +351,13 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:ml-auto">
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
               <Search size={12} className={textMuted} />
               <input type="text" placeholder={t('receiptConfirm.searchPlaceholder')} value={searchTerm} onChange={(e: any) => setSearchTerm(e.target.value)} className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary}`} />
               {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} className={textMuted} /></button>}
             </div>
             <div className="relative">
-              <select value={statusFilter} onChange={(e: any) => setStatusFilter(e.target.value)} className={`appearance-none px-2 py-1 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}>
+              <select value={statusFilter} onChange={(e: any) => setStatusFilter(e.target.value)} className={`appearance-none px-2 py-0.5 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}>
                 <option value="all">{t('receiptConfirm.allStatuses')}</option>
                 <option value="PENDING">{t('receiptConfirm.statusPending')}</option>
                 <option value="CONFIRMED">{t('receiptConfirm.statusConfirmed')}</option>
@@ -366,7 +366,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
               </select>
               <ChevronDown size={10} className={`absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${textMuted}`} />
             </div>
-            <button onClick={fetchReceipts} className={`px-2.5 py-1 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}>
+            <button onClick={fetchReceipts} className={`px-2.5 py-0.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}>
               {t('common.refresh')}
             </button>
           </div>
@@ -396,7 +396,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           <div className="flex flex-col items-center justify-center py-20">
             <AlertTriangle size={32} className="text-[#F85149]" />
             <p className={`text-sm mt-3 ${textSecondary}`}>{error}</p>
-            <button onClick={fetchReceipts} className="mt-3 px-4 py-2 rounded-xl bg-[#D7B797] text-black text-sm font-medium font-['Montserrat']">{t('common.tryAgain')}</button>
+            <button onClick={fetchReceipts} className="mt-3 px-4 py-0.5 rounded-xl bg-[#D7B797] text-black text-sm font-medium font-['Montserrat']">{t('common.tryAgain')}</button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
@@ -441,7 +441,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
               <thead>
                 <tr className={`${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} border-b ${border}`}>
                   {['', t('receiptConfirm.colReceipt'), t('receiptConfirm.colPORef'), t('receiptConfirm.colBrand'), t('receiptConfirm.colItems'), t('receiptConfirm.colStatus'), t('receiptConfirm.colDate'), t('common.actions')].map((h: any, i: number) => (
-                    <th key={`${h}-${i}`} className={`px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>{h}</th>
+                    <th key={`${h}-${i}`} className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -455,31 +455,31 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
                         className={`border-b ${border} transition-colors cursor-pointer ${isExpanded ? (darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(215,183,151,0.06)]') : (darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50')}`}
                         onClick={() => setExpandedReceiptId(isExpanded ? null : receipt.id)}
                       >
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                         </td>
-                        <td className="px-3 py-1.5"><span className={`text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{receipt.receiptNumber}</span></td>
-                        <td className="px-3 py-1.5"><span className={`text-sm font-['JetBrains_Mono'] ${textSecondary}`}>{receipt.poReference}</span></td>
-                        <td className="px-3 py-1.5"><span className={`text-sm font-['Montserrat'] ${textPrimary}`}>{receipt.brandName}</span></td>
-                        <td className="px-3 py-1.5"><span className={`text-sm font-['JetBrains_Mono'] ${textPrimary}`}>{receipt.itemCount || receipt.products?.length || 0}</span></td>
-                        <td className="px-3 py-1.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-['JetBrains_Mono']" style={{ color: sc.color, backgroundColor: sc.bg }}>
+                        <td className="px-3 py-0.5"><span className={`text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{receipt.receiptNumber}</span></td>
+                        <td className="px-3 py-0.5"><span className={`text-sm font-['JetBrains_Mono'] ${textSecondary}`}>{receipt.poReference}</span></td>
+                        <td className="px-3 py-0.5"><span className={`text-sm font-['Montserrat'] ${textPrimary}`}>{receipt.brandName}</span></td>
+                        <td className="px-3 py-0.5"><span className={`text-sm font-['JetBrains_Mono'] ${textPrimary}`}>{receipt.itemCount || receipt.products?.length || 0}</span></td>
+                        <td className="px-3 py-0.5">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold font-['JetBrains_Mono']" style={{ color: sc.color, backgroundColor: sc.bg }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: sc.color }} />
                             {sc.label}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>
                             {receipt.receivedDate ? new Date(receipt.receivedDate).toLocaleDateString('vi-VN') : receipt.createdAt ? new Date(receipt.createdAt).toLocaleDateString('vi-VN') : '-'}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-3 py-0.5" onClick={(e) => e.stopPropagation()}>
                           {receipt.status === 'PENDING' && (
                             <div className="flex items-center gap-2">
-                              <button onClick={() => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
+                              <button onClick={() => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
                                 <CheckCircle size={13} /> {t('common.confirm')}
                               </button>
-                              <button onClick={() => { setConfirmModal({ receipt, action: 'discrepancy' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]">
+                              <button onClick={() => { setConfirmModal({ receipt, action: 'discrepancy' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]">
                                 <AlertCircle size={13} /> {t('receiptConfirm.flag')}
                               </button>
                             </div>
@@ -527,16 +527,16 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
               {confirmModal.action === 'discrepancy' && (
                 <div className="mt-4">
                   <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>{t('receiptConfirm.discrepancyNote')}</label>
-                  <textarea value={discrepancyNote} onChange={(e: any) => setDiscrepancyNote(e.target.value)} rows={3} className={`w-full px-3 py-2 rounded-xl border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-sm font-['Montserrat'] ${textPrimary} outline-none resize-none focus:border-[#D7B797]`} placeholder={t('receiptConfirm.discrepancyPlaceholder')} />
+                  <textarea value={discrepancyNote} onChange={(e: any) => setDiscrepancyNote(e.target.value)} rows={3} className={`w-full px-3 py-0.5 rounded-xl border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-sm font-['Montserrat'] ${textPrimary} outline-none resize-none focus:border-[#D7B797]`} placeholder={t('receiptConfirm.discrepancyPlaceholder')} />
                 </div>
               )}
             </div>
             <div className={`p-5 border-t ${border} flex justify-end gap-3`}>
-              <button onClick={() => setConfirmModal(null)} className={`px-4 py-2 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}>{t('common.back')}</button>
+              <button onClick={() => setConfirmModal(null)} className={`px-4 py-0.5 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}>{t('common.back')}</button>
               <button
                 onClick={() => confirmModal.action === 'confirm' ? handleConfirmReceipt(confirmModal.receipt) : handleFlagDiscrepancy(confirmModal.receipt)}
                 disabled={processing || (confirmModal.action === 'discrepancy' && !discrepancyNote.trim())}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 ${confirmModal.action === 'confirm' ? 'bg-[#2A9E6A] text-white hover:bg-[#238a5a]' : 'bg-[#F85149] text-white hover:bg-[#e04440]'}`}
+                className={`px-5 py-0.5 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 ${confirmModal.action === 'confirm' ? 'bg-[#2A9E6A] text-white hover:bg-[#238a5a]' : 'bg-[#F85149] text-white hover:bg-[#e04440]'}`}
               >
                 {processing ? <Loader2 size={16} className="animate-spin mx-auto" /> : confirmModal.action === 'confirm' ? t('common.confirm') : t('receiptConfirm.submitFlag')}
               </button>

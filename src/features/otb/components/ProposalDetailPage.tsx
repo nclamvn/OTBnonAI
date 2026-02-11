@@ -240,7 +240,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Compact Header */}
-      <div className="bg-white border-b border-slate-200 px-3 md:px-6 py-3 md:py-4 sticky top-0 z-50">
+      <div className="bg-white border-b border-slate-200 px-3 md:px-6 py-0.5 md:py-4 sticky top-0 z-50">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 w-full md:w-auto">
             <div className="flex items-center gap-3">
@@ -265,7 +265,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
             </div>
             {/* Context Info from OTB Analysis */}
             {contextInfo.gender && (
-              <div className="flex flex-wrap items-center gap-2 ml-0 md:ml-4 px-2 md:px-3 py-1.5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+              <div className="flex flex-wrap items-center gap-2 ml-0 md:ml-4 px-2 md:px-3 py-0.5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
                 <div className="flex items-center gap-1.5 text-xs">
                   <span className="text-slate-500">{t('budget.fiscalYear')}</span>
                   <span className="font-semibold text-indigo-700">{contextInfo.fiscalYear}</span>
@@ -306,11 +306,11 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
 
           {/* Actions */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
-            <button onClick={handleSave} className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors">
+            <button onClick={handleSave} className="flex items-center justify-center gap-2 px-4 py-0.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors">
               <Save size={16} />
               {t('common.save')}
             </button>
-            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
+            <button className="flex items-center justify-center gap-2 px-4 py-0.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
               <Send size={16} />
               {t('common.submit')}
             </button>
@@ -320,7 +320,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
 
       {/* Budget Warning */}
       {isOverBudget && (
-        <div className="px-3 md:px-6 py-2 bg-red-50 border-b border-red-200 flex flex-wrap items-center justify-center gap-2 text-sm text-red-700">
+        <div className="px-3 md:px-6 py-0.5 bg-red-50 border-b border-red-200 flex flex-wrap items-center justify-center gap-2 text-sm text-red-700">
           <AlertCircle size={16} />
           <span>{t('budget.remaining')}: -<strong>{formatCurrency(grandTotals.totalValue - budgetInfo.remainingBudget)}</strong></span>
         </div>
@@ -333,7 +333,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
           <h2 className="text-lg font-semibold text-slate-800">{t('proposal.skuCode')}</h2>
           <button
             onClick={() => setShowAddSkuModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-0.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
             <Plus size={16} />
             {t('proposal.addSku')}
@@ -381,15 +381,15 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                           <span>{sku.color}</span>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mt-2">
-                          <div className="bg-slate-50 rounded-lg px-2 py-1.5 text-center">
+                          <div className="bg-slate-50 rounded-lg px-2 py-0.5 text-center">
                             <div className="text-[10px] text-slate-400 uppercase">{t('proposal.unitCost')}</div>
                             <div className="text-xs font-semibold text-slate-700">{formatCurrency(sku.unitCost)}</div>
                           </div>
-                          <div className="bg-slate-50 rounded-lg px-2 py-1.5 text-center">
+                          <div className="bg-slate-50 rounded-lg px-2 py-0.5 text-center">
                             <div className="text-[10px] text-slate-400 uppercase">{t('proposal.order')}</div>
                             <div className="text-xs font-semibold text-slate-800">{order}</div>
                           </div>
-                          <div className="bg-slate-50 rounded-lg px-2 py-1.5 text-center">
+                          <div className="bg-slate-50 rounded-lg px-2 py-0.5 text-center">
                             <div className="text-[10px] text-slate-400 uppercase">{t('proposal.totalValue')}</div>
                             <div className="text-xs font-semibold text-emerald-600">{formatCurrency(ttlValue)}</div>
                           </div>
@@ -415,7 +415,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                           </h4>
                           {availableStoresForSku.length > 0 && (
                             <div className="relative group">
-                              <button className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-100 rounded transition-colors">
+                              <button className="flex items-center gap-1 px-2 py-0.5 text-xs text-purple-600 hover:bg-purple-100 rounded transition-colors">
                                 <Plus size={12} />
                                 {t('proposal.selectStore')}
                               </button>
@@ -424,7 +424,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                                   <div
                                     key={store.id}
                                     onClick={() => handleAddStore(sku.id, store.id)}
-                                    className="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                                    className="px-3 py-0.5 text-sm hover:bg-slate-50 cursor-pointer flex items-center gap-2"
                                   >
                                     <span className="w-6 h-6 bg-purple-100 rounded text-xs font-bold text-purple-600 flex items-center justify-center">{store.code}</span>
                                     {store.name}
@@ -440,7 +440,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                             const cellKey = `${sku.id}_${storeQty.storeId}`;
                             const isEditingStore = editingCell === cellKey;
                             return (
-                              <div key={storeQty.storeId} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1.5">
+                              <div key={storeQty.storeId} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-0.5">
                                 <span className="w-6 h-6 bg-purple-100 rounded text-[10px] font-bold text-purple-600 flex items-center justify-center">
                                   {storeInfo?.code}
                                 </span>
@@ -497,16 +497,16 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
             <table className="w-full">
               <thead>
                 <tr className="bg-[rgba(160,120,75,0.18)] border-b border-[rgba(160,120,75,0.25)]">
-                  <th className="w-10 px-3 py-3"></th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.skuCode')}</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.productName')}</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.rail')} / {t('proposal.productType')}</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.color')}</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.unitCost')}</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.store')}</th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.order')}</th>
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-[#666666] uppercase">{t('proposal.totalValue')}</th>
-                  <th className="w-12 px-3 py-3"></th>
+                  <th className="w-10 px-3 py-0.5"></th>
+                  <th className="text-left px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.skuCode')}</th>
+                  <th className="text-left px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.productName')}</th>
+                  <th className="text-left px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.rail')} / {t('proposal.productType')}</th>
+                  <th className="text-left px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.color')}</th>
+                  <th className="text-right px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.unitCost')}</th>
+                  <th className="text-center px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.store')}</th>
+                  <th className="text-center px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.order')}</th>
+                  <th className="text-right px-4 py-0.5 text-xs font-semibold text-[#666666] uppercase">{t('proposal.totalValue')}</th>
+                  <th className="w-12 px-3 py-0.5"></th>
                 </tr>
               </thead>
               <tbody>
@@ -518,7 +518,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                   return (
                     <React.Fragment key={sku.id}>
                       <tr className={`border-b border-slate-100 hover:bg-slate-50 ${isExpanded ? 'bg-purple-50/50' : ''}`}>
-                        <td className="px-3 py-3">
+                        <td className="px-3 py-0.5">
                           <button
                             onClick={() => setExpandedSku(isExpanded ? null : sku.id)}
                             className="p-1 hover:bg-slate-200 rounded transition-colors"
@@ -526,7 +526,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                             {isExpanded ? <ChevronDown size={16} className="text-slate-500" /> : <ChevronRight size={16} className="text-slate-500" />}
                           </button>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0.5">
                           <div className="flex items-center gap-3">
                             <img
                               src={sku.imageUrl}
@@ -537,25 +537,25 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                             <span className="font-mono text-xs text-purple-600 font-semibold">{sku.code}</span>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0.5">
                           <div className="font-medium text-slate-800">{sku.name}</div>
                           <div className="text-xs text-slate-400">{sku.theme}</div>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-0.5">
                           <div className="text-sm text-slate-700">{sku.rail}</div>
                           <div className="text-xs text-slate-400">{sku.productType}</div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-slate-700">{sku.color}</td>
-                        <td className="px-4 py-3 text-right font-medium text-slate-700">{formatCurrency(sku.unitCost)}</td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-4 py-0.5 text-sm text-slate-700">{sku.color}</td>
+                        <td className="px-4 py-0.5 text-right font-medium text-slate-700">{formatCurrency(sku.unitCost)}</td>
+                        <td className="px-4 py-0.5 text-center">
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">
                             <Store size={12} />
                             {sku.stores.length}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center font-semibold text-slate-800">{order}</td>
-                        <td className="px-4 py-3 text-right font-semibold text-emerald-600">{formatCurrency(ttlValue)}</td>
-                        <td className="px-3 py-3">
+                        <td className="px-4 py-0.5 text-center font-semibold text-slate-800">{order}</td>
+                        <td className="px-4 py-0.5 text-right font-semibold text-emerald-600">{formatCurrency(ttlValue)}</td>
+                        <td className="px-3 py-0.5">
                           <button onClick={() => handleRemoveSku(sku.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors">
                             <Trash2 size={15} className="text-red-500" />
                           </button>
@@ -574,7 +574,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                                 </h4>
                                 {availableStoresForSku.length > 0 && (
                                   <div className="relative group">
-                                    <button className="flex items-center gap-1 px-2 py-1 text-xs text-purple-600 hover:bg-purple-100 rounded transition-colors">
+                                    <button className="flex items-center gap-1 px-2 py-0.5 text-xs text-purple-600 hover:bg-purple-100 rounded transition-colors">
                                       <Plus size={12} />
                                       {t('proposal.selectStore')}
                                     </button>
@@ -583,7 +583,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                                         <div
                                           key={store.id}
                                           onClick={() => handleAddStore(sku.id, store.id)}
-                                          className="px-3 py-2 text-sm hover:bg-slate-50 cursor-pointer flex items-center gap-2"
+                                          className="px-3 py-0.5 text-sm hover:bg-slate-50 cursor-pointer flex items-center gap-2"
                                         >
                                           <span className="w-6 h-6 bg-purple-100 rounded text-xs font-bold text-purple-600 flex items-center justify-center">{store.code}</span>
                                           {store.name}
@@ -601,7 +601,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                                   const isEditing = editingCell === cellKey;
 
                                   return (
-                                    <div key={storeQty.storeId} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                    <div key={storeQty.storeId} className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-0.5">
                                       <span className="w-7 h-7 bg-purple-100 rounded-lg text-xs font-bold text-purple-600 flex items-center justify-center">
                                         {storeInfo?.code}
                                       </span>
@@ -617,13 +617,13 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                                             if (e.key === 'Enter') { handleQuantityChange(sku.id, storeQty.storeId, editValue); setEditingCell(null); }
                                             if (e.key === 'Escape') setEditingCell(null);
                                           }}
-                                          className="w-14 px-2 py-1 text-center border border-purple-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                          className="w-14 px-2 py-0.5 text-center border border-purple-400 rounded text-sm focus:outline-none focus:ring-1 focus:ring-purple-500"
                                           autoFocus
                                         />
                                       ) : (
                                         <div
                                           onClick={() => { setEditingCell(cellKey); setEditValue(storeQty.quantity.toString()); }}
-                                          className="w-14 px-2 py-1 text-center bg-slate-50 border border-slate-200 rounded cursor-pointer hover:border-purple-300 text-sm font-medium text-slate-700"
+                                          className="w-14 px-2 py-0.5 text-center bg-slate-50 border border-slate-200 rounded cursor-pointer hover:border-purple-300 text-sm font-medium text-slate-700"
                                         >
                                           {storeQty.quantity}
                                         </div>
@@ -648,9 +648,9 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
 
                 {/* Totals Row */}
                 <tr className="bg-[rgba(160,120,75,0.18)] font-semibold">
-                  <td colSpan={7} className="px-4 py-3 text-right text-[#666666]">{t('skuProposal.total')}</td>
-                  <td className="px-4 py-3 text-center text-[#333333]">{grandTotals.totalOrder}</td>
-                  <td className="px-4 py-3 text-right text-emerald-600">{formatCurrency(grandTotals.totalValue)}</td>
+                  <td colSpan={7} className="px-4 py-0.5 text-right text-[#666666]">{t('skuProposal.total')}</td>
+                  <td className="px-4 py-0.5 text-center text-[#333333]">{grandTotals.totalOrder}</td>
+                  <td className="px-4 py-0.5 text-right text-emerald-600">{formatCurrency(grandTotals.totalValue)}</td>
                   <td></td>
                 </tr>
               </tbody>
@@ -678,7 +678,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
                   placeholder={`${t('common.search')}...`}
                   value={skuSearchQuery}
                   onChange={(e) => setSkuSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full pl-9 pr-4 py-0.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
             </div>
@@ -729,13 +729,13 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
             <div className="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
               <span className="text-sm text-slate-600">{selectedSkusToAdd.length}</span>
               <div className="flex items-center gap-2">
-                <button onClick={() => { setShowAddSkuModal(false); setSelectedSkusToAdd([]); }} className="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">
+                <button onClick={() => { setShowAddSkuModal(false); setSelectedSkusToAdd([]); }} className="px-4 py-0.5 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-medium">
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleAddSkus}
                   disabled={selectedSkusToAdd.length === 0}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                  className={`px-4 py-0.5 rounded-lg text-sm font-medium ${
                     selectedSkusToAdd.length > 0 ? 'bg-purple-600 text-white hover:bg-purple-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   }`}
                 >

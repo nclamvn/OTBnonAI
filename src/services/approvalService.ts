@@ -11,12 +11,8 @@ export const approvalService = {
   // NOTE: If backend doesn't have /approvals/pending endpoint,
   // we aggregate from budgets, planning, proposals with SUBMITTED/LEVEL1_APPROVED status
   async getPending() {
-    try {
-      // Try direct endpoint first
-      const response: any = await api.get('/approvals/pending');
-      return response.data.data || response.data;
-    } catch (error: any) {
-      // Fallback: aggregate from individual modules
+    // Aggregate from individual modules (direct /approvals/pending not yet implemented)
+    {
       const [budgets, plannings, proposals] = await Promise.all([
         budgetService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
         budgetService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => ({ data: [] })),

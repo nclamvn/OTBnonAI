@@ -51,40 +51,40 @@ const SizingTable = ({ item, darkMode }: any) => {
 
   return (
     <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-300 bg-white'}`}>
-      <div className={`px-4 py-2 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+      <div className={`px-4 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
         Sizing — {item.productType}
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
             <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.18)] text-[#666666]'}>
-              <th className="px-3 py-1.5 text-left">{item.productType}</th>
-              {sizeKeys.map(s => <th key={s} className="px-3 py-1.5 text-center font-['JetBrains_Mono']">{s}</th>)}
-              <th className="px-3 py-1.5 text-center">Sum</th>
+              <th className="px-3 py-0.5 text-left">{item.productType}</th>
+              {sizeKeys.map(s => <th key={s} className="px-3 py-0.5 text-center font-['JetBrains_Mono']">{s}</th>)}
+              <th className="px-3 py-0.5 text-center">Sum</th>
             </tr>
           </thead>
           <tbody>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-              <td className={`px-3 py-1.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% Sales mix</td>
               {sizeKeys.map(s => (
-                <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].salesMix}%</td>
+                <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].salesMix}%</td>
               ))}
-              <td className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>100%</td>
             </tr>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-              <td className={`px-3 py-1.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
+              <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>% ST</td>
               {sizeKeys.map(s => (
-                <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].st}%</td>
+                <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{sizes[s].st}%</td>
               ))}
-              <td className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
+              <td className={`px-3 py-0.5 text-center ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>-</td>
             </tr>
             <tr className={`border-t ${darkMode ? 'border-[#2E2E2E] bg-[rgba(227,179,65,0.1)]' : 'border-gray-300 bg-[rgba(227,179,65,0.18)]'}`}>
-              <td className={`px-3 py-1.5 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Qty</td>
+              <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#6B4D30]'}`}>Qty</td>
               {sizeKeys.map(s => {
                 const qty = Math.round(totalQty * sizes[s].salesMix / 100);
-                return <td key={s} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{qty}</td>;
+                return <td key={s} className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{qty}</td>;
               })}
-              <td className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}</td>
+              <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}</td>
             </tr>
           </tbody>
         </table>
@@ -106,7 +106,7 @@ const OrderDetailPanel = ({ order, darkMode }: any) => {
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
 
   return (
-    <div className={`px-4 py-3 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
+    <div className={`px-4 py-0.5 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
       <div className="space-y-2">
         {products.map((item: any, idx: number) => {
           const isExpanded = expandedSku === (item.sku || `sku-${idx}`);
@@ -117,7 +117,7 @@ const OrderDetailPanel = ({ order, darkMode }: any) => {
             <div key={item.sku || idx} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-gray-200 bg-white'}`}>
               {/* SKU Header */}
               <div
-                className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-colors ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50'}`}
+                className={`flex items-center gap-3 px-3 py-0.5 cursor-pointer transition-colors ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50'}`}
                 onClick={() => setExpandedSku(isExpanded ? null : (item.sku || `sku-${idx}`))}
               >
                 <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
@@ -147,19 +147,19 @@ const OrderDetailPanel = ({ order, darkMode }: any) => {
                 <div className={`px-3 pb-3 space-y-2 border-t ${border}`}>
                   {/* Product Details */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>Composition</p>
                       <p className={`text-xs font-medium ${textPrimary}`}>{item.composition || '-'}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>SRP</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(item.srp || 0)}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>Total Qty</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</p>
                     </div>
-                    <div className={`rounded-lg border px-2.5 py-1.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
+                    <div className={`rounded-lg border px-2.5 py-0.5 ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-gray-50 border-gray-200'}`}>
                       <p className={`text-[10px] uppercase tracking-wide ${textMuted}`}>TTL Value</p>
                       <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(ttlValue)}</p>
                     </div>
@@ -167,32 +167,32 @@ const OrderDetailPanel = ({ order, darkMode }: any) => {
 
                   {/* Store Allocation */}
                   <div className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                    <div className={`px-3 py-1.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
+                    <div className={`px-3 py-0.5 text-xs font-semibold border-b font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2] bg-[#1A1A1A] border-[#2E2E2E]' : 'text-gray-600 bg-gray-50 border-gray-300'}`}>
                       Store Allocation
                     </div>
                     <table className="w-full text-xs">
                       <thead>
                         <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
-                          <th className="px-3 py-1.5 text-left">Store</th>
-                          <th className="px-3 py-1.5 text-center font-['JetBrains_Mono']">Qty</th>
-                          <th className="px-3 py-1.5 text-right font-['JetBrains_Mono']">Value</th>
+                          <th className="px-3 py-0.5 text-left">Store</th>
+                          <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">Qty</th>
+                          <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">Value</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-1.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D7B797]" />REX</span></td>
-                          <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex || 0}</td>
-                          <td className={`px-3 py-1.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
+                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#D7B797]" />REX</span></td>
+                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.rex || 0}</td>
+                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.rex || 0) * (item.srp || 0))}</td>
                         </tr>
                         <tr className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-200'}`}>
-                          <td className={`px-3 py-1.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#127749]" />TTP</span></td>
-                          <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.ttp || 0}</td>
-                          <td className={`px-3 py-1.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
+                          <td className={`px-3 py-0.5 ${textPrimary}`}><span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-[#127749]" />TTP</span></td>
+                          <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${textPrimary}`}>{item.ttp || 0}</td>
+                          <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency((item.ttp || 0) * (item.srp || 0))}</td>
                         </tr>
                         <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.08)]'}`}>
-                          <td className={`px-3 py-1.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
-                          <td className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
-                          <td className={`px-3 py-1.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
+                          <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Total</td>
+                          <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{totalQty}</td>
+                          <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(ttlValue)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -234,44 +234,37 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     setLoading(true);
     setError(null);
     try {
-      // Try dedicated endpoint first
-      const response = await api.get('/orders');
-      const data = response.data.data || response.data;
-      setOrders(Array.isArray(data) ? data : []);
+      // Derive from approved proposals (direct /orders endpoint not yet implemented)
+      const proposals = await proposalService.getAll({ status: 'APPROVED' });
+      const data = Array.isArray(proposals) ? proposals : (proposals?.data || []);
+      const mapped = data.map((p: any, idx: any) => ({
+        id: p.id || idx + 1,
+        poNumber: p.proposalCode ? `PO-${p.proposalCode.replace('PROP-', '')}` : `PO-${String(idx + 1).padStart(5, '0')}`,
+        brandName: p.budget?.groupBrand?.name || p.brand?.name || p.brandName || '-',
+        season: p.seasonGroup || p.season || '-',
+        skuCount: p.products?.length || p.items?.length || p.skuCount || 0,
+        totalValue: Number(p.totalValue || p.amount || 0),
+        status: 'PENDING',
+        createdAt: p.updatedAt || p.createdAt || new Date().toISOString(),
+        proposalId: p.id,
+        products: (p.products || []).map((prod: any) => ({
+          sku: prod.sku || prod.skuCode || `SKU-${String(prod.id || 0).padStart(3, '0')}`,
+          name: prod.name || prod.productName || 'Product',
+          productType: prod.productType || prod.subCategory?.name || prod.category?.name || '-',
+          gender: prod.gender?.name || prod.genderName || '-',
+          color: prod.color || '-',
+          composition: prod.composition || prod.material || '-',
+          srp: prod.srp || prod.retailPrice || prod.price || 0,
+          rex: prod.allocations?.find((a: any) => a.store?.name?.includes('REX'))?.quantity || prod.rexQty || 4,
+          ttp: prod.allocations?.find((a: any) => a.store?.name?.includes('TTP'))?.quantity || prod.ttpQty || 3,
+          sizes: prod.sizes || null,
+        })),
+      }));
+      setOrders(mapped);
     } catch (err: any) {
-      // Fallback: derive from approved proposals
-      try {
-        const proposals = await proposalService.getAll({ status: 'APPROVED' });
-        const data = Array.isArray(proposals) ? proposals : (proposals?.data || []);
-        const mapped = data.map((p: any, idx: any) => ({
-          id: p.id || idx + 1,
-          poNumber: p.proposalCode ? `PO-${p.proposalCode.replace('PROP-', '')}` : `PO-${String(idx + 1).padStart(5, '0')}`,
-          brandName: p.budget?.groupBrand?.name || p.brand?.name || p.brandName || '-',
-          season: p.seasonGroup || p.season || '-',
-          skuCount: p.products?.length || p.items?.length || p.skuCount || 0,
-          totalValue: Number(p.totalValue || p.amount || 0),
-          status: 'PENDING',
-          createdAt: p.updatedAt || p.createdAt || new Date().toISOString(),
-          proposalId: p.id,
-          products: (p.products || []).map((prod: any) => ({
-            sku: prod.sku || prod.skuCode || `SKU-${String(prod.id || 0).padStart(3, '0')}`,
-            name: prod.name || prod.productName || 'Product',
-            productType: prod.productType || prod.subCategory?.name || prod.category?.name || '-',
-            gender: prod.gender?.name || prod.genderName || '-',
-            color: prod.color || '-',
-            composition: prod.composition || prod.material || '-',
-            srp: prod.srp || prod.retailPrice || prod.price || 0,
-            rex: prod.allocations?.find((a: any) => a.store?.name?.includes('REX'))?.quantity || prod.rexQty || 4,
-            ttp: prod.allocations?.find((a: any) => a.store?.name?.includes('TTP'))?.quantity || prod.ttpQty || 3,
-            sizes: prod.sizes || null,
-          })),
-        }));
-        setOrders(mapped);
-      } catch (fallbackErr: any) {
-        console.error('Failed to fetch orders:', fallbackErr);
-        setError(t('orderConfirm.failedToLoad'));
-        setOrders([]);
-      }
+      console.error('Failed to fetch orders:', err);
+      setError(t('orderConfirm.failedToLoad'));
+      setOrders([]);
     } finally {
       setLoading(false);
     }
@@ -355,7 +348,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
   return (
     <div className={`min-h-screen ${bg} p-3 md:p-4`}>
       {/* Compact Header + Filters */}
-      <div className={`border ${border} rounded-xl px-3 py-2 mb-3`} style={{
+      <div className={`border ${border} rounded-xl px-3 py-0.5 mb-3`} style={{
         background: darkMode
           ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.10) 100%)'
           : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 35%, rgba(215,183,151,0.12) 100%)',
@@ -377,7 +370,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2 md:ml-auto">
-            <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
+            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
               <Search size={12} className={textMuted} />
               <input
                 type="text"
@@ -397,7 +390,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
               <select
                 value={statusFilter}
                 onChange={(e: any) => setStatusFilter(e.target.value)}
-                className={`appearance-none px-2 py-1 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}
+                className={`appearance-none px-2 py-0.5 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}
               >
                 <option value="all">{t('orderConfirm.allStatuses')}</option>
                 <option value="PENDING">{t('orderConfirm.statusPending')}</option>
@@ -410,7 +403,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
 
             <button
               onClick={fetchOrders}
-              className={`px-2.5 py-1 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}
+              className={`px-2.5 py-0.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}
             >
               {t('common.refresh')}
             </button>
@@ -441,7 +434,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
           <div className="flex flex-col items-center justify-center py-20">
             <AlertTriangle size={32} className="text-[#F85149]" />
             <p className={`text-sm mt-3 ${textSecondary}`}>{error}</p>
-            <button onClick={fetchOrders} className="mt-3 px-4 py-2 rounded-xl bg-[#D7B797] text-black text-sm font-medium font-['Montserrat']">
+            <button onClick={fetchOrders} className="mt-3 px-4 py-0.5 rounded-xl bg-[#D7B797] text-black text-sm font-medium font-['Montserrat']">
               {t('common.tryAgain')}
             </button>
           </div>
@@ -489,7 +482,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
               <thead>
                 <tr className={`${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} border-b ${border}`}>
                   {['', t('orderConfirm.colPO'), t('orderConfirm.colBrand'), t('orderConfirm.colSeason'), t('orderConfirm.colSKUs'), t('orderConfirm.colValue'), t('orderConfirm.colStatus'), t('orderConfirm.colDate'), t('common.actions')].map((h: any, i: number) => (
-                    <th key={`${h}-${i}`} className={`px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>
+                    <th key={`${h}-${i}`} className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>
                       {h}
                     </th>
                   ))}
@@ -504,42 +497,42 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
                       <tr className={`border-b ${border} transition-colors cursor-pointer ${isExpanded ? (darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(215,183,151,0.06)]') : (darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50')}`}
                         onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
                       >
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{order.poNumber}</span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-sm font-['Montserrat'] ${textPrimary}`}>{order.brandName}</span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-sm font-['Montserrat'] ${textSecondary}`}>{order.season}</span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-sm font-['JetBrains_Mono'] ${textPrimary}`}>{order.skuCount || order.products?.length || 0}</span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{formatCurrency(order.totalValue)}</span>
                         </td>
-                        <td className="px-3 py-1.5">
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold font-['JetBrains_Mono']" style={{ color: sc.color, backgroundColor: sc.bg }}>
+                        <td className="px-3 py-0.5">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold font-['JetBrains_Mono']" style={{ color: sc.color, backgroundColor: sc.bg }}>
                             <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: sc.color }} />
                             {sc.label}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5">
+                        <td className="px-3 py-0.5">
                           <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>
                             {order.createdAt ? new Date(order.createdAt).toLocaleDateString('vi-VN') : '-'}
                           </span>
                         </td>
-                        <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-3 py-0.5" onClick={(e) => e.stopPropagation()}>
                           {order.status === 'PENDING' && (
                             <div className="flex items-center gap-2">
-                              <button onClick={() => setConfirmModal({ order, action: 'confirm' })} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
+                              <button onClick={() => setConfirmModal({ order, action: 'confirm' })} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
                                 <CheckCircle size={13} /> {t('common.confirm')}
                               </button>
-                              <button onClick={() => setConfirmModal({ order, action: 'cancel' })} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]">
+                              <button onClick={() => setConfirmModal({ order, action: 'cancel' })} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]">
                                 <XCircle size={13} /> {t('common.cancel')}
                               </button>
                             </div>
@@ -603,13 +596,13 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
               )}
             </div>
             <div className={`p-5 border-t ${border} flex justify-end gap-3`}>
-              <button onClick={() => setConfirmModal(null)} className={`px-4 py-2 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}>
+              <button onClick={() => setConfirmModal(null)} className={`px-4 py-0.5 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}>
                 {t('common.back')}
               </button>
               <button
                 onClick={() => confirmModal.action === 'confirm' ? handleConfirmOrder(confirmModal.order) : handleCancelOrder(confirmModal.order)}
                 disabled={processing}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 ${confirmModal.action === 'confirm' ? 'bg-[#2A9E6A] text-white hover:bg-[#238a5a]' : 'bg-[#F85149] text-white hover:bg-[#e04440]'}`}
+                className={`px-5 py-0.5 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 ${confirmModal.action === 'confirm' ? 'bg-[#2A9E6A] text-white hover:bg-[#238a5a]' : 'bg-[#F85149] text-white hover:bg-[#e04440]'}`}
               >
                 {processing ? <Loader2 size={16} className="animate-spin mx-auto" /> : confirmModal.action === 'confirm' ? t('common.confirm') : t('common.cancel')}
               </button>

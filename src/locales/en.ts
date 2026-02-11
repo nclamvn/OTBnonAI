@@ -121,6 +121,19 @@ const en = {
     kpiUserProfile: 'User profile',
     kpiSettings: 'Settings',
     kpiAppSettings: 'App settings',
+    notifications: 'Notifications',
+  },
+
+  // ──────────────────────────────────────────────
+  // Analytics
+  // ──────────────────────────────────────────────
+  analytics: {
+    salesPerformance: 'Sales Performance',
+    salesDesc: 'SKU performance analysis',
+    budgetAnalytics: 'Budget Analytics',
+    budgetDesc: 'Budget utilization trends',
+    categoryTrends: 'Category Trends',
+    trendsDesc: 'Attribute trends and YoY comparison',
   },
 
   // ──────────────────────────────────────────────

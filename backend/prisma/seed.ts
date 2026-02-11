@@ -455,8 +455,8 @@ async function main() {
   const users = await Promise.all([
     prisma.user.upsert({
       where: { email: 'admin@dafc.com' },
-      update: {},
-      create: { email: 'admin@dafc.com', name: 'Nguyễn Văn Admin', passwordHash: password, roleId: adminRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
+      update: { name: 'Admin' },
+      create: { email: 'admin@dafc.com', name: 'Admin', passwordHash: password, roleId: adminRole.id, storeAccess: allStoreIds, brandAccess: allBrandIds },
     }),
     prisma.user.upsert({
       where: { email: 'buyer@dafc.com' },

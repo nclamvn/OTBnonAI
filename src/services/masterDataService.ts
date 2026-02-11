@@ -53,26 +53,20 @@ export const masterDataService = {
     return this.getSkuCatalog(params);
   },
 
-  // Get all sub-categories
+  // Get all sub-categories (flatten from categories hierarchy — direct endpoint not yet implemented)
   async getSubCategories() {
-    try {
-      const response: any = await api.get('/master/sub-categories');
-      return response.data.data || response.data;
-    } catch {
-      // Fallback: flatten from categories hierarchy
-      const categories: any = await this.getCategories();
-      const list: any[] = Array.isArray(categories) ? categories : [];
-      const subs: any[] = [];
-      list.forEach((cat: any) => {
-        (cat.subCategories || []).forEach((sub: any) => {
-          subs.push({
-            ...sub,
-            parent: { id: cat.id, name: cat.name, code: cat.code }
-          });
+    const categories: any = await this.getCategories();
+    const list: any[] = Array.isArray(categories) ? categories : [];
+    const subs: any[] = [];
+    list.forEach((cat: any) => {
+      (cat.subCategories || []).forEach((sub: any) => {
+        subs.push({
+          ...sub,
+          parent: { id: cat.id, name: cat.name, code: cat.code }
         });
       });
-      return subs;
-    }
+    });
+    return subs;
   }
 };
 

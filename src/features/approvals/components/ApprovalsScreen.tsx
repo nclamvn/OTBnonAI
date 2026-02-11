@@ -34,6 +34,18 @@ const ENTITY_ICONS: any = {
   proposal: Package,
 };
 
+/* Helper: extract display name & brand from any pending approval item */
+const getItemDisplayInfo = (item: any) => {
+  const d = item.data || {};
+  // Name: try common fields, then type-specific codes
+  const name = d.name || d.budgetName || d.planningName || d.proposalName
+    || d.budgetCode || d.planningCode || d.proposalCode
+    || `${item.entityType} #${String(item.entityId).substring(0, 8)}`;
+  // Brand: try groupBrand (budgets/plannings), then brand (proposals)
+  const brand = d.groupBrand?.name || d.brand?.name || d.brandName || '-';
+  return { name, brand };
+};
+
 /* ═══════════════════════════════════════════════
    MAIN SCREEN
 ═══════════════════════════════════════════════ */
@@ -101,9 +113,8 @@ const ApprovalsScreen = ({ darkMode }: any) => {
       if (levelFilter !== 'all' && item.level !== parseInt(levelFilter)) return false;
       if (searchTerm) {
         const term = searchTerm.toLowerCase();
-        const name = (item.data?.name || item.data?.budgetName || '').toLowerCase();
-        const brand = (item.data?.brand?.name || item.data?.brandName || '').toLowerCase();
-        return name.includes(term) || brand.includes(term);
+        const info = getItemDisplayInfo(item);
+        return info.name.toLowerCase().includes(term) || info.brand.toLowerCase().includes(term);
       }
       return true;
     });
@@ -319,8 +330,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                 items={filtered.map((item: any, idx: any) => {
                   const status = item.data?.status || 'SUBMITTED';
                   const sc = STATUS_CONFIG[status] || STATUS_CONFIG.SUBMITTED;
-                  const name = item.data?.name || item.data?.budgetName || `${item.entityType} #${item.entityId}`;
-                  const brand = item.data?.brand?.name || item.data?.brandName || '-';
+                  const { name, brand } = getItemDisplayInfo(item);
 
                   return {
                     id: `${item.entityType}-${item.entityId}-${idx}`,
@@ -368,8 +378,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                 {filtered.map((item: any, idx: any) => {
                   const status = item.data?.status || 'SUBMITTED';
                   const sc = STATUS_CONFIG[status] || STATUS_CONFIG.SUBMITTED;
-                  const name = item.data?.name || item.data?.budgetName || `${item.entityType} #${item.entityId}`;
-                  const brand = item.data?.brand?.name || item.data?.brandName || '-';
+                  const { name, brand } = getItemDisplayInfo(item);
 
                   return (
                     <tr
@@ -479,7 +488,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                 <div className={`text-sm ${textSecondary}`}>
                   {ENTITY_ICONS[actionModal.item.entityType]} <span className="capitalize font-medium">{actionModal.item.entityType}</span>
                   {' — '}
-                  <span className={textPrimary}>{actionModal.item.data?.name || actionModal.item.data?.budgetName || `#${actionModal.item.entityId}`}</span>
+                  <span className={textPrimary}>{getItemDisplayInfo(actionModal.item).name}</span>
                 </div>
               </div>
               <div>

@@ -69,7 +69,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) =
               type={field === 'email' ? 'email' : 'text'}
               value={formData[field] || ''}
               onChange={(e) => setFormData({ ...formData, [field]: e.target.value })}
-              className={`w-full px-3 py-2 rounded-lg border text-sm font-medium outline-none transition-all ${
+              className={`w-full px-3 py-1 rounded-lg border text-sm font-medium outline-none transition-all ${
                 darkMode
                   ? 'bg-[#0A0A0A] border-[#2E2E2E] text-[#F2F2F2] focus:border-[#D7B797]'
                   : 'bg-gray-50 border-gray-300 text-gray-900 focus:border-[#8A6340]'
@@ -105,7 +105,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) =
         {!isEditing ? (
           <button
             onClick={() => setIsEditing(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-all ${
               darkMode
                 ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] border border-[rgba(215,183,151,0.2)] hover:bg-[rgba(215,183,151,0.15)]'
                 : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border border-[rgba(215,183,151,0.3)] hover:bg-[rgba(215,183,151,0.2)]'
@@ -118,7 +118,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) =
           <div className="flex items-center gap-2">
             <button
               onClick={handleCancel}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-all ${
                 darkMode
                   ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E] hover:text-[#F2F2F2]'
                   : 'bg-gray-100 text-gray-600 border border-gray-300 hover:text-gray-900'
@@ -130,7 +130,7 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) =
             <button
               onClick={handleSave}
               disabled={saving}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-all ${
                 darkMode
                   ? 'bg-[#127749] text-white hover:bg-[#0d5c38]'
                   : 'bg-[#127749] text-white hover:bg-[#0d5c38]'

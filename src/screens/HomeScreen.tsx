@@ -44,7 +44,7 @@ const StatCard = ({ title, value, subtitle, trend, trendLabel, icon: Icon, darkM
 
   return (
     <div
-      className={`relative overflow-hidden border ${borderColor} rounded-xl px-3 py-2 transition-all duration-200 hover:shadow-md group ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative overflow-hidden border ${borderColor} rounded-xl px-3 py-1 transition-all duration-200 hover:shadow-md group ${onClick ? 'cursor-pointer' : ''}`}
       style={{
         background: darkMode
           ? `linear-gradient(135deg, #121212 0%, ${a.darkMid} 40%, ${a.darkGrad} 100%)`
@@ -105,7 +105,7 @@ const SmallCard = ({ title, value, subtitle, icon: Icon, darkMode, accent = 'gol
 
   return (
     <div
-      className={`relative overflow-hidden border ${borderColor} rounded-xl px-3 py-2 transition-all duration-200 hover:shadow-md group ${onClick ? 'cursor-pointer' : ''}`}
+      className={`relative overflow-hidden border ${borderColor} rounded-xl px-3 py-1 transition-all duration-200 hover:shadow-md group ${onClick ? 'cursor-pointer' : ''}`}
       style={{
         background: darkMode
           ? `linear-gradient(135deg, #121212 0%, ${a.darkMid} 40%, ${a.darkGrad} 100%)`
@@ -255,7 +255,7 @@ const HomeScreen = ({ darkMode = true }) => {
             <p className={`text-sm ${textMuted}`}>{t('home.subtitle')}</p>
           </div>
         </div>
-        <span className={`inline-flex px-4 py-2 text-xs font-semibold uppercase tracking-wider font-['Montserrat'] rounded-full ${
+        <span className={`inline-flex px-4 py-1 text-xs font-semibold uppercase tracking-wider font-['Montserrat'] rounded-full ${
           darkMode
             ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] border border-[rgba(215,183,151,0.3)]'
             : 'bg-[rgba(138,99,64,0.18)] text-[#5A3D22] border border-[rgba(138,99,64,0.45)]'
@@ -299,7 +299,7 @@ const HomeScreen = ({ darkMode = true }) => {
               <div key={filter.key} className="relative">
                 <button
                   onClick={() => setOpenFilter(openFilter === filter.key ? null : filter.key)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-semibold transition-all duration-150 ${
+                  className={`flex items-center gap-2 px-4 py-1 rounded-full border text-xs font-semibold transition-all duration-150 ${
                     openFilter === filter.key
                       ? darkMode
                         ? 'border-[rgba(215,183,151,0.4)] bg-[rgba(215,183,151,0.08)] text-[#D7B797]'
@@ -325,7 +325,7 @@ const HomeScreen = ({ darkMode = true }) => {
                           <button
                             key={opt}
                             onClick={() => { filter.onSelect(opt); setOpenFilter(null); }}
-                            className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                            className={`w-full flex items-center justify-between px-4 py-1 text-sm transition-colors ${
                               isSelected
                                 ? darkMode ? 'bg-[rgba(18,119,73,0.15)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.1)] text-[#127749]'
                                 : darkMode ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)]' : 'text-gray-900 hover:bg-gray-50'
@@ -498,7 +498,7 @@ const HomeScreen = ({ darkMode = true }) => {
             ].map((s, i) => (
               <div
                 key={i}
-                className={`rounded-lg px-3 py-2.5 border ${darkMode ? 'border-[#2E2E2E] bg-[rgba(255,255,255,0.02)]' : 'border-gray-300 bg-gray-50'}`}
+                className={`rounded-lg px-3 py-1 border ${darkMode ? 'border-[#2E2E2E] bg-[rgba(255,255,255,0.02)]' : 'border-gray-300 bg-gray-50'}`}
               >
                 <p className={`text-[10px] font-medium uppercase tracking-wider ${textMuted} font-['Montserrat']`}>{s.label}</p>
                 <p className={`text-base font-bold font-['JetBrains_Mono'] tabular-nums mt-0.5 ${textPrimary}`}>{s.value}</p>

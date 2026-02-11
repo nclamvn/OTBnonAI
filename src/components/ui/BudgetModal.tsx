@@ -93,7 +93,7 @@ const BudgetModal = ({
                       value={sa.budgetAmount || ''}
                       onChange={(e: any) => handleStoreAllocationChange(sa.storeId, e.target.value)}
                       placeholder="0"
-                      className="w-44 px-5 py-3 bg-[#0A0A0A] border-2 border-[#2E2E2E] rounded-xl text-right font-bold text-[#F2F2F2] placeholder-[#666666] focus:ring-2 focus:ring-[#D7B797] focus:border-transparent transition-all duration-300 hover:border-[rgba(215,183,151,0.25)] focus:scale-105 font-['JetBrains_Mono']"
+                      className="w-44 px-5 py-0.5 bg-[#0A0A0A] border-2 border-[#2E2E2E] rounded-xl text-right font-bold text-[#F2F2F2] placeholder-[#666666] focus:ring-2 focus:ring-[#D7B797] focus:border-transparent transition-all duration-300 hover:border-[rgba(215,183,151,0.25)] focus:scale-105 font-['JetBrains_Mono']"
                     />
                   </div>
                 </div>
@@ -116,16 +116,16 @@ const BudgetModal = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t-2 border-[#2E2E2E] px-8 py-3 flex items-center justify-end gap-3 bg-[#0A0A0A] rounded-b-3xl">
+        <div className="border-t-2 border-[#2E2E2E] px-8 py-0.5 flex items-center justify-end gap-3 bg-[#0A0A0A] rounded-b-3xl">
           <button
             onClick={onClose}
-            className="px-5 py-2 border-2 border-[#2E2E2E] rounded-xl font-semibold text-[#999999] bg-[#1A1A1A] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797] hover:scale-105 active:scale-95 transition-all duration-300"
+            className="px-5 py-0.5 border-2 border-[#2E2E2E] rounded-xl font-semibold text-[#999999] bg-[#1A1A1A] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797] hover:scale-105 active:scale-95 transition-all duration-300"
           >
             {t('common.cancel')}
           </button>
           <button
             onClick={onSave}
-            className="px-5 py-2 bg-[#D7B797] text-[#0A0A0A] rounded-xl font-semibold hover:bg-[#C4A684] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 shadow-lg shadow-[#D7B797]/20 hover:shadow-xl hover:shadow-[#D7B797]/30 relative overflow-hidden group"
+            className="px-5 py-0.5 bg-[#D7B797] text-[#0A0A0A] rounded-xl font-semibold hover:bg-[#C4A684] hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2 shadow-lg shadow-[#D7B797]/20 hover:shadow-xl hover:shadow-[#D7B797]/30 relative overflow-hidden group"
           >
             <Save size={16} className="relative z-10 group-hover:rotate-12 transition-transform duration-300" />
             <span className="relative z-10 font-['Montserrat']">{t('components.saveBudget')}</span>

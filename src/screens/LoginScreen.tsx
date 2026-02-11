@@ -137,14 +137,14 @@ const LoginScreen = () => {
 
         {/* Logo Section */}
         <div className="text-center mb-10">
-          <h1 className="text-[56px] font-bold tracking-[0.3em] text-[#C4A77D] mb-2 uppercase"
-            style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
-            DAFC
-          </h1>
-          <p className="text-[12px] font-light tracking-[0.05em] leading-[1.8] text-[#8B7355] max-w-[400px] mx-auto"
+          <img src="/dafc-logo-full.png" alt="DAFC" className="h-16 mx-auto mb-2 object-contain" />
+          <p className="text-[15px] font-semibold tracking-[0.08em] text-[#8B7355] mb-1"
             style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}>
-            DAFC la chuyen gia ban le va xay dung thuong hieu hang dau voi su menh chien luoc
-            <br/>gioi thieu va phat trien ben vung cac thuong hieu cao cap tot nhat tai Viet Nam
+            Hệ Thống Quản Lý OTB
+          </p>
+          <p className="text-[12px] font-light tracking-[0.03em] text-[#A69076]"
+            style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}>
+            Quản lý kế hoạch Open-to-Buy
           </p>
         </div>
 
@@ -248,17 +248,21 @@ const LoginScreen = () => {
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between mb-7 text-[13px]">
               <label className="flex items-center gap-2.5 cursor-pointer text-[#A69076] hover:text-[#8B7355] transition-colors font-light select-none">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-[18px] h-[18px] rounded-[5px] border-[1.5px] cursor-pointer appearance-none relative transition-all"
+                <div
+                  onClick={() => setRememberMe(!rememberMe)}
+                  className="w-[18px] h-[18px] rounded-[4px] border-[1.5px] flex items-center justify-center cursor-pointer transition-all shrink-0"
                   style={{
-                    borderColor: 'rgba(166, 144, 118, 0.25)',
-                    background: 'rgba(255, 255, 255, 0.6)',
+                    borderColor: rememberMe ? '#8B7355' : 'rgba(166, 144, 118, 0.35)',
+                    background: rememberMe ? '#8B7355' : 'rgba(255, 255, 255, 0.7)',
                   }}
-                />
-                <span>Remember me</span>
+                >
+                  {rememberMe && (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2.5 6L5 8.5L9.5 3.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  )}
+                </div>
+                <span>Ghi nhớ đăng nhập</span>
               </label>
               <a href="#" className="text-[#A69076] hover:text-[#6B5744] font-light transition-colors no-underline">
                 Forgot password?

@@ -219,7 +219,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
       </div>
 
       {/* Navigation Menu */}
-      <nav className="flex-1 overflow-y-auto py-1.5 custom-scrollbar">
+      <nav className="flex-1 overflow-y-auto py-1 custom-scrollbar">
         {isCollapsed ? (
           /* Collapsed View */
           <div className="px-1.5 space-y-0.5">
@@ -247,11 +247,11 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
           </div>
         ) : (
           /* Expanded View */
-          <div className="px-2.5 space-y-0.5">
+          <div className="px-2.5 space-y-1">
             {/* Home */}
             <button
               onClick={() => navigateTo('home')}
-              className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-lg transition-all duration-200"
+              className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200"
               style={currentScreen === 'home' ? {
                 background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                 boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
@@ -270,11 +270,11 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
 
             {/* Menu Groups */}
             {menuGroups.map((group: any) => (
-              <div key={group.id} className="pt-1">
+              <div key={group.id} className="pt-px">
                 {/* Group Header */}
                 <button
                   onClick={() => toggleGroup(group.id)}
-                  className="group w-full px-2.5 py-1 flex items-center justify-between rounded-md transition-all duration-150 hover:bg-[rgba(215,183,151,0.04)]"
+                  className="group w-full px-2.5 py-1.5 flex items-center justify-between rounded-md transition-all duration-150 hover:bg-[rgba(215,183,151,0.04)]"
                 >
                   <div className="flex items-center gap-1.5">
                     <group.icon
@@ -312,7 +312,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
 
                 {/* Group Items */}
                 {openGroups[group.id] && (
-                  <div className="space-y-px ml-1.5 pl-2.5 mt-0.5" style={{
+                  <div className="space-y-0.5 ml-1.5 pl-2.5 mt-0.5" style={{
                     borderLeft: darkMode
                       ? '1px solid rgba(215,183,151,0.1)'
                       : '1px solid rgba(215,183,151,0.2)',
@@ -323,7 +323,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
                         <button
                           key={item.id}
                           onClick={() => navigateTo(item.id)}
-                          className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-md transition-all duration-200"
+                          className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-200"
                           style={isActive ? {
                             background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                             boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
@@ -347,7 +347,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             ))}
 
             {/* Gradient Divider */}
-            <div className="py-0.5">
+            <div className="py-1.5">
               <div className="h-px" style={{
                 background: darkMode
                   ? 'linear-gradient(90deg, transparent 0%, rgba(215,183,151,0.15) 50%, transparent 100%)'
@@ -359,7 +359,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             <div>
               <button
                 onClick={() => setIsMasterDataOpen(!isMasterDataOpen)}
-                className="group w-full px-2.5 py-1 flex items-center justify-between rounded-md transition-all duration-150 hover:bg-[rgba(215,183,151,0.04)]"
+                className="group w-full px-2.5 py-1.5 flex items-center justify-between rounded-md transition-all duration-150 hover:bg-[rgba(215,183,151,0.04)]"
               >
                 <div className="flex items-center gap-1.5">
                   <Database
@@ -396,7 +396,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
               </button>
 
               {isMasterDataOpen && (
-                <div className="space-y-px ml-1.5 pl-2.5 mt-0.5" style={{
+                <div className="space-y-0.5 ml-1.5 pl-2.5 mt-0.5" style={{
                   borderLeft: darkMode
                     ? '1px solid rgba(215,183,151,0.1)'
                     : '1px solid rgba(215,183,151,0.2)',
@@ -412,7 +412,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
                       <button
                         key={item.id}
                         onClick={() => navigateTo(item.id)}
-                        className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-md transition-all duration-200"
+                        className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md transition-all duration-200"
                         style={isActive ? {
                           background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                           boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
@@ -437,7 +437,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             {/* Import Data */}
             <button
               onClick={() => navigateTo('import-data')}
-              className="group w-full flex items-center gap-2 px-2.5 py-1 rounded-lg transition-all duration-200"
+              className="group w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200"
               style={currentScreen === 'import-data' ? {
                 background: 'linear-gradient(135deg, rgba(215,183,151,0.06) 0%, rgba(215,183,151,0.14) 100%)',
                 boxShadow: 'inset 0 0 0 1px rgba(215,183,151,0.1)',
@@ -473,11 +473,11 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
               className={`absolute ${isCollapsed ? 'left-full ml-2 bottom-0' : 'left-2 right-2 bottom-full mb-2'} z-50 rounded-xl shadow-xl border overflow-hidden`}
               style={{
                 background: darkMode
-                  ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.08) 100%)'
-                  : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 35%, rgba(215,183,151,0.10) 100%)',
+                  ? 'linear-gradient(135deg, #141414 0%, #171513 40%, #1a1816 100%)'
+                  : 'linear-gradient(135deg, #ffffff 0%, #fdfcfa 35%, #faf8f5 100%)',
                 borderColor: darkMode ? '#2E2E2E' : '#D1D5DB',
                 boxShadow: darkMode
-                  ? '0 -8px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(215,183,151,0.06)'
+                  ? '0 -8px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(215,183,151,0.06)'
                   : '0 -8px 30px rgba(0,0,0,0.08), inset 0 1px 0 rgba(215,183,151,0.08)',
                 minWidth: isCollapsed ? '200px' : 'auto',
               }}
@@ -486,8 +486,8 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
               <div className="p-3" style={{
                 borderBottom: `1px solid ${darkMode ? '#2E2E2E' : '#D1D5DB'}`,
                 background: darkMode
-                  ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.04) 100%)'
-                  : 'linear-gradient(135deg, #F9FAFB 0%, rgba(215,183,151,0.06) 100%)',
+                  ? 'linear-gradient(135deg, #111111 0%, #161412 100%)'
+                  : 'linear-gradient(135deg, #F9FAFB 0%, #f5f3f0 100%)',
               }}>
                 <div className="flex items-center gap-2.5">
                   <div
@@ -523,7 +523,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
               <div className="p-1.5">
                 <button
                   onClick={() => { navigateTo('profile'); setShowUserMenu(false); }}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1 rounded-lg transition-all duration-200 ${
                     darkMode ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.06)]' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -540,7 +540,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
 
                 <button
                   onClick={() => { navigateTo('settings'); setShowUserMenu(false); }}
-                  className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all duration-200 ${
+                  className={`w-full flex items-center gap-2.5 px-2.5 py-1 rounded-lg transition-all duration-200 ${
                     darkMode ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.06)]' : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
@@ -564,7 +564,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
                 {onLogout && (
                   <button
                     onClick={() => { setShowUserMenu(false); onLogout(); }}
-                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all duration-200 ${
+                    className={`w-full flex items-center gap-2.5 px-2.5 py-1 rounded-lg transition-all duration-200 ${
                       darkMode ? 'text-[#FF7B72] hover:bg-[rgba(248,81,73,0.06)]' : 'text-red-600 hover:bg-red-50'
                     }`}
                   >

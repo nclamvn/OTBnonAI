@@ -74,18 +74,17 @@ html {
   text-size-adjust: 100%;
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
+/* Smooth scrolling — handled via data-scroll-behavior="smooth" on <html> for Next.js compat */
 
-/* Better touch targets */
-button,
-a,
-input,
-select,
-textarea {
-  min-height: var(--touch-min);
+/* Better touch targets — mobile only */
+@media (max-width: 767px) {
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: var(--touch-min);
+  }
 }
 
 /* Remove tap highlight on mobile */

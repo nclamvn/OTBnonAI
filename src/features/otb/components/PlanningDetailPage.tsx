@@ -31,7 +31,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
           onChange={(e) => onChangeValue(e.target.value)}
           onBlur={() => onSaveEdit(cellKey)}
           onKeyDown={(e) => onKeyDown(e, cellKey)}
-          className="w-20 px-2 py-1.5 text-center border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-slate-700 font-medium transition-all"
+          className="w-20 px-2 py-0.5 text-center border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-slate-700 font-medium transition-all"
           autoFocus
         />
       </div>
@@ -41,7 +41,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
   if (readOnly) {
     return (
       <div className="flex items-center justify-center">
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg min-w-[70px] justify-center">
+        <div className="flex items-center gap-1.5 px-3 py-0.5 bg-slate-100 border border-slate-200 rounded-lg min-w-[70px] justify-center">
           <span className="text-slate-600 font-medium">{typeof value === 'number' ? value.toFixed(0) : value}%</span>
         </div>
       </div>
@@ -54,7 +54,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
       className="group flex items-center justify-center gap-1 cursor-pointer"
       title={t ? t('planningDetail.clickToEdit') : 'Click to edit'}
     >
-      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all min-w-[70px] justify-center">
+      <div className="flex items-center gap-1.5 px-3 py-0.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all min-w-[70px] justify-center">
         <span className="text-slate-700 font-medium">{typeof value === 'number' ? value.toFixed(0) : value}%</span>
         <Pencil size={12} className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
@@ -75,7 +75,7 @@ const ApprovalStatusBadge = ({ status }: any) => {
   const Icon = config.icon;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
       <Icon size={12} />
       {config.labelKey.charAt(0).toUpperCase() + config.labelKey.slice(1)}
     </span>
@@ -482,7 +482,7 @@ const PlanningDetailPage = ({
 
   // Common table styles - DAFC Design System warm beige
   const headerClass = "bg-gradient-to-r from-[rgba(160,120,75,0.35)] to-[rgba(160,120,75,0.22)] text-[#5C4A32]";
-  const headerCellClass = "px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide";
+  const headerCellClass = "px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wide";
   const groupRowClass = "bg-gradient-to-r from-[rgba(160,120,75,0.18)] to-[rgba(160,120,75,0.1)] border-l-4 border-[#D7B797]";
   const sumRowClass = "bg-gradient-to-r from-[rgba(160,120,75,0.28)] to-[rgba(160,120,75,0.22)] text-[#5C4A32] font-semibold";
 
@@ -532,7 +532,7 @@ const PlanningDetailPage = ({
             {collectionData.map((colData: any) => (
               <React.Fragment key={`col-${colData.section.id}`}>
                 <tr className={groupRowClass}>
-                  <td className="px-4 py-3" colSpan={8}>
+                  <td className="px-4 py-0.5" colSpan={8}>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-800">{colData.section.name}</span>
                       <Info size={14} className="text-slate-400" />
@@ -552,14 +552,14 @@ const PlanningDetailPage = ({
                       key={cellKey}
                       className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                     >
-                      <td className="px-4 py-3 pl-8">
+                      <td className="px-4 py-0.5 pl-8">
                         <span className="text-slate-600">{storeRow.store.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.moc.toFixed(1)}</td>
-                      <td className={`px-4 py-3 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.moc.toFixed(1)}</td>
+                      <td className={`px-4 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                         <EditableCell
                           cellKey={cellKey}
                           value={userBuyPctValue}
@@ -572,8 +572,8 @@ const PlanningDetailPage = ({
                           readOnly={isReadOnly}
                         />
                       </td>
-                      <td className="px-4 py-3 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
-                      <td className={`px-4 py-3 text-center font-medium ${
+                      <td className="px-4 py-0.5 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
+                      <td className={`px-4 py-0.5 text-center font-medium ${
                         variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : 'text-slate-600'
                       }`}>
                         {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
@@ -642,7 +642,7 @@ const PlanningDetailPage = ({
             {genderData.map((genData: any) => (
               <React.Fragment key={`gen-${genData.gender.id}`}>
                 <tr className={groupRowClass}>
-                  <td className="px-4 py-3" colSpan={7}>
+                  <td className="px-4 py-0.5" colSpan={7}>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-800">{genData.gender.name}</span>
                       <Info size={14} className="text-slate-400" />
@@ -662,13 +662,13 @@ const PlanningDetailPage = ({
                       key={cellKey}
                       className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
                     >
-                      <td className="px-4 py-3 pl-8">
+                      <td className="px-4 py-0.5 pl-8">
                         <span className="text-slate-600">{storeRow.store.name}</span>
                       </td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
-                      <td className="px-4 py-3 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
-                      <td className={`px-4 py-3 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
+                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
+                      <td className={`px-4 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                         <EditableCell
                           cellKey={cellKey}
                           value={userBuyPctValue}
@@ -681,8 +681,8 @@ const PlanningDetailPage = ({
                           readOnly={isReadOnly}
                         />
                       </td>
-                      <td className="px-4 py-3 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
-                      <td className={`px-4 py-3 text-center font-medium ${
+                      <td className="px-4 py-0.5 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
+                      <td className={`px-4 py-0.5 text-center font-medium ${
                         variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : 'text-slate-600'
                       }`}>
                         {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
@@ -771,7 +771,7 @@ const PlanningDetailPage = ({
     return (
       <div className="p-2 md:p-4 space-y-3">
         {/* Filter Section */}
-        <div className="px-3 md:px-4 py-2 md:py-3 bg-slate-50 rounded-xl border border-slate-200 mb-4">
+        <div className="px-3 md:px-4 py-0.5 md:py-1 bg-slate-50 rounded-xl border border-slate-200 mb-4">
           <div className="flex flex-wrap items-center gap-2 md:gap-6">
             <div className="flex items-center gap-2 text-slate-600">
               <Filter size={16} />
@@ -787,7 +787,7 @@ const PlanningDetailPage = ({
                   setIsCategoryDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-slate-200 rounded-lg hover:border-pink-300 transition-all w-full md:min-w-[150px]"
+                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-pink-300 transition-all w-full md:min-w-[150px]"
               >
                 <Users size={14} className="text-pink-500" />
                 <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
@@ -801,7 +801,7 @@ const PlanningDetailPage = ({
                     <div
                       key={option.id}
                       onClick={() => handleGenderFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-pink-50 cursor-pointer transition-colors"
+                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-pink-50 cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${genderFilter === option.id ? 'text-pink-600 font-semibold' : 'text-slate-700'}`}>
                         {option.name}
@@ -822,7 +822,7 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-slate-200 rounded-lg hover:border-violet-300 transition-all w-full md:min-w-[180px]"
+                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-violet-300 transition-all w-full md:min-w-[180px]"
               >
                 <Tag size={14} className="text-violet-500" />
                 <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
@@ -836,7 +836,7 @@ const PlanningDetailPage = ({
                     <div
                       key={option.id}
                       onClick={() => handleCategoryFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-violet-50 cursor-pointer transition-colors"
+                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-violet-50 cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${categoryFilter === option.id ? 'text-violet-600 font-semibold' : 'text-slate-700'}`}>
                         {option.name}
@@ -857,7 +857,7 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 bg-white border-2 border-slate-200 rounded-lg hover:border-emerald-300 transition-all w-full md:min-w-[180px]"
+                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-emerald-300 transition-all w-full md:min-w-[180px]"
               >
                 <Layers size={14} className="text-emerald-500" />
                 <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
@@ -871,7 +871,7 @@ const PlanningDetailPage = ({
                     <div
                       key={option.id}
                       onClick={() => handleSubCategoryFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-emerald-50 cursor-pointer transition-colors"
+                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-emerald-50 cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${subCategoryFilter === option.id ? 'text-emerald-600 font-semibold' : 'text-slate-700'}`}>
                         {option.name}
@@ -891,7 +891,7 @@ const PlanningDetailPage = ({
                   setCategoryFilter('all');
                   setSubCategoryFilter('all');
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-md hover:shadow-lg text-sm font-medium"
+                className="flex items-center gap-2 px-4 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-md hover:shadow-lg text-sm font-medium"
               >
                 <X size={14} />
                 {t('common.clearAll')}
@@ -911,7 +911,7 @@ const PlanningDetailPage = ({
               {/* Gender Header - Level 1 */}
               <div
                 onClick={() => toggleGenderExpanded(genderGroup.gender.id)}
-                className={`flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-3 px-3 md:px-4 py-2 md:py-3 cursor-pointer transition-all ${
+                className={`flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-3 px-3 md:px-4 py-0.5 md:py-1 cursor-pointer transition-all ${
                   isFemale
                     ? 'bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600'
                     : 'bg-gradient-to-r from-sky-500 to-blue-500 hover:from-sky-600 hover:to-blue-600'
@@ -950,7 +950,7 @@ const PlanningDetailPage = ({
                         {/* Category Header - Level 2 */}
                         <div
                           onClick={() => toggleCategoryExpanded(genderGroup.gender.id, cat.id)}
-                          className={`flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 px-3 md:px-4 py-2 md:py-2.5 cursor-pointer transition-all ${
+                          className={`flex flex-col md:flex-row items-start md:items-center gap-1 md:gap-3 px-3 md:px-4 py-0.5 md:py-1 cursor-pointer transition-all ${
                             catIdx % 2 === 0
                               ? 'bg-gradient-to-r from-violet-100 to-purple-50 hover:from-violet-200 hover:to-purple-100'
                               : 'bg-gradient-to-r from-amber-100 to-orange-50 hover:from-amber-200 hover:to-orange-100'
@@ -988,15 +988,15 @@ const PlanningDetailPage = ({
                             <table className="w-full text-sm">
                               <thead>
                                 <tr className="bg-[rgba(160,120,75,0.18)] border-b border-[rgba(160,120,75,0.25)]">
-                                  <th className="px-4 py-2 text-left text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.subCategory')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctBuy')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctSales')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctST')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#6B4D30] uppercase bg-[rgba(160,120,75,0.28)]">{t('planningDetail.pctProposed')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.dollarOtbProposed')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctVar2025_2026')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.otbSubmitted')}</th>
-                                  <th className="px-3 py-2 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctBuyActual')}</th>
+                                  <th className="px-4 py-0.5 text-left text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.subCategory')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctBuy')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctSales')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctST')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#6B4D30] uppercase bg-[rgba(160,120,75,0.28)]">{t('planningDetail.pctProposed')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.dollarOtbProposed')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctVar2025_2026')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.otbSubmitted')}</th>
+                                  <th className="px-3 py-0.5 text-center text-xs font-semibold text-[#666666] uppercase">{t('planningDetail.pctBuyActual')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -1012,16 +1012,16 @@ const PlanningDetailPage = ({
                                         subIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
                                       }`}
                                     >
-                                      <td className="px-4 py-2.5">
+                                      <td className="px-4 py-0.5">
                                         <div className="flex items-center gap-2">
                                           <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
                                           <span className="text-slate-700">{subCat.name}</span>
                                         </div>
                                       </td>
-                                      <td className="px-3 py-2.5 text-center text-slate-600">{rowData.buyPct || 0}%</td>
-                                      <td className="px-3 py-2.5 text-center text-slate-600">{rowData.salesPct || 0}%</td>
-                                      <td className="px-3 py-2.5 text-center text-slate-600">{rowData.stPct || 0}%</td>
-                                      <td className={`px-3 py-2.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
+                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.buyPct || 0}%</td>
+                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.salesPct || 0}%</td>
+                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.stPct || 0}%</td>
+                                      <td className={`px-3 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                                         <EditableCell
                                           cellKey={cellKey}
                                           value={rowData.buyProposed || 0}
@@ -1034,36 +1034,36 @@ const PlanningDetailPage = ({
                                           readOnly={isReadOnly}
                                         />
                                       </td>
-                                      <td className="px-3 py-2.5 text-center text-slate-700 font-medium">
+                                      <td className="px-3 py-0.5 text-center text-slate-700 font-medium">
                                         {(rowData.otbProposed || 0).toLocaleString()}
                                       </td>
-                                      <td className={`px-3 py-2.5 text-center font-medium ${
+                                      <td className={`px-3 py-0.5 text-center font-medium ${
                                         (rowData.varPct || 0) < 0 ? 'text-red-600' : 'text-emerald-600'
                                       }`}>
                                         {(rowData.varPct || 0) > 0 ? '+' : ''}{rowData.varPct || 0}%
                                       </td>
-                                      <td className="px-3 py-2.5 text-center text-slate-600">
+                                      <td className="px-3 py-0.5 text-center text-slate-600">
                                         {(rowData.otbSubmitted || 0).toLocaleString()}
                                       </td>
-                                      <td className="px-3 py-2.5 text-center text-slate-600">{rowData.buyActual || 0}%</td>
+                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.buyActual || 0}%</td>
                                     </tr>
                                   );
                                 })}
                                 {/* Category Subtotal Row */}
                                 <tr className="bg-gradient-to-r from-[rgba(160,120,75,0.28)] to-[rgba(160,120,75,0.18)] font-medium">
-                                  <td className="px-4 py-2 text-[#5C4A32] font-semibold">{t('planningDetail.subtotal')}</td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.buyPct}%</td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.salesPct}%</td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.stPct}%</td>
-                                  <td className="px-3 py-2 text-center text-[#6B4D30] bg-[rgba(160,120,75,0.22)] font-bold">{catTotals.buyProposed}%</td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32] font-bold">{catTotals.otbProposed.toLocaleString()}</td>
-                                  <td className={`px-3 py-2 text-center font-bold ${
+                                  <td className="px-4 py-0.5 text-[#5C4A32] font-semibold">{t('planningDetail.subtotal')}</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32]">{catTotals.buyPct}%</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32]">{catTotals.salesPct}%</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32]">{catTotals.stPct}%</td>
+                                  <td className="px-3 py-0.5 text-center text-[#6B4D30] bg-[rgba(160,120,75,0.22)] font-bold">{catTotals.buyProposed}%</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32] font-bold">{catTotals.otbProposed.toLocaleString()}</td>
+                                  <td className={`px-3 py-0.5 text-center font-bold ${
                                     catTotals.varPct < 0 ? 'text-red-600' : 'text-[#5C4A32]'
                                   }`}>
                                     {catTotals.varPct > 0 ? '+' : ''}{catTotals.varPct}%
                                   </td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.otbSubmitted.toLocaleString()}</td>
-                                  <td className="px-3 py-2 text-center text-[#5C4A32]">{catTotals.buyActual}%</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32]">{catTotals.otbSubmitted.toLocaleString()}</td>
+                                  <td className="px-3 py-0.5 text-center text-[#5C4A32]">{catTotals.buyActual}%</td>
                                 </tr>
                               </tbody>
                             </table>
@@ -1137,7 +1137,7 @@ const PlanningDetailPage = ({
 
         {/* Level 1 Approvers */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-3">
+          <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-0.5">
             <h4 className="font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={18} />
               {t('planningDetail.approve')} L1
@@ -1188,7 +1188,7 @@ const PlanningDetailPage = ({
 
         {/* Level 2 Approvers */}
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-3">
+          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-0.5">
             <h4 className="font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={18} />
               {t('planningDetail.approve')} L2
@@ -1245,7 +1245,7 @@ const PlanningDetailPage = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 animate-in fade-in duration-500 overflow-x-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-3 md:px-8 py-3 md:py-6 shadow-xl relative z-50">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-3 md:px-8 py-0.5 md:py-6 shadow-xl relative z-50">
         <div className="absolute inset-0 bg-white/5 backdrop-blur-xl"></div>
         <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 
@@ -1271,13 +1271,13 @@ const PlanningDetailPage = ({
 
           {/* Center - Budget Info */}
           <div className="flex flex-wrap items-center gap-3 md:gap-8">
-            <div className="text-center px-3 md:px-6 py-2 bg-white/10 rounded-xl backdrop-blur-sm">
+            <div className="text-center px-3 md:px-6 py-0.5 bg-white/10 rounded-xl backdrop-blur-sm">
               <div className="text-xs text-blue-100 uppercase tracking-wide">{t('planningDetail.totalBudget')}</div>
               <div className="text-lg md:text-2xl font-bold text-white">
                 {formatCurrency(selectedBudgetDetail.budget?.totalBudget || 0)}
               </div>
             </div>
-            <div className="text-center px-3 md:px-6 py-2 bg-white/10 rounded-xl backdrop-blur-sm">
+            <div className="text-center px-3 md:px-6 py-0.5 bg-white/10 rounded-xl backdrop-blur-sm">
               <div className="text-xs text-blue-100 uppercase tracking-wide">{t('planningDetail.allocated')}</div>
               <div className="text-lg md:text-2xl font-bold text-emerald-300">
                 {formatCurrency(grandTotals.otbValue)}
@@ -1290,7 +1290,7 @@ const PlanningDetailPage = ({
             <button
               type="button"
               onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-              className={`flex items-center gap-3 px-5 py-3 rounded-xl font-medium transition-all duration-300 ${
+              className={`flex items-center gap-3 px-5 py-0.5 rounded-xl font-medium transition-all duration-300 ${
                 selectedVersion === 'draft'
                   ? 'bg-amber-400 text-amber-900 hover:bg-amber-300 shadow-lg shadow-amber-500/30'
                   : 'bg-emerald-400 text-emerald-900 hover:bg-emerald-300 shadow-lg shadow-emerald-500/30'
@@ -1318,7 +1318,7 @@ const PlanningDetailPage = ({
                     setSelectedVersion('draft');
                     setIsVersionDropdownOpen(false);
                   }}
-                  className={`px-4 py-3 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
+                  className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
                     selectedVersion === 'draft'
                       ? 'bg-amber-50 border-l-4 border-amber-400'
                       : 'hover:bg-slate-50'
@@ -1338,7 +1338,7 @@ const PlanningDetailPage = ({
 
                 {/* Divider */}
                 {versions.length > 0 && (
-                  <div className="px-4 py-2 bg-slate-100 border-y border-slate-200">
+                  <div className="px-4 py-0.5 bg-slate-100 border-y border-slate-200">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
                       <History size={14} />
                       {t('planningDetail.approvedVersions')} ({versions.length})
@@ -1361,7 +1361,7 @@ const PlanningDetailPage = ({
                           setSelectedVersion(version.id);
                           setIsVersionDropdownOpen(false);
                         }}
-                        className={`px-4 py-3 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
+                        className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
                           selectedVersion === version.id
                             ? 'bg-emerald-50 border-l-4 border-emerald-400'
                             : 'hover:bg-slate-50'
@@ -1393,12 +1393,12 @@ const PlanningDetailPage = ({
 
       {/* Read-only indicator */}
       {isReadOnly && (
-        <div className="px-3 md:px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex flex-wrap items-center justify-center gap-3 text-sm font-medium animate-in slide-in-from-top duration-300">
+        <div className="px-3 md:px-6 py-0.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white flex flex-wrap items-center justify-center gap-3 text-sm font-medium animate-in slide-in-from-top duration-300">
           <CheckCircle2 size={18} />
           <span>{t('planningDetail.viewingApprovedVersion').replace('{{version}}', versions.find((v: any) => v.id === selectedVersion)?.versionNumber)}</span>
           <button
             onClick={() => setSelectedVersion('draft')}
-            className="ml-4 px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200"
+            className="ml-4 px-4 py-0.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200"
           >
             {t('planningDetail.switchToDraft')}
           </button>
@@ -1419,7 +1419,7 @@ const PlanningDetailPage = ({
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`px-3 md:px-6 py-3 md:py-4 font-medium flex items-center gap-2 border-b-2 transition-all duration-200 ${
+                    className={`px-3 md:px-6 py-0.5 md:py-4 font-medium flex items-center gap-2 border-b-2 transition-all duration-200 ${
                       isActive
                         ? 'border-blue-500 text-blue-600 bg-white -mb-px rounded-t-lg'
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-t-lg'
@@ -1435,7 +1435,7 @@ const PlanningDetailPage = ({
 
           {/* Hint for editable cells */}
           {!isReadOnly && (
-            <div className="px-3 md:px-6 py-3 bg-blue-50 border-b border-blue-100 flex items-center gap-2 text-sm text-blue-600">
+            <div className="px-3 md:px-6 py-0.5 bg-blue-50 border-b border-blue-100 flex items-center gap-2 text-sm text-blue-600">
               <Pencil size={14} className="animate-bounce" style={{ animationDuration: '2s' }} />
               <span>{t('planningDetail.editHint')}</span>
             </div>
@@ -1449,7 +1449,7 @@ const PlanningDetailPage = ({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-slate-200 px-3 md:px-6 py-3 md:py-4 flex flex-wrap items-center justify-between bg-slate-50 gap-3">
+          <div className="border-t border-slate-200 px-3 md:px-6 py-0.5 md:py-4 flex flex-wrap items-center justify-between bg-slate-50 gap-3">
             <div className="flex flex-wrap items-center gap-3 md:gap-6">
               {versions.length > 0 && (
                 <div className="text-sm">
@@ -1464,7 +1464,7 @@ const PlanningDetailPage = ({
                 <button
                   onClick={handleApprove}
                   disabled={approveAnimation}
-                  className={`px-4 md:px-6 py-2.5 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden text-sm md:text-base ${
+                  className={`px-4 md:px-6 py-0.5 rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden text-sm md:text-base ${
                     approveAnimation
                       ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/50'
                       : 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/20 hover:shadow-xl'
@@ -1487,7 +1487,7 @@ const PlanningDetailPage = ({
               <button
                 onClick={onSave}
                 disabled={isReadOnly}
-                className={`px-4 md:px-6 py-2.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-sm md:text-base ${
+                className={`px-4 md:px-6 py-0.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-sm md:text-base ${
                   isReadOnly
                     ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
                     : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20 hover:shadow-xl'
