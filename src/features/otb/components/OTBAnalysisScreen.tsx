@@ -2145,8 +2145,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       {selectedBudgetIds.length <= 1 && selectedBudget && selectedSeason && selectedSeasonGroup && (
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
         {/* Tabs */}
-        <div className={`border-b px-2 md:px-4 overflow-x-auto ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
-          <div className="flex gap-0.5">
+        <div className={`border-b px-2 md:px-4 pt-2 overflow-x-auto ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
+          <div className="flex gap-1">
             {TABS.map((tab: any) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -2154,7 +2154,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-4 py-0.5 text-xs font-medium font-['Montserrat'] flex items-center gap-1.5 border-b-2 transition-all duration-200 ${
+                  className={`px-5 py-2 text-sm font-medium font-['Montserrat'] flex items-center gap-2 border-b-2 transition-all duration-200 ${
                     isActive
                       ? darkMode
                         ? 'border-[#D7B797] text-[#D7B797] bg-[#121212] -mb-px rounded-t-md'
@@ -2173,14 +2173,14 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
         </div>
 
         {/* Hint + Season Context */}
-        <div className={`px-3 md:px-4 py-0.5 border-b flex flex-wrap items-center justify-between gap-1 text-xs ${
+        <div className={`px-4 md:px-5 py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs ${
           darkMode
             ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.15)] text-[#D7B797]'
             : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.2)] text-[#6B4D30]'
         }`}>
-          <div className="flex items-center gap-1.5">
-            <Pencil size={12} className="animate-bounce shrink-0" style={{ animationDuration: '2s' }} />
-            <span className="text-[10px] md:text-xs">Click on cells with gold background in "% Buy Proposed" column to edit</span>
+          <div className="flex items-center gap-2">
+            <Pencil size={14} className="animate-bounce shrink-0" style={{ animationDuration: '2s' }} />
+            <span className="text-xs md:text-sm">Click on cells with gold background in "% Buy Proposed" column to edit</span>
           </div>
           <div className="flex items-center gap-2">
             {selectedSeasonGroup !== 'all' && (
