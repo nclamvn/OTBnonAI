@@ -309,7 +309,7 @@ const vi = {
     title: 'Phân bổ ngân sách',
     selectBudget: 'Chọn ngân sách...',
     noVersions: 'Không có phiên bản',
-    latestVersion: 'Mới nhất',
+    latestVersion: 'Final',
     seasonGroup: 'Nhóm mùa',
     allSeasonGroups: 'Tất cả nhóm mùa',
     rexValue: 'Giá trị Rex',

@@ -27,11 +27,14 @@ const RECEIPT_STATUS: any = {
    DEMO SKU DATA
 ═══════════════════════════════════════════════ */
 const DEMO_SKUS = [
-  { sku: 'FER-OW-001', name: 'Wool Blend Overcoat', productType: 'W Outerwear', gender: 'Women', color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 45000000, rex: 3, ttp: 2, orderedQty: 5, receivedQty: 5, sizes: { '36': { salesMix: 8, st: 45 }, '38': { salesMix: 30, st: 52 }, '40': { salesMix: 35, st: 48 }, '42': { salesMix: 27, st: 40 } } },
-  { sku: 'FER-BG-002', name: 'Gancini Mini Bag', productType: 'W Bags', gender: 'Women', color: 'Nero', composition: '100% Calf Leather', srp: 32000000, rex: 5, ttp: 3, orderedQty: 8, receivedQty: 8, sizes: { 'OS': { salesMix: 100, st: 65 } } },
-  { sku: 'FER-TP-003', name: 'Silk Bow Blouse', productType: 'W Tops', gender: 'Women', color: 'Ivory', composition: '100% Silk', srp: 28000000, rex: 4, ttp: 3, orderedQty: 7, receivedQty: 7, sizes: { '38': { salesMix: 15, st: 55 }, '40': { salesMix: 40, st: 60 }, '42': { salesMix: 30, st: 50 }, '44': { salesMix: 15, st: 42 } } },
-  { sku: 'FER-TL-004', name: 'Tailored Wool Blazer', productType: 'W Tailoring', gender: 'Women', color: 'Navy', composition: '95% Wool, 5% Elastane', srp: 38000000, rex: 2, ttp: 2, orderedQty: 4, receivedQty: 3, sizes: { '36': { salesMix: 10, st: 48 }, '38': { salesMix: 35, st: 55 }, '40': { salesMix: 35, st: 50 }, '42': { salesMix: 20, st: 43 } } },
-  { sku: 'FER-MO-005', name: 'Leather Bomber Jacket', productType: 'M Outerwear', gender: 'Men', color: 'Dark Brown', composition: '100% Lamb Leather', srp: 52000000, rex: 2, ttp: 1, orderedQty: 3, receivedQty: 3, sizes: { '48': { salesMix: 20, st: 50 }, '50': { salesMix: 40, st: 55 }, '52': { salesMix: 30, st: 48 }, '54': { salesMix: 10, st: 38 } } },
+  { sku: 'BAL-OW-001', name: 'Wool Blend Overcoat', productType: 'W Outerwear', gender: 'Women', color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 45000000, rex: 4, ttp: 3, orderedQty: 7, receivedQty: 7, sizes: { '36': { salesMix: 8, st: 45 }, '38': { salesMix: 30, st: 52 }, '40': { salesMix: 35, st: 48 }, '42': { salesMix: 27, st: 40 } } },
+  { sku: 'BAL-BG-002', name: 'Le City Medium Bag', productType: 'W Bags', gender: 'Women', color: 'Nero', composition: '100% Arena Leather', srp: 32000000, rex: 6, ttp: 4, orderedQty: 10, receivedQty: 10, sizes: { 'OS': { salesMix: 100, st: 65 } } },
+  { sku: 'BAL-TP-003', name: 'Silk Bow Blouse', productType: 'W Tops', gender: 'Women', color: 'Ivory', composition: '100% Silk', srp: 28000000, rex: 5, ttp: 3, orderedQty: 8, receivedQty: 8, sizes: { '38': { salesMix: 15, st: 55 }, '40': { salesMix: 40, st: 60 }, '42': { salesMix: 30, st: 50 }, '44': { salesMix: 15, st: 42 } } },
+  { sku: 'BAL-TL-004', name: 'Tailored Wool Blazer', productType: 'W Tailoring', gender: 'Women', color: 'Navy', composition: '95% Wool, 5% Elastane', srp: 38000000, rex: 3, ttp: 2, orderedQty: 5, receivedQty: 4, sizes: { '36': { salesMix: 10, st: 48 }, '38': { salesMix: 35, st: 55 }, '40': { salesMix: 35, st: 50 }, '42': { salesMix: 20, st: 43 } } },
+  { sku: 'BAL-MO-005', name: 'Leather Bomber Jacket', productType: 'M Outerwear', gender: 'Men', color: 'Dark Brown', composition: '100% Lamb Leather', srp: 52000000, rex: 3, ttp: 2, orderedQty: 5, receivedQty: 5, sizes: { '48': { salesMix: 20, st: 50 }, '50': { salesMix: 40, st: 55 }, '52': { salesMix: 30, st: 48 }, '54': { salesMix: 10, st: 38 } } },
+  { sku: 'BAL-KN-006', name: 'Cashmere Turtleneck', productType: 'W Tops', gender: 'Women', color: 'Cream', composition: '100% Cashmere', srp: 35000000, rex: 4, ttp: 3, orderedQty: 7, receivedQty: 7, sizes: { 'S': { salesMix: 15, st: 50 }, 'M': { salesMix: 40, st: 58 }, 'L': { salesMix: 30, st: 52 }, 'XL': { salesMix: 15, st: 44 } } },
+  { sku: 'BAL-MT-007', name: 'Slim Fit Wool Trousers', productType: 'M Tailoring', gender: 'Men', color: 'Charcoal', composition: '98% Wool, 2% Elastane', srp: 25000000, rex: 5, ttp: 3, orderedQty: 8, receivedQty: 8, sizes: { '46': { salesMix: 10, st: 42 }, '48': { salesMix: 30, st: 55 }, '50': { salesMix: 35, st: 52 }, '52': { salesMix: 25, st: 46 } } },
+  { sku: 'BAL-SL-008', name: 'Card Holder Wallet', productType: 'W Bags', gender: 'Women', color: 'Black', composition: '100% Calf Leather', srp: 12000000, rex: 8, ttp: 6, orderedQty: 14, receivedQty: 13, sizes: { 'OS': { salesMix: 100, st: 72 } } },
 ];
 
 /* ═══════════════════════════════════════════════
@@ -88,7 +91,7 @@ const SizingTable = ({ item, darkMode }: any) => {
 ═══════════════════════════════════════════════ */
 const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
   const [expandedSku, setExpandedSku] = useState<string | null>(null);
-  const products = receipt.products && receipt.products.length > 0 ? receipt.products : DEMO_SKUS.slice(0, Math.max(2, Math.min(5, Math.floor(Math.random() * 4) + 2)));
+  const products = receipt.products && receipt.products.length > 0 ? receipt.products : DEMO_SKUS;
 
   const border = darkMode ? 'border-[#2E2E2E]' : 'border-gray-300';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
@@ -254,10 +257,10 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           color: prod.color || '-',
           composition: prod.composition || prod.material || '-',
           srp: prod.srp || prod.retailPrice || prod.price || 0,
-          rex: prod.allocations?.find((a: any) => a.store?.name?.includes('REX'))?.quantity || prod.rexQty || Math.floor(Math.random() * 5) + 1,
-          ttp: prod.allocations?.find((a: any) => a.store?.name?.includes('TTP'))?.quantity || prod.ttpQty || Math.floor(Math.random() * 4) + 1,
-          orderedQty: prod.totalQuantity || 0,
-          receivedQty: 0,
+          rex: prod.allocations?.find((a: any) => a.store?.name?.includes('REX'))?.quantity || prod.rexQty || 4,
+          ttp: prod.allocations?.find((a: any) => a.store?.name?.includes('TTP'))?.quantity || prod.ttpQty || 3,
+          orderedQty: prod.totalQuantity || 7,
+          receivedQty: prod.receivedQuantity || 6,
           sizes: prod.sizes || null,
         })),
       }));

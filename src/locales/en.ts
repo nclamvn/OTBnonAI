@@ -309,7 +309,7 @@ const en = {
     title: 'Budget Allocation',
     selectBudget: 'Select budget...',
     noVersions: 'No versions',
-    latestVersion: 'Latest',
+    latestVersion: 'Final',
     seasonGroup: 'Season Group',
     allSeasonGroups: 'All Season Groups',
     rexValue: 'Rex Value',

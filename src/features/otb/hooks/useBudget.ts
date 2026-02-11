@@ -40,7 +40,13 @@ export const useBudget = () => {
           masterDataService.getSeasons(),
         ]);
         setBrands(brandsRes || []);
-        setStores(storesRes || []);
+        // Only show REX and TTP stores
+        const allStores = storesRes || [];
+        const filtered = allStores.filter((s: any) => {
+          const code = (s.code || s.storeCode || s.name || '').toUpperCase();
+          return code === 'REX' || code === 'TTP';
+        });
+        setStores(filtered.length > 0 ? filtered : allStores.slice(0, 2));
         setSeasons(seasonsRes || []);
       } catch (err: any) {
         console.error('Failed to fetch master data:', err);

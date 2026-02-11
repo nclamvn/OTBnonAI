@@ -102,7 +102,15 @@ const BudgetManagementScreen = ({
     fetchBudgets();
     // Fetch master data for create form
     masterDataService.getBrands().then(b => setApiBrands(Array.isArray(b) ? b : [])).catch(() => {});
-    masterDataService.getStores().then(s => setApiStores(Array.isArray(s) ? s : [])).catch(() => {});
+    masterDataService.getStores().then(s => {
+      const all = Array.isArray(s) ? s : [];
+      // Only show REX and TTP stores
+      const filtered = all.filter((st: any) => {
+        const code = (st.code || st.name || '').toUpperCase();
+        return code === 'REX' || code === 'TTP';
+      });
+      setApiStores(filtered.length > 0 ? filtered : all.slice(0, 2));
+    }).catch(() => {});
   }, [fetchBudgets]);
 
   // Local State

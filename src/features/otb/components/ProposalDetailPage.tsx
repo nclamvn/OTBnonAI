@@ -32,8 +32,13 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
           masterDataService.getSkuCatalog().catch(() => ({ data: [] }))
         ]);
 
-        const stores = Array.isArray(storesRes) ? storesRes : (storesRes?.data || []);
-        setAllStores(stores.map((s: any) => ({
+        const allStoresRaw = Array.isArray(storesRes) ? storesRes : (storesRes?.data || []);
+        // Only show REX and TTP stores
+        const stores = allStoresRaw.filter((s: any) => {
+          const code = (s.code || s.storeCode || s.name || '').toUpperCase();
+          return code === 'REX' || code === 'TTP';
+        });
+        setAllStores((stores.length > 0 ? stores : allStoresRaw.slice(0, 2)).map((s: any) => ({
           id: s.id || s.code?.toLowerCase(),
           code: s.code || s.storeCode,
           name: s.name || s.storeName,

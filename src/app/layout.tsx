@@ -1,4 +1,4 @@
-import { Montserrat, JetBrains_Mono } from 'next/font/google';
+import { Montserrat, JetBrains_Mono, Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
 import '@/styles/mobile-design-system.css';
 import { Providers } from './providers';
@@ -17,6 +17,13 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500', '600', '700'],
 });
 
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ['latin'],
+  variable: '--font-cormorant',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+});
+
 export const metadata = {
   title: 'DAFC OTB Planning System',
   description: 'DAFC OTB Planning Management System',
@@ -33,7 +40,7 @@ export default function RootLayout({ children }: any) {
   return (
     <html
       lang="en"
-      className={`dark ${montserrat.variable} ${jetbrainsMono.variable}`}
+      className={`dark ${montserrat.variable} ${jetbrainsMono.variable} ${cormorantGaramond.variable}`}
       suppressHydrationWarning
     >
       <body>

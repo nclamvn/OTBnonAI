@@ -57,9 +57,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // KPI data for header step bar
   const [kpiData, setKpiData] = useState<Record<string, KpiItem>>({
     'budget-management': { value: 5, status: 'completed' },
-    'planning': { value: 3, status: 'in-progress' },
-    'otb-analysis': { value: 0, status: 'pending' },
-    'proposal': { value: 0, status: 'pending' },
+    'planning': { value: 3, status: 'completed' },
+    'otb-analysis': { value: 3, status: 'in-progress' },
+    'proposal': { value: 27, status: 'in-progress' },
+    'tickets': { value: 4, status: 'in-progress' },
   });
 
   const value = {

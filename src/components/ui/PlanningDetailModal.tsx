@@ -146,21 +146,24 @@ const PlanningDetailModal = ({
   // Initialize local data for editable cells
   useEffect(() => {
     const initialData: any = {};
-    // Initialize with random data for demo
+    // Fixed demo data sets for consistent display (no random)
+    const demoSets = [
+      { buyPct: 8, salesPct: 12, stPct: 62, buyProposed: 10, otbProposed: 245680, varPct: -2, otbSubmitted: 238450, buyActual: 9 },
+      { buyPct: 5, salesPct: 7, stPct: 55, buyProposed: 6, otbProposed: 178320, varPct: -1, otbSubmitted: 172100, buyActual: 6 },
+      { buyPct: 12, salesPct: 14, stPct: 68, buyProposed: 13, otbProposed: 356740, varPct: -1, otbSubmitted: 348200, buyActual: 12 },
+      { buyPct: 6, salesPct: 9, stPct: 48, buyProposed: 8, otbProposed: 198560, varPct: -1, otbSubmitted: 192300, buyActual: 7 },
+      { buyPct: 15, salesPct: 18, stPct: 72, buyProposed: 17, otbProposed: 425890, varPct: -1, otbSubmitted: 418600, buyActual: 16 },
+      { buyPct: 4, salesPct: 5, stPct: 44, buyProposed: 5, otbProposed: 134250, varPct: 0, otbSubmitted: 130800, buyActual: 5 },
+      { buyPct: 10, salesPct: 11, stPct: 58, buyProposed: 11, otbProposed: 287430, varPct: 0, otbSubmitted: 282100, buyActual: 10 },
+      { buyPct: 7, salesPct: 8, stPct: 52, buyProposed: 8, otbProposed: 215780, varPct: 0, otbSubmitted: 210400, buyActual: 8 },
+    ];
+    let demoIdx = 0;
     CATEGORY_STRUCTURE.forEach((genderGroup: any) => {
       genderGroup.categories.forEach((cat: any) => {
         cat.subCategories.forEach((subCat: any) => {
           const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
-          initialData[key] = {
-            buyPct: Math.floor(Math.random() * 15) + 1,
-            salesPct: Math.floor(Math.random() * 15) + 1,
-            stPct: Math.floor(Math.random() * 50) + 40,
-            buyProposed: Math.floor(Math.random() * 15) + 1,
-            otbProposed: Math.floor(Math.random() * 100000) + 10000,
-            varPct: Math.floor(Math.random() * 10) - 5,
-            otbSubmitted: Math.floor(Math.random() * 100000) + 10000,
-            buyActual: Math.floor(Math.random() * 15) + 1
-          };
+          initialData[key] = { ...demoSets[demoIdx % demoSets.length] };
+          demoIdx++;
         });
       });
     });
@@ -378,8 +381,9 @@ const PlanningDetailModal = ({
 
         const buyPct = storeItems.reduce((sum: any, item: any) => sum + item.systemBuyPct, 0) / (storeItems.length || 1);
         const salesPct = storeItems.reduce((sum: any, item: any) => sum + item.lastSeasonSalesPct, 0) / (storeItems.length || 1);
-        const stPct = Math.random() * 30 + 40;
-        const moc = Math.random() * 5 + 2;
+        // Fixed ST% and MOC per store for consistent demo
+        const stPct = store.id === 'rex' ? (sectionIdx === 0 ? 67 : 48) : (sectionIdx === 0 ? 64 : 45);
+        const moc = store.id === 'rex' ? (sectionIdx === 0 ? 3.2 : 7.0) : (sectionIdx === 0 ? 3.7 : 8.0);
         const userBuyPct = storeItems.reduce((sum: any, item: any) => sum + item.userBuyPct, 0) / (storeItems.length || 1);
         const otbValue = storeItems.reduce((sum: any, item: any) => sum + item.otbValue, 0);
         const variance = userBuyPct - salesPct;
@@ -498,7 +502,8 @@ const PlanningDetailModal = ({
 
         const buyPct = storeItems.reduce((sum: any, item: any) => sum + item.systemBuyPct, 0) / (storeItems.length || 1);
         const salesPct = storeItems.reduce((sum: any, item: any) => sum + item.lastSeasonSalesPct, 0) / (storeItems.length || 1);
-        const stPct = Math.random() * 30 + 40;
+        // Fixed ST% per store/gender for consistent demo
+        const stPct = store.id === 'rex' ? (gen.id === 'gen2' ? 42 : 63) : (gen.id === 'gen2' ? 44 : 58);
         const userBuyPct = storeItems.reduce((sum: any, item: any) => sum + item.userBuyPct, 0) / (storeItems.length || 1);
         const otbValue = storeItems.reduce((sum: any, item: any) => sum + item.otbValue, 0);
         const variance = userBuyPct - salesPct;
@@ -704,7 +709,7 @@ const PlanningDetailModal = ({
                     <div
                       key={option.id}
                       onClick={() => handleGenderFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
+                      className="px-4 py-1.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${genderFilter === option.id ? 'text-[#D7B797] font-semibold' : 'text-[#F2F2F2]'}`}>
                         {option.name}
@@ -739,7 +744,7 @@ const PlanningDetailModal = ({
                     <div
                       key={option.id}
                       onClick={() => handleCategoryFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
+                      className="px-4 py-1.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${categoryFilter === option.id ? 'text-[#D7B797] font-semibold' : 'text-[#F2F2F2]'}`}>
                         {option.name}
@@ -774,7 +779,7 @@ const PlanningDetailModal = ({
                     <div
                       key={option.id}
                       onClick={() => handleSubCategoryFilterChange(option.id)}
-                      className="px-4 py-2.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
+                      className="px-4 py-1.5 flex items-center gap-2 hover:bg-[rgba(215,183,151,0.08)] cursor-pointer transition-colors"
                     >
                       <span className={`text-sm ${subCategoryFilter === option.id ? 'text-[#2A9E6A] font-semibold' : 'text-[#F2F2F2]'}`}>
                         {option.name}
@@ -967,7 +972,7 @@ const PlanningDetailModal = ({
               <button
                 type="button"
                 onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
                   selectedVersion === 'draft'
                     ? 'bg-[#E3B341] text-[#0A0A0A] hover:bg-[#E3B341]/90 shadow-lg'
                     : 'bg-[#127749] text-white hover:bg-[#2A9E6A] shadow-lg'
@@ -995,7 +1000,7 @@ const PlanningDetailModal = ({
                       setSelectedVersion('draft');
                       setIsVersionDropdownOpen(false);
                     }}
-                    className={`px-4 py-3 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
+                    className={`px-4 py-2 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
                       selectedVersion === 'draft'
                         ? 'bg-[rgba(227,179,65,0.15)] border-l-4 border-[#E3B341]'
                         : 'hover:bg-[rgba(215,183,151,0.08)]'
@@ -1038,7 +1043,7 @@ const PlanningDetailModal = ({
                             setSelectedVersion(version.id);
                             setIsVersionDropdownOpen(false);
                           }}
-                          className={`px-4 py-3 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 animate-in fade-in slide-in-from-right ${
+                          className={`px-4 py-2 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 animate-in fade-in slide-in-from-right ${
                             selectedVersion === version.id
                               ? 'bg-[rgba(42,158,106,0.15)] border-l-4 border-[#2A9E6A]'
                               : 'hover:bg-[rgba(215,183,151,0.08)]'
@@ -1099,7 +1104,7 @@ const PlanningDetailModal = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-5 py-3 font-medium text-sm flex items-center gap-2 border-b-2 transition-all duration-200 font-['Montserrat'] ${
+                  className={`px-4 py-2 font-medium text-sm flex items-center gap-2 border-b-2 transition-all duration-200 font-['Montserrat'] ${
                     isActive
                       ? 'border-[#D7B797] text-[#D7B797] bg-[#0A0A0A] -mb-px rounded-t-lg'
                       : 'border-transparent text-[#666666] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)] rounded-t-lg'
@@ -1129,7 +1134,7 @@ const PlanningDetailModal = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#2E2E2E] px-6 py-4 flex items-center justify-between bg-[#121212] rounded-b-2xl">
+        <div className="border-t border-[#2E2E2E] px-6 py-2.5 flex items-center justify-between bg-[#121212] rounded-b-2xl">
           <div className="flex items-center gap-6">
             <div className="text-sm">
               <span className="text-[#666666]">{t('planningDetail.totalBudget')}</span>
@@ -1155,7 +1160,7 @@ const PlanningDetailModal = ({
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="px-5 py-2.5 border border-[#2E2E2E] rounded-lg font-medium text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797] transition-all duration-200 transform hover:scale-105 active:scale-95"
+              className="px-4 py-1.5 border border-[#2E2E2E] rounded-lg font-medium text-sm text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797] transition-all duration-200 transform hover:scale-105 active:scale-95"
             >
               {t('common.cancel')}
             </button>
@@ -1165,7 +1170,7 @@ const PlanningDetailModal = ({
               <button
                 onClick={handleApprove}
                 disabled={approveAnimation}
-                className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 transform hover:scale-105 active:scale-95 relative overflow-hidden ${
+                className={`px-4 py-1.5 rounded-lg font-medium text-sm transition-all duration-300 flex items-center gap-2 transform hover:scale-105 active:scale-95 relative overflow-hidden ${
                   approveAnimation
                     ? 'bg-[#2A9E6A] text-white shadow-lg'
                     : 'bg-[#127749] text-white hover:bg-[#2A9E6A] shadow-lg'
@@ -1188,7 +1193,7 @@ const PlanningDetailModal = ({
             <button
               onClick={onSave}
               disabled={isReadOnly}
-              className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105 active:scale-95 relative overflow-hidden ${
+              className={`px-4 py-1.5 rounded-lg font-medium text-sm transition-all duration-200 flex items-center gap-2 shadow-lg transform hover:scale-105 active:scale-95 relative overflow-hidden ${
                 isReadOnly
                   ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed shadow-none'
                   : 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#D7B797]/90'

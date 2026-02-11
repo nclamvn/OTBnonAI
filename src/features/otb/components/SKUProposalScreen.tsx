@@ -282,9 +282,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
   const getDefaultSizing = () => ({
-    choiceA: { s0002: 0, s0004: 3, s0006: 3, s0008: 2 },
-    choiceB: { s0002: 0, s0004: 2, s0006: 2, s0008: 2 },
-    choiceC: { s0002: 0, s0004: 2, s0006: 1, s0008: 1 }
+    choiceA: { s0002: 2, s0004: 4, s0006: 3, s0008: 2 },
+    choiceB: { s0002: 1, s0004: 3, s0006: 3, s0008: 2 },
+    choiceC: { s0002: 1, s0004: 2, s0006: 2, s0008: 1 }
   });
 
   const getSizingKey = (blockKey: any, itemIdx: any) => `${blockKey}_${itemIdx}`;

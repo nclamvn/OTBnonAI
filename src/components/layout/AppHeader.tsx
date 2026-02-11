@@ -522,7 +522,7 @@ const AppHeader = ({
 
       {/* KPI Tracking Bar - Only show for Planning workflow */}
       {currentScreen !== 'budget-management' && isInPlanningWorkflow && (
-        <div className="px-4 py-1.5" style={{
+        <div className="px-4 py-0.5" style={{
           borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
             ? 'linear-gradient(90deg, #0A0A0A 0%, rgba(215,183,151,0.02) 50%, #0A0A0A 100%)'
@@ -541,7 +541,7 @@ const AppHeader = ({
                 return (
                   <React.Fragment key={step.id}>
                     {index > 0 && (
-                      <div className={`w-4 h-[1.5px] rounded-full transition-all duration-300`} style={{
+                      <div className={`w-3 h-[1.5px] rounded-full transition-all duration-300`} style={{
                         background: isCompleted
                           ? 'linear-gradient(90deg, #127749, #2A9E6A)'
                           : darkMode ? '#1A1A1A' : '#D1D5DB',
@@ -549,7 +549,7 @@ const AppHeader = ({
                     )}
                     <button
                       onClick={() => onNavigate(step.id)}
-                      className="flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200"
+                      className="flex items-center gap-1 px-1.5 py-0.5 rounded-md transition-all duration-200"
                       style={{
                         background: isCurrent
                           ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
@@ -644,7 +644,7 @@ const AppHeader = ({
               console.log('Save');
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-3 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
+            className={`w-full px-4 py-2 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
               darkMode
                 ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
                 : 'hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'
@@ -658,7 +658,7 @@ const AppHeader = ({
               console.log('Save As New Version');
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-3 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${
+            className={`w-full px-4 py-2 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${
               darkMode
                 ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
                 : 'border-[#C4B5A5] hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'

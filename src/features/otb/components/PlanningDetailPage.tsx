@@ -225,41 +225,52 @@ const PlanningDetailPage = ({
   useEffect(() => {
     const initialData: Record<string, any> = {};
 
-    // Initialize Category tab data
+    // Fixed demo data sets for category tab (cycling through for variety)
+    const catDemoSets = [
+      { buyPct: 8, salesPct: 12, stPct: 62, buyProposed: 10, otbProposed: 245680, varPct: -2, otbSubmitted: 238450, buyActual: 9 },
+      { buyPct: 5, salesPct: 7, stPct: 55, buyProposed: 6, otbProposed: 178320, varPct: -1, otbSubmitted: 172100, buyActual: 6 },
+      { buyPct: 12, salesPct: 14, stPct: 68, buyProposed: 13, otbProposed: 356740, varPct: -1, otbSubmitted: 348200, buyActual: 12 },
+      { buyPct: 6, salesPct: 9, stPct: 48, buyProposed: 8, otbProposed: 198560, varPct: -1, otbSubmitted: 192300, buyActual: 7 },
+      { buyPct: 15, salesPct: 18, stPct: 72, buyProposed: 17, otbProposed: 425890, varPct: -1, otbSubmitted: 418600, buyActual: 16 },
+      { buyPct: 4, salesPct: 5, stPct: 44, buyProposed: 5, otbProposed: 134250, varPct: 0, otbSubmitted: 130800, buyActual: 5 },
+      { buyPct: 10, salesPct: 11, stPct: 58, buyProposed: 11, otbProposed: 287430, varPct: 0, otbSubmitted: 282100, buyActual: 10 },
+      { buyPct: 7, salesPct: 8, stPct: 52, buyProposed: 8, otbProposed: 215780, varPct: 0, otbSubmitted: 210400, buyActual: 8 },
+    ];
+    let catIdx = 0;
     categoryStructure.forEach((genderGroup: any) => {
       genderGroup.categories.forEach((cat: any) => {
         cat.subCategories.forEach((subCat: any) => {
           const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
-          initialData[key] = {
-            buyPct: Math.floor(Math.random() * 15) + 1,
-            salesPct: Math.floor(Math.random() * 15) + 1,
-            stPct: Math.floor(Math.random() * 50) + 40,
-            buyProposed: Math.floor(Math.random() * 15) + 1,
-            otbProposed: Math.floor(Math.random() * 100000) + 10000,
-            varPct: Math.floor(Math.random() * 10) - 5,
-            otbSubmitted: Math.floor(Math.random() * 100000) + 10000,
-            buyActual: Math.floor(Math.random() * 15) + 1
-          };
+          initialData[key] = { ...catDemoSets[catIdx % catDemoSets.length] };
+          catIdx++;
         });
       });
     });
 
-    // Initialize Collection tab data
+    // Fixed demo data for Collection tab (REX/TTP per collection)
+    const collectionDemo: Record<string, Record<string, number>> = {
+      carryover: { rex: 22, ttp: 16 },
+      seasonal: { rex: 35, ttp: 26 },
+    };
     COLLECTION_SECTIONS.forEach((section: any) => {
       STORES.forEach((store: any) => {
         const key = `collection_${section.id}_${store.id}`;
         initialData[key] = {
-          userBuyPct: Math.floor(Math.random() * 30) + 10
+          userBuyPct: collectionDemo[section.id]?.[store.id] || 20
         };
       });
     });
 
-    // Initialize Gender tab data
+    // Fixed demo data for Gender tab (REX/TTP per gender)
+    const genderDemo: Record<string, Record<string, number>> = {
+      gen1: { rex: 36, ttp: 25 },
+      gen2: { rex: 22, ttp: 17 },
+    };
     GENDERS.forEach((gender: any) => {
       STORES.forEach((store: any) => {
         const key = `gender_${gender.id}_${store.id}`;
         initialData[key] = {
-          userBuyPct: Math.floor(Math.random() * 30) + 10
+          userBuyPct: genderDemo[gender.id]?.[store.id] || 20
         };
       });
     });
@@ -489,8 +500,9 @@ const PlanningDetailPage = ({
 
         const buyPct = storeItems.reduce((sum: any, item: any) => sum + item.systemBuyPct, 0) / (storeItems.length || 1);
         const salesPct = storeItems.reduce((sum: any, item: any) => sum + item.lastSeasonSalesPct, 0) / (storeItems.length || 1);
-        const stPct = Math.random() * 30 + 40;
-        const moc = Math.random() * 5 + 2;
+        // Fixed ST% and MOC per store for consistent demo
+        const stPct = store.id === 'rex' ? (sectionIdx === 0 ? 67 : 48) : (sectionIdx === 0 ? 64 : 45);
+        const moc = store.id === 'rex' ? (sectionIdx === 0 ? 3.2 : 7.0) : (sectionIdx === 0 ? 3.7 : 8.0);
         const userBuyPct = storeItems.reduce((sum: any, item: any) => sum + item.userBuyPct, 0) / (storeItems.length || 1);
         const otbValue = storeItems.reduce((sum: any, item: any) => sum + item.otbValue, 0);
         const variance = userBuyPct - salesPct;
@@ -600,7 +612,8 @@ const PlanningDetailPage = ({
 
         const buyPct = storeItems.reduce((sum: any, item: any) => sum + item.systemBuyPct, 0) / (storeItems.length || 1);
         const salesPct = storeItems.reduce((sum: any, item: any) => sum + item.lastSeasonSalesPct, 0) / (storeItems.length || 1);
-        const stPct = Math.random() * 30 + 40;
+        // Fixed ST% per store/gender for consistent demo
+        const stPct = store.id === 'rex' ? (gen.id === 'gen2' ? 42 : 63) : (gen.id === 'gen2' ? 44 : 58);
         const userBuyPct = storeItems.reduce((sum: any, item: any) => sum + item.userBuyPct, 0) / (storeItems.length || 1);
         const otbValue = storeItems.reduce((sum: any, item: any) => sum + item.otbValue, 0);
         const variance = userBuyPct - salesPct;

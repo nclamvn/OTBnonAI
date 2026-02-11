@@ -882,7 +882,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     return (
       <div className="p-4 space-y-3">
         {/* Filter Section */}
-        <div className={`px-4 py-3 rounded-xl border mb-4 ${
+        <div className={`px-4 py-2 rounded-xl border mb-4 ${
           darkMode
             ? 'bg-[#121212] border-[#2E2E2E]'
             : 'bg-[#F2F2F2] border-[#C4B5A5]'
@@ -923,7 +923,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     <div
                       key={option.id}
                       onClick={() => handleGenderFilterChange(option.id)}
-                      className={`px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors ${
+                      className={`px-4 py-1.5 flex items-center gap-2 cursor-pointer transition-colors ${
                         darkMode
                           ? 'hover:bg-[rgba(215,183,151,0.08)]'
                           : 'hover:bg-[rgba(160,120,75,0.12)]'
@@ -969,7 +969,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     <div
                       key={option.id}
                       onClick={() => handleCategoryFilterChange(option.id)}
-                      className={`px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors ${
+                      className={`px-4 py-1.5 flex items-center gap-2 cursor-pointer transition-colors ${
                         darkMode
                           ? 'hover:bg-[rgba(215,183,151,0.08)]'
                           : 'hover:bg-[rgba(160,120,75,0.12)]'
@@ -1015,7 +1015,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     <div
                       key={option.id}
                       onClick={() => handleSubCategoryFilterChange(option.id)}
-                      className={`px-4 py-2.5 flex items-center gap-2 cursor-pointer transition-colors ${
+                      className={`px-4 py-1.5 flex items-center gap-2 cursor-pointer transition-colors ${
                         darkMode
                           ? 'hover:bg-[rgba(215,183,151,0.08)]'
                           : 'hover:bg-[rgba(160,120,75,0.12)]'
@@ -1059,7 +1059,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
               {/* Gender Header - Level 1 */}
               <div
                 onClick={() => toggleGenderExpanded(genderGroup.gender.id)}
-                className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-3 cursor-pointer transition-all ${
+                className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-2 cursor-pointer transition-all ${
                   darkMode
                     ? 'bg-gradient-to-r from-[#1A1A1A] to-[#121212] hover:from-[#2E2E2E] hover:to-[#1A1A1A]'
                     : 'bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.08)] hover:from-[rgba(215,183,151,0.25)] hover:to-[rgba(215,183,151,0.15)] border-b border-[rgba(215,183,151,0.2)]'
@@ -1338,7 +1338,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'budget' ? null : 'budget'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                    className={`w-full px-3 py-1.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
                       selectedBudget
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1378,7 +1378,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         {!loadingBudgets && filteredBudgets.length > 0 && (
                         <div
                           onClick={() => { setSelectedBudgetId('all'); setOpenDropdown(null); }}
-                          className={`px-4 py-2.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                          className={`px-4 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
                             selectedBudgetId === 'all'
                               ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
                               : darkMode ? 'hover:bg-[#1A1A1A] text-[#666666]' : 'hover:bg-[#F2F2F2] text-[#999999]'
@@ -1397,7 +1397,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                               if (budget.seasonType) setSelectedSeason(budget.seasonType);
                               setOpenDropdown(null);
                             }}
-                            className={`px-4 py-3 cursor-pointer transition-colors border-t ${
+                            className={`px-4 py-2 cursor-pointer transition-colors border-t ${
                               darkMode ? 'border-[#2E2E2E]' : 'border-[#D4C8BB]'
                             } ${
                               selectedBudgetId === budget.id
@@ -1445,7 +1445,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'seasonGroup' ? null : 'seasonGroup'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                    className={`w-full px-3 py-1.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
                       selectedSeasonGroup !== 'all'
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1467,7 +1467,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     }`}>
                       <div
                         onClick={() => { setSelectedSeasonGroup('all'); setOpenDropdown(null); }}
-                        className={`px-3 py-2.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                        className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
                           selectedSeasonGroup === 'all'
                             ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
                             : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
@@ -1480,7 +1480,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         <div
                           key={season.id}
                           onClick={() => { setSelectedSeasonGroup(season.id); setOpenDropdown(null); }}
-                          className={`px-3 py-2.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                          className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
                             selectedSeasonGroup === season.id
                               ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
                               : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
@@ -1505,7 +1505,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'season' ? null : 'season'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                    className={`w-full px-3 py-1.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
                       selectedSeason !== 'all'
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1527,7 +1527,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     }`}>
                       <div
                         onClick={() => { setSelectedSeason('all'); setOpenDropdown(null); }}
-                        className={`px-3 py-2.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                        className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
                           selectedSeason === 'all'
                             ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
                             : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
@@ -1540,7 +1540,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         <div
                           key={season.id}
                           onClick={() => { setSelectedSeason(season.id); setOpenDropdown(null); }}
-                          className={`px-3 py-2.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
+                          className={`px-3 py-1.5 flex items-center justify-between cursor-pointer text-sm transition-colors ${
                             selectedSeason === season.id
                               ? darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
                               : darkMode ? 'hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'hover:bg-[#F2F2F2] text-[#1A1A1A]'
@@ -1571,7 +1571,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenCategoryDropdown(null);
                     }}
                     disabled={versions.length === 0 && !loadingVersions}
-                    className={`w-full px-3 py-2.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
+                    className={`w-full px-3 py-1.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-sm transition-all ${
                       versions.length === 0 && !loadingVersions
                         ? darkMode
                           ? 'bg-[#121212] border-[#2E2E2E] text-[#666666] cursor-not-allowed opacity-50'
@@ -1627,7 +1627,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           <div
                             key={version.id}
                             onClick={() => { setSelectedVersionId(version.id); setOpenDropdown(null); }}
-                            className={`px-4 py-3 cursor-pointer transition-colors border-t ${
+                            className={`px-4 py-2 cursor-pointer transition-colors border-t ${
                               darkMode ? 'border-[#2E2E2E]' : 'border-[#D4C8BB]'
                             } ${
                               selectedVersionId === version.id
@@ -1708,7 +1708,12 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                               <span>TTP: {formatCurrency(budgetContext?.ttp || 0)}</span>
                             </>
                           ) : selectedBudget?.details?.length > 0 ? (
-                            selectedBudget.details.map((d: any) => (
+                            selectedBudget.details
+                              .filter((d: any) => {
+                                const code = (d.store?.code || d.storeCode || '').toUpperCase();
+                                return code === 'REX' || code === 'TTP';
+                              })
+                              .map((d: any) => (
                               <span key={d.id || d.store?.code}>{d.store?.code || d.storeCode}: {formatCurrency(Number(d.budgetAmount) || 0)}</span>
                             ))
                           ) : (

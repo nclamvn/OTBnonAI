@@ -550,7 +550,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
             <div className="flex flex-col md:flex-row gap-2 md:gap-3 mt-4 md:mt-6">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className={`flex-1 px-4 py-2.5 border rounded-lg font-medium text-sm font-['Montserrat'] transition-colors ${
+                className={`flex-1 px-4 py-1.5 border rounded-lg font-medium text-sm font-['Montserrat'] transition-colors ${
                   darkMode ? 'border-[#2E2E2E] text-[#999999] hover:bg-[#1A1A1A]' : 'border-[#C4B5A5] text-[#666666] hover:bg-[rgba(160,120,75,0.12)]'
                 } ${isMobile ? 'order-2' : ''}`}
               >
@@ -559,7 +559,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
               <button
                 onClick={handleSave}
                 disabled={!formData.brandId || !formData.roleName || saving}
-                className={`flex-1 px-4 py-2.5 bg-[#D7B797] hover:bg-[#C4A480] text-[#0A0A0A] font-semibold text-sm font-['Montserrat'] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${isMobile ? 'order-1' : ''}`}
+                className={`flex-1 px-4 py-1.5 bg-[#D7B797] hover:bg-[#C4A480] text-[#0A0A0A] font-semibold text-sm font-['Montserrat'] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${isMobile ? 'order-1' : ''}`}
               >
                 <Save size={16} />
                 {saving ? t('approval.saving') : editingStep ? t('common.update') : t('common.create')}
