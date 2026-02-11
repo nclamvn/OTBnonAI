@@ -335,6 +335,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     }
   }, [contextBanner, skuCatalog, skuBlocks.length, skuDataLoading]);
   const [editingCell, setEditingCell] = useState<any>(null);
+  const [highlightedRow, setHighlightedRow] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const [sizingPopup, setSizingPopup] = useState<any>({ open: false, blockKey: null, itemIdx: null, item: null });
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
@@ -1332,11 +1333,23 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
                 {!isCollapsed && (
                   <div className="overflow-x-auto">
+                    {(() => {
+                      const hlBg = darkMode ? 'bg-[rgba(215,183,151,0.12)]' : 'bg-[rgba(160,120,75,0.1)]';
+                      const hlLabel = darkMode ? 'bg-[#1f1a14]' : 'bg-[#ede4d8]';
+                      const normLabel = darkMode ? 'bg-[#121212]' : 'bg-white';
+                      const labelBase = `px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 cursor-pointer select-none transition-colors`;
+                      const labelBorder = darkMode ? '!border-r-[#555]' : '!border-r-[rgba(160,120,75,0.4)]';
+                      const labelColor = darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]';
+                      const isHl = (rowId: string) => highlightedRow === `${key}_${rowId}`;
+                      const toggleHl = (rowId: string) => setHighlightedRow(prev => prev === `${key}_${rowId}` ? null : `${key}_${rowId}`);
+                      const trCls = (rowId: string, extra?: string) => `${isHl(rowId) ? hlBg : ''} ${extra || ''}`;
+                      const tdLabel = (rowId: string, extra?: string) => `${labelBase} ${labelColor} ${isHl(rowId) ? hlLabel : normLabel} ${labelBorder} ${extra || ''}`;
+                      return (
                     <table className={`w-full text-xs border-collapse ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
                       <tbody>
                         {/* Image row */}
-                        <tr className="">
-                          <td className={`px-3 py-2 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Image</td>
+                        <tr className={trCls('image')}>
+                          <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-2 text-center min-w-[140px]">
                               <div className={`w-16 h-16 mx-auto rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.25)]'}`}>
@@ -1346,8 +1359,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* SKU row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>SKU</td>
+                        <tr className={trCls('sku')}>
+                          <td className={tdLabel('sku')} onClick={() => toggleHl('sku')}>SKU</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
                               {item.isNew ? (
@@ -1366,65 +1379,65 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* Name row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Name</td>
+                        <tr className={trCls('name')}>
+                          <td className={tdLabel('name')} onClick={() => toggleHl('name')}>Name</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.name}</td>
                           ))}
                         </tr>
                         {/* Product Type (L3) row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Product Type (L3)</td>
+                        <tr className={trCls('productType')}>
+                          <td className={tdLabel('productType')} onClick={() => toggleHl('productType')}>Product Type (L3)</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.productType}</td>
                           ))}
                         </tr>
                         {/* Theme row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Theme</td>
+                        <tr className={trCls('theme')}>
+                          <td className={tdLabel('theme')} onClick={() => toggleHl('theme')}>Theme</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.theme}</td>
                           ))}
                         </tr>
                         {/* Color row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Color</td>
+                        <tr className={trCls('color')}>
+                          <td className={tdLabel('color')} onClick={() => toggleHl('color')}>Color</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{item.color}</td>
                           ))}
                         </tr>
                         {/* Composition row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Composition</td>
+                        <tr className={trCls('composition')}>
+                          <td className={tdLabel('composition')} onClick={() => toggleHl('composition')}>Composition</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center max-w-[160px] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} title={item.composition}>{item.composition}</td>
                           ))}
                         </tr>
                         {/* Unit cost row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Unit cost</td>
+                        <tr className={trCls('unitCost')}>
+                          <td className={tdLabel('unitCost')} onClick={() => toggleHl('unitCost')}>Unit cost</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(item.unitCost)}</td>
                           ))}
                         </tr>
                         {/* SRP row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>SRP</td>
+                        <tr className={trCls('srp')}>
+                          <td className={tdLabel('srp')} onClick={() => toggleHl('srp')}>SRP</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp)}</td>
                           ))}
                         </tr>
-                        {/* Order row - highlighted */}
-                        <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#1a1714] !border-r-[#555]' : 'text-[#c0392b] bg-[#f5efe8] !border-r-[rgba(160,120,75,0.4)]'}`}>Order</td>
+                        {/* Order row - always highlighted + click highlight */}
+                        <tr className={trCls('order', darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]')}>
+                          <td className={`${labelBase} font-bold cursor-pointer select-none transition-colors ${labelBorder} ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'} ${isHl('order') ? hlLabel : (darkMode ? 'bg-[#1a1714]' : 'bg-[#f5efe8]')}`} onClick={() => toggleHl('order')}>Order</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'}`}>{item.order}</td>
                           ))}
                         </tr>
                         {/* Dynamic store rows */}
                         {stores.map((st: any) => (
-                          <tr key={st.code} className="">
-                            <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>{st.code}</td>
+                          <tr key={st.code} className={trCls(`store_${st.code}`)}>
+                            <td className={tdLabel(`store_${st.code}`)} onClick={() => toggleHl(`store_${st.code}`)}>{st.code}</td>
                             {block.items.map((item: any, idx: number) => {
                               const storeKey = `${key}|${idx}|store_${st.code}`;
                               const isEditingStore = editingCell === storeKey;
@@ -1455,16 +1468,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                             })}
                           </tr>
                         ))}
-                        {/* TTL value row - highlighted */}
-                        <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]'}>
-                          <td className={`px-3 py-1.5 font-bold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#1a1714] !border-r-[#555]' : 'text-[#6B4D30] bg-[#f5efe8] !border-r-[rgba(160,120,75,0.4)]'}`}>TTL value</td>
+                        {/* TTL value row - always highlighted + click highlight */}
+                        <tr className={trCls('ttlValue', darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]')}>
+                          <td className={`${labelBase} font-bold cursor-pointer select-none transition-colors ${labelBorder} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${isHl('ttlValue') ? hlLabel : (darkMode ? 'bg-[#1a1714]' : 'bg-[#f5efe8]')}`} onClick={() => toggleHl('ttlValue')}>TTL value</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue || (item.order * (item.srp || 0)))}</td>
                           ))}
                         </tr>
                         {/* Customer Target row */}
-                        <tr className="">
-                          <td className={`px-3 py-1.5 font-semibold font-['Montserrat'] whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'text-[#D7B797] bg-[#121212] !border-r-[#555]' : 'text-[#6B4D30] bg-white !border-r-[rgba(160,120,75,0.4)]'}`}>Customer Target</td>
+                        <tr className={trCls('customerTarget')}>
+                          <td className={tdLabel('customerTarget')} onClick={() => toggleHl('customerTarget')}>Customer Target</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1.5 text-center">
                               <select
@@ -1479,7 +1492,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           ))}
                         </tr>
                         {/* Actions row */}
-                        <tr className="">
+                        <tr>
                           <td className={`px-3 py-1.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212] !border-r-[#555]' : 'bg-white !border-r-[rgba(160,120,75,0.4)]'}`}></td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1 text-center">
@@ -1492,6 +1505,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         </tr>
                       </tbody>
                     </table>
+                      );
+                    })()}
                     {/* Add new SKU button */}
                     <div className={`border-t border-dashed px-3 py-2 ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
                       <button
