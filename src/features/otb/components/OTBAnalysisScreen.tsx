@@ -1202,7 +1202,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-[#D7B797] to-[#C4A57B] hover:from-[#C4A57B] hover:to-[#D7B797] text-[#1A1A1A] rounded-lg font-medium text-xs transition-all shadow-sm hover:shadow-md"
                                         >
                                           <Package size={12} />
-                                          {t('nav.skuProposal')}
+                                          {t('otbAnalysis.allocateSKU')}
                                         </button>
                                       </td>
                                     </tr>

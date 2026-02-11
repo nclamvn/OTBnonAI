@@ -64,7 +64,7 @@ const vi = {
     confirmation: 'Xác nhận',
     budgetManagement: 'Quản lý ngân sách',
     budgetAllocation: 'Phân bổ ngân sách',
-    otbAnalysis: 'Phân tích OTB',
+    otbAnalysis: 'Phân bổ OTB',
     skuProposal: 'Đề xuất SKU',
     tickets: 'Phiếu yêu cầu',
     approvals: 'Phê duyệt',
@@ -130,7 +130,7 @@ const vi = {
     dashboard: 'Bảng điều khiển',
     budgetManagement: 'Quản lý ngân sách',
     budgetAllocation: 'Phân bổ ngân sách',
-    otbAnalysis: 'Phân tích OTB',
+    otbAnalysis: 'Phân bổ OTB',
     skuProposal: 'Đề xuất SKU',
     devTicket: 'Phiếu phát triển',
     tickets: 'Phiếu yêu cầu',
@@ -327,7 +327,8 @@ const vi = {
   // OTB Analysis
   // ──────────────────────────────────────────────
   otbAnalysis: {
-    title: 'Phân tích OTB',
+    title: 'Phân bổ OTB',
+    allocateSKU: 'Phân bổ SKU',
     collection: 'Bộ sưu tập',
     gender: 'Giới tính',
     category: 'Danh mục',

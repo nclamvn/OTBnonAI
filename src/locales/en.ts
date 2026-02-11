@@ -64,7 +64,7 @@ const en = {
     confirmation: 'Confirmation',
     budgetManagement: 'Budget Management',
     budgetAllocation: 'Budget Allocation',
-    otbAnalysis: 'OTB Analysis',
+    otbAnalysis: 'OTB Allocation',
     skuProposal: 'SKU Proposal',
     tickets: 'Tickets',
     approvals: 'Approvals',
@@ -130,7 +130,7 @@ const en = {
     dashboard: 'Dashboard',
     budgetManagement: 'Budget Management',
     budgetAllocation: 'Budget Allocation',
-    otbAnalysis: 'OTB Analysis',
+    otbAnalysis: 'OTB Allocation',
     skuProposal: 'SKU Proposal',
     devTicket: 'Dev Ticket',
     tickets: 'Tickets',
@@ -327,7 +327,8 @@ const en = {
   // OTB Analysis
   // ──────────────────────────────────────────────
   otbAnalysis: {
-    title: 'OTB Analysis',
+    title: 'OTB Allocation',
+    allocateSKU: 'Allocate SKU',
     collection: 'Collection',
     gender: 'Gender',
     category: 'Category',
