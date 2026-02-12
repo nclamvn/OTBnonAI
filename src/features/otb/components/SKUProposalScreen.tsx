@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Filter, ChevronDown, Package, Image as ImageIcon, Pencil, X, Plus, Trash2, Ruler,
+  ChevronDown, Package, Image as ImageIcon, Pencil, X, Plus, Trash2, Ruler,
   Star, Layers, Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -634,7 +634,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className={`rounded-xl shadow-sm border p-2 md:p-3 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm p-2 md:p-3 ${darkMode ? 'bg-[#121212]/90 border-[#2E2E2E]' : 'bg-white/90 border-[rgba(215,183,151,0.3)]'}`}>
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 
           {/* Mobile Filter Button */}
@@ -687,13 +687,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           )}
         </div>
 
-        {!isMobile && <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-          <div className={`rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-            <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-              <Filter size={12} />
-              <span className="text-xs font-semibold font-['Montserrat']">{t('skuProposal.filters')}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
+        {!isMobile && <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.budget')}</label>
                 <select
@@ -730,15 +724,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
-
-          <div className={`rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
-            <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-              <Filter size={12} />
-              <span className="text-xs font-semibold font-['Montserrat']">{t('common.filters')}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2">
               <div>
                 <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.gender')}</label>
                 <select
@@ -775,20 +760,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   ))}
                 </select>
               </div>
-            </div>
-          </div>
         </div>}
 
-        {/* Versions Section */}
-        <div className={`mt-2 rounded-lg border p-3 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-          <div className={`flex items-center gap-1.5 mb-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-            <Package size={12} />
-            <span className="text-xs font-semibold font-['Montserrat']">{t('skuProposal.version')}</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
+        {/* Versions + View Mode - Single Row */}
+        <div className="flex flex-wrap items-center gap-2 mt-2">
             {/* SKU Version Dropdown */}
-            <div className="flex items-center gap-3">
-              <span className={`text-sm font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.version')}</span>
               <div className="relative" ref={skuVersionDropdownRef}>
                 <button
                   type="button"
@@ -808,7 +784,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 </button>
 
                 {isSkuVersionOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-72 rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+                  <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
                     <div className={`px-3 py-0.5 border-b ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
                       <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('common.version')}</span>
                     </div>
@@ -857,14 +833,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   </div>
                 )}
               </div>
-            </div>
 
             {/* Divider */}
-            <div className={`h-8 w-px hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[rgba(215,183,151,0.3)]'}`} />
+            <div className={`h-6 w-px hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[rgba(215,183,151,0.3)]'}`} />
 
             {/* Sizing Choice Dropdown */}
-            <div className="flex items-center gap-3">
-              <span className={`text-sm font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.sizingChoice')}</span>
               <div className="relative" ref={sizingVersionDropdownRef}>
                 <button
                   type="button"
@@ -884,7 +857,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 </button>
 
                 {isSizingVersionOpen && (
-                  <div className={`absolute top-full left-0 mt-1 w-64 rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+                  <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
                     <div className={`px-3 py-0.5 border-b ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
                       <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('skuProposal.sizing')}</span>
                     </div>
@@ -930,41 +903,42 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   </div>
                 )}
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex flex-wrap items-center gap-3 justify-between mt-4">
-          <div className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-            {canShowCardView ? `${filteredSkuItems.length} SKUs found. Card view available.` : 'No SKU data. Add SKUs to enable card view.'}
-          </div>
-          <div className={`flex items-center gap-1 rounded-lg p-1 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-            <button
-              type="button"
-              onClick={() => setViewMode('table')}
-              className={`px-3 py-0.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'table'
-                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
-                  : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
-              }`}
-            >
-              Table
-            </button>
-            <button
-              type="button"
-              onClick={() => canShowCardView && setViewMode('card')}
-              disabled={!canShowCardView}
-              title={!canShowCardView ? 'Add SKUs to enable card view' : 'View SKUs as cards'}
-              className={`px-3 py-0.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'card'
-                  ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
-                  : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
-              } ${!canShowCardView ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              Card
-            </button>
-          </div>
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* SKU Count + View Mode Toggle */}
+            <div className="flex items-center gap-3">
+              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                {filteredSkuItems.length} SKUs
+              </span>
+              <div className={`flex items-center gap-1 rounded-lg p-0.5 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+                    viewMode === 'table'
+                      ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
+                      : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
+                  }`}
+                >
+                  Table
+                </button>
+                <button
+                  type="button"
+                  onClick={() => canShowCardView && setViewMode('card')}
+                  disabled={!canShowCardView}
+                  title={!canShowCardView ? 'Add SKUs to enable card view' : 'View SKUs as cards'}
+                  className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+                    viewMode === 'card'
+                      ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
+                      : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
+                  } ${!canShowCardView ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  Card
+                </button>
+              </div>
+            </div>
         </div>
       </div>
 
@@ -1113,17 +1087,20 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                                   <span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${colors[si % colors.length]}`} />{st.code}</span>
                                 </td>
                                 <td className="px-3 py-0.5 text-center">
-                                  <input
-                                    type="number"
-                                    min="0"
-                                    value={storeVal}
-                                    onChange={(e) => handleNumberChange(blockKey, idx, `store_${st.code}`, e.target.value)}
-                                    className={`w-16 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
-                                      darkMode
-                                        ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
-                                        : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
-                                    }`}
-                                  />
+                                  <div className="relative group inline-block">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      value={storeVal}
+                                      onChange={(e) => handleNumberChange(blockKey, idx, `store_${st.code}`, e.target.value)}
+                                      className={`w-16 pl-4 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                        darkMode
+                                          ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
+                                          : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
+                                      }`}
+                                    />
+                                    <Pencil size={8} className="absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A6340]/30" />
+                                  </div>
                                 </td>
                                 <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(storeVal * (item.srp || 0))}</td>
                               </tr>
@@ -1445,15 +1422,18 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                               return (
                                 <td key={idx} className="px-3 py-1.5 text-center">
                                   {isEditingStore ? (
-                                    <input
-                                      type="number"
-                                      value={editValue}
-                                      onChange={(e) => setEditValue(e.target.value)}
-                                      onBlur={() => handleSaveEdit(storeKey)}
-                                      onKeyDown={(e) => handleKeyDown(e, storeKey)}
-                                      className={`w-14 px-1 py-0.5 text-center border-2 rounded-md text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2]' : 'border-[#D7B797] bg-white text-[#333333]'}`}
-                                      autoFocus
-                                    />
+                                    <div className="relative group inline-block">
+                                      <input
+                                        type="number"
+                                        value={editValue}
+                                        onChange={(e) => setEditValue(e.target.value)}
+                                        onBlur={() => handleSaveEdit(storeKey)}
+                                        onKeyDown={(e) => handleKeyDown(e, storeKey)}
+                                        className={`w-14 pl-4 py-0.5 text-center border-2 rounded-md text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'border-[#D7B797] bg-[#121212] text-[#F2F2F2]' : 'border-[#D7B797] bg-white text-[#333333]'}`}
+                                        autoFocus
+                                      />
+                                      <Pencil size={8} className="absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A6340]/30" />
+                                    </div>
                                   ) : (
                                     <button
                                       type="button"
@@ -1530,7 +1510,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               <div className={`flex items-center gap-0 ${darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(215,183,151,0.25)]'}`}>
                 <div className={`w-1.5 self-stretch rounded-l-xl ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`} />
                 <div className="flex flex-wrap items-center justify-between flex-1 px-4 py-2.5 gap-3">
-                  <span className={`text-sm font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                  <span className={`text-xs font-semibold font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                     GRAND TOTAL — {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
                   </span>
                   <div className="flex items-center gap-5 text-xs font-['JetBrains_Mono']">

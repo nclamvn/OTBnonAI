@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
-  ArrowLeft, Save, TrendingUp, Layers, Users, Tag, Info, Pencil, Filter,
+  ArrowLeft, Save, TrendingUp, Layers, Users, Tag, Info, Pencil,
   ChevronDown, Check, CheckCircle2, History, Clock, Sparkles, X,
   Calendar, User, MessageSquare, AlertCircle, CheckCircle, XCircle,
   Send, FileText, DollarSign
@@ -534,8 +534,8 @@ const PlanningDetailPage = ({
                 <tr className={groupRowClass}>
                   <td className="px-4 py-0.5" colSpan={8}>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800">{colData.section.name}</span>
-                      <Info size={14} className="text-slate-400" />
+                      <span className="font-semibold text-xs uppercase tracking-wide text-slate-800">{colData.section.name}</span>
+                      <Info size={12} className="text-slate-400" />
                     </div>
                   </td>
                 </tr>
@@ -585,7 +585,7 @@ const PlanningDetailPage = ({
             ))}
 
             <tr className={sumRowClass}>
-              <td className="px-4 py-4 font-bold">{t('planningDetail.sum')}</td>
+              <td className="px-4 py-4 font-semibold text-xs uppercase tracking-wide">{t('planningDetail.sum')}</td>
               <td className="px-4 py-4 text-center">100%</td>
               <td className="px-4 py-4 text-center">100%</td>
               <td className="px-4 py-4 text-center">-</td>
@@ -644,8 +644,8 @@ const PlanningDetailPage = ({
                 <tr className={groupRowClass}>
                   <td className="px-4 py-0.5" colSpan={7}>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-800">{genData.gender.name}</span>
-                      <Info size={14} className="text-slate-400" />
+                      <span className="font-semibold text-xs uppercase tracking-wide text-slate-800">{genData.gender.name}</span>
+                      <Info size={12} className="text-slate-400" />
                     </div>
                   </td>
                 </tr>
@@ -694,7 +694,7 @@ const PlanningDetailPage = ({
             ))}
 
             <tr className={sumRowClass}>
-              <td className="px-4 py-4 font-bold">{t('planningDetail.sum')}</td>
+              <td className="px-4 py-4 font-semibold text-xs uppercase tracking-wide">{t('planningDetail.sum')}</td>
               <td className="px-4 py-4 text-center">100%</td>
               <td className="px-4 py-4 text-center">100%</td>
               <td className="px-4 py-4 text-center">-</td>
@@ -771,15 +771,10 @@ const PlanningDetailPage = ({
     return (
       <div className="p-2 md:p-4 space-y-3">
         {/* Filter Section */}
-        <div className="px-3 md:px-4 py-0.5 md:py-1 bg-slate-50 rounded-xl border border-slate-200 mb-4">
-          <div className="flex flex-wrap items-center gap-2 md:gap-6">
-            <div className="flex items-center gap-2 text-slate-600">
-              <Filter size={16} />
-              <span className="font-medium text-sm">{t('planningDetail.filters')}</span>
-            </div>
-
+        <div className="sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm bg-white/95 border-slate-200 px-3 md:px-6 py-1.5">
+          <div className="flex items-end gap-2">
             {/* Gender Filter */}
-            <div className="relative w-full md:w-auto" ref={genderDropdownRef}>
+            <div className="relative flex-1 min-w-0" ref={genderDropdownRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -787,16 +782,16 @@ const PlanningDetailPage = ({
                   setIsCategoryDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-pink-300 transition-all w-full md:min-w-[150px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-pink-300 transition-all min-w-[90px]"
               >
-                <Users size={14} className="text-pink-500" />
-                <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
+                <Users size={12} className="text-pink-500" />
+                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
                   {getSelectedLabel(filterOptions.genders, genderFilter)}
                 </span>
-                <ChevronDown size={16} className={`text-slate-400 transition-transform ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isGenderDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
                   {filterOptions.genders.map((option: any) => (
                     <div
                       key={option.id}
@@ -814,7 +809,7 @@ const PlanningDetailPage = ({
             </div>
 
             {/* Category Filter */}
-            <div className="relative w-full md:w-auto" ref={categoryDropdownRef}>
+            <div className="relative flex-1 min-w-0" ref={categoryDropdownRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -822,16 +817,16 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-violet-300 transition-all w-full md:min-w-[180px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-violet-300 transition-all min-w-[100px]"
               >
-                <Tag size={14} className="text-violet-500" />
-                <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
+                <Tag size={12} className="text-violet-500" />
+                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
                   {getSelectedLabel(filterOptions.categories, categoryFilter)}
                 </span>
-                <ChevronDown size={16} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
                   {filteredCategoryOptions.map((option: any) => (
                     <div
                       key={option.id}
@@ -849,7 +844,7 @@ const PlanningDetailPage = ({
             </div>
 
             {/* Sub-Category Filter */}
-            <div className="relative w-full md:w-auto" ref={subCategoryDropdownRef}>
+            <div className="relative flex-1 min-w-0" ref={subCategoryDropdownRef}>
               <button
                 type="button"
                 onClick={() => {
@@ -857,16 +852,16 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-2 px-3 md:px-4 py-0.5 bg-white border-2 border-slate-200 rounded-lg hover:border-emerald-300 transition-all w-full md:min-w-[180px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-emerald-300 transition-all min-w-[100px]"
               >
-                <Layers size={14} className="text-emerald-500" />
-                <span className="text-sm font-medium text-slate-700 flex-1 text-left truncate">
+                <Layers size={12} className="text-emerald-500" />
+                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
                   {getSelectedLabel(filterOptions.subCategories, subCategoryFilter)}
                 </span>
-                <ChevronDown size={16} className={`text-slate-400 transition-transform ${isSubCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isSubCategoryDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isSubCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
+                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
                   {filteredSubCategoryOptions.map((option: any) => (
                     <div
                       key={option.id}
@@ -891,10 +886,10 @@ const PlanningDetailPage = ({
                   setCategoryFilter('all');
                   setSubCategoryFilter('all');
                 }}
-                className="flex items-center gap-2 px-4 py-0.5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-lg hover:from-red-600 hover:to-rose-600 transition-all shadow-md hover:shadow-lg text-sm font-medium"
+                className="shrink-0 p-1 rounded transition-colors text-slate-400 hover:text-red-500 hover:bg-red-50"
+                title={t('common.clearAll')}
               >
                 <X size={14} />
-                {t('common.clearAll')}
               </button>
             )}
           </div>
@@ -925,7 +920,7 @@ const PlanningDetailPage = ({
                     />
                   </button>
                   <Users size={18} className="text-white" />
-                  <span className="font-bold text-white text-base md:text-lg">{genderGroup.gender.name}</span>
+                  <span className="font-semibold text-xs uppercase tracking-wide text-white">{genderGroup.gender.name}</span>
                   <span className="ml-auto md:ml-0 text-white/80 text-xs md:text-sm">
                     {genderGroup.categories.length} {t('planningDetail.category').toLowerCase()}
                   </span>
@@ -1080,7 +1075,7 @@ const PlanningDetailPage = ({
                       : 'bg-gradient-to-r from-sky-100 to-blue-100 border border-sky-200'
                   }`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-0">
-                      <span className={`font-bold text-sm md:text-base ${isFemale ? 'text-pink-800' : 'text-sky-800'}`}>
+                      <span className={`font-semibold text-xs uppercase tracking-wide ${isFemale ? 'text-pink-800' : 'text-sky-800'}`}>
                         {t('planningDetail.total')} {genderGroup.gender.name.toUpperCase()}
                       </span>
                       <div className={`flex flex-wrap items-center gap-2 md:gap-6 text-xs md:text-sm ${isFemale ? 'text-pink-700' : 'text-sky-700'}`}>

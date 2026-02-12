@@ -184,11 +184,8 @@ const BudgetManagementScreen = ({
   return (
     <div className="space-y-2 md:space-y-3">
       {/* Filters Section */}
-      <div className={`rounded-lg shadow-sm border px-2 md:px-3 py-0.5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Filter size={14} className={`shrink-0 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} />
-          <span className={`text-xs font-medium font-['Montserrat'] shrink-0 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('budget.filters')}</span>
-          <div className={`h-5 w-px shrink-0 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#C4B5A5]/50'}`}></div>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[#C4B5A5]'}`}>
+        <div className="flex flex-wrap items-center gap-1.5 px-3 md:px-6 py-1.5">
 
           {/* Mobile Filter Button */}
           {isMobile && (
@@ -324,12 +321,10 @@ const BudgetManagementScreen = ({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className={`flex items-center gap-1 text-xs font-medium transition-colors shrink-0 ${
-                darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
-              }`}
+              className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#666666] hover:text-red-400 hover:bg-red-400/10' : 'text-[#999999] hover:text-red-500 hover:bg-red-50'}`}
+              title={t('common.clearAllFilters')}
             >
-              <X size={12} />
-              {t('budget.clearAll')}
+              <X size={14} />
             </button>
           )}
 
