@@ -1766,8 +1766,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           : 'bg-white border-[#C4B5A5] text-[#1A1A1A] hover:border-[#2E2E2E]/40 hover:bg-[#F2F2F2]'
                     }`}
                   >
-                      <Calendar size={12} className={selectedSeasonGroup !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#666666]' : 'text-[#999999]')} />
-                      <span className="whitespace-nowrap">{selectedSeasonGroup === 'all' ? (t('planning.allSeasonGroups') || 'All') : (SEASON_GROUPS.find((s: any) => s.id === selectedSeasonGroup)?.label || selectedSeasonGroup)}</span>
+                      <Calendar size={12} className={`shrink-0 ${selectedSeasonGroup !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#666666]' : 'text-[#999999]')}`} />
+                      <span className="truncate">{selectedSeasonGroup === 'all' ? (t('planning.allSeasonGroups') || 'All') : (SEASON_GROUPS.find((s: any) => s.id === selectedSeasonGroup)?.label || selectedSeasonGroup)}</span>
                     <ChevronDown size={10} className={`transition-transform duration-200 ${openDropdown === 'seasonGroup' ? 'rotate-180' : ''}`} />
                   </button>
                   {openDropdown === 'seasonGroup' && (

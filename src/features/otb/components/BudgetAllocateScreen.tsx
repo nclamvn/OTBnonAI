@@ -861,11 +861,11 @@ const BudgetAllocateScreen = ({
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <Layers size={12} className={selectedGroupBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                    <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                      <Layers size={12} className={`shrink-0 ${selectedGroupBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} />
                       <span className="truncate">{selectedGroupBrandObj?.name || t('budget.allGroupBrands')}</span>
                     </div>
-                    <ChevronDown size={12} className={`shrink-0 transition-transform duration-200 ${isGroupBrandDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={12} className={`shrink-0 ml-1 transition-transform duration-200 ${isGroupBrandDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isGroupBrandDropdownOpen && (
                     <div className={`absolute top-full left-0 mt-1 border rounded-lg shadow-lg z-[9999] overflow-hidden whitespace-nowrap min-w-full w-max ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
@@ -917,11 +917,11 @@ const BudgetAllocateScreen = ({
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <Tag size={12} className={selectedBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                    <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                      <Tag size={12} className={`shrink-0 ${selectedBrand ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} />
                       <span className="truncate">{selectedBrandObj?.name || t('budget.allBrands')}</span>
                     </div>
-                    <ChevronDown size={12} className={`transition-transform duration-200 ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={12} className={`shrink-0 ml-1 transition-transform duration-200 ${isBrandDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isBrandDropdownOpen && (
                     <div className={`absolute top-full left-0 mt-1 border rounded-lg shadow-lg z-[9999] overflow-hidden whitespace-nowrap min-w-full w-max max-h-60 overflow-y-auto ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
@@ -977,11 +977,11 @@ const BudgetAllocateScreen = ({
                         : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                       }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      {selectedSeasonGroup === 'SS' ? <Sun size={12} className="text-[#E3B341]" /> : selectedSeasonGroup === 'FW' ? <Snowflake size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} /> : <Filter size={12} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />}
+                    <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                      {selectedSeasonGroup === 'SS' ? <Sun size={12} className="shrink-0 text-[#E3B341]" /> : selectedSeasonGroup === 'FW' ? <Snowflake size={12} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} /> : <Filter size={12} className={`shrink-0 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} />}
                       <span className="truncate">{selectedSeasonGroup ? (SEASON_CONFIG[selectedSeasonGroup]?.name || selectedSeasonGroup) : t('planning.allSeasonGroups')}</span>
                     </div>
-                    <ChevronDown size={12} className={`transition-transform duration-200 ${isSeasonDropdownOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown size={12} className={`shrink-0 ml-1 transition-transform duration-200 ${isSeasonDropdownOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {isSeasonDropdownOpen && (
                     <div className={`absolute top-full left-0 mt-1 border rounded-lg shadow-lg z-[9999] overflow-hidden whitespace-nowrap min-w-full w-max ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
@@ -1050,11 +1050,11 @@ const BudgetAllocateScreen = ({
                             : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.18)]'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 truncate">
+                    <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
                       {selectedVersion?.isFinal ? (
-                        <Star size={12} className={darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'} />
+                        <Star size={12} className={`shrink-0 ${darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'}`} />
                       ) : (
-                        <Sparkles size={12} className={selectedVersion ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                        <Sparkles size={12} className={`shrink-0 ${selectedVersion ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : darkMode ? 'text-[#999999]' : 'text-[#666666]'}`} />
                       )}
                       <span className="truncate">
                         {loadingVersions ? '...' : selectedVersion ? selectedVersion.name : 'Version'}
