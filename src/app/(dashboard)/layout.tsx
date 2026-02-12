@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: any) {
             onLogout={logout}
           />
 
-          <div className={`flex-1 overflow-y-auto ${isMobile ? 'p-3 pb-[80px]' : 'p-6'}`}>
+          <div id="main-scroll" className={`flex-1 overflow-y-auto ${isMobile ? 'p-3 pb-[80px]' : 'p-6'}`}>
             {children}
           </div>
         </div>

@@ -10,7 +10,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '../../../utils';
 import { proposalService } from '../../../services/proposalService';
-import { ExpandableStatCard, MobileDataCard } from '../../../components/ui';
+import { MobileDataCard } from '../../../components/ui';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════
@@ -227,6 +227,13 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   const [discrepancyNote, setDiscrepancyNote] = useState<string>('');
   const [expandedReceiptId, setExpandedReceiptId] = useState<any>(null);
 
+  // Remove parent scroll container padding so sticky toolbar is flush with header
+  useEffect(() => {
+    const el = document.getElementById('main-scroll');
+    if (el) { el.style.padding = '0'; }
+    return () => { if (el) el.style.padding = ''; };
+  }, []);
+
   useEffect(() => {
     fetchReceipts();
   }, []);
@@ -324,7 +331,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
     };
   }, [receipts, t]);
 
-  const bg = darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50';
+  const bg = darkMode ? 'bg-[#0A0A0A]' : 'bg-[#F8F7F4]';
   const cardBg = darkMode ? 'bg-[#121212]' : 'bg-white';
   const border = darkMode ? 'border-[#2E2E2E]' : 'border-gray-300';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
@@ -332,42 +339,91 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
 
   return (
-    <div className={`min-h-screen ${bg}`}>
-      {/* Sticky Filter Bar */}
-      <div className={`px-3 md:px-6 py-2 sticky top-0 z-30 border-b ${border} backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95' : 'bg-white/95'}`}>
-        <div className="flex flex-wrap items-center gap-2 justify-end">
-          <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
-            <Search size={12} className={textMuted} />
-            <input type="text" placeholder={t('receiptConfirm.searchPlaceholder')} value={searchTerm} onChange={(e: any) => setSearchTerm(e.target.value)} className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary}`} />
-            {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} className={textMuted} /></button>}
+    <div className={`min-h-full ${bg}`}>
+      {/* ── Sticky Toolbar — flush with header (parent padding removed via useEffect) ── */}
+      <div
+        className="sticky top-0 z-20 px-3 md:px-6 pb-3 pt-2"
+        style={{
+          background: darkMode ? '#0A0A0A' : '#F8F7F4',
+          boxShadow: '0 1px 0 ' + (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'),
+        }}
+      >
+        {/* Top row: Stats + Search */}
+        <div className="flex items-center justify-between gap-3 mb-2.5">
+          <div className="flex items-center gap-3 md:gap-5">
+            <div>
+              <p className={`text-[10px] font-medium uppercase tracking-wider font-['Montserrat'] ${textMuted}`}>
+                {t('receiptConfirm.totalReceipts')}
+              </p>
+              <p className={`text-lg md:text-xl font-bold font-['JetBrains_Mono'] leading-tight ${textPrimary}`}>
+                {stats.total}
+              </p>
+            </div>
+            <div className={`hidden md:block w-px h-7 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-300'}`} />
+            <div className="hidden md:flex items-center gap-4">
+              <div>
+                <p className={`text-[10px] font-medium uppercase tracking-wider font-['Montserrat'] ${textMuted}`}>{t('receiptConfirm.statusConfirmed')}</p>
+                <p className={`text-sm font-bold font-['JetBrains_Mono'] leading-tight text-[#2A9E6A]`}>{stats.confirmed}</p>
+              </div>
+              <div>
+                <p className={`text-[10px] font-medium uppercase tracking-wider font-['Montserrat'] ${textMuted}`}>{t('receiptConfirm.discrepancies')}</p>
+                <p className={`text-sm font-bold font-['JetBrains_Mono'] leading-tight ${stats.discrepancy > 0 ? 'text-[#F85149]' : textPrimary}`}>{stats.discrepancy}</p>
+              </div>
+            </div>
           </div>
-          <div className="relative">
-            <select value={statusFilter} onChange={(e: any) => setStatusFilter(e.target.value)} className={`appearance-none px-2 py-1.5 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}>
-              <option value="all">{t('receiptConfirm.allStatuses')}</option>
-              <option value="PENDING">{t('receiptConfirm.statusPending')}</option>
-              <option value="CONFIRMED">{t('receiptConfirm.statusConfirmed')}</option>
-              <option value="DISCREPANCY">{t('receiptConfirm.statusDiscrepancy')}</option>
-              <option value="PARTIAL">{t('receiptConfirm.statusPartial')}</option>
-            </select>
-            <ChevronDown size={10} className={`absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${textMuted}`} />
+
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border ${border} ${darkMode ? 'bg-[#141414]' : 'bg-white'} ${isMobile ? 'w-36' : 'w-52'}`}>
+              <Search size={13} className={textMuted} />
+              <input type="text" placeholder={t('receiptConfirm.searchPlaceholder')} value={searchTerm} onChange={(e: any) => setSearchTerm(e.target.value)} className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary} placeholder:${textMuted}`} />
+              {searchTerm && <button onClick={() => setSearchTerm('')}><X size={12} className={textMuted} /></button>}
+            </div>
+            <button onClick={fetchReceipts} className={`p-1.5 rounded-lg border ${border} transition-all ${darkMode ? 'hover:bg-[#1A1A1A] text-[#999999]' : 'hover:bg-gray-50 text-gray-500'}`} title={t('common.refresh')}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            </button>
           </div>
-          <button onClick={fetchReceipts} className={`px-2.5 py-1.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}>
-            {t('common.refresh')}
-          </button>
+        </div>
+
+        {/* Status Pipeline */}
+        <div className="flex items-stretch gap-1">
+          {[
+            { key: 'PENDING', label: t('receiptConfirm.statusPending'), count: stats.pending, color: '#D29922', icon: Clock },
+            { key: 'CONFIRMED', label: t('receiptConfirm.statusConfirmed'), count: stats.confirmed, color: '#2A9E6A', icon: CheckCircle },
+            { key: 'DISCREPANCY', label: t('receiptConfirm.statusDiscrepancy'), count: stats.discrepancy, color: '#F85149', icon: AlertCircle },
+            { key: 'PARTIAL', label: t('receiptConfirm.statusPartial'), count: stats.partial, color: '#A371F7', icon: Package },
+          ].map((step) => {
+            const Icon = step.icon;
+            const isActive = statusFilter === step.key;
+            return (
+              <button
+                key={step.key}
+                onClick={() => setStatusFilter(isActive ? 'all' : step.key)}
+                className={`flex-1 relative rounded-xl border px-3 py-2.5 transition-all duration-200 ${
+                  isActive
+                    ? darkMode ? 'border-[#D7B797]/40 bg-[rgba(215,183,151,0.08)]' : 'border-[#D7B797]/60 bg-[rgba(215,183,151,0.08)]'
+                    : darkMode ? 'border-[#2E2E2E] bg-[#121212] hover:border-[#3E3E3E] hover:bg-[#1A1A1A]' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: `${step.color}18` }}>
+                    <Icon size={14} style={{ color: step.color }} />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className={`text-[10px] font-medium uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>{step.label}</p>
+                    <p className={`text-base font-bold font-['JetBrains_Mono'] leading-tight ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'}`}>{step.count}</p>
+                  </div>
+                </div>
+                {isActive && <div className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full" style={{ backgroundColor: step.color }} />}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="p-3 md:p-4">
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <ExpandableStatCard title={t('receiptConfirm.totalReceipts')} value={stats.total} sub={t('receiptConfirm.allReceipts')} darkMode={darkMode} icon={Receipt} accent="gold" breakdown={stats.statusBreakdown} expandTitle={t('receiptConfirm.allStatuses')} />
-        <ExpandableStatCard title={t('receiptConfirm.pendingReceipts')} value={stats.pending} sub={t('receiptConfirm.awaitingCheck')} darkMode={darkMode} icon={Clock} accent="amber" trendLabel={stats.total > 0 ? `${Math.round((stats.pending / stats.total) * 100)}%` : '0%'} trend={stats.pending > 0 ? -1 : 0} />
-        <ExpandableStatCard title={t('receiptConfirm.confirmedReceipts')} value={stats.confirmed} sub={t('receiptConfirm.goodsReceived')} darkMode={darkMode} icon={CheckCircle} accent="emerald" progress={stats.confirmedPct} progressLabel={t('receiptConfirm.statusConfirmed')} />
-        <ExpandableStatCard title={t('receiptConfirm.discrepancies')} value={stats.discrepancy} sub={t('receiptConfirm.needsAttention')} darkMode={darkMode} icon={AlertCircle} accent="red" progress={stats.discrepancyPct} progressLabel={t('receiptConfirm.statusDiscrepancy')} badges={[{ label: t('receiptConfirm.statusPartial'), value: stats.partial, color: '#A371F7' }].filter(b => b.value > 0)} />
-      </div>
-
+      {/* ── Content with padding ── */}
+      <div className="px-3 md:px-6 pb-3 md:pb-6">
       {/* Table */}
-      <div className={`border ${border} rounded-xl overflow-hidden`} style={{
+      <div className={`border ${border} rounded-xl overflow-hidden mt-3`} style={{
         background: darkMode
           ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.02) 40%, rgba(215,183,151,0.06) 100%)'
           : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.03) 35%, rgba(215,183,151,0.08) 100%)',
@@ -529,7 +585,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           </div>
         </div>
       )}
-      </div>
+      </div>{/* close content padding wrapper */}
     </div>
   );
 };
