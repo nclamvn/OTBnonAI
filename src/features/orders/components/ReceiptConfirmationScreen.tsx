@@ -332,47 +332,32 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
 
   return (
-    <div className={`min-h-screen ${bg} p-3 md:p-4`}>
-      {/* Header + Filters */}
-      <div className={`border ${border} rounded-xl px-3 py-0.5 mb-3`} style={{
-        background: darkMode
-          ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.03) 40%, rgba(215,183,151,0.10) 100%)'
-          : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 35%, rgba(215,183,151,0.12) 100%)',
-      }}>
-        <div className="flex flex-col md:flex-row md:flex-wrap md:items-center gap-3">
-          <div className="flex items-center gap-3">
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${darkMode ? 'bg-[rgba(215,183,151,0.1)]' : 'bg-[rgba(215,183,151,0.15)]'}`}>
-              <Receipt size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-            </div>
-            <div className="flex-shrink-0">
-              <h1 className={`text-sm font-semibold font-['Montserrat'] ${textPrimary} leading-tight`}>{t('screenConfig.receiptConfirmation')}</h1>
-              <p className={`text-[10px] ${textMuted} leading-tight`}>{t('receiptConfirm.subtitle')}</p>
-            </div>
+    <div className={`min-h-screen ${bg}`}>
+      {/* Sticky Filter Bar */}
+      <div className={`px-3 md:px-6 py-2 sticky top-0 z-30 border-b ${border} backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95' : 'bg-white/95'}`}>
+        <div className="flex flex-wrap items-center gap-2 justify-end">
+          <div className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
+            <Search size={12} className={textMuted} />
+            <input type="text" placeholder={t('receiptConfirm.searchPlaceholder')} value={searchTerm} onChange={(e: any) => setSearchTerm(e.target.value)} className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary}`} />
+            {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} className={textMuted} /></button>}
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 md:ml-auto">
-            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} ${isMobile ? 'flex-1 min-w-0' : 'w-48'}`}>
-              <Search size={12} className={textMuted} />
-              <input type="text" placeholder={t('receiptConfirm.searchPlaceholder')} value={searchTerm} onChange={(e: any) => setSearchTerm(e.target.value)} className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary}`} />
-              {searchTerm && <button onClick={() => setSearchTerm('')}><X size={10} className={textMuted} /></button>}
-            </div>
-            <div className="relative">
-              <select value={statusFilter} onChange={(e: any) => setStatusFilter(e.target.value)} className={`appearance-none px-2 py-0.5 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}>
-                <option value="all">{t('receiptConfirm.allStatuses')}</option>
-                <option value="PENDING">{t('receiptConfirm.statusPending')}</option>
-                <option value="CONFIRMED">{t('receiptConfirm.statusConfirmed')}</option>
-                <option value="DISCREPANCY">{t('receiptConfirm.statusDiscrepancy')}</option>
-                <option value="PARTIAL">{t('receiptConfirm.statusPartial')}</option>
-              </select>
-              <ChevronDown size={10} className={`absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${textMuted}`} />
-            </div>
-            <button onClick={fetchReceipts} className={`px-2.5 py-0.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}>
-              {t('common.refresh')}
-            </button>
+          <div className="relative">
+            <select value={statusFilter} onChange={(e: any) => setStatusFilter(e.target.value)} className={`appearance-none px-2 py-1.5 pr-6 rounded-lg border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-xs font-['Montserrat'] ${textPrimary} outline-none cursor-pointer`}>
+              <option value="all">{t('receiptConfirm.allStatuses')}</option>
+              <option value="PENDING">{t('receiptConfirm.statusPending')}</option>
+              <option value="CONFIRMED">{t('receiptConfirm.statusConfirmed')}</option>
+              <option value="DISCREPANCY">{t('receiptConfirm.statusDiscrepancy')}</option>
+              <option value="PARTIAL">{t('receiptConfirm.statusPartial')}</option>
+            </select>
+            <ChevronDown size={10} className={`absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none ${textMuted}`} />
           </div>
+          <button onClick={fetchReceipts} className={`px-2.5 py-1.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-all ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#6B4D30] hover:bg-[rgba(215,183,151,0.1)]'}`}>
+            {t('common.refresh')}
+          </button>
         </div>
       </div>
 
+      <div className="p-3 md:p-4">
       {/* KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
         <ExpandableStatCard title={t('receiptConfirm.totalReceipts')} value={stats.total} sub={t('receiptConfirm.allReceipts')} darkMode={darkMode} icon={Receipt} accent="gold" breakdown={stats.statusBreakdown} expandTitle={t('receiptConfirm.allStatuses')} />
@@ -544,6 +529,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
