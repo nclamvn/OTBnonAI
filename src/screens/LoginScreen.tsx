@@ -77,17 +77,19 @@ const FashionIcons = () => (
 );
 
 const LoginScreen = () => {
-  const { login, loading } = useAuth();
+  const { login, loading, loginStatus: authLoginStatus } = useAuth();
   const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [loginStatus, setLoginStatus] = useState('');
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLocalError('');
+    setLoginStatus('');
 
     if (!email || !password) {
       setLocalError(t('login.emptyFieldError'));
@@ -96,10 +98,20 @@ const LoginScreen = () => {
 
     try {
       await login(email, password);
+      setLoginStatus('');
       toast.success(t('login.loginSuccess'));
     } catch (err: any) {
-      setLocalError(err.message || t('login.loginFailed'));
-      toast.error(err.message || t('login.loginFailed'));
+      setLoginStatus('');
+      const isTimeout = err.message?.includes('timeout');
+      const isNetwork = err.message?.includes('Network Error') || err.message?.includes('ERR_NETWORK');
+
+      if (isTimeout || isNetwork) {
+        setLocalError('Máy chủ đang khởi động, vui lòng thử lại sau vài giây...');
+        toast.error('Máy chủ đang khởi động...');
+      } else {
+        setLocalError(err.message || t('login.loginFailed'));
+        toast.error(err.message || t('login.loginFailed'));
+      }
     }
   };
 
@@ -285,7 +297,7 @@ const LoginScreen = () => {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing In...
+                  {authLoginStatus || 'Đang đăng nhập...'}
                 </span>
               ) : (
                 <span>Sign In</span>

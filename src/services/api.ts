@@ -12,7 +12,7 @@ const CACHE_TTL = 60000; // 1 minute
 // Create axios instance
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 seconds
+  timeout: 60000, // 60 seconds (Render free-tier cold starts)
   headers: {
     'Content-Type': 'application/json',
   },

@@ -5,18 +5,45 @@ import api from './api';
 
 const isBrowser = typeof window !== 'undefined';
 
-export const authService = {
-  // Login with email and password
-  async login(email: string, password: string) {
-    const response: any = await api.post('/auth/login', { email, password });
-    const { accessToken, refreshToken, user } = response.data.data || response.data;
+// Login timeout: 120s to handle Render free-tier cold starts (can take 50-60s+)
+const LOGIN_TIMEOUT = 120000;
+const MAX_LOGIN_RETRIES = 2;
 
-    if (isBrowser) {
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+export const authService = {
+  // Login with email and password (with auto-retry for cold starts)
+  async login(email: string, password: string, onRetry?: (attempt: number) => void) {
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= MAX_LOGIN_RETRIES; attempt++) {
+      try {
+        if (attempt > 0 && onRetry) {
+          onRetry(attempt);
+        }
+        const response: any = await api.post('/auth/login', { email, password }, {
+          timeout: LOGIN_TIMEOUT,
+        });
+        const { accessToken, refreshToken, user } = response.data.data || response.data;
+
+        if (isBrowser) {
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+        }
+
+        return { accessToken, refreshToken, user };
+      } catch (err: any) {
+        lastError = err;
+        const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+        const isNetworkError = err.code === 'ERR_NETWORK' || !err.response;
+
+        // Only retry on timeout or network errors (server waking up)
+        if ((isTimeout || isNetworkError) && attempt < MAX_LOGIN_RETRIES) {
+          continue;
+        }
+        throw err;
+      }
     }
 
-    return { accessToken, refreshToken, user };
+    throw lastError;
   },
 
   // Logout - clear tokens

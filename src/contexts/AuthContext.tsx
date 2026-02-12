@@ -20,6 +20,7 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   error: string | null;
+  loginStatus: string;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<AuthUser>;
   logout: () => void;
@@ -34,6 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loginStatus, setLoginStatus] = useState('');
 
   // Check if user is already logged in on mount
   useEffect(() => {
@@ -53,16 +55,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAuth();
   }, []);
 
-  // Login function
+  // Login function (with retry callback for cold-start feedback)
   const login = useCallback(async (email: string, password: string) => {
     setError(null);
+    setLoginStatus('');
     setLoading(true);
     try {
-      const { user: userData } = await authService.login(email, password);
+      const { user: userData } = await authService.login(email, password, (attempt) => {
+        setLoginStatus(`Máy chủ đang khởi động... (lần thử ${attempt + 1})`);
+      });
+      setLoginStatus('');
       setUser(userData);
       return userData;
     } catch (err: any) {
-      const message = err.response?.data?.message || err.message || 'Login failed';
+      setLoginStatus('');
+      const isTimeout = err.code === 'ECONNABORTED' || err.message?.includes('timeout');
+      const isNetwork = err.code === 'ERR_NETWORK' || !err.response;
+      const message = (isTimeout || isNetwork)
+        ? 'Máy chủ đang khởi động, vui lòng thử lại...'
+        : err.response?.data?.message || err.message || 'Login failed';
       setError(message);
       throw new Error(message);
     } finally {
@@ -106,6 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     user,
     loading,
     error,
+    loginStatus,
     isAuthenticated: !!user,
     login,
     logout,
