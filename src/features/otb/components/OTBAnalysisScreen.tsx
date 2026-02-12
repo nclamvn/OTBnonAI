@@ -162,6 +162,37 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
   const [seasonCount, setSeasonCount] = useState<number>(1);
 
+  // Smart Filter Bar — auto expand/collapse on scroll
+  const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
+  const barRafRef = useRef<number>(0);
+  const barIgnoreScroll = useRef(false);
+
+  useEffect(() => {
+    const scrollEl = document.getElementById('main-scroll');
+    if (!scrollEl) return;
+    const handleScroll = () => {
+      if (barIgnoreScroll.current) return;
+      cancelAnimationFrame(barRafRef.current);
+      barRafRef.current = requestAnimationFrame(() => {
+        if (barIgnoreScroll.current) return;
+        setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
+      });
+    };
+    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(barRafRef.current); };
+  }, []);
+
+  const handleBarClick = useCallback(() => {
+    setBarState(prev => {
+      if (prev === 'collapsed') {
+        barIgnoreScroll.current = true;
+        setTimeout(() => { barIgnoreScroll.current = false; }, 300);
+        return 'expanded';
+      }
+      return 'collapsed';
+    });
+  }, []);
+
   // Auto-select first budget when budgets are loaded and none selected
   useEffect(() => {
     if (apiBudgets.length > 0 && selectedBudgetIds.length === 0 && selectedBudgetId === 'all') {
@@ -1467,7 +1498,35 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   return (
     <div className="space-y-2">
       {/* Filter Toolbar */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[#C4B5A5]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+
+        {/* ===== COLLAPSED BAR ===== */}
+        {barState !== 'expanded' && (
+          <div onClick={handleBarClick} className={`cursor-pointer flex items-center gap-3 px-3 md:px-6 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}>
+            <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+            <div className="flex items-center gap-1.5 min-w-0">
+              {selectedYear !== 'all' && (
+                <span className={`px-2 py-0.5 rounded text-[11px] font-medium font-['JetBrains_Mono'] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                  FY{selectedYear}
+                </span>
+              )}
+              {selectedBudgetIds.length > 0 && (
+                <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                  {selectedBudgetIds.length} Budget{selectedBudgetIds.length > 1 ? 's' : ''}
+                </span>
+              )}
+              {selectedVersion?.isFinal && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#D7B797] text-[#0A0A0A] rounded">FINAL</span>
+              )}
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium hidden sm:inline ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                {comparisonType === 'same' ? 'Same Season' : 'Different Season'}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ===== EXPANDED SECTION ===== */}
+        <div className={barState !== 'expanded' ? 'hidden' : ''}>
               {/* Mobile Filter Button */}
               {isMobile && (
                 <div className="px-3 md:px-6 py-1.5">
@@ -1986,6 +2045,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 )}
               </div>
               )}
+        </div>{/* end EXPANDED wrapper */}
       </div>
 
       {/* Budget Context Card - Outside sticky */}

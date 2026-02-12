@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
-  Star, Layers, Check
+  Star, Layers, Check, LayoutGrid, List
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
@@ -600,6 +600,40 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const skuVersionDropdownRef = useRef<any>(null);
   const sizingVersionDropdownRef = useRef<any>(null);
 
+  // Smart Filter Bar — 2 states: expanded vs collapsed
+  const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
+  const rafRef = useRef<number>(0);
+  const ignoreScroll = useRef(false); // hard block scroll handler after manual expand
+
+  // Scroll detection — completely blocked during ignore period
+  useEffect(() => {
+    const scrollEl = document.getElementById('main-scroll');
+    if (!scrollEl) return;
+
+    const handleScroll = () => {
+      if (ignoreScroll.current) return; // hard exit — no rAF queued
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        if (ignoreScroll.current) return; // double check
+        setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
+      });
+    };
+    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  // Click handler — block scroll for 300ms after expand to absorb layout-shift phantom events
+  const handleBarClick = useCallback(() => {
+    setBarState(prev => {
+      if (prev === 'collapsed') {
+        ignoreScroll.current = true;
+        setTimeout(() => { ignoreScroll.current = false; }, 300);
+        return 'expanded';
+      }
+      return 'collapsed';
+    });
+  }, []);
+
   // Close version dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: any) => {
@@ -626,6 +660,21 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   const selectedSkuVersion = skuVersions.find((v: any) => v.id === skuVersion) || skuVersions[0];
   const selectedSizingChoice = sizingChoices.find((c: any) => c.id === sizingVersion) || sizingChoices[0];
+
+  // Computed labels for collapsed bar badges
+  const budgetDisplayName = useMemo(() => {
+    if (budgetFilter === 'all') return 'All Budgets';
+    const b = apiBudgets.find((b: any) => b.id === budgetFilter || b.budgetName === budgetFilter);
+    return b?.budgetName || budgetFilter;
+  }, [budgetFilter, apiBudgets]);
+
+  const currentVersionLabel = useMemo(() => {
+    return selectedSkuVersion ? `${selectedSkuVersion.name}${selectedSkuVersion.isFinal ? ' \u2B50' : ''}` : skuVersion;
+  }, [selectedSkuVersion, skuVersion]);
+
+  const currentChoiceLabel = useMemo(() => {
+    return selectedSizingChoice ? `${selectedSizingChoice.name}${selectedSizingChoice.isFinal ? ' \u2B50' : ''}` : sizingVersion;
+  }, [selectedSizingChoice, sizingVersion]);
 
   // Apply context from OTB Analysis when navigating here
   useEffect(() => {
@@ -998,7 +1047,60 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 border-b backdrop-blur-sm p-2 md:p-3 ${darkMode ? 'bg-[#121212]/90 border-[#2E2E2E]' : 'bg-white/90 border-[rgba(215,183,151,0.3)]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b ${barState === 'expanded' ? 'p-2 md:p-3' : ''} ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+
+        {/* ===== COLLAPSED BAR (shown when not expanded) ===== */}
+        {barState !== 'expanded' && (
+          <div
+            onClick={handleBarClick}
+            className={`cursor-pointer flex items-center gap-3 px-3 md:px-4 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}
+          >
+            {/* Expand arrow */}
+            <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+
+            {/* Filter badges */}
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[120px] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                {budgetDisplayName}
+              </span>
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium shrink-0 ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                {currentVersionLabel}
+              </span>
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium shrink-0 hidden md:inline ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                {currentChoiceLabel}
+              </span>
+            </div>
+
+            {/* Separator */}
+            <div className={`h-4 w-px shrink-0 hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[rgba(215,183,151,0.3)]'}`} />
+
+            {/* Quick stats */}
+            <div className={`hidden sm:flex items-center gap-2 text-[11px] font-['JetBrains_Mono'] shrink-0 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+              <span>{filteredSkuItems.length} SKUs</span>
+              <span className={`hidden md:inline ${darkMode ? 'text-[#555]' : 'text-[#bbb]'}`}>|</span>
+              <span className="hidden md:inline">{filteredSkuBlocks.length} Rails</span>
+              <span className={`${darkMode ? 'text-[#555]' : 'text-[#bbb]'}`}>|</span>
+              <span>Order <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
+            </div>
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Value + View toggle */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className={`text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                {formatCurrency(grandTotals.ttlValue)}
+              </span>
+              <div className={`flex items-center gap-0.5 rounded-lg p-0.5 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}`} onClick={(e) => e.stopPropagation()}>
+                <button type="button" onClick={() => setViewMode('table')} className={`p-1 rounded-md transition-colors ${viewMode === 'table' ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm') : (darkMode ? 'text-[#999999]' : 'text-[#666666]')}`} title="Table"><List size={14} /></button>
+                <button type="button" onClick={() => canShowCardView && setViewMode('card')} disabled={!canShowCardView} className={`p-1 rounded-md transition-colors ${viewMode === 'card' ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm') : (darkMode ? 'text-[#999999]' : 'text-[#666666]')} ${!canShowCardView ? 'opacity-50 cursor-not-allowed' : ''}`} title="Card"><LayoutGrid size={14} /></button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== EXPANDED SECTIONS (instant hide — no layout thrashing) ===== */}
+        <div className={barState !== 'expanded' ? 'hidden' : ''}>
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 
           {/* Mobile Filter Button */}
@@ -1305,7 +1407,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             </div>
         </div>
 
-        {/* Rail Controls — sticky inside filter bar */}
+        {/* Rail Controls — sticky inside filter bar (visible in EXPANDED only) */}
         {viewMode === 'table' && filteredSkuBlocks.length > 0 && (
           <div className={`border-t -mx-2 md:-mx-3 -mb-2 md:-mb-3 px-2 md:px-3 mt-2 py-2 md:py-3 flex flex-wrap items-center justify-between gap-y-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'}`}>
             <div className="flex items-center gap-3">
@@ -1330,6 +1432,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             </div>
           </div>
         )}
+        </div>{/* end EXPANDED transition wrapper */}
       </div>
 
       {filteredSkuBlocks.length === 0 ? (

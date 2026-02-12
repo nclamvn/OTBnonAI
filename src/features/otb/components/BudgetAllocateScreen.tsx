@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, Fragment } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, Fragment } from 'react';
 import {
   DollarSign, Sparkles, Filter, Clock, ChevronDown, Check,
   ChevronRight, TrendingUp, Sun, Snowflake,
@@ -173,7 +173,36 @@ const BudgetAllocateScreen = ({
 
   // Budget name dropdown state
   const [isBudgetNameDropdownOpen, setIsBudgetNameDropdownOpen] = useState(false);
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+  // Smart Filter Bar — auto expand/collapse on scroll
+  const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
+  const barRafRef = useRef<number>(0);
+  const barIgnoreScroll = useRef(false);
+
+  useEffect(() => {
+    const scrollEl = document.getElementById('main-scroll');
+    if (!scrollEl) return;
+    const handleScroll = () => {
+      if (barIgnoreScroll.current) return;
+      cancelAnimationFrame(barRafRef.current);
+      barRafRef.current = requestAnimationFrame(() => {
+        if (barIgnoreScroll.current) return;
+        setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
+      });
+    };
+    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
+    return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(barRafRef.current); };
+  }, []);
+
+  const handleBarClick = useCallback(() => {
+    setBarState(prev => {
+      if (prev === 'collapsed') {
+        barIgnoreScroll.current = true;
+        setTimeout(() => { barIgnoreScroll.current = false; }, 300);
+        return 'expanded';
+      }
+      return 'collapsed';
+    });
+  }, []);
 
   // Store allocation data locally to survive the race condition with API fetch
   const [pendingAllocation, setPendingAllocation] = useState<any>(null);
@@ -611,7 +640,6 @@ const BudgetAllocateScreen = ({
     }
 
     setIsBudgetNameDropdownOpen(false);
-    setFiltersCollapsed(true);
   };
 
   // Clear budget selection
@@ -648,45 +676,38 @@ const BudgetAllocateScreen = ({
   return (
     <>
       {/* Header Section */}
-      <div className="sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3">
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${barState === 'expanded' ? 'p-0' : ''} ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
 
-        <div className="relative">
-          {/* Filter Section - Sticky toolbar full-width */}
-          <div className={`border-b backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[#C4B5A5]'}`}>
-            {/* Single-row filter bar */}
-            <div className={`flex items-center gap-1.5 px-3 md:px-6 py-1.5 relative z-[100]`}>
-              {/* Toggle button */}
-              <button
-                onClick={() => setFiltersCollapsed(!filtersCollapsed)}
-                className={`shrink-0 p-0.5 rounded transition-colors ${darkMode ? 'hover:bg-[#1A1A1A] text-[#999999]' : 'hover:bg-[rgba(215,183,151,0.15)] text-[#666666]'}`}
-              >
-                <ChevronRight size={14} className={`transition-transform duration-200 ${!filtersCollapsed ? 'rotate-90' : ''}`} />
-              </button>
-
-              {/* Collapsed: show summary badges */}
-              {filtersCollapsed && (
-                <div className="flex items-center gap-1.5 flex-wrap flex-1 min-w-0">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium font-['JetBrains_Mono'] ${darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-gray-100 text-[#666666]'}`}>
-                    FY{selectedYear}
-                  </span>
-                  {selectedBudget && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium truncate max-w-[120px] ${darkMode ? 'bg-[rgba(18,119,73,0.15)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.1)] text-[#127749]'}`}>
-                      {selectedBudget.budgetName}
-                    </span>
-                  )}
-                  {selectedGroupBrandObj && (
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30]'}`}>
-                      {selectedGroupBrandObj.name}
-                    </span>
-                  )}
-                  {selectedVersion?.isFinal && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#D7B797] text-[#0A0A0A] rounded">FINAL</span>
-                  )}
-                </div>
+        {/* ===== COLLAPSED BAR ===== */}
+        {barState !== 'expanded' && (
+          <div onClick={handleBarClick} className={`cursor-pointer flex items-center gap-3 px-3 md:px-6 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}>
+            <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`px-2 py-0.5 rounded text-[11px] font-medium font-['JetBrains_Mono'] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                FY{selectedYear}
+              </span>
+              {selectedBudget && (
+                <span className={`px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[120px] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                  {selectedBudget.budgetName}
+                </span>
               )}
+              {selectedGroupBrandObj && (
+                <span className={`px-2 py-0.5 rounded text-[11px] font-medium hidden sm:inline ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
+                  {selectedGroupBrandObj.name}
+                </span>
+              )}
+              {selectedVersion?.isFinal && (
+                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#D7B797] text-[#0A0A0A] rounded">FINAL</span>
+              )}
+            </div>
+          </div>
+        )}
 
-              {/* Expanded: show filter controls inline */}
-              {!filtersCollapsed && <>
+        {/* ===== EXPANDED SECTION ===== */}
+        <div className={barState !== 'expanded' ? 'hidden' : ''}>
+        <div className="relative">
+          <div className={darkMode ? '' : ''}>
+            <div className={`flex items-center gap-1.5 px-3 md:px-6 py-1.5 relative z-[100]`}>
               {/* Mobile Filter Button */}
               {isMobile && (
                 <button
@@ -1149,10 +1170,10 @@ const BudgetAllocateScreen = ({
                   <X size={14} />
                 </button>
               )}
-              </>}
             </div>
           </div>
         </div>
+        </div>{/* end EXPANDED wrapper */}
       </div>
       {/* Budget Table - Collapsible by Group Brand and Brand */}
       {(selectedBudget || selectedBudgetId) && (
