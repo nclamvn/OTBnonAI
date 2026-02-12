@@ -600,21 +600,28 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const skuVersionDropdownRef = useRef<any>(null);
   const sizingVersionDropdownRef = useRef<any>(null);
 
-  // Smart Filter Bar — 2 states: expanded vs collapsed
+  // Smart Filter Bar — 2 states: expanded vs collapsed (smooth CSS grid animation)
   const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
   const rafRef = useRef<number>(0);
-  const ignoreScroll = useRef(false); // hard block scroll handler after manual expand
+  const ignoreScroll = useRef(false);
+  const isAnimating = useRef(false);
 
-  // Scroll detection — completely blocked during ignore period
+  // Animation lock — block scroll handler during height transitions
+  useEffect(() => {
+    isAnimating.current = true;
+    const timer = setTimeout(() => { isAnimating.current = false; }, 350);
+    return () => clearTimeout(timer);
+  }, [barState]);
+
+  // Scroll detection — blocked during ignore period AND animation
   useEffect(() => {
     const scrollEl = document.getElementById('main-scroll');
     if (!scrollEl) return;
-
     const handleScroll = () => {
-      if (ignoreScroll.current) return; // hard exit — no rAF queued
+      if (ignoreScroll.current || isAnimating.current) return;
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        if (ignoreScroll.current) return; // double check
+        if (ignoreScroll.current || isAnimating.current) return;
         setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
       });
     };
@@ -622,12 +629,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(rafRef.current); };
   }, []);
 
-  // Click handler — block scroll for 300ms after expand to absorb layout-shift phantom events
+  // Click handler — block scroll for 400ms after expand to absorb layout-shift phantom events
   const handleBarClick = useCallback(() => {
     setBarState(prev => {
       if (prev === 'collapsed') {
         ignoreScroll.current = true;
-        setTimeout(() => { ignoreScroll.current = false; }, 300);
+        setTimeout(() => { ignoreScroll.current = false; }, 400);
         return 'expanded';
       }
       return 'collapsed';
@@ -1047,10 +1054,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b ${barState === 'expanded' ? 'p-2 md:p-3' : ''} ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
 
-        {/* ===== COLLAPSED BAR (shown when not expanded) ===== */}
-        {barState !== 'expanded' && (
+        {/* ===== COLLAPSED BAR — always mounted, smooth opacity ===== */}
+        <div className={`overflow-hidden transition-[opacity,max-height] duration-200 ease-in-out ${
+          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'
+        }`}>
           <div
             onClick={handleBarClick}
             className={`cursor-pointer flex items-center gap-3 px-3 md:px-4 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}
@@ -1097,10 +1106,15 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               </div>
             </div>
           </div>
-        )}
+        </div>{/* end collapsed bar outer */}
 
-        {/* ===== EXPANDED SECTIONS (instant hide — no layout thrashing) ===== */}
-        <div className={barState !== 'expanded' ? 'hidden' : ''}>
+        {/* ===== EXPANDED SECTION — smooth CSS grid height animation ===== */}
+        <div
+          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+          style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
+        >
+        <div className={`overflow-hidden min-h-0 ${barState !== 'expanded' ? 'pointer-events-none' : ''}`}>
+        <div className="p-2 md:p-3">
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 
           {/* Mobile Filter Button */}
@@ -1432,7 +1446,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             </div>
           </div>
         )}
-        </div>{/* end EXPANDED transition wrapper */}
+        </div>{/* end p-2 md:p-3 */}
+        </div>{/* end overflow-hidden min-h-0 */}
+        </div>{/* end grid animation wrapper */}
       </div>
 
       {filteredSkuBlocks.length === 0 ? (

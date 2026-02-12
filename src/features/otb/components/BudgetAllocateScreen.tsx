@@ -173,19 +173,27 @@ const BudgetAllocateScreen = ({
 
   // Budget name dropdown state
   const [isBudgetNameDropdownOpen, setIsBudgetNameDropdownOpen] = useState(false);
-  // Smart Filter Bar — auto expand/collapse on scroll
+  // Smart Filter Bar — auto expand/collapse with smooth CSS grid animation
   const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
   const barRafRef = useRef<number>(0);
   const barIgnoreScroll = useRef(false);
+  const barIsAnimating = useRef(false);
+
+  // Animation lock — block scroll handler during height transitions
+  useEffect(() => {
+    barIsAnimating.current = true;
+    const timer = setTimeout(() => { barIsAnimating.current = false; }, 350);
+    return () => clearTimeout(timer);
+  }, [barState]);
 
   useEffect(() => {
     const scrollEl = document.getElementById('main-scroll');
     if (!scrollEl) return;
     const handleScroll = () => {
-      if (barIgnoreScroll.current) return;
+      if (barIgnoreScroll.current || barIsAnimating.current) return;
       cancelAnimationFrame(barRafRef.current);
       barRafRef.current = requestAnimationFrame(() => {
-        if (barIgnoreScroll.current) return;
+        if (barIgnoreScroll.current || barIsAnimating.current) return;
         setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
       });
     };
@@ -197,7 +205,7 @@ const BudgetAllocateScreen = ({
     setBarState(prev => {
       if (prev === 'collapsed') {
         barIgnoreScroll.current = true;
-        setTimeout(() => { barIgnoreScroll.current = false; }, 300);
+        setTimeout(() => { barIgnoreScroll.current = false; }, 400);
         return 'expanded';
       }
       return 'collapsed';
@@ -676,10 +684,12 @@ const BudgetAllocateScreen = ({
   return (
     <>
       {/* Header Section */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${barState === 'expanded' ? 'p-0' : ''} ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
 
-        {/* ===== COLLAPSED BAR ===== */}
-        {barState !== 'expanded' && (
+        {/* ===== COLLAPSED BAR — always mounted, smooth opacity ===== */}
+        <div className={`overflow-hidden transition-[opacity,max-height] duration-200 ease-in-out ${
+          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'
+        }`}>
           <div onClick={handleBarClick} className={`cursor-pointer flex items-center gap-3 px-3 md:px-6 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}>
             <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
             <div className="flex items-center gap-1.5 min-w-0">
@@ -701,10 +711,14 @@ const BudgetAllocateScreen = ({
               )}
             </div>
           </div>
-        )}
+        </div>{/* end collapsed bar outer */}
 
-        {/* ===== EXPANDED SECTION ===== */}
-        <div className={barState !== 'expanded' ? 'hidden' : ''}>
+        {/* ===== EXPANDED SECTION — smooth CSS grid height animation ===== */}
+        <div
+          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+          style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
+        >
+        <div className={`overflow-hidden min-h-0 ${barState !== 'expanded' ? 'pointer-events-none' : ''}`}>
         <div className="relative">
           <div className={darkMode ? '' : ''}>
             <div className={`flex items-center gap-1.5 px-3 md:px-6 py-1.5 relative z-[100]`}>
@@ -1173,7 +1187,8 @@ const BudgetAllocateScreen = ({
             </div>
           </div>
         </div>
-        </div>{/* end EXPANDED wrapper */}
+        </div>{/* end overflow-hidden min-h-0 */}
+        </div>{/* end grid animation wrapper */}
       </div>
       {/* Budget Table - Collapsible by Group Brand and Brand */}
       {(selectedBudget || selectedBudgetId) && (
