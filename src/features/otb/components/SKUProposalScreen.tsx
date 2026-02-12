@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
   Star, Layers, Check
@@ -589,9 +590,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [allCollapsed, setAllCollapsed] = useState(false);
   const [contextBanner, setContextBanner] = useState<any>(null);
   const [viewMode, setViewMode] = useState('table');
-  const [cardDetailsOpen, setCardDetailsOpen] = useState<Record<string, any>>({});
-  const [cardStoreOrderOpen, setCardStoreOrderOpen] = useState<Record<string, any>>({});
-  const [cardSizingOpen, setCardSizingOpen] = useState<Record<string, any>>({});
+  const [lightbox, setLightbox] = useState<{ open: boolean; key: string; tab: 'details' | 'storeOrder' | 'sizing'; item: any; blockKey: string; idx: number; block: any } | null>(null);
   const [skuVersion, setSkuVersion] = useState('v3');
   const [skuVersions, setSkuVersions] = useState(SKU_VERSIONS);
   const [isSkuVersionOpen, setIsSkuVersionOpen] = useState(false);
@@ -702,7 +701,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [editingCell, setEditingCell] = useState<any>(null);
   const [highlightedRow, setHighlightedRow] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
-  const [sizingPopup, setSizingPopup] = useState<any>({ open: false, blockKey: null, itemIdx: null, item: null });
+  const lightboxRef = useRef<HTMLDivElement>(null);
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
   const getDefaultSizing = () => ({
@@ -737,12 +736,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     return Object.values(choiceData).reduce((sum: any, val: any) => sum + (parseInt(val) || 0), 0) as number;
   };
 
-  const handleOpenSizing = (blockKey: any, itemIdx: any, item: any) => {
-    setSizingPopup({ open: true, blockKey, itemIdx, item });
+  const handleOpenLightbox = (key: string, tab: 'details' | 'storeOrder' | 'sizing', item: any, blockKey: string, idx: number, block: any) => {
+    setLightbox({ open: true, key, tab, item, blockKey, idx, block });
   };
 
-  const handleCloseSizing = () => {
-    setSizingPopup({ open: false, blockKey: null, itemIdx: null, item: null });
+  const handleCloseLightbox = () => {
+    setLightbox(null);
   };
 
   const budgetOptions = useMemo(() => {
@@ -999,7 +998,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm p-2 md:p-3 ${darkMode ? 'bg-[#121212]/90 border-[#2E2E2E]' : 'bg-white/90 border-[rgba(215,183,151,0.3)]'}`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 border-b backdrop-blur-sm p-2 md:p-3 ${darkMode ? 'bg-[#121212]/90 border-[#2E2E2E]' : 'bg-white/90 border-[rgba(215,183,151,0.3)]'}`}>
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 
           {/* Mobile Filter Button */}
@@ -1305,6 +1304,32 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               </div>
             </div>
         </div>
+
+        {/* Rail Controls — sticky inside filter bar */}
+        {viewMode === 'table' && filteredSkuBlocks.length > 0 && (
+          <div className={`border-t -mx-2 md:-mx-3 -mb-2 md:-mb-3 px-2 md:px-3 mt-2 py-2 md:py-3 flex flex-wrap items-center justify-between gap-y-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'}`}>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleToggleAll}
+                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'}`}
+              >
+                <ChevronDown size={12} className={`transition-transform ${allCollapsed ? '-rotate-90' : ''}`} />
+                {allCollapsed ? 'Expand All' : 'Collapse All'}
+              </button>
+              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
+              </span>
+            </div>
+            <div className={`flex items-center gap-4 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+              <span>Order: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
+              {stores.map((s: any) => (
+                <span key={s.code}>{s.code}: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.storeQty[s.code] || 0}</span></span>
+              ))}
+              <span>Value: <span className={`font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span></span>
+            </div>
+          </div>
+        )}
       </div>
 
       {filteredSkuBlocks.length === 0 ? (
@@ -1316,8 +1341,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       ) : viewMode === 'card' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredSkuItems.map(({ block, blockKey, item, idx, key }, cardIdx) => {
-            const detailsOpen = !!cardDetailsOpen[key];
-            const sizingOpen = !!cardSizingOpen[key];
             return (
               <div key={key} className={`rounded-2xl border p-4 ${getCardBgClass(cardIdx)}`}>
                 <div className="flex flex-wrap items-center gap-3 justify-between">
@@ -1340,24 +1363,24 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
-                      onClick={() => setCardDetailsOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
+                      onClick={() => handleOpenLightbox(key, 'details', item, blockKey, idx, block)}
                       className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
-                      {detailsOpen ? t('skuProposal.hideDetails') : t('skuProposal.showDetails')}
+                      {t('skuProposal.showDetails')}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setCardStoreOrderOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
+                      onClick={() => handleOpenLightbox(key, 'storeOrder', item, blockKey, idx, block)}
                       className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
-                      {cardStoreOrderOpen[key] ? t('skuProposal.hideStores') : t('skuProposal.storeOrder')}
+                      {t('skuProposal.storeOrder')}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setCardSizingOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
+                      onClick={() => handleOpenLightbox(key, 'sizing', item, blockKey, idx, block)}
                       className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
-                      {sizingOpen ? t('skuProposal.hideSizing') : t('skuProposal.sizing')}
+                      {t('skuProposal.sizing')}
                     </button>
                     <button
                       type="button"
@@ -1384,189 +1407,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         </option>
                       ))}
                     </select>
-                  </div>
-                )}
-
-                {/* Rex/TTP/Order/Total Value summary removed — info shown in Store Order table below */}
-
-                {detailsOpen && (
-                  <div className={`mt-4 rounded-xl border p-4 ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Product type</span>
-                        <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.productType}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Theme</span>
-                        <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.theme}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Color</span>
-                        <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.color}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Composition</span>
-                        <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{item.composition}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Unit cost</span>
-                        <div className={`font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(item.unitCost)}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>SRP</span>
-                        <div className={`font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp)}</div>
-                      </div>
-                      <div>
-                        <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Customer target</span>
-                        <select
-                          value={item.customerTarget}
-                          onChange={(e) => handleSelectChange(blockKey, idx, 'customerTarget', e.target.value)}
-                          className={`mt-1 w-full px-3 py-0.5 rounded-lg border text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                        >
-                          <option value="New">New</option>
-                          <option value="Existing">Existing</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {cardStoreOrderOpen[key] && (
-                  <div className={`mt-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
-                    <div className={`px-4 py-0.5 text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.1)]' : 'text-[#6B4D30] bg-[rgba(160,120,75,0.12)]'}`}>
-                      Store Order
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className={darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
-                            <th className="px-3 py-0.5 text-left">Store</th>
-                            <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">ORDER</th>
-                            <th className="px-3 py-0.5 text-right font-['JetBrains_Mono']">TTL VALUE</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {stores.map((st: any, si: number) => {
-                            const storeVal = (item.storeQty || {})[st.code] || 0;
-                            const colors = ['bg-[#D7B797]', 'bg-[#127749]', 'bg-[#58A6FF]', 'bg-[#A371F7]', 'bg-[#E3B341]'];
-                            return (
-                              <tr key={st.code} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-                                <td className={`px-3 py-0.5 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
-                                  <span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${colors[si % colors.length]}`} />{st.code}</span>
-                                </td>
-                                <td className="px-3 py-0.5 text-center">
-                                  <div className="relative group inline-block">
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      value={storeVal}
-                                      onChange={(e) => handleNumberChange(blockKey, idx, `store_${st.code}`, e.target.value)}
-                                      className={`w-16 pl-4 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
-                                        darkMode
-                                          ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
-                                          : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
-                                      }`}
-                                    />
-                                    <Pencil size={8} className="absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A6340]/30" />
-                                  </div>
-                                </td>
-                                <td className={`px-3 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(storeVal * (item.srp || 0))}</td>
-                              </tr>
-                            );
-                          })}
-                          <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
-                            <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
-                            <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
-                            <td className={`px-3 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || (item.order || 0) * (item.srp || 0))}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {sizingOpen && (
-                  <div className={`mt-4 rounded-xl border overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
-                    <div className={`px-4 py-0.5 text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.1)]' : 'text-[#6B4D30] bg-[rgba(160,120,75,0.12)]'}`}>
-                      Sizing
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead>
-                          <tr className={darkMode ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] text-[#6B4D30]'}>
-                            <th className="px-3 py-0.5 text-left font-['Montserrat']">{item.productType}</th>
-                            <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">0002</th>
-                            <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">0004</th>
-                            <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">0006</th>
-                            <th className="px-3 py-0.5 text-center font-['JetBrains_Mono']">0008</th>
-                            <th className="px-3 py-0.5 text-center font-['Montserrat']">Sum</th>
-                          </tr>
-                        </thead>
-                        <tbody className={darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}>
-                          <tr className={darkMode ? 'border-t border-[#2E2E2E]' : 'border-t border-[rgba(215,183,151,0.2)]'}>
-                            <td className="px-3 py-0.5">% Sales mix</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">6%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">33%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">33%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">28%</td>
-                            <td className="px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono']">100%</td>
-                          </tr>
-                          <tr className={darkMode ? 'border-t border-[#2E2E2E]' : 'border-t border-[rgba(215,183,151,0.2)]'}>
-                            <td className="px-3 py-0.5">% ST</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">50%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">43%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">30%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">63%</td>
-                            <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-                          </tr>
-                          <tr className={darkMode ? 'border-t border-[#2E2E2E] bg-[rgba(215,183,151,0.08)]' : 'border-t border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.08)]'}>
-                            <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Choice A</td>
-                            {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                              <td key={size} className="px-1 py-0.5 text-center">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={getSizing(blockKey, idx).choiceA[size]}
-                                  onChange={(e) => updateSizing(blockKey, idx, 'choiceA', size, e.target.value)}
-                                  className={`w-10 text-center font-['JetBrains_Mono'] text-xs rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#D7B797]' : 'bg-emerald-50 border-emerald-200 text-[#6B4D30]'}`}
-                                />
-                              </td>
-                            ))}
-                            <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{calculateSum(getSizing(blockKey, idx).choiceA)}</td>
-                          </tr>
-                          <tr className={darkMode ? 'border-t border-[#2E2E2E] bg-[rgba(42,158,106,0.08)]' : 'border-t border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.03)]'}>
-                            <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice B</td>
-                            {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                              <td key={size} className="px-1 py-0.5 text-center">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={getSizing(blockKey, idx).choiceB[size]}
-                                  onChange={(e) => updateSizing(blockKey, idx, 'choiceB', size, e.target.value)}
-                                  className={`w-10 text-center font-['JetBrains_Mono'] text-xs rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                                />
-                              </td>
-                            ))}
-                            <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{calculateSum(getSizing(blockKey, idx).choiceB)}</td>
-                          </tr>
-                          <tr className={darkMode ? 'border-t border-[#2E2E2E] bg-[rgba(42,158,106,0.05)]' : 'border-t border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.02)]'}>
-                            <td className={`px-3 py-0.5 font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice C</td>
-                            {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                              <td key={size} className="px-1 py-0.5 text-center">
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={getSizing(blockKey, idx).choiceC[size]}
-                                  onChange={(e) => updateSizing(blockKey, idx, 'choiceC', size, e.target.value)}
-                                  className={`w-10 text-center font-['JetBrains_Mono'] text-xs rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                                />
-                              </td>
-                            ))}
-                            <td className={`px-3 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{calculateSum(getSizing(blockKey, idx).choiceC)}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
                   </div>
                 )}
               </div>
@@ -1603,30 +1443,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Rail Controls */}
-          <div className={`flex flex-wrap items-center justify-between px-4 py-2 rounded-xl border ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={handleToggleAll}
-                className={`flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-lg border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'}`}
-              >
-                <ChevronDown size={12} className={`transition-transform ${allCollapsed ? '-rotate-90' : ''}`} />
-                {allCollapsed ? 'Expand All' : 'Collapse All'}
-              </button>
-              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
-              </span>
-            </div>
-            <div className={`flex items-center gap-4 text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-              <span>Order: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
-              {stores.map((s: any) => (
-                <span key={s.code}>{s.code}: <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.storeQty[s.code] || 0}</span></span>
-              ))}
-              <span>Value: <span className={`font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span></span>
-            </div>
-          </div>
-
           {filteredSkuBlocks.map((block: any) => {
             const key = `${block.gender}_${block.category}_${block.subCategory}`;
             const isCollapsed = collapsed[key];
@@ -1676,7 +1492,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   </div>
                 </button>
 
-                {!isCollapsed && (
+                {!isCollapsed && (<>
                   <div className="overflow-x-auto">
                     {(() => {
                       const hlBg = darkMode ? 'bg-[rgba(215,183,151,0.12)]' : 'bg-[rgba(160,120,75,0.1)]';
@@ -1848,7 +1664,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1 text-center">
                               <div className="flex items-center justify-center gap-1">
-                                <button type="button" onClick={() => handleOpenSizing(key, idx, item)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing"><Ruler size={14} /></button>
+                                <button type="button" onClick={() => handleOpenLightbox(`${key}_${item.sku || 'new'}_${idx}`, 'sizing', item, key, idx, block)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing"><Ruler size={14} /></button>
                                 <button type="button" onClick={() => handleDeleteSkuRow(key, idx)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`} title={t('proposal.deleteSku')}><Trash2 size={14} /></button>
                               </div>
                             </td>
@@ -1858,19 +1674,19 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     </table>
                       );
                     })()}
-                    {/* Add new SKU button */}
-                    <div className={`border-t border-dashed px-3 py-2 ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
-                      <button
-                        type="button"
-                        onClick={() => handleAddSkuRow(key)}
-                        className={`w-full flex items-center justify-center gap-2 py-1 text-xs rounded-lg transition-colors border border-dashed ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)] border-[#2E2E2E]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.3)]'}`}
-                      >
-                        <Plus size={14} />
-                        <span>Add new SKU</span>
-                      </button>
-                    </div>
                   </div>
-                )}
+                  {/* Add new SKU button — outside scroll container */}
+                  <div className={`border-t border-dashed px-3 py-2 ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
+                    <button
+                      type="button"
+                      onClick={() => handleAddSkuRow(key)}
+                      className={`w-full flex items-center justify-center gap-2 py-1 text-xs rounded-lg transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'}`}
+                    >
+                      <Plus size={14} />
+                      <span>Add new SKU</span>
+                    </button>
+                  </div>
+                </>)}
               </div>
             );
           })}
@@ -1908,124 +1724,250 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         </div>
       )}
 
-      {/* Sizing Popup Modal */}
-      {sizingPopup.open && sizingPopup.item && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className={`rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
+      {/* SKU Lightbox Modal — Portal to body for full-screen blur */}
+      {lightbox && lightbox.open && lightbox.item && createPortal(
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50" onClick={(e) => { if (e.target === e.currentTarget) handleCloseLightbox(); }}>
+          <div ref={lightboxRef} className={`rounded-2xl w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col border ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`} style={{ boxShadow: '0 25px 60px -12px rgba(0,0,0,0.4), 0 10px 30px -8px rgba(0,0,0,0.3), 0 0 0 1px rgba(0,0,0,0.05)' }}>
             {/* Header */}
             <div className={`px-6 py-4 flex items-center justify-between ${darkMode ? 'bg-[rgba(215,183,151,0.1)] border-b border-[rgba(215,183,151,0.2)]' : 'bg-[rgba(160,120,75,0.18)] border-b border-[rgba(215,183,151,0.3)]'}`}>
-              <div>
-                <h3 className={`text-lg font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{sizingPopup.item.productType}</h3>
-                <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-[#6B5B4D]'}`}>
-                  <span className="font-['JetBrains_Mono']">{sizingPopup.item.sku}</span> - {sizingPopup.item.name}
-                </p>
+              <div className="flex items-center gap-3">
+                <img
+                  src={getDemoImageSvg(lightbox.block?.subCategory || '', lightbox.item.sku)}
+                  alt={lightbox.item.name || lightbox.item.sku}
+                  className="w-10 h-10 rounded-xl border object-cover"
+                  style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
+                />
+                <div>
+                  <h3 className={`text-base font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                    <span className="font-['JetBrains_Mono']">{lightbox.item.sku}</span> - {lightbox.item.name}
+                  </h3>
+                  <p className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#6B5B4D]'}`}>
+                    {lightbox.block?.gender} {lightbox.block?.category && `• ${lightbox.block.category}`} {lightbox.block?.subCategory && `• ${lightbox.block.subCategory}`}
+                  </p>
+                </div>
               </div>
               <button
-                onClick={handleCloseSizing}
+                onClick={handleCloseLightbox}
                 className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.15)]' : 'hover:bg-[rgba(215,183,151,0.2)]'}`}
               >
                 <X size={20} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
               </button>
             </div>
 
-            {/* Sizing Table */}
-            <div className="p-3 md:p-6">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className={darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'}>
-                      <th className="px-4 py-0.5 text-left font-semibold font-['Montserrat']">{sizingPopup.item.productType}</th>
-                      <th className="px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono']">0002</th>
-                      <th className="px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono']">0004</th>
-                      <th className="px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono']">0006</th>
-                      <th className="px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono']">0008</th>
-                      <th className={`px-4 py-0.5 text-center font-semibold font-['Montserrat'] ${darkMode ? 'bg-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.25)]'}`}>Sum</th>
-                    </tr>
-                  </thead>
-                  <tbody className={darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}>
-                    <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[#1A1A1A]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.08)]'}>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>% Sales mix</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">6%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">33%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">33%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">28%</td>
-                      <td className={`px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>100%</td>
-                    </tr>
-                    <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.2)]'}>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>% ST</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">50%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">43%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">30%</td>
-                      <td className="px-4 py-0.5 text-center font-['JetBrains_Mono']">63%</td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666] bg-[rgba(215,183,151,0.08)]' : 'text-[#999999] bg-[rgba(160,120,75,0.12)]'}`}>-</td>
-                    </tr>
-                    <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.12)]'}>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Choice A:</td>
-                      {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                        <td key={size} className="px-2 py-0.5 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            value={getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceA[size]}
-                            onChange={(e) => updateSizing(sizingPopup.blockKey, sizingPopup.itemIdx, 'choiceA', size, e.target.value)}
-                            className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#D7B797]' : 'bg-emerald-50 border-emerald-200 text-[#6B4D30]'}`}
-                          />
-                        </td>
-                      ))}
-                      <td className={`px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.15)]' : 'text-[#6B4D30] bg-[rgba(215,183,151,0.2)]'}`}>{calculateSum(getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceA)}</td>
-                    </tr>
-                    <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(42,158,106,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.05)]'}>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice B:</td>
-                      {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                        <td key={size} className="px-2 py-0.5 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            value={getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceB[size]}
-                            onChange={(e) => updateSizing(sizingPopup.blockKey, sizingPopup.itemIdx, 'choiceB', size, e.target.value)}
-                            className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                          />
-                        </td>
-                      ))}
-                      <td className={`px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.15)]' : 'text-[#127749] bg-[rgba(18,119,73,0.1)]'}`}>{calculateSum(getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceB)}</td>
-                    </tr>
-                    <tr className={darkMode ? 'bg-[rgba(42,158,106,0.05)]' : 'bg-[rgba(18,119,73,0.03)]'}>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice C:</td>
-                      {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                        <td key={size} className="px-2 py-0.5 text-center">
-                          <input
-                            type="number"
-                            min="0"
-                            value={getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceC[size]}
-                            onChange={(e) => updateSizing(sizingPopup.blockKey, sizingPopup.itemIdx, 'choiceC', size, e.target.value)}
-                            className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                          />
-                        </td>
-                      ))}
-                      <td className={`px-4 py-0.5 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.1)]' : 'text-[#127749] bg-[rgba(18,119,73,0.08)]'}`}>{calculateSum(getSizing(sizingPopup.blockKey, sizingPopup.itemIdx).choiceC)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            {/* Tab Buttons */}
+            <div className={`flex border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'}`}>
+              {([['details', t('skuProposal.showDetails')], ['storeOrder', t('skuProposal.storeOrder')], ['sizing', t('skuProposal.sizing')]] as const).map(([tabId, label]) => (
+                <button
+                  key={tabId}
+                  type="button"
+                  onClick={() => setLightbox(prev => prev ? { ...prev, tab: tabId as 'details' | 'storeOrder' | 'sizing' } : null)}
+                  className={`flex-1 px-4 py-2.5 text-xs font-semibold font-['Montserrat'] transition-colors relative ${
+                    lightbox.tab === tabId
+                      ? darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'
+                      : darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-[#999999] hover:text-[#666666]'
+                  }`}
+                >
+                  {label}
+                  {lightbox.tab === tabId && (
+                    <span className={`absolute bottom-0 left-2 right-2 h-0.5 rounded-full ${darkMode ? 'bg-[#D7B797]' : 'bg-[#6B4D30]'}`} />
+                  )}
+                </button>
+              ))}
+            </div>
 
-              {/* Actions */}
-              <div className="flex justify-end gap-3 mt-6">
-                <button
-                  onClick={handleCloseSizing}
-                  className={`px-4 py-0.5 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'text-[#999999] hover:bg-[rgba(215,183,151,0.1)] hover:text-[#D7B797]' : 'text-[#666666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'}`}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCloseSizing}
-                  className={`px-4 py-0.5 text-sm font-medium rounded-lg transition-colors shadow-sm ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]' : 'bg-[#D7B797] text-[#333333] hover:bg-[#C4A584]'}`}
-                >
-                  Save Sizing
-                </button>
-              </div>
+            {/* Tab Content */}
+            <div className="overflow-y-auto flex-1 p-4 md:p-6">
+              {/* Details Tab */}
+              {lightbox.tab === 'details' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Product type</span>
+                    <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{lightbox.item.productType}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Theme</span>
+                    <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{lightbox.item.theme}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Color</span>
+                    <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{lightbox.item.color}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Composition</span>
+                    <div className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{lightbox.item.composition}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Unit cost</span>
+                    <div className={`font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{formatCurrency(lightbox.item.unitCost)}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>SRP</span>
+                    <div className={`font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(lightbox.item.srp)}</div>
+                  </div>
+                  <div>
+                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Customer target</span>
+                    <select
+                      value={lightbox.item.customerTarget}
+                      onChange={(e) => handleSelectChange(lightbox.blockKey, lightbox.idx, 'customerTarget', e.target.value)}
+                      className={`mt-1 w-full px-3 py-1 rounded-lg border text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
+                    >
+                      <option value="New">New</option>
+                      <option value="Existing">Existing</option>
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {/* Store Order Tab */}
+              {lightbox.tab === 'storeOrder' && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
+                        <th className="px-4 py-2 text-left">Store</th>
+                        <th className="px-4 py-2 text-center font-['JetBrains_Mono']">ORDER</th>
+                        <th className="px-4 py-2 text-right font-['JetBrains_Mono']">TTL VALUE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stores.map((st: any, si: number) => {
+                        const storeVal = (lightbox.item.storeQty || {})[st.code] || 0;
+                        const colors = ['bg-[#D7B797]', 'bg-[#127749]', 'bg-[#58A6FF]', 'bg-[#A371F7]', 'bg-[#E3B341]'];
+                        return (
+                          <tr key={st.code} className={`border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+                            <td className={`px-4 py-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>
+                              <span className="inline-flex items-center gap-1.5"><span className={`w-2 h-2 rounded-full ${colors[si % colors.length]}`} />{st.code}</span>
+                            </td>
+                            <td className="px-4 py-2 text-center">
+                              <div className="relative group inline-block">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={storeVal}
+                                  onChange={(e) => handleNumberChange(lightbox.blockKey, lightbox.idx, `store_${st.code}`, e.target.value)}
+                                  className={`w-20 pl-5 text-center font-['JetBrains_Mono'] text-sm rounded-lg border py-1 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                    darkMode
+                                      ? 'bg-[#121212] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] focus:border-[#D7B797]'
+                                      : 'bg-white border-[rgba(215,183,151,0.4)] text-gray-800 focus:border-[#D7B797]'
+                                  }`}
+                                />
+                                <Pencil size={8} className="absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8A6340]/30" />
+                              </div>
+                            </td>
+                            <td className={`px-4 py-2 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(storeVal * (lightbox.item.srp || 0))}</td>
+                          </tr>
+                        );
+                      })}
+                      <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
+                        <td className={`px-4 py-2 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
+                        <td className={`px-4 py-2 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{lightbox.item.order || 0}</td>
+                        <td className={`px-4 py-2 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(lightbox.item.ttlValue || (lightbox.item.order || 0) * (lightbox.item.srp || 0))}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Sizing Tab */}
+              {lightbox.tab === 'sizing' && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className={darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'}>
+                        <th className="px-4 py-2 text-left font-semibold font-['Montserrat']">{lightbox.item.productType}</th>
+                        <th className="px-4 py-2 text-center font-semibold font-['JetBrains_Mono']">0002</th>
+                        <th className="px-4 py-2 text-center font-semibold font-['JetBrains_Mono']">0004</th>
+                        <th className="px-4 py-2 text-center font-semibold font-['JetBrains_Mono']">0006</th>
+                        <th className="px-4 py-2 text-center font-semibold font-['JetBrains_Mono']">0008</th>
+                        <th className={`px-4 py-2 text-center font-semibold font-['Montserrat'] ${darkMode ? 'bg-[rgba(215,183,151,0.2)]' : 'bg-[rgba(215,183,151,0.25)]'}`}>Sum</th>
+                      </tr>
+                    </thead>
+                    <tbody className={darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}>
+                      <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[#1A1A1A]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.08)]'}>
+                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>% Sales mix</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">6%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">33%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">33%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">28%</td>
+                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>100%</td>
+                      </tr>
+                      <tr className={darkMode ? 'border-b border-[#2E2E2E]' : 'border-b border-[rgba(215,183,151,0.2)]'}>
+                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>% ST</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">50%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">43%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">30%</td>
+                        <td className="px-4 py-2 text-center font-['JetBrains_Mono']">63%</td>
+                        <td className={`px-4 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666] bg-[rgba(215,183,151,0.08)]' : 'text-[#999999] bg-[rgba(160,120,75,0.12)]'}`}>-</td>
+                      </tr>
+                      <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.12)]'}>
+                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Choice A:</td>
+                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
+                          <td key={size} className="px-2 py-2 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceA[size]}
+                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceA', size, e.target.value)}
+                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#D7B797]' : 'bg-emerald-50 border-emerald-200 text-[#6B4D30]'}`}
+                            />
+                          </td>
+                        ))}
+                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.15)]' : 'text-[#6B4D30] bg-[rgba(215,183,151,0.2)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceA)}</td>
+                      </tr>
+                      <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(42,158,106,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.05)]'}>
+                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice B:</td>
+                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
+                          <td key={size} className="px-2 py-2 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceB[size]}
+                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceB', size, e.target.value)}
+                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
+                            />
+                          </td>
+                        ))}
+                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.15)]' : 'text-[#127749] bg-[rgba(18,119,73,0.1)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceB)}</td>
+                      </tr>
+                      <tr className={darkMode ? 'bg-[rgba(42,158,106,0.05)]' : 'bg-[rgba(18,119,73,0.03)]'}>
+                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice C:</td>
+                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
+                          <td key={size} className="px-2 py-2 text-center">
+                            <input
+                              type="number"
+                              min="0"
+                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceC[size]}
+                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceC', size, e.target.value)}
+                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
+                            />
+                          </td>
+                        ))}
+                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.1)]' : 'text-[#127749] bg-[rgba(18,119,73,0.08)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceC)}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className={`px-6 py-3 flex justify-end gap-3 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'}`}>
+              <button
+                onClick={handleCloseLightbox}
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'text-[#999999] hover:bg-[rgba(215,183,151,0.1)] hover:text-[#D7B797]' : 'text-[#666666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'}`}
+              >
+                Close
+              </button>
+              <button
+                onClick={handleCloseLightbox}
+                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors shadow-sm ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]' : 'bg-[#D7B797] text-[#333333] hover:bg-[#C4A584]'}`}
+              >
+                Done
+              </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Mobile Filter Bottom Sheet */}

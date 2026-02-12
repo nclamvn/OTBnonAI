@@ -688,7 +688,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   };
 
   // Common table styles - DAFC Design System (compact)
-  const headerCellClass = "px-3 py-0.5 text-center text-xs font-semibold tracking-wide font-['Montserrat']";
+  const headerCellClass = "px-3 py-2 text-center text-xs font-semibold tracking-wide font-['Montserrat']";
   const headerDarkCell = darkMode ? 'bg-[#0A0A0A] text-[#999999]' : 'bg-gray-100 text-gray-700';
   const headerGoldCell = darkMode ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30]';
   const headerBrownCell = darkMode ? 'bg-[rgba(139,115,85,0.25)] text-[#D7B797]' : 'bg-[rgba(139,115,85,0.2)] text-[#5C4033]';
@@ -1191,16 +1191,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                             <table className="w-full text-sm">
                               <thead>
                                 <tr>
-                                  <th className={`px-4 py-0.5 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('nav.subCategories')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('common.submit')}</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>% Actual</th>
-                                  <th className={`px-3 py-0.5 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('common.actions')}</th>
+                                  <th className={`px-4 py-2 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('nav.subCategories')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('common.submit')}</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>% Actual</th>
+                                  <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('common.actions')}</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -2093,7 +2093,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       {selectedBudgetIds.length <= 1 && selectedBudget && selectedSeason && selectedSeasonGroup && (
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
         {/* Tabs */}
-        <div className={`border-b px-2 md:px-4 pt-2 overflow-x-auto ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
+        <div className={`border-b px-2 md:px-4 pt-2 ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
           <div className="flex gap-1">
             {TABS.map((tab: any) => {
               const Icon = tab.icon;
@@ -2120,33 +2120,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           </div>
         </div>
 
-        {/* Hint + Season Context */}
-        <div className={`px-4 md:px-5 py-2.5 border-b flex flex-wrap items-center justify-between gap-2 text-xs ${
-          darkMode
-            ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.15)] text-[#D7B797]'
-            : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.2)] text-[#6B4D30]'
-        }`}>
-          <div className="flex items-center gap-2">
-            <Pencil size={14} className="animate-bounce shrink-0" style={{ animationDuration: '2s' }} />
-            <span className="text-xs md:text-sm">Click on cells with gold background in "% Buy Proposed" column to edit</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {selectedSeasonGroup !== 'all' && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                darkMode ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.3)] text-[#6B4D30]'
-              }`}>
-                {SEASON_GROUPS.find((s: any) => s.id === selectedSeasonGroup)?.label || selectedSeasonGroup}
-              </span>
-            )}
-            {selectedSeason !== 'all' && (
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.25)] text-[#6B4D30]'
-              }`}>
-                {SEASONS.find((s: any) => s.id === selectedSeason)?.label || selectedSeason}
-              </span>
-            )}
-          </div>
-        </div>
 
         {/* Content */}
         <div className="overflow-y-auto">
