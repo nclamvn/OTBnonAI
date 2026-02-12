@@ -191,7 +191,7 @@ const BudgetManagementScreen = ({
           {isMobile && (
             <button
               onClick={openFilter}
-              className={`flex items-center gap-1.5 px-3 py-0.5 border rounded-lg text-xs font-medium ${
+              className={`flex items-center gap-1.5 px-3 py-1 border rounded-lg text-xs font-medium ${
                 darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#D7B797]'
                   : 'bg-white border-[#C4B5A5] text-[#6B4D30]'
@@ -213,7 +213,7 @@ const BudgetManagementScreen = ({
               onClick={() => {
                 setYearDropdownOpen(!yearDropdownOpen);
               }}
-              className={`flex items-center justify-between gap-2 px-3 py-0.5 border rounded-lg transition-colors min-w-[110px] ${selectedYear
+              className={`flex items-center justify-between gap-2 px-3 py-1 border rounded-lg transition-colors min-w-[110px] ${selectedYear
                 ? darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
                   : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
@@ -256,7 +256,7 @@ const BudgetManagementScreen = ({
               placeholder={t('budget.searchBudgets')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-8 pr-3 py-0.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-transparent ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666666]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A] placeholder-[#999999]'}`}
+              className={`w-full pl-8 pr-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-transparent ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666666]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A] placeholder-[#999999]'}`}
             />
           </div>
 
@@ -264,7 +264,7 @@ const BudgetManagementScreen = ({
           <div className={`flex items-center rounded-lg p-1 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[#F2F2F2]'}`}>
             <button
               onClick={() => setCurrency('VND')}
-              className={`px-3 py-0.5 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
                 currency === 'VND'
                   ? darkMode
                     ? 'bg-[#D7B797] text-[#0A0A0A] shadow-sm'
@@ -278,7 +278,7 @@ const BudgetManagementScreen = ({
             </button>
             <button
               onClick={() => setCurrency('USD')}
-              className={`px-3 py-0.5 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
+              className={`px-3 py-1 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
                 currency === 'USD'
                   ? darkMode
                     ? 'bg-[#127749] text-white shadow-sm'
@@ -330,7 +330,7 @@ const BudgetManagementScreen = ({
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-3 py-0.5 bg-[#127749] text-white rounded-lg hover:bg-[#2A9E6A] transition-colors shadow-sm text-xs font-medium font-['Montserrat'] shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1 bg-[#127749] text-white rounded-lg hover:bg-[#2A9E6A] transition-colors shadow-sm text-xs font-medium font-['Montserrat'] shrink-0"
           >
             <Plus size={14} />
             {t('budget.createBudget')}

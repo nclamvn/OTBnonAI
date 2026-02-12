@@ -2,11 +2,64 @@
 
 import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import {
-  ChevronDown, Package, Image as ImageIcon, Pencil, X, Plus, Trash2, Ruler,
+  ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
   Star, Layers, Check
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
+
+// Fashion product silhouette SVG generator
+const FASHION_SILHOUETTES: Record<string, { path: string; handle?: string; accent?: string; colors: [string, string] }> = {
+  'Bags': {
+    path: 'M65 82 C65 64 80 54 100 54 C120 54 135 64 135 82 L135 128 C135 138 126 144 116 144 L84 144 C74 144 65 138 65 128 Z',
+    handle: 'M83 54 C83 38 91 30 100 30 C109 30 117 38 117 54',
+    colors: ['#6B4D30', '#D4A537'],
+  },
+  'Outerwear': {
+    path: 'M80 52 L66 60 L60 138 L82 146 L94 140 L100 105 L106 140 L118 146 L140 138 L134 60 L120 52 L112 48 L100 45 L88 48 Z',
+    accent: 'M88 52 L100 70 L112 52',
+    colors: ['#2C2C3A', '#5A5A6E'],
+  },
+  'Tailoring': {
+    path: 'M78 52 L66 60 L72 146 L93 146 L96 98 L100 92 L104 98 L107 146 L128 146 L134 60 L122 52 L112 48 L100 45 L88 48 Z',
+    accent: 'M90 52 L100 72 L110 52 M100 72 L100 146',
+    colors: ['#1E2A4A', '#3A5A8B'],
+  },
+  'Tops': {
+    path: 'M82 54 L66 64 L72 84 L82 78 L82 146 L118 146 L118 78 L128 84 L134 64 L118 54 L110 48 L100 45 L90 48 Z',
+    colors: ['#4A1E3D', '#7A3D72'],
+  },
+};
+
+const getDemoImageSvg = (subCategory: string, sku: string): string => {
+  // Match subcategory to silhouette type
+  const type = Object.keys(FASHION_SILHOUETTES).find(k =>
+    (subCategory || '').toLowerCase().includes(k.toLowerCase())
+  ) || 'Bags';
+  const cfg = FASHION_SILHOUETTES[type];
+
+  // Slight hue shift per SKU for variety
+  const hash = (sku || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const hueShift = (hash % 30) - 15;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${cfg.colors[0]}"/>
+        <stop offset="100%" stop-color="${cfg.colors[1]}"/>
+      </linearGradient>
+    </defs>
+    <rect width="200" height="200" rx="16" fill="url(#bg)"/>
+    <g transform="rotate(${hueShift * 0.3} 100 100)">
+      <path d="${cfg.path}" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${cfg.handle ? `<path d="${cfg.handle}" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="2.5" stroke-linecap="round"/>` : ''}
+      ${cfg.accent ? `<path d="${cfg.accent}" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+    </g>
+    <text x="100" y="176" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="11" font-family="sans-serif" font-weight="500" letter-spacing="2">${type.toUpperCase()}</text>
+  </svg>`;
+
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+};
 import { budgetService, masterDataService, proposalService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -641,7 +694,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           {isMobile && (
             <button
               onClick={openFilter}
-              className={`flex items-center gap-2 px-3 py-0.5 rounded-lg text-sm font-medium border ${darkMode ? 'bg-[rgba(215,183,151,0.1)] border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}
+              className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium border ${darkMode ? 'bg-[rgba(215,183,151,0.1)] border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}
             >
               <SlidersHorizontal size={16} />
               {t('common.filters')}
@@ -769,7 +822,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 <button
                   type="button"
                   onClick={() => setIsSkuVersionOpen(!isSkuVersionOpen)}
-                  className={`flex items-center gap-2 px-4 py-0.5 rounded-lg text-sm font-medium transition-all border ${
+                  className={`flex items-center gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-all border ${
                     darkMode
                       ? 'bg-[rgba(215,183,151,0.1)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.15)]'
                       : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.4)] text-[#333333] hover:bg-[rgba(160,120,75,0.18)]'
@@ -842,7 +895,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 <button
                   type="button"
                   onClick={() => setIsSizingVersionOpen(!isSizingVersionOpen)}
-                  className={`flex items-center gap-2 px-4 py-0.5 rounded-lg text-sm font-medium transition-all border ${
+                  className={`flex items-center gap-2 px-4 py-1 rounded-lg text-sm font-medium transition-all border ${
                     darkMode
                       ? 'bg-[rgba(215,183,151,0.1)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.15)]'
                       : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.4)] text-[#333333] hover:bg-[rgba(160,120,75,0.18)]'
@@ -916,7 +969,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 <button
                   type="button"
                   onClick={() => setViewMode('table')}
-                  className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                     viewMode === 'table'
                       ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
                       : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
@@ -929,7 +982,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   onClick={() => canShowCardView && setViewMode('card')}
                   disabled={!canShowCardView}
                   title={!canShowCardView ? 'Add SKUs to enable card view' : 'View SKUs as cards'}
-                  className={`px-2.5 py-0.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                     viewMode === 'card'
                       ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm' : 'bg-white text-[#6B4D30] shadow-sm'
                       : darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'
@@ -957,9 +1010,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               <div key={key} className={`rounded-2xl border p-4 ${getCardBgClass(cardIdx)}`}>
                 <div className="flex flex-wrap items-center gap-3 justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-xl border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.25)]'}`}>
-                      <ImageIcon size={18} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                    </div>
+                    <img
+                      src={getDemoImageSvg(block.subCategory, item.sku)}
+                      alt={item.name || item.sku}
+                      className="w-12 h-12 rounded-xl border object-cover"
+                      style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
+                    />
                     <div>
                       <div className={`text-sm font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
                         <span className="font-['JetBrains_Mono']">{item.sku || 'New SKU'}</span> <span className={darkMode ? 'text-[#999999]' : 'text-[#666666]'}>•</span> {item.name || 'Select SKU'}
@@ -973,21 +1029,21 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     <button
                       type="button"
                       onClick={() => setCardDetailsOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
-                      className={`px-2 md:px-3 py-0.5 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                      className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
                       {detailsOpen ? t('skuProposal.hideDetails') : t('skuProposal.showDetails')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setCardStoreOrderOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
-                      className={`px-2 md:px-3 py-0.5 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                      className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
                       {cardStoreOrderOpen[key] ? t('skuProposal.hideStores') : t('skuProposal.storeOrder')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setCardSizingOpen((prev: any) => ({ ...prev, [key]: !prev[key] }))}
-                      className={`px-2 md:px-3 py-0.5 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                      className={`px-2 md:px-3 py-1 md:py-1 text-xs font-semibold rounded-full border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
                     >
                       {sizingOpen ? t('skuProposal.hideSizing') : t('skuProposal.sizing')}
                     </button>
@@ -1329,9 +1385,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-2 text-center min-w-[140px]">
-                              <div className={`w-16 h-16 mx-auto rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.25)]'}`}>
-                                <ImageIcon size={20} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                              </div>
+                              <img
+                                src={getDemoImageSvg(block.subCategory, item.sku)}
+                                alt={item.name || item.sku}
+                                className="w-16 h-16 mx-auto rounded-lg border object-cover"
+                                style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
+                              />
                             </td>
                           ))}
                         </tr>

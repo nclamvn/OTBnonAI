@@ -694,8 +694,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const headerBrownCell = darkMode ? 'bg-[rgba(139,115,85,0.25)] text-[#D7B797]' : 'bg-[rgba(139,115,85,0.2)] text-[#5C4033]';
   const headerDarkBrownCell = darkMode ? 'bg-[rgba(92,64,51,0.3)] text-[#D7B797]' : 'bg-[rgba(92,64,51,0.2)] text-[#5C4033]';
   const groupRowClass = darkMode
-    ? "bg-[rgba(215,183,151,0.08)] border-l-4 border-[#D7B797]"
-    : "bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.08)] border-l-4 border-[#D7B797]";
+    ? "bg-[rgba(215,183,151,0.08)] border-l-2 border-[#D7B797]"
+    : "bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.08)] border-l-2 border-[#D7B797]";
   const sumRowClass = darkMode
     ? "bg-gradient-to-r from-[rgba(215,183,151,0.2)] to-[rgba(215,183,151,0.15)] text-[#D7B797] font-semibold"
     : "bg-gradient-to-r from-[rgba(215,183,151,0.25)] to-[rgba(215,183,151,0.2)] text-[#5C4A32] font-semibold";
@@ -946,7 +946,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     return (
       <div className="p-4 space-y-3">
         {/* Filter Section */}
-        <div className={`mb-2 md:mb-3 px-3 md:px-6 py-1.5 ${
+        <div className={`mb-2 md:mb-3 py-1.5 ${
           darkMode
             ? 'border-b border-[#2E2E2E]'
             : 'border-b border-[#C4B5A5]'
@@ -960,7 +960,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   setOpenCategoryDropdown((prev: any) => (prev === 'genderFilter' ? null : 'genderFilter'));
                   setOpenDropdown(null);
                 }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-px border rounded-md transition-all min-w-[90px] ${
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[90px] ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
                     : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
@@ -1006,7 +1006,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   setOpenCategoryDropdown((prev: any) => (prev === 'categoryFilter' ? null : 'categoryFilter'));
                   setOpenDropdown(null);
                 }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-px border rounded-md transition-all min-w-[100px] ${
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[100px] ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
                     : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
@@ -1052,7 +1052,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   setOpenCategoryDropdown((prev: any) => (prev === 'subCategoryFilter' ? null : 'subCategoryFilter'));
                   setOpenDropdown(null);
                 }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-px border rounded-md transition-all min-w-[100px] ${
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[100px] ${
                   darkMode
                     ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
                     : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
@@ -1114,7 +1114,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           const isFemale = genderGroup.gender.id === 'female';
 
           return (
-            <div key={genderGroup.gender.id} className={`rounded-xl border-2 overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+            <div key={genderGroup.gender.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
               {/* Gender Header - Level 1 */}
               <div
                 onClick={() => toggleGenderExpanded(genderGroup.gender.id)}
@@ -1473,7 +1473,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 <div className="px-3 md:px-6 py-1.5">
                 <button
                   onClick={openFilter}
-                  className={`flex items-center gap-1.5 px-3 py-0.5 border rounded-lg text-xs font-medium ${
+                  className={`flex items-center gap-1.5 px-3 py-1 border rounded-lg text-xs font-medium ${
                     darkMode
                       ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#D7B797]'
                       : 'bg-white border-[#C4B5A5] text-[#6B4D30]'
@@ -1498,7 +1498,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'year' ? null : 'year'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
+                    className={`px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
                       selectedYear !== 'all'
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1553,7 +1553,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     <button
                       type="button"
                       onClick={() => { setComparisonType('same'); setSelectedBudgetIds([]); }}
-                      className={`px-2 py-0.5 text-xs font-medium flex items-center gap-1 transition-all ${
+                      className={`px-2 py-1 text-xs font-medium flex items-center gap-1 transition-all ${
                         comparisonType === 'same'
                           ? darkMode
                             ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797] border-r border-[#2E2E2E]'
@@ -1569,7 +1569,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     <button
                       type="button"
                       onClick={() => { setComparisonType('different'); setSelectedBudgetIds([]); }}
-                      className={`px-2 py-0.5 text-xs font-medium flex items-center gap-1 transition-all ${
+                      className={`px-2 py-1 text-xs font-medium flex items-center gap-1 transition-all ${
                         comparisonType === 'different'
                           ? darkMode
                             ? 'bg-[rgba(215,183,151,0.2)] text-[#D7B797]'
@@ -1593,7 +1593,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'seasonCount' ? null : 'seasonCount'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
+                    className={`px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
                       darkMode
                         ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
                         : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
@@ -1642,7 +1642,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'budgetSeason' ? null : 'budgetSeason'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`w-full px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-xs transition-all ${
+                    className={`w-full px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center justify-between text-xs transition-all ${
                       selectedBudgetIds.length > 0
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1756,7 +1756,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'seasonGroup' ? null : 'seasonGroup'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
+                    className={`px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
                       selectedSeasonGroup !== 'all'
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1811,7 +1811,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenDropdown((prev: any) => (prev === 'season' ? null : 'season'));
                       setOpenCategoryDropdown(null);
                     }}
-                    className={`px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
+                    className={`px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
                       selectedSeason !== 'all'
                         ? darkMode
                           ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:border-[rgba(215,183,151,0.4)]'
@@ -1872,7 +1872,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       setOpenCategoryDropdown(null);
                     }}
                     disabled={versions.length === 0 && !loadingVersions}
-                    className={`px-2 py-0.5 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
+                    className={`px-2 py-1 border rounded-lg font-medium cursor-pointer flex items-center gap-1.5 text-xs transition-all ${
                       versions.length === 0 && !loadingVersions
                         ? darkMode
                           ? 'bg-[#121212] border-[#2E2E2E] text-[#666666] cursor-not-allowed opacity-50'
@@ -1990,7 +1990,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
 
       {/* Budget Context Card - Outside sticky */}
       {!isMobile && ((selectedBudget && selectedSeasonGroup && selectedSeason) || budgetContext) && (
-        <div className={`flex items-center gap-4 px-3 py-1 rounded-lg border ${
+        <div className={`flex items-center gap-4 px-3 py-2 rounded-lg border ${
           darkMode
             ? 'border-[rgba(215,183,151,0.25)] bg-[rgba(215,183,151,0.05)]'
             : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.08)]'

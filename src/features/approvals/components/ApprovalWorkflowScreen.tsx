@@ -144,7 +144,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
   return (
     <div className="space-y-2 md:space-y-3">
       {/* Compact Header + Filters */}
-      <div className={`rounded-xl border px-2 md:px-3 py-0.5 ${
+      <div className={`rounded-xl border px-2 md:px-3 py-2 ${
         darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'
       }`} style={{
         background: darkMode
@@ -172,7 +172,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
             <select
               value={selectedBrandId}
               onChange={(e: any) => setSelectedBrandId(e.target.value)}
-              className={`flex-1 md:flex-none px-2 py-0.5 border rounded-lg text-xs font-['Montserrat'] transition-all focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${
+              className={`flex-1 md:flex-none px-2 py-1 border rounded-lg text-xs font-['Montserrat'] transition-all focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${
                 darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2]'
                   : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'
@@ -222,7 +222,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
 
             <button
               onClick={openAddModal}
-              className="flex items-center justify-center gap-1.5 px-2.5 py-0.5 bg-[#D7B797] hover:bg-[#C4A480] text-[#0A0A0A] font-semibold text-xs font-['Montserrat'] rounded-lg transition-colors"
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1 bg-[#D7B797] hover:bg-[#C4A480] text-[#0A0A0A] font-semibold text-xs font-['Montserrat'] rounded-lg transition-colors"
             >
               <Plus size={13} />
               {t('approval.addStep')}
@@ -287,11 +287,11 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
             <table className="w-full">
               <thead>
                 <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}>
-                  <th className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.brand')}</th>
-                  <th className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] w-16 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.step')}</th>
-                  <th className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.roleUser')}</th>
-                  <th className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.description')}</th>
-                  <th className={`px-3 py-0.5 text-right text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] w-24 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.actions')}</th>
+                  <th className={`px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.brand')}</th>
+                  <th className={`px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] w-16 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.step')}</th>
+                  <th className={`px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('approval.roleUser')}</th>
+                  <th className={`px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.description')}</th>
+                  <th className={`px-3 py-1.5 text-right text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] w-24 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -306,17 +306,17 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
                     <tr key={step.id} className={`border-t transition-colors ${
                       darkMode ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.04)]' : 'border-[#D4C8BB] hover:bg-[rgba(215,183,151,0.06)]'
                     }`}>
-                      <td className={`px-3 py-0.5 text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+                      <td className={`px-3 py-1 text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
                         {step.brand?.name || '-'}
                       </td>
-                      <td className="px-3 py-0.5">
+                      <td className="px-3 py-1">
                         <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full font-bold text-[10px] font-['JetBrains_Mono'] ${
                           darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'
                         }`}>
                           {step.stepNumber}
                         </span>
                       </td>
-                      <td className={`px-3 py-0.5 text-xs font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+                      <td className={`px-3 py-1 text-xs font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
                         <div className="flex items-center gap-1.5">
                           <Users size={12} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
                           {step.roleName}
@@ -325,10 +325,10 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
                           )}
                         </div>
                       </td>
-                      <td className={`px-3 py-0.5 text-xs font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                      <td className={`px-3 py-1 text-xs font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
                         {step.description || '-'}
                       </td>
-                      <td className="px-3 py-0.5 text-right">
+                      <td className="px-3 py-1 text-right">
                         <button
                           onClick={() => openEditModal(step)}
                           className={`p-2 rounded-lg transition-colors ${

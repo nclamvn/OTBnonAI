@@ -782,7 +782,7 @@ const PlanningDetailPage = ({
                   setIsCategoryDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-pink-300 transition-all min-w-[90px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-pink-300 transition-all min-w-[90px]"
               >
                 <Users size={12} className="text-pink-500" />
                 <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
@@ -817,7 +817,7 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-violet-300 transition-all min-w-[100px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-violet-300 transition-all min-w-[100px]"
               >
                 <Tag size={12} className="text-violet-500" />
                 <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
@@ -852,7 +852,7 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-px bg-white border border-slate-200 rounded-md hover:border-emerald-300 transition-all min-w-[100px]"
+                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-emerald-300 transition-all min-w-[100px]"
               >
                 <Layers size={12} className="text-emerald-500" />
                 <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
