@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { STORES, CURRENT_YEAR, CURRENT_SEASON_GROUP } from '../../../utils/constants';
 import { generateSeasonsMultiple } from '../../../utils/formatters';
+import toast from 'react-hot-toast';
 import { masterDataService, budgetService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -50,6 +51,7 @@ export const useBudget = () => {
         setSeasons(seasonsRes || []);
       } catch (err: any) {
         console.error('Failed to fetch master data:', err);
+        toast.error('Không thể tải dữ liệu. Vui lòng thử lại.');
       }
     };
     fetchMasterData();
@@ -89,6 +91,7 @@ export const useBudget = () => {
       setBudgets(transformedBudgets);
     } catch (err: any) {
       console.error('Failed to fetch budgets:', err);
+      toast.error('Không thể tải danh sách ngân sách.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -198,6 +201,7 @@ export const useBudget = () => {
       setSelectedCell(null);
     } catch (err: any) {
       console.error('Failed to save budget:', err);
+      toast.error('Lưu ngân sách thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -211,6 +215,7 @@ export const useBudget = () => {
       await fetchBudgets();
     } catch (err: any) {
       console.error('Failed to submit budget:', err);
+      toast.error('Gửi duyệt ngân sách thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -236,6 +241,7 @@ export const useBudget = () => {
       await fetchBudgets();
     } catch (err: any) {
       console.error('Failed to approve budget:', err);
+      toast.error('Phê duyệt ngân sách thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);

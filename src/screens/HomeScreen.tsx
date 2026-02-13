@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import {
   Crown,
   ChevronDown,
@@ -234,6 +235,7 @@ const HomeScreen = ({ darkMode = true }) => {
       }
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
+      toast.error('Không thể tải dữ liệu tổng quan.');
     } finally {
       setStatsLoading(false);
     }

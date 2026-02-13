@@ -376,6 +376,7 @@ const getDemoImageSvg = (subCategory: string, sku: string): string => {
 import { budgetService, masterDataService, proposalService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, FilterChips, useBottomSheet } from '@/components/mobile';
 import { SlidersHorizontal } from 'lucide-react';
 
@@ -454,7 +455,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     const fetchSkuData = async () => {
       setSkuDataLoading(true);
       try {
-        const [catalogRes, proposalsRes] = await Promise.all([
+        const [catalogRes, proposalsListRes] = await Promise.all([
           masterDataService.getSkuCatalog().catch(() => ({ data: [] })),
           proposalService.getAll().catch(() => ({ data: [] }))
         ]);
@@ -483,8 +484,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           size: s.size || ''
         })));
 
-        // Transform proposals into SKU blocks grouped by gender/category
-        const proposals = Array.isArray(proposalsRes) ? proposalsRes : (proposalsRes?.data || []);
+        // Fetch each proposal's detail to get products (list endpoint doesn't include them)
+        const proposalsList = Array.isArray(proposalsListRes) ? proposalsListRes : (proposalsListRes?.data || []);
+        const detailResults = await Promise.all(
+          proposalsList.map((p: any) =>
+            proposalService.getOne(p.id).catch(() => null)
+          )
+        );
+        const proposals = detailResults
+          .map((r: any) => r?.data || r)
+          .filter(Boolean);
         const blocks: any[] = [];
         proposals.forEach((p: any) => {
           (p.products || []).forEach((prod: any) => {
@@ -600,46 +609,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const skuVersionDropdownRef = useRef<any>(null);
   const sizingVersionDropdownRef = useRef<any>(null);
 
-  // Smart Filter Bar — 2 states: expanded vs collapsed (smooth CSS grid animation)
-  const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
-  const rafRef = useRef<number>(0);
-  const ignoreScroll = useRef(false);
-  const isAnimating = useRef(false);
-
-  // Animation lock — block scroll handler during height transitions
-  useEffect(() => {
-    isAnimating.current = true;
-    const timer = setTimeout(() => { isAnimating.current = false; }, 350);
-    return () => clearTimeout(timer);
-  }, [barState]);
-
-  // Scroll detection — blocked during ignore period AND animation
-  useEffect(() => {
-    const scrollEl = document.getElementById('main-scroll');
-    if (!scrollEl) return;
-    const handleScroll = () => {
-      if (ignoreScroll.current || isAnimating.current) return;
-      cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        if (ignoreScroll.current || isAnimating.current) return;
-        setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
-      });
-    };
-    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
-    return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(rafRef.current); };
-  }, []);
-
-  // Click handler — block scroll for 400ms after expand to absorb layout-shift phantom events
-  const handleBarClick = useCallback(() => {
-    setBarState(prev => {
-      if (prev === 'collapsed') {
-        ignoreScroll.current = true;
-        setTimeout(() => { ignoreScroll.current = false; }, 400);
-        return 'expanded';
-      }
-      return 'collapsed';
-    });
-  }, []);
+  // Smart Filter Bar — anti-jitter scroll hook
+  const { barState, handleBarClick } = useSmartScrollState();
 
   // Close version dropdowns on outside click
   useEffect(() => {
@@ -1113,7 +1084,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           className="grid transition-[grid-template-rows] duration-300 ease-in-out"
           style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
         >
-        <div className={`overflow-hidden min-h-0 ${barState !== 'expanded' ? 'pointer-events-none' : ''}`}>
+        <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>
         <div className="p-2 md:p-3">
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 

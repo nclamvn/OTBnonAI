@@ -150,11 +150,11 @@ const LoginScreen = () => {
         {/* Logo Section */}
         <div className="text-center mb-10">
           <img src="/dafc-logo.png" alt="DAFC" className="h-16 mx-auto mb-2 object-contain" />
-          <p className="text-[15px] font-semibold tracking-[0.08em] text-[#8B7355] mb-1"
+          <p className="text-[15px] font-semibold tracking-[0.08em] text-[#5C4A3A] mb-1"
             style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}>
             Hệ Thống Quản Lý OTB
           </p>
-          <p className="text-[12px] font-light tracking-[0.03em] text-[#A69076]"
+          <p className="text-[12px] font-light tracking-[0.03em] text-[#7A6655]"
             style={{ fontFamily: 'var(--font-montserrat), sans-serif' }}>
             Quản lý kế hoạch Open-to-Buy
           </p>
@@ -163,24 +163,24 @@ const LoginScreen = () => {
         {/* Login Card */}
         <div className="relative px-11 py-12 rounded-3xl border"
           style={{
-            background: 'rgba(255, 255, 255, 0.65)',
+            background: 'rgba(255, 255, 255, 0.82)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            borderColor: 'rgba(166, 144, 118, 0.12)',
-            boxShadow: '0 4px 40px rgba(139, 115, 85, 0.08), 0 1px 3px rgba(139, 115, 85, 0.05)',
+            borderColor: 'rgba(139, 115, 85, 0.22)',
+            boxShadow: '0 4px 40px rgba(139, 115, 85, 0.12), 0 1px 3px rgba(139, 115, 85, 0.08)',
           }}>
 
           {/* Decorative corners */}
-          <div className="absolute top-4 left-4 w-6 h-6 border-t border-l" style={{ borderColor: 'rgba(139, 115, 85, 0.15)' }} />
-          <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r" style={{ borderColor: 'rgba(139, 115, 85, 0.15)' }} />
+          <div className="absolute top-4 left-4 w-6 h-6 border-t border-l" style={{ borderColor: 'rgba(139, 115, 85, 0.30)' }} />
+          <div className="absolute bottom-4 right-4 w-6 h-6 border-b border-r" style={{ borderColor: 'rgba(139, 115, 85, 0.30)' }} />
 
           {/* Welcome */}
           <div className="text-center mb-9">
-            <h2 className="text-[28px] font-normal text-[#5C4A3A] mb-1.5"
+            <h2 className="text-[28px] font-normal text-[#3D2E22] mb-1.5"
               style={{ fontFamily: 'var(--font-cormorant), Georgia, serif' }}>
               Welcome Back
             </h2>
-            <p className="text-[13px] font-light text-[#A69076] tracking-[0.02em]">
+            <p className="text-[13px] font-light text-[#7A6655] tracking-[0.02em]">
               Sign in to continue
             </p>
           </div>
@@ -194,24 +194,24 @@ const LoginScreen = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('login.emailPlaceholder') || 'Email address'}
-                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#5C4A3A] tracking-[0.02em] outline-none transition-all duration-300"
+                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-all duration-300"
                 style={{
                   background: 'rgba(255, 255, 255, 0.7)',
-                  border: '1px solid rgba(166, 144, 118, 0.15)',
+                  border: '1px solid rgba(139, 115, 85, 0.28)',
                   fontFamily: 'var(--font-montserrat), sans-serif',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.35)';
+                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.50)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.9)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(139, 115, 85, 0.08)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(166, 144, 118, 0.15)';
+                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.28)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.7)';
                   e.target.style.boxShadow = 'none';
                 }}
               />
-              <svg className="absolute right-[18px] top-1/2 -translate-y-1/2 w-5 h-5 text-[#C4B5A6] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+              <svg className="absolute right-[18px] top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7A6B] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
               </svg>
             </div>
@@ -223,19 +223,19 @@ const LoginScreen = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('login.passwordPlaceholder') || 'Password'}
-                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#5C4A3A] tracking-[0.02em] outline-none transition-all duration-300"
+                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-all duration-300"
                 style={{
                   background: 'rgba(255, 255, 255, 0.7)',
-                  border: '1px solid rgba(166, 144, 118, 0.15)',
+                  border: '1px solid rgba(139, 115, 85, 0.28)',
                   fontFamily: 'var(--font-montserrat), sans-serif',
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.35)';
+                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.50)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.9)';
                   e.target.style.boxShadow = '0 0 0 3px rgba(139, 115, 85, 0.08)';
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(166, 144, 118, 0.15)';
+                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.28)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.7)';
                   e.target.style.boxShadow = 'none';
                 }}
@@ -243,7 +243,7 @@ const LoginScreen = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-[18px] top-1/2 -translate-y-1/2 text-[#C4B5A6] hover:text-[#8B7355] transition-colors"
+                className="absolute right-[18px] top-1/2 -translate-y-1/2 text-[#8B7A6B] hover:text-[#5C4A3A] transition-colors"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
@@ -259,13 +259,13 @@ const LoginScreen = () => {
 
             {/* Remember & Forgot */}
             <div className="flex items-center justify-between mb-7 text-[13px]">
-              <label className="flex items-center gap-2.5 cursor-pointer text-[#A69076] hover:text-[#8B7355] transition-colors font-light select-none">
+              <label className="flex items-center gap-2.5 cursor-pointer text-[#6B5744] hover:text-[#3D2E22] transition-colors font-light select-none">
                 <div
                   onClick={() => setRememberMe(!rememberMe)}
                   className="w-[18px] h-[18px] rounded-[4px] border-[1.5px] flex items-center justify-center cursor-pointer transition-all shrink-0"
                   style={{
-                    borderColor: rememberMe ? '#8B7355' : 'rgba(166, 144, 118, 0.35)',
-                    background: rememberMe ? '#8B7355' : 'rgba(255, 255, 255, 0.7)',
+                    borderColor: rememberMe ? '#6B5744' : 'rgba(139, 115, 85, 0.40)',
+                    background: rememberMe ? '#6B5744' : 'rgba(255, 255, 255, 0.8)',
                   }}
                 >
                   {rememberMe && (
@@ -276,7 +276,7 @@ const LoginScreen = () => {
                 </div>
                 <span>Ghi nhớ đăng nhập</span>
               </label>
-              <a href="#" className="text-[#A69076] hover:text-[#6B5744] font-light transition-colors no-underline">
+              <a href="#" className="text-[#6B5744] hover:text-[#3D2E22] font-light transition-colors no-underline">
                 Forgot password?
               </a>
             </div>
@@ -307,9 +307,9 @@ const LoginScreen = () => {
 
           {/* Divider */}
           <div className="flex items-center gap-5 my-7">
-            <div className="flex-1 h-px" style={{ background: 'rgba(166, 144, 118, 0.15)' }} />
-            <span className="text-[11px] font-normal text-[#C4B5A6] tracking-[0.15em]">DEMO</span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(166, 144, 118, 0.15)' }} />
+            <div className="flex-1 h-px" style={{ background: 'rgba(139, 115, 85, 0.25)' }} />
+            <span className="text-[11px] font-medium text-[#8B7A6B] tracking-[0.15em]">DEMO</span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(139, 115, 85, 0.25)' }} />
           </div>
 
           {/* Demo Accounts */}
@@ -321,19 +321,19 @@ const LoginScreen = () => {
                 onClick={() => handleDemoLogin(account)}
                 className="flex items-center justify-between px-3 py-2.5 rounded-[10px] text-[12px] cursor-pointer transition-all duration-200 hover:-translate-y-px group"
                 style={{
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  border: '1px solid rgba(166, 144, 118, 0.12)',
+                  background: 'rgba(255, 255, 255, 0.75)',
+                  border: '1px solid rgba(139, 115, 85, 0.22)',
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.9)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(166, 144, 118, 0.25)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139, 115, 85, 0.35)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.6)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(166, 144, 118, 0.12)';
+                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139, 115, 85, 0.22)';
                 }}
               >
-                <span className="text-[#5C4A3A] font-light truncate">{account.email.split('@')[0]}</span>
+                <span className="text-[#3D2E22] font-normal truncate">{account.email.split('@')[0]}</span>
                 <span className="font-medium ml-1" style={{ color: account.color }}>{account.role}</span>
               </button>
             ))}
@@ -342,7 +342,7 @@ const LoginScreen = () => {
 
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-[11px] font-light text-[#C4B5A6] tracking-[0.08em]">
+          <p className="text-[11px] font-light text-[#8B7A6B] tracking-[0.08em]">
             &copy; 2026 DAFC. All rights reserved.
           </p>
         </div>
@@ -359,7 +359,7 @@ const LoginScreen = () => {
           to { opacity: 1; transform: translateY(0); }
         }
         .login-input::placeholder {
-          color: #B8A99A;
+          color: #8B7A6B;
           font-weight: 300;
         }
       ` }} />

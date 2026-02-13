@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import {
   BarChart3, Filter, ChevronDown, Check,
   Calendar, Tag, Layers, Users, Info, Pencil, X, Star,
-  Sparkles, FileText, Clock, Package, ArrowLeftRight
+  Sparkles, FileText, Clock, Split, ArrowLeftRight
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
@@ -13,6 +13,7 @@ import { budgetService, masterDataService, planningService } from '../../../serv
 import { FilterBottomSheet, FilterChips, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 
 // Constants
 const SEASON_GROUPS = [
@@ -162,44 +163,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
   const [seasonCount, setSeasonCount] = useState<number>(1);
 
-  // Smart Filter Bar — auto expand/collapse with smooth CSS grid animation
-  const [barState, setBarState] = useState<'expanded' | 'collapsed'>('expanded');
-  const barRafRef = useRef<number>(0);
-  const barIgnoreScroll = useRef(false);
-  const barIsAnimating = useRef(false);
-
-  // Animation lock — block scroll handler during height transitions
-  useEffect(() => {
-    barIsAnimating.current = true;
-    const timer = setTimeout(() => { barIsAnimating.current = false; }, 350);
-    return () => clearTimeout(timer);
-  }, [barState]);
-
-  useEffect(() => {
-    const scrollEl = document.getElementById('main-scroll');
-    if (!scrollEl) return;
-    const handleScroll = () => {
-      if (barIgnoreScroll.current || barIsAnimating.current) return;
-      cancelAnimationFrame(barRafRef.current);
-      barRafRef.current = requestAnimationFrame(() => {
-        if (barIgnoreScroll.current || barIsAnimating.current) return;
-        setBarState(scrollEl.scrollTop > 50 ? 'collapsed' : 'expanded');
-      });
-    };
-    scrollEl.addEventListener('scroll', handleScroll, { passive: true });
-    return () => { scrollEl.removeEventListener('scroll', handleScroll); cancelAnimationFrame(barRafRef.current); };
-  }, []);
-
-  const handleBarClick = useCallback(() => {
-    setBarState(prev => {
-      if (prev === 'collapsed') {
-        barIgnoreScroll.current = true;
-        setTimeout(() => { barIgnoreScroll.current = false; }, 400);
-        return 'expanded';
-      }
-      return 'collapsed';
-    });
-  }, []);
+  // Smart Filter Bar — anti-jitter scroll hook
+  const { barState, handleBarClick } = useSmartScrollState();
 
   // Auto-select first budget when budgets are loaded and none selected
   useEffect(() => {
@@ -1313,9 +1278,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                               });
                                             }
                                           }}
-                                          className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-gradient-to-r from-[#D7B797] to-[#C4A57B] hover:from-[#C4A57B] hover:to-[#D7B797] text-[#1A1A1A] rounded-lg font-medium text-xs transition-all shadow-sm hover:shadow-md"
+                                          className="inline-flex items-center gap-1.5 px-3 py-1 border border-[#8B7355]/40 hover:border-[#D7B797]/60 bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#D7B797] rounded-lg font-medium text-xs transition-all"
                                         >
-                                          <Package size={12} />
+                                          <Split size={12} />
                                           {t('otbAnalysis.allocateSKU')}
                                         </button>
                                       </td>
@@ -1540,7 +1505,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           className="grid transition-[grid-template-rows] duration-300 ease-in-out"
           style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
         >
-        <div className={`overflow-hidden min-h-0 ${barState !== 'expanded' ? 'pointer-events-none' : ''}`}>
+        <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>
               {/* Mobile Filter Button */}
               {isMobile && (
                 <div className="px-3 md:px-6 py-1.5">

@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { masterDataService, planningService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
 
@@ -34,6 +35,7 @@ export const usePlanning = () => {
         setCategories(categoriesRes || []);
       } catch (err: any) {
         console.error('Failed to fetch master data:', err);
+        toast.error('Không thể tải dữ liệu. Vui lòng thử lại.');
       }
     };
     fetchMasterData();
@@ -77,6 +79,7 @@ export const usePlanning = () => {
       setPlannings(transformedPlannings);
     } catch (err: any) {
       console.error('Failed to fetch plannings:', err);
+      toast.error('Không thể tải danh sách kế hoạch.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -117,6 +120,7 @@ export const usePlanning = () => {
         })));
       } catch (err: any) {
         console.error('Failed to load planning:', err);
+        toast.error('Không thể tải chi tiết kế hoạch.');
         setPlanningDetailData(existingPlanning.details);
         setCurrentPlanningId(existingPlanning.id);
       }
@@ -196,6 +200,7 @@ export const usePlanning = () => {
       setCurrentPlanningId(null);
     } catch (err: any) {
       console.error('Failed to save planning:', err);
+      toast.error('Lưu kế hoạch thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -225,6 +230,7 @@ export const usePlanning = () => {
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to submit planning:', err);
+      toast.error('Gửi duyệt kế hoạch thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -250,6 +256,7 @@ export const usePlanning = () => {
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to approve planning:', err);
+      toast.error('Phê duyệt kế hoạch thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -263,6 +270,7 @@ export const usePlanning = () => {
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to mark planning as final:', err);
+      toast.error('Đánh dấu phiên bản cuối thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);
@@ -276,6 +284,7 @@ export const usePlanning = () => {
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to copy planning:', err);
+      toast.error('Sao chép kế hoạch thất bại.');
       setError(err.message);
     } finally {
       setLoading(false);

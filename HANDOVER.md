@@ -7,7 +7,7 @@
 
 ---
 
-## Cap nhat lan cuoi: 11/02/2026 (Session 18 - Customer Feedback Fixes)
+## Cap nhat lan cuoi: 13/02/2026 (Session 21 - Filter Bar Redesign + Fashion SVGs)
 
 ---
 
@@ -749,6 +749,164 @@ npm run dev
 
 ---
 
+## SESSION 12/02/2026 - Session 21 (Filter Bar Redesign + Fashion SVGs + Smart Auto-expand)
+
+### Thay doi chinh
+
+**Filter Bar Redesign across all screens (`60f9b56` — 5 files, +408/-516 lines):**
+- All filter bars: sticky flat toolbar with `backdrop-blur`, no card/rounded/shadow
+- Removed "Bo loc" header text, Filter icon, and "Xoa tat ca bo loc" text
+- Clear button: icon-only X with red hover and title tooltip
+- Removed filter labels above dropdowns (content visible in dropdown itself)
+- Auto-sizing: `shrink-0` for small filters, `flex-1 min-w-0` for flexible ones
+- Dropdown panels: `whitespace-nowrap w-max min-w-full` for content priority
+- SKUProposalScreen: merged version/sizing/view-mode into single compact row
+- OTBAnalysisScreen: separated budget context card from sticky filter bar, fixed dual-sticky overlap
+- Font consistency: `text-xs`, icon size 12px, compact padding throughout
+
+**Fashion Product SVGs (`b26971a`, `d9ed55f`, `7a14e72`):**
+- Increased dropdown/control heights, thin borders, aligned filters
+- Added fashion product SVG images (inline SVG components) for SKU cards
+- Upgraded to 3D realistic fashion SVGs with transparent backgrounds
+- More product SVG types added for Order/Receipt Confirmation
+- Order/Receipt Confirmation filter redesign
+
+**Render Cold-Start Login Timeout (`3b44a2d`):**
+- Increased global API timeout from 30s to 60s for Render free-tier
+- Login uses 120s timeout with up to 2 auto-retries on timeout/network errors
+- Shows "May chu dang khoi dong..." status while retrying cold starts
+- Better Vietnamese error messages for timeout vs credential errors
+
+**Sticky Rail Controls + Popup 3D Blur (`17bad38`):**
+- Rail Controls bar moved into sticky filter bar (no scroll needed)
+- Rail Controls: `justify-between`, full-width aligned with filter dropdowns
+- Add new SKU button: removed border and hover bg, moved outside scroll container
+- OTB Analysis: removed tab scrollbar, removed hint banner, increased header height
+- SKU Lightbox: removed dark overlay, added `backdrop-blur-md` + 3D `box-shadow`, uses `createPortal` for full-screen blur
+
+**Smart Auto Expand/Collapse Filter Bar (`5b428a9`, `7b37e6b`):**
+- Sticky filter bars auto-collapse when scrolling down (>50px) and auto-expand on scroll to top
+- Uses rAF-throttled scroll detection on `#main-scroll` container
+- `ignoreScroll` ref prevents click-expand from being overridden by phantom scroll events
+- SKUProposalScreen: collapsed bar shows budget/version/choice badges
+- BudgetAllocateScreen: collapsed bar shows FY/budget/brand/FINAL badges
+- OTBAnalysisScreen: collapsed bar shows FY/budget count/comparison badges
+- Smooth CSS `grid-template-rows` animation (0fr ↔ 1fr) for expand/collapse
+- Backend: added `localhost:3003` to CORS origins
+
+**Other fixes:**
+- Eliminated 24px gap between AppHeader and sticky toolbar on confirmation screens (`0471d7c`)
+- Truncate long text in filter dropdown buttons with `text-ellipsis overflow-hidden` (`9fa681a`)
+
+### Files chinh (14 files, +1996/-1333 lines)
+```
+src/features/otb/components/SKUProposalScreen.tsx       # filter bar, rail controls, auto-expand, fashion SVGs
+src/features/orders/components/OrderConfirmationScreen.tsx  # filter redesign, product SVGs, gap fix
+src/features/otb/components/OTBAnalysisScreen.tsx       # filter bar, auto-expand, dual-sticky fix
+src/features/otb/components/BudgetAllocateScreen.tsx    # filter bar, auto-expand
+src/features/otb/components/PlanningDetailPage.tsx      # filter bar redesign
+src/features/otb/components/BudgetManagementScreen.tsx  # sticky flat toolbar
+src/features/orders/components/ReceiptConfirmationScreen.tsx  # filter redesign, product SVGs
+src/features/approvals/components/ApprovalWorkflowScreen.tsx  # filter update
+src/screens/LoginScreen.tsx                             # cold-start retry UI
+src/services/api.ts                                     # 60s timeout
+src/services/authService.ts                             # 120s login timeout, retry logic
+src/contexts/AuthContext.tsx                            # cache clear on logout
+src/app/(dashboard)/layout.tsx                          # layout adjustment
+backend/src/main.ts                                     # CORS localhost:3003
+```
+
+---
+
+## SESSION 12/02/2026 - Session 20 (SKU Proposal Excel Redesign + Table Polish)
+
+### Thay doi chinh
+
+**SKU Proposal Table Excel Redesign (`d72167f`, `d77a7d4`, `a9d434c`):**
+- Redesigned SKU Proposal table to match W25 DAFC_proposal.xlsx Excel format
+- Added all columns from Excel reference: Image, SKU, Name, Collection, Color, Color Code, Division (L2), Product Type (L3), Dept/Group (L4), FSR, Carry Forward, Composition, Unit Cost, Freight+Ins (3%), Others Tax (2%), Import Tax %, Tax Value, Landed Cost, Landed Cost VND, SRP, Wholesale, R.R.P, Regional RRP, Theme, Total Price, Total Units, Size, plus dynamic store columns
+- Tax fields auto-calculated from unit cost (Freight 3%, Others 2%)
+- Transposed table to Rail-based format (rows = attributes, columns = SKUs)
+- Added subtle grid lines (row + column borders) to transposed SKU table
+
+**Excel-Style Table Interactions (`b0548ad`, `37ddd8f`, `d101bf5`):**
+- Click row label to highlight entire row (Excel-style active row)
+- Differentiated total/summary rows from editable rows in BudgetAllocateScreen (different bg color)
+- Fixed opaque background on Order/TTL sticky cells to prevent scroll bleed-through
+
+**OTB Analysis Polish (`9d252ed`, `e636f39`, `541d4ee`):**
+- Added missing OTB Analysis i18n keys + "So mua" (Season Count) dropdown
+- Increased spacing on OTB Analysis tabs and hint bar
+- Reduced Female/Male gender label font size to ~90% (`text-[0.9em]`)
+
+**Production Cleanup (`8fdd49b`):**
+- Removed all `console.log` debug statements
+- Fixed SSR safety (localStorage guard)
+- Removed dead/unused code
+
+### Files chinh (13 files, +514/-219 lines)
+```
+src/features/otb/components/SKUProposalScreen.tsx       # Excel redesign, transpose, grid lines
+src/features/otb/components/OTBAnalysisScreen.tsx       # i18n, spacing, font size
+src/features/otb/components/BudgetAllocateScreen.tsx    # summary row differentiation
+src/components/layout/AppHeader.tsx                     # cleanup
+src/services/authService.ts                             # SSR safety
+src/services/masterDataService.ts                       # cleanup
+src/locales/en.ts                                       # OTB Analysis i18n keys
+src/locales/vi.ts                                       # OTB Analysis i18n keys
+```
+
+---
+
+## SESSION 11/02/2026 - Session 19 (Layout/Logic + QA + Dynamic Stores)
+
+### Thay doi chinh
+
+**4 Layout/Logic Tasks (`4545b84` — 8 files, +1078/-353 lines):**
+1. **BudgetManagementScreen:** Removed Group Brand & Brand columns/filters/popup fields — simplified to core budget fields only
+2. **OTBAnalysisScreen:** Added Year/Type/BudgetSeason multi-select filters with side panel + comparison table
+3. **SKUProposalScreen:** Redesigned to Rail-based layout with subtotals and grand total rows
+4. **ApprovalsScreen:** Built `VersionDiffModal` (423 lines) — compares planning versions with highlighted changes (added/removed/modified fields)
+
+**6 QA Issues (`0ada401` — 5 files, +128/-41 lines):**
+1. **TicketScreen:** Added search box filtering by name/brand/status/type
+2. **TicketDetailPage:** Added SIZE field in details grid (`sizing.sizes`)
+3. **OrderConfirmationScreen:** Store x Size x Qty allocation grid replaces simple table
+4. **OTBAnalysisScreen:** Reduced gender row font size (`text-sm md:text-base`)
+5. **OTBAnalysisScreen:** Auto-select first budget on page load
+6. **SKUProposalScreen:** Case-insensitive `productType` match fixes "No SKU data" bug
+
+**Production Login Fix (`5dac096`):**
+- Login page: show branded loading spinner instead of returning `null` (was causing black screen while auth state initializes)
+- `api.ts`: guard localStorage for SSR, clear cache on refresh failure, prevent redirect loop by checking current path
+- AuthContext: clear API cache on logout to prevent stale data
+- Note: `NEXT_PUBLIC_API_URL` must be set on Render Dashboard
+
+**Other Fixes:**
+- Removed sticky filter card on Budget Allocate screen (`cf22ce5`)
+- Dynamic store columns in SKU Proposal table — columns auto-generated from API stores instead of hardcoded REX/TTP (`afcedee`)
+- Dynamic store columns on BudgetAllocateScreen + updated STORES constant (`de32c80`)
+
+### Files chinh
+```
+src/features/otb/components/BudgetManagementScreen.tsx  # removed GroupBrand/Brand
+src/features/otb/components/OTBAnalysisScreen.tsx       # multi-select filters, comparison, auto-select, font fix
+src/features/otb/components/SKUProposalScreen.tsx       # Rail layout, dynamic stores, case-insensitive match
+src/features/otb/components/BudgetAllocateScreen.tsx    # dynamic stores, remove sticky filter
+src/features/approvals/components/VersionDiffModal.tsx  # NEW: 423-line version diff modal
+src/features/approvals/components/ApprovalsScreen.tsx   # VersionDiff integration
+src/features/orders/components/OrderConfirmationScreen.tsx  # Store×Size×Qty grid
+src/features/tickets/components/TicketScreen.tsx        # search box
+src/features/tickets/components/TicketDetailPage.tsx    # SIZE field
+src/contexts/AppContext.tsx                             # removed sharedGroupBrand/sharedBrand
+src/services/api.ts                                     # SSR guard, cache clear, redirect fix
+src/services/authService.ts                             # loading spinner
+src/screens/LoginScreen.tsx                             # branded loading spinner
+src/utils/constants.ts                                  # STORES update
+```
+
+---
+
 ## SESSION 11/02/2026 - Session 18 (Customer Feedback Fixes)
 
 ### Thay doi chinh
@@ -1345,6 +1503,17 @@ src/locales/vi.js                             # 105+ new keys
 - [x] ~~Remove Season fields from Create Budget~~ → Done Session 18
 - [x] ~~SKU data flow fix (gender filter + auto-build from catalog)~~ → Done Session 18
 - [x] ~~Fixed header scrolling~~ → Done Session 16 (h-screen overflow-hidden)
+- [x] ~~Remove GroupBrand/Brand from Budget Management~~ → Done Session 19
+- [x] ~~Approvals VersionDiffModal~~ → Done Session 19
+- [x] ~~Dynamic store columns (SKU + BudgetAllocate)~~ → Done Session 19
+- [x] ~~Production login fix (black screen, session handling)~~ → Done Session 19
+- [x] ~~SKU Proposal Excel format redesign~~ → Done Session 20
+- [x] ~~Excel-style row highlight + summary row differentiation~~ → Done Session 20
+- [x] ~~Production cleanup (debug logs, SSR safety)~~ → Done Session 20
+- [x] ~~Filter bar redesign (sticky flat toolbar across all screens)~~ → Done Session 21
+- [x] ~~Fashion product SVGs (3D realistic)~~ → Done Session 21
+- [x] ~~Smart auto expand/collapse filter bar~~ → Done Session 21
+- [x] ~~Render cold-start login timeout handling~~ → Done Session 21
 - [ ] TicketScreen.tsx: TODO - Implement create ticket API call
 - [ ] Azure Portal manual config (Node 22 LTS, `node .next/standalone/server.js` / `node dist/src/main.js`, env vars)
 - [ ] Backend import endpoints — importService.ts references `/import/*` endpoints chua co trong NestJS backend
@@ -1374,6 +1543,11 @@ Khi doc file nay:
 13. Permissions: `budget:read`, `budget:write`, `budget:approve_l1`, `budget:approve_l2`, etc.
 14. Testing: `npm run test` (Vitest + jsdom, 114 tests)
 15. Types: `src/types/index.ts` (50+ shared interfaces)
+16. Filter bars: sticky flat toolbar, auto-expand/collapse on scroll, badges when collapsed
+17. SKU Proposal table: Excel format (W25 DAFC_proposal.xlsx), transposed Rail-based, dynamic store columns
+18. Store columns: dynamic from API (khong hardcode REX/TTP)
+19. VersionDiffModal: so sanh planning versions tren Approvals screen
+20. Deploy: Render (free-tier, cold-start 120s timeout + 2 retries)
 
 ---
 
