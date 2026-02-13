@@ -184,7 +184,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             className="w-full h-full flex items-center justify-center transition-all duration-200 hover:bg-[rgba(215,183,151,0.06)]"
             title={t('components.expandSidebar')}
           >
-            <img src="/dafc-logo.png" alt="DAFC" className="h-7 w-auto object-contain" />
+            <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-[18px] w-auto object-contain" />
           </button>
         ) : (
           <div className="flex items-center gap-2.5 px-3 w-full h-full">
