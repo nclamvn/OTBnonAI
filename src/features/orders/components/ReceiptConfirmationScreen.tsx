@@ -348,9 +348,14 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
           boxShadow: '0 1px 0 ' + (darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)'),
         }}
       >
-        {/* Top row: Stats + Search */}
+        {/* Top row: Logo + Stats + Search */}
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3 md:gap-5">
+            <div className="flex items-center gap-1.5">
+              <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-5 w-auto" />
+              <span className="text-sm font-semibold font-['Cormorant_Garamond'] text-[#C4A77D] tracking-wider hidden md:inline">DAFC</span>
+            </div>
+            <div className={`hidden md:block w-px h-7 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-300'}`} />
             <div>
               <p className={`text-[10px] font-medium uppercase tracking-wider font-['Montserrat'] ${textMuted}`}>
                 {t('receiptConfirm.totalReceipts')}

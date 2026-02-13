@@ -6,3 +6,4 @@ export { useKPIBreakdown } from './useKPIBreakdown';
 export { useDataImport } from './useDataImport';
 export { useIsMobile } from './useIsMobile';
 export { useSmartScrollState } from './useSmartScrollState';
+export { useConfirmDialog } from './useConfirmDialog';

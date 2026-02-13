@@ -3,9 +3,9 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   DollarSign, Package, BarChart3, TrendingUp,
-  CheckCircle, ChevronRight, ShoppingCart,
+  CheckCircle, ChevronRight, ListOrdered,
   ChevronDown, Wallet, FileCheck,
-  ClipboardList, Receipt, Ticket, Home, LogOut,
+  ClipboardList, ClipboardCheck, Ticket, Home, LogOut,
   Settings, Crown, PanelLeftClose,
   Database, Building2, FolderTree, Tag,
   Upload
@@ -61,8 +61,8 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
       label: t('nav.confirmation'),
       icon: ClipboardList,
       items: [
-        { id: 'order-confirmation', label: t('nav.orderConfirm'), icon: ShoppingCart },
-        { id: 'receipt-confirmation', label: t('nav.receiptConfirm'), icon: Receipt },
+        { id: 'order-confirmation', label: t('nav.orderConfirm'), icon: ListOrdered },
+        { id: 'receipt-confirmation', label: t('nav.receiptConfirm'), icon: ClipboardCheck },
       ]
     }
   ], [t]);

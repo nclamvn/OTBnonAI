@@ -33,6 +33,7 @@ export default function ProposalDetailRoute() {
       onBack={handleBack}
       onSave={handleSave}
       darkMode={darkMode}
+      entityId={params.id as string}
     />
   );
 }

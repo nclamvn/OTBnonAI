@@ -8,10 +8,13 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { ConfirmDialog } from '@/components/ui';
 
 const SettingsScreen = ({ darkMode = true, setDarkMode, user }: any) => {
   const { t, language, setLanguage } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { dialogProps, confirm } = useConfirmDialog();
   const [settings, setSettings] = useState<Record<string, any>>({
     theme: darkMode ? 'dark' : 'light',
     notifications: {
@@ -318,9 +321,13 @@ const SettingsScreen = ({ darkMode = true, setDarkMode, user }: any) => {
           label={t('settings.deleteAccount')}
           description={t('settings.deleteAccountDesc')}
           onClick={() => {
-            if (window.confirm(t('settings.deleteConfirm'))) {
-              alert(t('settings.accountDeletionSubmitted'));
-            }
+            confirm({
+              title: t('settings.deleteAccount'),
+              message: t('settings.deleteConfirm'),
+              confirmLabel: t('common.delete'),
+              variant: 'danger',
+              onConfirm: () => { /* account deletion placeholder */ },
+            });
           }}
         >
           <span className={`text-xs font-medium px-2 py-1 rounded ${
@@ -363,6 +370,7 @@ const SettingsScreen = ({ darkMode = true, setDarkMode, user }: any) => {
           </div>
         </div>
       </div>
+      <ConfirmDialog darkMode={darkMode} {...dialogProps} />
     </div>
   );
 };

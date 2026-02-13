@@ -8,371 +8,8 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
-
-// 3D realistic fashion product SVG generator — transparent background
-const getDemoImageSvg = (subCategory: string, sku: string): string => {
-  const hash = (sku || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const variant = hash % 3; // 3 color variants per type
-  const sub = (subCategory || '').toLowerCase();
-
-  let svg = '';
-  const uid = `p${hash}`; // unique gradient IDs per SKU
-
-  if (sub.includes('bag')) {
-    // -- HANDBAG: 3D structured tote/flap bag --
-    const palettes = [
-      { body: '#8B6914', dark: '#5C4A0E', light: '#C9A84C', metal: '#D4AF37', shadow: 'rgba(90,60,10,0.35)' },
-      { body: '#2C2C2C', dark: '#1A1A1A', light: '#4A4A4A', metal: '#C0C0C0', shadow: 'rgba(0,0,0,0.4)' },
-      { body: '#7B2D3B', dark: '#5A1525', light: '#A8475A', metal: '#E8C56D', shadow: 'rgba(80,20,30,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="50%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <linearGradient id="${uid}f" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${p.light}" stop-opacity="0.6"/><stop offset="100%" stop-color="${p.body}" stop-opacity="0.9"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="6" stdDeviation="6" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Handle -->
-        <path d="M72 60 C72 30 88 22 100 22 C112 22 128 30 128 60" fill="none" stroke="${p.dark}" stroke-width="5" stroke-linecap="round"/>
-        <path d="M72 60 C72 30 88 22 100 22 C112 22 128 30 128 60" fill="none" stroke="${p.body}" stroke-width="3.5" stroke-linecap="round"/>
-        <!-- Bag body -->
-        <path d="M58 62 L56 158 C56 166 62 172 70 172 L130 172 C138 172 144 166 144 158 L142 62 C142 56 136 52 130 52 L70 52 C64 52 58 56 58 62 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="1"/>
-        <!-- Front flap -->
-        <path d="M62 52 L62 90 C62 94 80 102 100 102 C120 102 138 94 138 90 L138 52" fill="url(#${uid}f)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Metal clasp -->
-        <ellipse cx="100" cy="100" rx="8" ry="6" fill="${p.metal}" stroke="${p.dark}" stroke-width="0.5"/>
-        <ellipse cx="100" cy="100" rx="5" ry="3.5" fill="none" stroke="${p.dark}" stroke-width="0.3"/>
-        <!-- Stitching -->
-        <path d="M66 68 L66 164" fill="none" stroke="${p.light}" stroke-width="0.4" stroke-dasharray="3 3" opacity="0.5"/>
-        <path d="M134 68 L134 164" fill="none" stroke="${p.light}" stroke-width="0.4" stroke-dasharray="3 3" opacity="0.5"/>
-        <!-- Bottom edge highlight -->
-        <path d="M62 168 C62 170 80 174 100 174 C120 174 138 170 138 168" fill="none" stroke="${p.light}" stroke-width="0.6" opacity="0.4"/>
-        <!-- Surface highlight -->
-        <path d="M68 56 L66 155" fill="none" stroke="white" stroke-width="1.5" opacity="0.12" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">BAGS</text>
-    </svg>`;
-  } else if (sub.includes('outerwear')) {
-    // -- OUTERWEAR: 3D coat/jacket --
-    const palettes = [
-      { body: '#2D3748', dark: '#1A202C', light: '#4A5568', liner: '#718096', btn: '#A0AEC0', shadow: 'rgba(20,25,35,0.4)' },
-      { body: '#5B3A1A', dark: '#3D2510', light: '#8B6340', liner: '#A07850', btn: '#C9A84C', shadow: 'rgba(50,30,10,0.35)' },
-      { body: '#1A3A2A', dark: '#0D2018', light: '#2D5A40', liner: '#4A7A60', btn: '#8BBEAA', shadow: 'rgba(10,30,20,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="40%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <linearGradient id="${uid}sl" x1="0" y1="0" x2="1" y2="0.5"><stop offset="0%" stop-color="${p.light}" stop-opacity="0.8"/><stop offset="100%" stop-color="${p.body}"/></linearGradient>
-        <linearGradient id="${uid}sr" x1="1" y1="0" x2="0" y2="0.5"><stop offset="0%" stop-color="${p.light}" stop-opacity="0.6"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Collar -->
-        <path d="M82 28 L74 40 L88 48 L100 42 L112 48 L126 40 L118 28 C112 22 88 22 82 28 Z" fill="${p.light}" stroke="${p.dark}" stroke-width="0.8"/>
-        <path d="M88 48 L100 42 L112 48" fill="none" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Left sleeve -->
-        <path d="M74 40 L50 52 L42 120 L56 126 L68 80 L76 170" fill="url(#${uid}sl)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Right sleeve -->
-        <path d="M126 40 L150 52 L158 120 L144 126 L132 80 L124 170" fill="url(#${uid}sr)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Body left panel -->
-        <path d="M76 46 L68 80 L76 170 L98 172 L98 46 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Body right panel -->
-        <path d="M124 46 L132 80 L124 170 L102 172 L102 46 Z" fill="${p.body}" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Center seam -->
-        <line x1="100" y1="42" x2="100" y2="172" stroke="${p.dark}" stroke-width="1"/>
-        <!-- Buttons -->
-        <circle cx="96" cy="70" r="2.5" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.4"/>
-        <circle cx="96" cy="95" r="2.5" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.4"/>
-        <circle cx="96" cy="120" r="2.5" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.4"/>
-        <!-- Pockets -->
-        <path d="M80 110 L80 130 L96 130" fill="none" stroke="${p.dark}" stroke-width="0.8"/>
-        <path d="M120 110 L120 130 L104 130" fill="none" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Lapel fold highlight -->
-        <path d="M88 48 L82 70" fill="none" stroke="white" stroke-width="1" opacity="0.15" stroke-linecap="round"/>
-        <path d="M112 48 L118 70" fill="none" stroke="white" stroke-width="0.8" opacity="0.1" stroke-linecap="round"/>
-        <!-- Sleeve cuff -->
-        <path d="M42 118 L56 124" stroke="${p.liner}" stroke-width="2" stroke-linecap="round"/>
-        <path d="M158 118 L144 124" stroke="${p.liner}" stroke-width="2" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">OUTERWEAR</text>
-    </svg>`;
-  } else if (sub.includes('tailoring')) {
-    // -- TAILORING: 3D suit/blazer --
-    const palettes = [
-      { body: '#1B2838', dark: '#0F1820', mid: '#2A3F55', light: '#3D5A78', lapel: '#4A6E8F', btn: '#B8C6D4', shadow: 'rgba(15,20,30,0.4)' },
-      { body: '#3A3A3A', dark: '#222222', mid: '#505050', light: '#686868', lapel: '#787878', btn: '#C0C0C0', shadow: 'rgba(0,0,0,0.4)' },
-      { body: '#2C1810', dark: '#1A0E08', mid: '#402820', light: '#5A3C30', lapel: '#6E5040', btn: '#C8A882', shadow: 'rgba(30,15,8,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="45%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <linearGradient id="${uid}lp" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${p.lapel}"/><stop offset="100%" stop-color="${p.mid}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Shoulders & body -->
-        <path d="M74 38 L50 48 L54 80 L66 76 L72 172 L128 172 L134 76 L146 80 L150 48 L126 38 C118 32 82 32 74 38 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Left lapel -->
-        <path d="M86 38 L76 52 L82 90 L98 78 L98 38 Z" fill="url(#${uid}lp)" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Right lapel -->
-        <path d="M114 38 L124 52 L118 90 L102 78 L102 38 Z" fill="${p.lapel}" stroke="${p.dark}" stroke-width="0.6" opacity="0.85"/>
-        <!-- Shirt / tie area -->
-        <path d="M92 38 L98 78 L100 172" fill="none" stroke="white" stroke-width="0.6" opacity="0.3"/>
-        <path d="M108 38 L102 78 L100 172" fill="none" stroke="white" stroke-width="0.6" opacity="0.3"/>
-        <!-- Tie -->
-        <path d="M98 40 L100 44 L102 40 L100 90 L98 40" fill="#8B1A2B" stroke="#6B0A1B" stroke-width="0.4" opacity="0.85"/>
-        <path d="M97 90 L100 100 L103 90" fill="#8B1A2B" stroke="#6B0A1B" stroke-width="0.3"/>
-        <!-- Buttons -->
-        <circle cx="100" cy="110" r="2.2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.4"/>
-        <circle cx="100" cy="132" r="2.2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.4"/>
-        <!-- Breast pocket -->
-        <path d="M108 72 L118 70 L118 82 L108 84 Z" fill="none" stroke="${p.dark}" stroke-width="0.5"/>
-        <path d="M108 72 L118 70" stroke="white" stroke-width="0.6" opacity="0.2"/>
-        <!-- Left pocket flap -->
-        <path d="M78 118 L78 122 L96 122 L96 118" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Right pocket flap -->
-        <path d="M104 118 L104 122 L122 122 L122 118" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Shoulder seams -->
-        <path d="M74 38 L54 48" stroke="${p.light}" stroke-width="0.8" opacity="0.3"/>
-        <path d="M126 38 L146 48" stroke="${p.light}" stroke-width="0.6" opacity="0.2"/>
-        <!-- Highlight -->
-        <path d="M78 42 L72 168" fill="none" stroke="white" stroke-width="1.2" opacity="0.08" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">TAILORING</text>
-    </svg>`;
-  } else if (sub.includes('shoe')) {
-    // -- SHOES: 3D sneaker/loafer --
-    const palettes = [
-      { body: '#F5F0EA', dark: '#B8AFA5', mid: '#E0D8CE', light: '#FFFFFF', sole: '#3A3A3A', accent: '#C8392B', shadow: 'rgba(100,90,80,0.3)' },
-      { body: '#2C2C2C', dark: '#1A1A1A', mid: '#3A3A3A', light: '#4A4A4A', sole: '#F0EBE4', accent: '#D4AF37', shadow: 'rgba(0,0,0,0.4)' },
-      { body: '#5A3C28', dark: '#3A2418', mid: '#6E5040', light: '#8B6B50', sole: '#2C2C2C', accent: '#C9A84C', shadow: 'rgba(50,30,15,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0" y1="0" x2="0.5" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="60%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Sole -->
-        <path d="M30 148 C30 142 40 136 60 134 L150 130 C165 130 175 136 175 144 L175 152 C175 158 165 162 150 162 L60 162 C40 162 30 156 30 148 Z" fill="${p.sole}" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Midsole -->
-        <path d="M32 144 C32 140 42 136 62 134 L148 130 C163 130 173 134 173 140 L173 146 C173 150 163 152 148 152 L62 152 C42 152 32 148 32 144 Z" fill="white" stroke="${p.dark}" stroke-width="0.3" opacity="0.8"/>
-        <!-- Upper body -->
-        <path d="M45 134 L50 80 C52 68 65 56 85 52 L120 52 C130 52 138 60 140 72 L148 130" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Tongue -->
-        <path d="M72 62 L70 40 C70 34 80 28 95 28 C110 28 115 34 115 40 L112 62" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Lace area -->
-        <path d="M78 58 L88 50 M82 68 L92 60 M86 78 L96 70 M90 88 L100 80" fill="none" stroke="${p.dark}" stroke-width="0.8" opacity="0.5"/>
-        <!-- Heel tab -->
-        <path d="M45 80 L40 68 C40 60 48 56 52 60 L50 80" fill="${p.accent}" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Toe cap -->
-        <path d="M130 130 C155 128 168 132 168 140" fill="none" stroke="${p.dark}" stroke-width="0.5" opacity="0.4"/>
-        <!-- Highlight -->
-        <path d="M60 80 L55 125" fill="none" stroke="white" stroke-width="1.5" opacity="0.15" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">SHOES</text>
-    </svg>`;
-  } else if (sub.includes('dress')) {
-    // -- DRESSES: 3D elegant dress --
-    const palettes = [
-      { body: '#8B1A2B', dark: '#5A0A18', mid: '#A82840', light: '#C84060', waist: '#D4AF37', shadow: 'rgba(80,10,20,0.35)' },
-      { body: '#1A2A4A', dark: '#0E1830', mid: '#2A3E60', light: '#3D5A80', waist: '#C0C0C0', shadow: 'rgba(15,20,40,0.4)' },
-      { body: '#2D5A40', dark: '#1A3828', mid: '#3D7050', light: '#4A8A62', waist: '#E8C56D', shadow: 'rgba(20,45,30,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="40%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Bodice -->
-        <path d="M82 28 L74 36 L70 42 L78 48 L82 80 L118 80 L122 48 L130 42 L126 36 L118 28 C112 24 88 24 82 28 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Neckline -->
-        <path d="M86 28 C92 36 108 36 114 28" fill="none" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Straps -->
-        <path d="M86 28 L82 18 C82 14 86 12 88 14 L90 28" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.4"/>
-        <path d="M114 28 L118 18 C118 14 114 12 112 14 L110 28" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.4"/>
-        <!-- Waistline -->
-        <path d="M80 80 C80 84 90 86 100 86 C110 86 120 84 120 80" fill="${p.waist}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Skirt -->
-        <path d="M82 80 L62 174 C70 178 90 180 100 180 C110 180 130 178 138 174 L118 80" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Skirt drape folds -->
-        <path d="M88 86 L78 174" fill="none" stroke="${p.dark}" stroke-width="0.5" opacity="0.3"/>
-        <path d="M100 86 L100 178" fill="none" stroke="${p.dark}" stroke-width="0.4" opacity="0.2"/>
-        <path d="M112 86 L122 174" fill="none" stroke="${p.dark}" stroke-width="0.5" opacity="0.3"/>
-        <!-- Highlight -->
-        <path d="M88 32 L84 76" fill="none" stroke="white" stroke-width="1.2" opacity="0.12" stroke-linecap="round"/>
-        <path d="M90 90 L76 170" fill="none" stroke="white" stroke-width="1" opacity="0.08" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">DRESSES</text>
-    </svg>`;
-  } else if (sub.includes('accessor') || sub.includes('slg')) {
-    // -- ACCESSORIES/SLG: 3D wallet/belt/small goods --
-    const palettes = [
-      { body: '#6B4D30', dark: '#3D2A18', mid: '#8B6B48', light: '#A88860', metal: '#D4AF37', shadow: 'rgba(60,40,15,0.35)' },
-      { body: '#2C2C2C', dark: '#1A1A1A', mid: '#404040', light: '#555555', metal: '#C0C0C0', shadow: 'rgba(0,0,0,0.4)' },
-      { body: '#4A1E3D', dark: '#2E0E25', mid: '#6A3858', light: '#8A5878', metal: '#E8C56D', shadow: 'rgba(50,15,35,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="50%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Wallet body -->
-        <rect x="45" y="55" width="110" height="80" rx="6" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Flap -->
-        <path d="M45 55 L45 90 C45 94 70 100 100 100 C130 100 155 94 155 90 L155 55 C155 52 148 49 100 49 C52 49 45 52 45 55 Z" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Snap closure -->
-        <circle cx="100" cy="98" r="5" fill="${p.metal}" stroke="${p.dark}" stroke-width="0.4"/>
-        <circle cx="100" cy="98" r="3" fill="none" stroke="${p.dark}" stroke-width="0.3"/>
-        <!-- Card slots visible -->
-        <rect x="55" y="108" width="38" height="22" rx="2" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.3" opacity="0.5"/>
-        <rect x="107" y="108" width="38" height="22" rx="2" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.3" opacity="0.5"/>
-        <!-- Stitching -->
-        <rect x="50" y="60" width="100" height="70" rx="4" fill="none" stroke="${p.light}" stroke-width="0.3" stroke-dasharray="3 2" opacity="0.4"/>
-        <!-- Brand stamp -->
-        <rect x="85" y="70" width="30" height="12" rx="2" fill="none" stroke="${p.metal}" stroke-width="0.5" opacity="0.6"/>
-        <!-- Highlight -->
-        <path d="M52 58 L50 128" fill="none" stroke="white" stroke-width="1.2" opacity="0.1" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="163" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">${sub.includes('slg') ? 'SLG' : 'ACCESSORIES'}</text>
-    </svg>`;
-  } else if (sub.includes('knit')) {
-    // -- KNITWEAR: 3D knit sweater/cardigan --
-    const palettes = [
-      { body: '#C4A882', dark: '#8B7A60', mid: '#B89870', light: '#DCC8A8', collar: '#E8D8C0', shadow: 'rgba(100,80,50,0.3)' },
-      { body: '#6E2C2C', dark: '#4A1818', mid: '#884040', light: '#A85858', collar: '#C07070', shadow: 'rgba(60,20,20,0.35)' },
-      { body: '#3A4A5A', dark: '#222E38', mid: '#4A5E70', light: '#607888', collar: '#7890A0', shadow: 'rgba(30,40,50,0.35)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="50%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Turtleneck collar -->
-        <path d="M84 24 L82 42 C82 48 90 52 100 52 C110 52 118 48 118 42 L116 24 C112 20 88 20 84 24 Z" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.6"/>
-        <path d="M84 30 C90 34 110 34 116 30" fill="none" stroke="${p.dark}" stroke-width="0.4" opacity="0.4"/>
-        <path d="M83 36 C90 40 110 40 117 36" fill="none" stroke="${p.dark}" stroke-width="0.4" opacity="0.3"/>
-        <!-- Left sleeve -->
-        <path d="M72 48 L46 58 L42 130 L58 132 L62 78 L76 172" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Right sleeve -->
-        <path d="M128 48 L154 58 L158 130 L142 132 L138 78 L124 172" fill="${p.body}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Body -->
-        <path d="M76 48 L62 78 L76 172 L124 172 L138 78 L124 48 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Knit texture lines -->
-        <path d="M78 60 L122 60" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 75 L124 75" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 90 L124 90" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 105 L124 105" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 120 L124 120" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 135 L124 135" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <path d="M76 150 L124 150" fill="none" stroke="${p.dark}" stroke-width="0.3" opacity="0.15"/>
-        <!-- Ribbed hem -->
-        <rect x="76" y="164" width="48" height="8" rx="2" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.6"/>
-        <!-- Sleeve cuffs -->
-        <rect x="40" y="126" width="20" height="6" rx="2" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.6"/>
-        <rect x="140" y="126" width="20" height="6" rx="2" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.6"/>
-        <!-- Highlight -->
-        <path d="M82 50 L78 168" fill="none" stroke="white" stroke-width="1.2" opacity="0.1" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">KNITWEAR</text>
-    </svg>`;
-  } else if (sub.includes('bottom') || sub.includes('trouser') || sub.includes('pant')) {
-    // -- BOTTOMS: 3D trousers/pants --
-    const palettes = [
-      { body: '#1E2A4A', dark: '#0F1828', mid: '#2A3E5A', light: '#3D5A78', waist: '#4A3828', shadow: 'rgba(15,20,40,0.4)' },
-      { body: '#3A3A3A', dark: '#222222', mid: '#505050', light: '#686868', waist: '#5A3C28', shadow: 'rgba(0,0,0,0.4)' },
-      { body: '#F0EBE4', dark: '#C8BEB2', mid: '#E0D8CE', light: '#FAFAF5', waist: '#6B4D30', shadow: 'rgba(120,110,100,0.3)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.2" y1="0" x2="0.8" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="40%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="2" dy="5" stdDeviation="5" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Waistband -->
-        <path d="M62 28 L138 28 L140 42 L60 42 Z" fill="${p.waist}" stroke="${p.dark}" stroke-width="0.8" rx="2"/>
-        <!-- Belt -->
-        <rect x="62" y="30" width="76" height="8" rx="1" fill="${p.waist}" stroke="${p.dark}" stroke-width="0.4"/>
-        <!-- Belt buckle -->
-        <rect x="95" y="30" width="10" height="8" rx="1" fill="#C0C0C0" stroke="${p.dark}" stroke-width="0.3"/>
-        <!-- Left leg -->
-        <path d="M60 42 L64 100 L58 178 L90 178 L96 100 L100 62" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Right leg -->
-        <path d="M100 62 L104 100 L110 178 L142 178 L136 100 L140 42" fill="${p.body}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Center seam -->
-        <path d="M100 42 L100 62" stroke="${p.dark}" stroke-width="0.8"/>
-        <!-- Front crease left -->
-        <path d="M78 48 L74 175" fill="none" stroke="${p.light}" stroke-width="0.5" opacity="0.25"/>
-        <!-- Front crease right -->
-        <path d="M122 48 L126 175" fill="none" stroke="${p.light}" stroke-width="0.5" opacity="0.2"/>
-        <!-- Pocket -->
-        <path d="M68 44 L68 60 C68 64 72 66 78 62 L82 44" fill="none" stroke="${p.dark}" stroke-width="0.6" opacity="0.5"/>
-        <!-- Highlight -->
-        <path d="M68 44 L62 174" fill="none" stroke="white" stroke-width="1.2" opacity="0.08" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">BOTTOMS</text>
-    </svg>`;
-  } else {
-    // -- TOPS: 3D shirt/blouse --
-    const palettes = [
-      { body: '#E8E0D6', dark: '#B8AFA5', mid: '#D4CCC2', light: '#F5F0EA', collar: '#F0EBE4', btn: '#C8BEB2', shadow: 'rgba(120,110,100,0.3)' },
-      { body: '#4A6E8F', dark: '#2A4A65', mid: '#3D5E7E', light: '#6A8EAF', collar: '#7A9EBF', btn: '#A8C8E0', shadow: 'rgba(30,50,70,0.35)' },
-      { body: '#D4A5A5', dark: '#B08080', mid: '#C49090', light: '#E8C0C0', collar: '#EED0D0', btn: '#C49898', shadow: 'rgba(120,80,80,0.3)' },
-    ];
-    const p = palettes[variant];
-    svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
-      <defs>
-        <linearGradient id="${uid}b" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0%" stop-color="${p.light}"/><stop offset="50%" stop-color="${p.body}"/><stop offset="100%" stop-color="${p.dark}"/></linearGradient>
-        <linearGradient id="${uid}sl" x1="0" y1="0" x2="1" y2="0.8"><stop offset="0%" stop-color="${p.light}"/><stop offset="100%" stop-color="${p.mid}"/></linearGradient>
-        <filter id="${uid}s"><feDropShadow dx="1" dy="4" stdDeviation="4" flood-color="${p.shadow}"/></filter>
-      </defs>
-      <g filter="url(#${uid}s)">
-        <!-- Collar -->
-        <path d="M82 32 L72 46 L90 56 L100 48 L110 56 L128 46 L118 32 C112 26 88 26 82 32 Z" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Collar fold left -->
-        <path d="M78 36 L72 46 L90 56 L88 42 Z" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.5" opacity="0.9"/>
-        <!-- Collar fold right -->
-        <path d="M122 36 L128 46 L110 56 L112 42 Z" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.5" opacity="0.8"/>
-        <!-- Left sleeve -->
-        <path d="M72 46 L48 56 L46 112 L60 114 L64 74 L76 170" fill="url(#${uid}sl)" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Right sleeve -->
-        <path d="M128 46 L152 56 L154 112 L140 114 L136 74 L124 170" fill="${p.mid}" stroke="${p.dark}" stroke-width="0.6"/>
-        <!-- Body -->
-        <path d="M76 50 L64 74 L76 170 L124 170 L136 74 L124 50 Z" fill="url(#${uid}b)" stroke="${p.dark}" stroke-width="0.5"/>
-        <!-- Center placket -->
-        <rect x="97" y="48" width="6" height="124" rx="1" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.7"/>
-        <!-- Buttons -->
-        <circle cx="100" cy="62" r="2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.3"/>
-        <circle cx="100" cy="82" r="2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.3"/>
-        <circle cx="100" cy="102" r="2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.3"/>
-        <circle cx="100" cy="122" r="2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.3"/>
-        <circle cx="100" cy="142" r="2" fill="${p.btn}" stroke="${p.dark}" stroke-width="0.3"/>
-        <!-- Breast pocket -->
-        <path d="M108 68 L116 66 L116 78 L108 80 Z" fill="none" stroke="${p.dark}" stroke-width="0.4" opacity="0.5"/>
-        <!-- Sleeve cuffs -->
-        <rect x="44" y="108" width="18" height="6" rx="1" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.7"/>
-        <rect x="138" y="108" width="18" height="6" rx="1" fill="${p.collar}" stroke="${p.dark}" stroke-width="0.3" opacity="0.6"/>
-        <!-- Surface highlights -->
-        <path d="M80 52 L78 165" fill="none" stroke="white" stroke-width="1.5" opacity="0.1" stroke-linecap="round"/>
-        <path d="M52 58 L50 108" fill="none" stroke="white" stroke-width="1" opacity="0.1" stroke-linecap="round"/>
-      </g>
-      <text x="100" y="193" text-anchor="middle" fill="#aaa" font-size="10" font-family="system-ui,sans-serif" font-weight="600" letter-spacing="1.5">TOPS</text>
-    </svg>`;
-  }
-
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-};
+import { ProductImage, ConfirmDialog } from '../../../components/ui';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { budgetService, masterDataService, proposalService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -417,6 +54,7 @@ const SIZING_CHOICES = [
 const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { dialogProps, confirm } = useConfirmDialog();
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
   // SKU catalog and proposal data from API
@@ -439,8 +77,19 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         ]);
         const genders = Array.isArray(gendersRes) ? gendersRes : (gendersRes?.data || []);
         setMasterGenders(genders.map((g: any) => (g.name || g.code || '').toLowerCase()));
-        const categories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data || []);
-        setMasterCategories(categories);
+        const rawCategories = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes?.data || []);
+        // Handle both gender-hierarchy format [{ name: "Female", categories: [...] }]
+        // and flat-list format [{ name: "Women's RTW", subCategories: [...] }]
+        const isGenderHierarchy = rawCategories.length > 0 && rawCategories[0]?.categories && Array.isArray(rawCategories[0].categories);
+        if (isGenderHierarchy) {
+          const flatCats = rawCategories.flatMap((g: any) => (g.categories || []).map((c: any) => ({
+            ...c,
+            genderName: g.name,
+          })));
+          setMasterCategories(flatCats);
+        } else {
+          setMasterCategories(rawCategories);
+        }
         const storeList = Array.isArray(storesRes) ? storesRes : (storesRes?.data || []);
         setStores(storeList.length > 0 ? storeList : [{ code: 'REX', name: 'REX' }, { code: 'TTP', name: 'TTP' }]);
       } catch (err: any) {
@@ -636,6 +285,43 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     setSizingChoices((prev: any) => prev.map((c: any) => ({ ...c, isFinal: c.id === choiceId })));
   };
 
+  const [newChoiceName, setNewChoiceName] = useState('');
+
+  const handleAddChoice = () => {
+    const name = newChoiceName.trim();
+    if (!name) return;
+    const id = `choice-${name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+    setSizingChoices((prev: any) => [...prev, { id, name, isFinal: false }]);
+    setSizingVersion(id);
+    setNewChoiceName('');
+    setIsSizingVersionOpen(false);
+  };
+
+  const handleDeleteChoice = (choiceId: any, e: any) => {
+    e.stopPropagation();
+    confirm({
+      title: t('common.delete'),
+      message: t('common.confirmDelete'),
+      confirmLabel: t('common.delete'),
+      variant: 'danger',
+      onConfirm: () => doDeleteChoice(choiceId),
+    });
+  };
+  const doDeleteChoice = (choiceId: any) => {
+    setSizingChoices((prev: any) => {
+      const remaining = prev.filter((c: any) => c.id !== choiceId);
+      // If deleting the selected choice, switch to first remaining
+      if (sizingVersion === choiceId && remaining.length > 0) {
+        setSizingVersion(remaining[0].id);
+      }
+      // If deleting the final choice, make the first one final
+      if (remaining.length > 0 && !remaining.some((c: any) => c.isFinal)) {
+        remaining[0].isFinal = true;
+      }
+      return remaining;
+    });
+  };
+
   const selectedSkuVersion = skuVersions.find((v: any) => v.id === skuVersion) || skuVersions[0];
   const selectedSizingChoice = sizingChoices.find((c: any) => c.id === sizingVersion) || sizingChoices[0];
 
@@ -729,13 +415,44 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [highlightedRow, setHighlightedRow] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
   const lightboxRef = useRef<HTMLDivElement>(null);
+
+  // ═══ CSS-native sticky Image rows — zero jitter, compositor-level ═══
+  // Track filter bar height for sticky top offset calculation
+  const filterBarRef = useRef<HTMLDivElement>(null);
+  const [filterBarH, setFilterBarH] = useState(44);
+  useEffect(() => {
+    const el = filterBarRef.current;
+    if (!el) return;
+    const update = () => setFilterBarH(el.offsetHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [barState]);
+  // sticky top = filterBar's sticky top (-12px mobile / -24px md) + filterBarH
+  const stickyImageTop = isMobile ? filterBarH - 12 : filterBarH - 24;
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
-  const getDefaultSizing = () => ({
-    choiceA: { s0002: 2, s0004: 4, s0006: 3, s0008: 2 },
-    choiceB: { s0002: 1, s0004: 3, s0006: 3, s0008: 2 },
-    choiceC: { s0002: 1, s0004: 2, s0006: 2, s0008: 1 }
-  });
+  const getDefaultSizing = () => {
+    const defaults: Record<string, any> = {
+      choiceA: { s0002: 2, s0004: 4, s0006: 3, s0008: 2 },
+      choiceB: { s0002: 1, s0004: 3, s0006: 3, s0008: 2 },
+      choiceC: { s0002: 1, s0004: 2, s0006: 2, s0008: 1 },
+    };
+    // Add empty sizing for any custom choices
+    sizingChoices.forEach((c: any) => {
+      const key = choiceIdToKey(c.id);
+      if (!defaults[key]) defaults[key] = { s0002: 0, s0004: 0, s0006: 0, s0008: 0 };
+    });
+    return defaults;
+  };
+
+  const choiceIdToKey = (id: string) => {
+    if (id === 'choice-a') return 'choiceA';
+    if (id === 'choice-b') return 'choiceB';
+    if (id === 'choice-c') return 'choiceC';
+    return id; // custom choices use their ID as key
+  };
 
   const getSizingKey = (blockKey: any, itemIdx: any) => `${blockKey}_${itemIdx}`;
 
@@ -997,6 +714,15 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   };
 
   const handleDeleteSkuRow = (blockKey: any, itemIdx: any) => {
+    confirm({
+      title: t('common.delete'),
+      message: t('common.confirmDelete'),
+      confirmLabel: t('common.delete'),
+      variant: 'danger',
+      onConfirm: () => doDeleteSkuRow(blockKey, itemIdx),
+    });
+  };
+  const doDeleteSkuRow = (blockKey: any, itemIdx: any) => {
     setSkuBlocks((prev: any) => prev.map((block: any) => {
       const key = `${block.gender}_${block.category}_${block.subCategory}`;
       if (key !== blockKey) return block;
@@ -1025,11 +751,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
 
-        {/* ===== COLLAPSED BAR — always mounted, smooth opacity ===== */}
-        <div className={`overflow-hidden transition-[opacity,max-height] duration-200 ease-in-out ${
-          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-12 opacity-100'
+        {/* ===== COLLAPSED BAR — silk-smooth premium transitions ===== */}
+        <div className={`overflow-hidden transform-gpu transition-[opacity,max-height,transform] duration-[400ms] ease-[cubic-bezier(0.22,0.68,0.35,1.0)] ${
+          barState === 'expanded' ? 'max-h-0 opacity-0 scale-[0.995] -translate-y-1 pointer-events-none' : 'max-h-14 opacity-100 scale-100 translate-y-0 delay-[50ms]'
         }`}>
           <div
             onClick={handleBarClick}
@@ -1079,9 +805,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           </div>
         </div>{/* end collapsed bar outer */}
 
-        {/* ===== EXPANDED SECTION — smooth CSS grid height animation ===== */}
+        {/* ===== Gold accent line — grows from center on collapse ===== */}
+        <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-[#C4A77D] to-transparent transition-all duration-500 ease-[cubic-bezier(0.22,0.68,0.35,1.0)] ${barState !== 'expanded' ? 'w-full opacity-80' : 'w-0 opacity-0'}`} />
+
+        {/* ===== EXPANDED SECTION — silk-smooth grid height animation ===== */}
         <div
-          className="grid transition-[grid-template-rows] duration-300 ease-in-out"
+          className="grid transition-[grid-template-rows] duration-[350ms] ease-[cubic-bezier(0.22,0.68,0.35,1.0)]"
           style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
         >
         <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>
@@ -1347,10 +1076,41 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                               {t('planning.latestVersion')}
                             </span>
                           )}
+                          {sizingChoices.length > 1 && !choice.isFinal && (
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={(e) => handleDeleteChoice(choice.id, e)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') handleDeleteChoice(choice.id, e); }}
+                              className="text-xs p-0.5 rounded transition-colors cursor-pointer text-red-400 hover:bg-red-50 hover:text-red-600"
+                            >
+                              <Trash2 size={12} />
+                            </span>
+                          )}
                           {choice.id === sizingVersion && <Check size={16} className="text-[#2A9E6A]" />}
                         </div>
                       </button>
                     ))}
+                    {/* Add new choice */}
+                    <div className={`px-3 py-2 border-t flex items-center gap-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.2)]'}`}>
+                      <input
+                        type="text"
+                        value={newChoiceName}
+                        onChange={(e) => setNewChoiceName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddChoice(); }}
+                        placeholder={t('common.addNew') || 'New choice...'}
+                        className={`flex-1 px-2 py-1 text-sm rounded-lg border outline-none ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] placeholder:text-[#666666]' : 'bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400'}`}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); handleAddChoice(); }}
+                        disabled={!newChoiceName.trim()}
+                        className={`p-1.5 rounded-lg transition-colors ${newChoiceName.trim() ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(160,120,75,0.15)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.25)]') : 'opacity-30 cursor-not-allowed text-gray-400'}`}
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1435,12 +1195,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               <div key={key} className={`rounded-2xl border p-4 ${getCardBgClass(cardIdx)}`}>
                 <div className="flex flex-wrap items-center gap-3 justify-between">
                   <div className="flex items-center gap-3">
-                    <img
-                      src={getDemoImageSvg(block.subCategory, item.sku)}
-                      alt={item.name || item.sku}
-                      className="w-12 h-12 rounded-xl border object-cover"
-                      style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
-                    />
+                    <ProductImage subCategory={block.subCategory} sku={item.sku} size={48} darkMode={darkMode} rounded="rounded-xl" />
                     <div>
                       <div className={`text-sm font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
                         <span className="font-['JetBrains_Mono']">{item.sku || 'New SKU'}</span> <span className={darkMode ? 'text-[#999999]' : 'text-[#666666]'}>•</span> {item.name || 'Select SKU'}
@@ -1537,7 +1292,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             const key = `${block.gender}_${block.category}_${block.subCategory}`;
             const isCollapsed = collapsed[key];
             return (
-              <div key={key} className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+              <div key={key} data-rail-card className={`rounded-xl border ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`} style={{ overflow: 'clip' }}>
                 <button
                   type="button"
                   onClick={() => handleToggle(key)}
@@ -1583,7 +1338,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 </button>
 
                 {!isCollapsed && (<>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto" data-table-wrapper style={{ overflowY: 'clip' }}>
                     {(() => {
                       const hlBg = darkMode ? 'bg-[rgba(215,183,151,0.12)]' : 'bg-[rgba(160,120,75,0.1)]';
                       const hlLabel = darkMode ? 'bg-[#1f1a14]' : 'bg-[#ede4d8]';
@@ -1596,19 +1351,19 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                       const trCls = (rowId: string, extra?: string) => `${isHl(rowId) ? hlBg : ''} ${extra || ''}`;
                       const tdLabel = (rowId: string, extra?: string) => `${labelBase} ${labelColor} ${isHl(rowId) ? hlLabel : normLabel} ${labelBorder} ${extra || ''}`;
                       return (
-                    <table className={`w-full text-xs border-collapse ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
+                    <table className={`w-full text-xs border-separate border-spacing-0 ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
                       <tbody>
-                        {/* Image row */}
-                        <tr className={trCls('image')}>
+                        {/* Image row — CSS native sticky (zero jitter, compositor-level) */}
+                        <tr
+                          className={`${trCls('image')} sticky`}
+                          style={{ top: stickyImageTop, zIndex: 20 }}
+                        >
                           <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
-                            <td key={idx} className="px-3 py-2 text-center min-w-[140px]">
-                              <img
-                                src={getDemoImageSvg(block.subCategory, item.sku)}
-                                alt={item.name || item.sku}
-                                className="w-16 h-16 mx-auto rounded-lg border object-cover"
-                                style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
-                              />
+                            <td key={idx} className={`px-3 py-2 text-center min-w-[140px] ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
+                              <div className="mx-auto w-fit">
+                                <ProductImage subCategory={block.subCategory} sku={item.sku} size={64} darkMode={darkMode} />
+                              </div>
                             </td>
                           ))}
                         </tr>
@@ -1821,12 +1576,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             {/* Header */}
             <div className={`px-6 py-4 flex items-center justify-between ${darkMode ? 'bg-[rgba(215,183,151,0.1)] border-b border-[rgba(215,183,151,0.2)]' : 'bg-[rgba(160,120,75,0.18)] border-b border-[rgba(215,183,151,0.3)]'}`}>
               <div className="flex items-center gap-3">
-                <img
-                  src={getDemoImageSvg(lightbox.block?.subCategory || '', lightbox.item.sku)}
-                  alt={lightbox.item.name || lightbox.item.sku}
-                  className="w-10 h-10 rounded-xl border object-cover"
-                  style={{ borderColor: darkMode ? '#2E2E2E' : 'rgba(215,183,151,0.25)' }}
-                />
+                <ProductImage subCategory={lightbox.block?.subCategory || ''} sku={lightbox.item.sku} size={40} darkMode={darkMode} rounded="rounded-xl" />
                 <div>
                   <h3 className={`text-base font-bold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                     <span className="font-['JetBrains_Mono']">{lightbox.item.sku}</span> - {lightbox.item.name}
@@ -1989,51 +1739,38 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         <td className="px-4 py-2 text-center font-['JetBrains_Mono']">63%</td>
                         <td className={`px-4 py-2 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666] bg-[rgba(215,183,151,0.08)]' : 'text-[#999999] bg-[rgba(160,120,75,0.12)]'}`}>-</td>
                       </tr>
-                      <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.12)]'}>
-                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Choice A:</td>
-                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                          <td key={size} className="px-2 py-2 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceA[size]}
-                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceA', size, e.target.value)}
-                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#D7B797]' : 'bg-emerald-50 border-emerald-200 text-[#6B4D30]'}`}
-                            />
-                          </td>
-                        ))}
-                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.15)]' : 'text-[#6B4D30] bg-[rgba(215,183,151,0.2)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceA)}</td>
-                      </tr>
-                      <tr className={darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(42,158,106,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.05)]'}>
-                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice B:</td>
-                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                          <td key={size} className="px-2 py-2 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceB[size]}
-                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceB', size, e.target.value)}
-                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                            />
-                          </td>
-                        ))}
-                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.15)]' : 'text-[#127749] bg-[rgba(18,119,73,0.1)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceB)}</td>
-                      </tr>
-                      <tr className={darkMode ? 'bg-[rgba(42,158,106,0.05)]' : 'bg-[rgba(18,119,73,0.03)]'}>
-                        <td className={`px-4 py-2 font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>Choice C:</td>
-                        {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
-                          <td key={size} className="px-2 py-2 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              value={getSizing(lightbox.blockKey, lightbox.idx).choiceC[size]}
-                              onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, 'choiceC', size, e.target.value)}
-                              className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]'}`}
-                            />
-                          </td>
-                        ))}
-                        <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.1)]' : 'text-[#127749] bg-[rgba(18,119,73,0.08)]'}`}>{calculateSum(getSizing(lightbox.blockKey, lightbox.idx).choiceC)}</td>
-                      </tr>
+                      {sizingChoices.map((choice: any, ci: number) => {
+                        const key = choiceIdToKey(choice.id);
+                        const sizing = getSizing(lightbox.blockKey, lightbox.idx);
+                        const choiceData = sizing[key] || { s0002: 0, s0004: 0, s0006: 0, s0008: 0 };
+                        const isFirst = ci === 0;
+                        return (
+                          <tr key={choice.id} className={isFirst
+                            ? (darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(215,183,151,0.08)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(160,120,75,0.12)]')
+                            : (darkMode ? 'border-b border-[#2E2E2E] bg-[rgba(42,158,106,0.05)]' : 'border-b border-[rgba(215,183,151,0.2)] bg-[rgba(18,119,73,0.03)]')
+                          }>
+                            <td className={`px-4 py-2 font-medium ${isFirst ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]')}`}>
+                              {choice.name}:{choice.isFinal && <span className="ml-1 text-[10px] font-bold text-[#2A9E6A]">FINAL</span>}
+                            </td>
+                            {['s0002', 's0004', 's0006', 's0008'].map((size: any) => (
+                              <td key={size} className="px-2 py-2 text-center">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={choiceData[size] ?? 0}
+                                  onChange={(e) => updateSizing(lightbox.blockKey, lightbox.idx, key, size, e.target.value)}
+                                  className={`w-14 text-center font-['JetBrains_Mono'] text-sm rounded border py-0.5 focus:outline-none focus:ring-2 focus:ring-[rgba(215,183,151,0.4)] ${
+                                    isFirst
+                                      ? (darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#D7B797]' : 'bg-emerald-50 border-emerald-200 text-[#6B4D30]')
+                                      : (darkMode ? 'bg-[rgba(42,158,106,0.1)] border-[rgba(42,158,106,0.25)] text-[#2A9E6A]' : 'bg-emerald-50 border-emerald-200 text-[#127749]')
+                                  }`}
+                                />
+                              </td>
+                            ))}
+                            <td className={`px-4 py-2 text-center font-semibold font-['JetBrains_Mono'] ${isFirst ? (darkMode ? 'text-[#D7B797] bg-[rgba(215,183,151,0.15)]' : 'text-[#6B4D30] bg-[rgba(215,183,151,0.2)]') : (darkMode ? 'text-[#2A9E6A] bg-[rgba(42,158,106,0.1)]' : 'text-[#127749] bg-[rgba(18,119,73,0.08)]')}`}>{calculateSum(choiceData)}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -2106,6 +1843,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           setSeasonGroupFilter('all');
         }}
       />
+      <ConfirmDialog darkMode={darkMode} {...dialogProps} />
     </div>
   );
 };

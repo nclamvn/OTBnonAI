@@ -10,3 +10,5 @@ export { default as MobileDataCard } from './MobileDataCard';
 export { default as MobileFilterSheet } from './MobileFilterSheet';
 export { default as MobileTableView } from './MobileTableView';
 export { default as SwipeAction } from './SwipeAction';
+export { default as ProductImage } from './ProductImage';
+export { default as ConfirmDialog } from './ConfirmDialog';

@@ -4,16 +4,26 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
   ArrowLeft, Save, Plus, Trash2, Search,
   Package, DollarSign, ShoppingCart, Store, ChevronDown, ChevronRight,
-  Check, X, AlertCircle, Send, Hash
+  Check, X, AlertCircle, Send, Hash, CheckCircle, XCircle
 } from 'lucide-react';
 import { formatCurrency } from '../../../utils';
-import { masterDataService, proposalService, budgetService } from '../../../services';
+import { masterDataService, proposalService, budgetService, approvalService } from '../../../services';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { ConfirmDialog } from '../../../components/ui';
 
-const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
+const ProposalDetailPage = ({ proposal, onBack, onSave, entityId }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { user } = useAuth();
+  const { dialogProps, confirm } = useConfirmDialog();
+
+  // Approval action states
+  const [pendingApproval, setPendingApproval] = useState<any>(null);
+  const [approvalComment, setApprovalComment] = useState('');
+  const [approvalProcessing, setApprovalProcessing] = useState(false);
   const [ticketName, setTicketName] = useState(proposal?.ticketName || proposal?.subCategory?.name || 'New Proposal');
 
   // API data states
@@ -80,6 +90,38 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
     };
     fetchData();
   }, [proposal?.budgetId]);
+
+  // Check for pending approval for this entity
+  useEffect(() => {
+    if (!entityId) return;
+    const checkApproval = async () => {
+      try {
+        const pending = await approvalService.getPending();
+        const items = Array.isArray(pending) ? pending : [];
+        const match = items.find((a: any) => a.entityType === 'proposal' && a.entityId === entityId);
+        if (match) setPendingApproval(match);
+      } catch { /* ignore */ }
+    };
+    checkApproval();
+  }, [entityId]);
+
+  const handleApprovalAction = async (action: 'approve' | 'reject') => {
+    if (!pendingApproval) return;
+    setApprovalProcessing(true);
+    try {
+      if (action === 'approve') {
+        await approvalService.approve(pendingApproval.entityType, pendingApproval.entityId, pendingApproval.level, approvalComment);
+      } else {
+        await approvalService.reject(pendingApproval.entityType, pendingApproval.entityId, pendingApproval.level, approvalComment);
+      }
+      setPendingApproval(null);
+      setApprovalComment('');
+    } catch (err: any) {
+      console.error('Approval action failed:', err);
+    } finally {
+      setApprovalProcessing(false);
+    }
+  };
 
   // Get context info from proposal (passed from OTB Analysis)
   const contextInfo = {
@@ -156,7 +198,15 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
     setSkuSearchQuery('');
   };
 
-  const handleRemoveSku = (skuId: any) => setSkuList((prev: any) => prev.filter((s: any) => s.id !== skuId));
+  const handleRemoveSku = (skuId: any) => {
+    confirm({
+      title: t('common.delete'),
+      message: t('common.confirmDelete'),
+      confirmLabel: t('common.delete'),
+      variant: 'danger',
+      onConfirm: () => setSkuList((prev: any) => prev.filter((s: any) => s.id !== skuId)),
+    });
+  };
   
 
   const handleAddStore = (skuId: any, storeId: any) => {
@@ -306,14 +356,44 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
 
           {/* Actions */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full md:w-auto">
-            <button onClick={handleSave} className="flex items-center justify-center gap-2 px-4 py-0.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors">
-              <Save size={16} />
-              {t('common.save')}
-            </button>
-            <button className="flex items-center justify-center gap-2 px-4 py-0.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
-              <Send size={16} />
-              {t('common.submit')}
-            </button>
+            {pendingApproval ? (
+              <>
+                <input
+                  type="text"
+                  value={approvalComment}
+                  onChange={(e) => setApprovalComment(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:border-blue-400 w-full md:w-48"
+                  placeholder={t('approvals.commentPlaceholder')}
+                />
+                <button
+                  onClick={() => handleApprovalAction('approve')}
+                  disabled={approvalProcessing}
+                  className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-all disabled:opacity-50"
+                >
+                  <CheckCircle size={14} />
+                  {t('approvals.approve')} L{pendingApproval.level}
+                </button>
+                <button
+                  onClick={() => handleApprovalAction('reject')}
+                  disabled={approvalProcessing}
+                  className="flex items-center justify-center gap-1.5 px-4 py-1.5 rounded-lg text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-all disabled:opacity-50"
+                >
+                  <XCircle size={14} />
+                  {t('approvals.reject')}
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={handleSave} className="flex items-center justify-center gap-2 px-4 py-0.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm font-medium text-slate-700 transition-colors">
+                  <Save size={16} />
+                  {t('common.save')}
+                </button>
+                <button className="flex items-center justify-center gap-2 px-4 py-0.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors">
+                  <Send size={16} />
+                  {t('common.submit')}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -746,6 +826,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave }: any) => {
           </div>
         </div>
       )}
+      <ConfirmDialog darkMode {...dialogProps} />
     </div>
   );
 };

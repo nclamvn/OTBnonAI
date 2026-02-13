@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '../../../utils';
 import { GENDERS, STORES } from '../../../utils/constants';
-import { masterDataService, planningService } from '../../../services';
+import { masterDataService, planningService, approvalService } from '../../../services';
+import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
@@ -86,10 +87,12 @@ const PlanningDetailPage = ({
   selectedBudgetDetail,
   planningDetailData,
   onBack,
-  onSave
+  onSave,
+  entityId
 }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('collection');
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
@@ -100,6 +103,11 @@ const PlanningDetailPage = ({
   const [level1Approvers, setLevel1Approvers] = useState<any[]>([]);
   const [level2Approvers, setLevel2Approvers] = useState<any[]>([]);
   const [apiLoading, setApiLoading] = useState(true);
+
+  // Approval action states
+  const [pendingApproval, setPendingApproval] = useState<any>(null);
+  const [approvalComment, setApprovalComment] = useState('');
+  const [approvalProcessing, setApprovalProcessing] = useState(false);
 
   // Fetch categories and planning versions from API
   useEffect(() => {
@@ -191,6 +199,38 @@ const PlanningDetailPage = ({
     };
     fetchData();
   }, [selectedBudgetDetail?.id]);
+
+  // Check for pending approval for this entity
+  useEffect(() => {
+    if (!entityId) return;
+    const checkApproval = async () => {
+      try {
+        const pending = await approvalService.getPending();
+        const items = Array.isArray(pending) ? pending : [];
+        const match = items.find((a: any) => a.entityType === 'planning' && a.entityId === entityId);
+        if (match) setPendingApproval(match);
+      } catch { /* ignore */ }
+    };
+    checkApproval();
+  }, [entityId]);
+
+  const handleApprovalAction = async (action: 'approve' | 'reject') => {
+    if (!pendingApproval) return;
+    setApprovalProcessing(true);
+    try {
+      if (action === 'approve') {
+        await approvalService.approve(pendingApproval.entityType, pendingApproval.entityId, pendingApproval.level, approvalComment);
+      } else {
+        await approvalService.reject(pendingApproval.entityType, pendingApproval.entityId, pendingApproval.level, approvalComment);
+      }
+      setPendingApproval(null);
+      setApprovalComment('');
+    } catch (err: any) {
+      console.error('Approval action failed:', err);
+    } finally {
+      setApprovalProcessing(false);
+    }
+  };
 
   // Version management states
   const [versions, setVersions] = useState<any[]>([]);
@@ -1504,6 +1544,40 @@ const PlanningDetailPage = ({
           <div className="flex-1 overflow-y-auto p-4 max-h-[calc(100vh-280px)]">
             {renderApprovalHistory()}
           </div>
+          {/* Conditional Approve/Reject Actions */}
+          {pendingApproval && (
+            <div className="border-t border-slate-200 p-4 bg-slate-50 space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <AlertCircle size={12} />
+                {t('approvals.level1Pending').replace('Level 1', `L${pendingApproval.level}`)} — {t('approvals.awaitingReview')}
+              </div>
+              <textarea
+                value={approvalComment}
+                onChange={(e) => setApprovalComment(e.target.value)}
+                rows={2}
+                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm outline-none resize-none focus:border-blue-400"
+                placeholder={t('approvals.commentPlaceholder')}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleApprovalAction('approve')}
+                  disabled={approvalProcessing}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold bg-emerald-500 text-white hover:bg-emerald-600 transition-all disabled:opacity-50"
+                >
+                  <CheckCircle size={14} />
+                  {t('approvals.approve')}
+                </button>
+                <button
+                  onClick={() => handleApprovalAction('reject')}
+                  disabled={approvalProcessing}
+                  className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-all disabled:opacity-50"
+                >
+                  <XCircle size={14} />
+                  {t('approvals.reject')}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

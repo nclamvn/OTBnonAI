@@ -3,13 +3,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   FileCheck, CheckCircle, XCircle, Clock, Loader2,
-  Filter, Search, ChevronDown, Eye, MessageSquare,
+  Filter, Search, ChevronDown, Eye,
   X, AlertTriangle, Shield, ArrowUpRight,
-  Wallet, BarChart3, Package, ClipboardList, GitCompare
+  Wallet, BarChart3, Package, ClipboardList
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { approvalService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
-import VersionDiffModal from './VersionDiffModal';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '../../../utils';
 import { ExpandableStatCard, SwipeAction } from '../../../components/ui';
@@ -54,16 +54,13 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const router = useRouter();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [entityFilter, setEntityFilter] = useState<string>('all');
   const [levelFilter, setLevelFilter] = useState<string>('all');
-  const [actionModal, setActionModal] = useState<any>(null); // { item, action: 'approve'|'reject' }
-  const [comment, setComment] = useState<string>('');
-  const [diffModal, setDiffModal] = useState<any>(null); // { entityId, entityType }
-  const [processing, setProcessing] = useState<boolean>(false);
   const { isOpen: filterOpen, open: openFilterSheet, close: closeFilterSheet } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
 
@@ -87,25 +84,15 @@ const ApprovalsScreen = ({ darkMode }: any) => {
     }
   };
 
-  // Handle approve/reject
-  const handleAction = async () => {
-    if (!actionModal) return;
-    setProcessing(true);
-    try {
-      const { item, action } = actionModal;
-      if (action === 'approve') {
-        await approvalService.approve(item.entityType, item.entityId, item.level, comment);
-      } else {
-        await approvalService.reject(item.entityType, item.entityId, item.level, comment);
-      }
-      setActionModal(null);
-      setComment('');
-      fetchPendingApprovals();
-    } catch (err: any) {
-      console.error('Action failed:', err);
-    } finally {
-      setProcessing(false);
-    }
+  // Navigate to entity detail page
+  const navigateToEntity = (item: any) => {
+    const routes: Record<string, string> = {
+      budget: '/budget-management',
+      planning: `/planning/${item.entityId}`,
+      proposal: `/proposal/${item.entityId}`,
+    };
+    const path = routes[item.entityType];
+    if (path) router.push(path);
   };
 
   // Filtered items
@@ -352,11 +339,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                 })}
                 onItemPress={(listItem) => {
                   const idx = filtered.findIndex((_: any, i: any) => listItem.id.endsWith(`-${i}`));
-                  if (idx >= 0) {
-                    const item = filtered[idx];
-                    setActionModal({ item, action: 'approve' });
-                    setComment('');
-                  }
+                  if (idx >= 0) navigateToEntity(filtered[idx]);
                 }}
                 expandable
                 emptyMessage={t('approvals.noPendingItems')}
@@ -440,33 +423,13 @@ const ApprovalsScreen = ({ darkMode }: any) => {
 
                       {/* Actions */}
                       <td className="px-3 py-1.5">
-                        <div className="flex items-center gap-2">
-                          {/* Compare Versions — only for planning items */}
-                          {item.entityType === 'planning' && (
-                            <button
-                              onClick={() => setDiffModal({ entityId: item.entityId, entityType: item.entityType })}
-                              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.18)]' : 'bg-[rgba(160,120,75,0.1)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
-                              title="Compare with previous version"
-                            >
-                              <GitCompare size={13} />
-                              Diff
-                            </button>
-                          )}
-                          <button
-                            onClick={() => { setActionModal({ item, action: 'approve' }); setComment(''); }}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]"
-                          >
-                            <CheckCircle size={13} />
-                            {t('approvals.approve')}
-                          </button>
-                          <button
-                            onClick={() => { setActionModal({ item, action: 'reject' }); setComment(''); }}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]"
-                          >
-                            <XCircle size={13} />
-                            {t('approvals.reject')}
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => navigateToEntity(item)}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.18)]' : 'bg-[rgba(160,120,75,0.1)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`}
+                        >
+                          <Eye size={13} />
+                          {t('common.view')}
+                        </button>
                       </td>
                     </tr>
                   );
@@ -476,100 +439,6 @@ const ApprovalsScreen = ({ darkMode }: any) => {
           </div>
         )}
       </div>
-
-      {/* Action Modal */}
-      {actionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className={`w-full max-w-md mx-4 rounded-2xl border ${border} shadow-2xl`} style={{
-            background: darkMode
-              ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.04) 40%, rgba(215,183,151,0.12) 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.05) 35%, rgba(215,183,151,0.14) 100%)',
-            boxShadow: `inset 0 -1px 0 ${darkMode ? 'rgba(215,183,151,0.10)' : 'rgba(215,183,151,0.06)'}`,
-          }}>
-            <div className={`p-5 border-b ${border}`}>
-              <div className="flex items-center justify-between">
-                <h3 className={`text-lg font-bold font-['Montserrat'] ${textPrimary}`}>
-                  {actionModal.action === 'approve' ? t('approvals.confirmApprove') : t('approvals.confirmReject')}
-                </h3>
-                <button onClick={() => setActionModal(null)} className={`p-1.5 rounded-lg ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}>
-                  <X size={18} className={textMuted} />
-                </button>
-              </div>
-            </div>
-            <div className="p-5">
-              <div className="mb-4">
-                <div className={`text-sm ${textSecondary}`}>
-                  {ENTITY_ICONS[actionModal.item.entityType]} <span className="capitalize font-medium">{actionModal.item.entityType}</span>
-                  {' — '}
-                  <span className={textPrimary}>{getItemDisplayInfo(actionModal.item).name}</span>
-                </div>
-              </div>
-              {/* Compare Versions button for planning items */}
-              {actionModal.item.entityType === 'planning' && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDiffModal({ entityId: actionModal.item.entityId, entityType: actionModal.item.entityType });
-                  }}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 mb-4 rounded-xl border text-sm font-semibold font-['Montserrat'] transition-all ${
-                    darkMode
-                      ? 'border-[rgba(215,183,151,0.3)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
-                      : 'border-[rgba(160,120,75,0.3)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.08)]'
-                  }`}
-                >
-                  <GitCompare size={16} />
-                  Compare with previous version
-                </button>
-              )}
-
-              <div>
-                <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>
-                  {t('approvals.commentOptional')}
-                </label>
-                <textarea
-                  value={comment}
-                  onChange={(e: any) => setComment(e.target.value)}
-                  rows={3}
-                  className={`w-full px-3 py-2 rounded-xl border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-sm font-['Montserrat'] ${textPrimary} outline-none resize-none focus:border-[#D7B797]`}
-                  placeholder={t('approvals.commentPlaceholder')}
-                />
-              </div>
-            </div>
-            <div className={`p-5 border-t ${border} flex justify-end gap-3`}>
-              <button
-                onClick={() => setActionModal(null)}
-                className={`px-4 py-2 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleAction}
-                disabled={processing}
-                className={`px-5 py-2 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 ${
-                  actionModal.action === 'approve'
-                    ? 'bg-[#2A9E6A] text-white hover:bg-[#238a5a]'
-                    : 'bg-[#F85149] text-white hover:bg-[#e04440]'
-                }`}
-              >
-                {processing ? (
-                  <Loader2 size={16} className="animate-spin mx-auto" />
-                ) : actionModal.action === 'approve' ? t('approvals.approve') : t('approvals.reject')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Version Diff Modal */}
-      {diffModal && (
-        <VersionDiffModal
-          isOpen={!!diffModal}
-          onClose={() => setDiffModal(null)}
-          entityId={diffModal.entityId}
-          entityType={diffModal.entityType}
-          darkMode={darkMode}
-        />
-      )}
 
       {/* Mobile Filter Bottom Sheet */}
       <FilterBottomSheet

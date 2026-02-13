@@ -1,19 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
-import { Image as ImageIcon, ChevronDown, ChevronUp, Package, Ruler, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, Store, Pencil } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { ChevronDown, ChevronUp, Package, Ruler, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, Store, Pencil, GitCompare } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
+import { ProductImage } from '../../../components/ui';
 import { budgetService, planningService, proposalService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,8 +15,6 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 ========================= */
 
 // Chart colors: REX = Champagne Gold, TTP = Forest Green
-const REX_COLOR = '#D7B797';
-const TTP_COLOR = '#127749';
 
 // Card styles using DAFC tokens
 const CARD_STYLES_DARK = [
@@ -50,18 +39,6 @@ const CARD_STYLES_LIGHT = [
    MOCK DATA FOR TICKET DETAIL
 ========================= */
 
-const MOCK_COLLECTION_DATA = [
-  { name: 'Carry Over', rex: 1_850_000_000, ttp: 1_420_000_000 },
-  { name: 'Seasonal', rex: 2_150_000_000, ttp: 1_780_000_000 },
-  { name: 'Pre-Collection', rex: 980_000_000, ttp: 750_000_000 },
-];
-
-const MOCK_GENDER_DATA = [
-  { name: "Women's RTW", rex: 2_400_000_000, ttp: 1_950_000_000 },
-  { name: "Women's Hard Acc", rex: 800_000_000, ttp: 730_000_000 },
-  { name: "Men's RTW", rex: 1_280_000_000, ttp: 920_000_000 },
-  { name: "Men's Hard Acc", rex: 500_000_000, ttp: 350_000_000 },
-];
 
 const MOCK_SKU_BLOCKS = [
   {
@@ -234,81 +211,6 @@ const MOCK_SEASON_DATA = {
    GROUPED BAR CHARTS
 ========================= */
 
-const CollectionBarChart = ({ data, darkMode, t }: any) => (
-  <div className={`border rounded-xl shadow-sm p-4 ${
-    darkMode
-      ? 'bg-[#121212] border-[#2E2E2E]'
-      : 'bg-white border-gray-300'
-  }`}>
-    <h3 className={`text-sm font-semibold font-['Montserrat'] ${
-      darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
-    }`}>{t ? t('planningDetail.collection') : 'Collection Allocation'}</h3>
-    <p className={`text-xs mb-2 ${
-      darkMode ? 'text-[#999999]' : 'text-gray-700'
-    }`}>Carry Over vs Seasonal — REX & TTP</p>
-    <div className="h-[280px]" style={{ minWidth: 0, minHeight: 0 }}>
-      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-        <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
-          <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
-          <XAxis dataKey="name" tick={{ fontSize: 13, fill: darkMode ? '#999999' : '#64748b' }} />
-          <YAxis tick={{ fontSize: 12, fill: darkMode ? '#999999' : '#64748b' }} tickFormatter={(v: any) => `${(v / 1e9).toFixed(1)}B`} />
-          <Tooltip
-            formatter={(v: any) => formatCurrency(v)}
-            contentStyle={{
-              backgroundColor: darkMode ? '#1A1A1A' : '#fff',
-              border: `1px solid ${darkMode ? '#2E2E2E' : '#e2e8f0'}`,
-              borderRadius: '8px',
-              color: darkMode ? '#F2F2F2' : '#1e293b'
-            }}
-            labelStyle={{ color: darkMode ? '#F2F2F2' : '#1e293b' }}
-            cursor={{ fill: darkMode ? 'rgba(215,183,151,0.1)' : 'rgba(0,0,0,0.05)' }}
-          />
-          <Legend wrapperStyle={{ color: darkMode ? '#999999' : '#64748b' }} />
-          <Bar dataKey="rex" name="REX" fill={REX_COLOR} radius={[4, 4, 0, 0]} maxBarSize={56} />
-          <Bar dataKey="ttp" name="TTP" fill={TTP_COLOR} radius={[4, 4, 0, 0]} maxBarSize={56} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
-
-const GenderBarChart = ({ data, darkMode, t }: any) => (
-  <div className={`border rounded-xl shadow-sm p-4 ${
-    darkMode
-      ? 'bg-[#121212] border-[#2E2E2E]'
-      : 'bg-white border-gray-300'
-  }`}>
-    <h3 className={`text-sm font-semibold font-['Montserrat'] ${
-      darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'
-    }`}>{t ? t('planningDetail.gender') : 'Gender Allocation'}</h3>
-    <p className={`text-xs mb-2 ${
-      darkMode ? 'text-[#999999]' : 'text-gray-700'
-    }`}>Male vs Female — REX & TTP</p>
-    <div className="h-[280px]" style={{ minWidth: 0, minHeight: 0 }}>
-      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-        <BarChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }} barCategoryGap="30%" barGap={8}>
-          <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#2E2E2E' : '#e2e8f0'} />
-          <XAxis dataKey="name" tick={{ fontSize: 13, fill: darkMode ? '#999999' : '#64748b' }} />
-          <YAxis tick={{ fontSize: 12, fill: darkMode ? '#999999' : '#64748b' }} tickFormatter={(v: any) => `${(v / 1e9).toFixed(1)}B`} />
-          <Tooltip
-            formatter={(v: any) => formatCurrency(v)}
-            contentStyle={{
-              backgroundColor: darkMode ? '#1A1A1A' : '#fff',
-              border: `1px solid ${darkMode ? '#2E2E2E' : '#e2e8f0'}`,
-              borderRadius: '8px',
-              color: darkMode ? '#F2F2F2' : '#1e293b'
-            }}
-            labelStyle={{ color: darkMode ? '#F2F2F2' : '#1e293b' }}
-            cursor={{ fill: darkMode ? 'rgba(215,183,151,0.1)' : 'rgba(0,0,0,0.05)' }}
-          />
-          <Legend wrapperStyle={{ color: darkMode ? '#999999' : '#64748b' }} />
-          <Bar dataKey="rex" name="REX" fill={REX_COLOR} radius={[4, 4, 0, 0]} maxBarSize={56} />
-          <Bar dataKey="ttp" name="TTP" fill={TTP_COLOR} radius={[4, 4, 0, 0]} maxBarSize={56} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </div>
-);
 
 /* =========================
    SKU CARD (with sizing)
@@ -382,12 +284,8 @@ const SKUCard = ({ item, block, cardIdx, darkMode, onUpdateItem }: any) => {
     }`}>
       <div className="p-5">
         <div className="flex items-start gap-4">
-          <div className={`w-16 h-16 rounded-xl border flex items-center justify-center shrink-0 shadow-sm ${
-            darkMode
-              ? 'bg-[#1A1A1A] border-[#2E2E2E]'
-              : 'bg-white/80 border-white/50'
-          }`}>
-            <ImageIcon size={24} className={darkMode ? 'text-[#666666]' : 'text-gray-600'} />
+          <div className="shrink-0 shadow-sm">
+            <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={64} darkMode={darkMode} rounded="rounded-xl" />
           </div>
           <div className="flex-1 min-w-0">
             <div className={`font-semibold text-base truncate font-['Montserrat'] ${
@@ -582,54 +480,38 @@ const getApprovalStepStatus = (stepId: any, currentStep: any, approvalHistory: a
 };
 
 const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }: any) => (
-  <div className={`border rounded-xl shadow-sm p-3 md:p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
-    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 md:mb-5 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
-      {t ? t('ticketDetail.approvalHistory') : 'Approval Progress'}
-    </h3>
-    <div className="flex items-start overflow-x-auto pb-2 md:pb-0">
+  <div className={`border rounded-lg px-3 md:px-4 py-2 md:py-2.5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+    <div className="flex items-center overflow-x-auto gap-0">
       {APPROVAL_STEPS.map((step: any, index: any) => {
         const status = getApprovalStepStatus(step.id, currentStep, approvalHistory);
         return (
           <React.Fragment key={step.id}>
-            <div className="flex flex-col items-center shrink-0" style={{ minWidth: 80 }}>
-              <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center border-2 transition-all ${
-                status === 'approved' ? 'bg-[#127749] border-[#127749] text-white' :
-                status === 'rejected' ? 'bg-[#F85149] border-[#F85149] text-white' :
-                status === 'current' ? 'bg-[#D7B797] border-[#D7B797] text-white animate-pulse' :
-                darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#666666]' : 'bg-gray-100 border-gray-300 text-gray-500'
+            <div className="flex items-center gap-1.5 shrink-0">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                status === 'approved' ? 'bg-[#127749] text-white' :
+                status === 'rejected' ? 'bg-[#F85149] text-white' :
+                status === 'current' ? 'bg-[#D7B797] text-white' :
+                darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E] text-[#666666]' : 'bg-gray-100 border border-gray-200 text-gray-400'
               }`}>
-                {status === 'approved' ? <Check size={20} strokeWidth={3} /> :
-                 status === 'rejected' ? <X size={20} strokeWidth={3} /> :
-                 status === 'current' ? <Clock size={20} /> :
-                 <span className="text-sm md:text-base font-bold">{index + 1}</span>}
+                {status === 'approved' ? <Check size={12} strokeWidth={3} /> :
+                 status === 'rejected' ? <X size={12} strokeWidth={3} /> :
+                 status === 'current' ? <Clock size={12} /> :
+                 index + 1}
               </div>
-              <div className={`text-xs md:text-sm mt-1.5 md:mt-2 font-medium text-center leading-tight ${
-                status === 'approved' ? 'text-[#2A9E6A]' :
-                status === 'rejected' ? 'text-[#FF7B72]' :
-                status === 'current' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') :
-                darkMode ? 'text-[#666666]' : 'text-gray-500'
-              }`}>
-                {step.label}
+              <div className="flex flex-col">
+                <span className={`text-[11px] font-medium leading-tight ${
+                  status === 'approved' ? 'text-[#2A9E6A]' :
+                  status === 'rejected' ? 'text-[#FF7B72]' :
+                  status === 'current' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') :
+                  darkMode ? 'text-[#555]' : 'text-gray-400'
+                }`}>{step.label}</span>
+                {status === 'approved' && <span className="text-[9px] font-semibold text-[#2A9E6A]">Approved</span>}
+                {status === 'rejected' && <span className="text-[9px] font-semibold text-[#FF7B72]">Rejected</span>}
+                {status === 'current' && <span className={`text-[9px] font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-amber-600'}`}>In Review</span>}
               </div>
-              {(status === 'approved' || status === 'rejected') && (
-                <span className={`mt-1 px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                  status === 'approved'
-                    ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-100 text-emerald-700'
-                    : darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-100 text-red-700'
-                }`}>
-                  {status === 'approved' ? 'Approved' : 'Rejected'}
-                </span>
-              )}
-              {status === 'current' && (
-                <span className={`mt-1 px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                  darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-amber-100 text-amber-700'
-                }`}>
-                  In Review
-                </span>
-              )}
             </div>
             {index < APPROVAL_STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mt-5 md:mt-7 mx-1 rounded-full transition-all min-w-[20px] ${
+              <div className={`flex-1 h-px mx-2 min-w-[16px] ${
                 getApprovalStepStatus(APPROVAL_STEPS[index + 1].id, currentStep, approvalHistory) !== 'waiting'
                   ? 'bg-[#127749]'
                   : darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-200'
@@ -643,76 +525,64 @@ const ApprovalProgressBar = ({ currentStep, approvalHistory, darkMode, t }: any)
 );
 
 const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }: any) => (
-  <div className={`border rounded-xl shadow-sm p-3 md:p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
-    <h3 className={`text-xs font-semibold uppercase tracking-wider mb-3 md:mb-4 font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
-      {t ? t('common.status') : 'Status Tracking'}
-    </h3>
-
-    <div className="space-y-0">
+  <div className={`border rounded-lg p-3 h-full flex flex-col ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+    <div className="flex items-center justify-between mb-2">
+      <span className={`text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>
+        {t ? t('common.status') : 'Status'}
+      </span>
+      <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+        ['APPROVED', 'LEVEL2_APPROVED', 'FINAL'].includes(ticket?.status?.toUpperCase())
+          ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-50 text-emerald-700'
+        : ['REJECTED', 'LEVEL1_REJECTED', 'LEVEL2_REJECTED'].includes(ticket?.status?.toUpperCase())
+          ? darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-50 text-red-700'
+        : ['SUBMITTED', 'LEVEL1_APPROVED'].includes(ticket?.status?.toUpperCase())
+          ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-amber-50 text-amber-700'
+        : darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-gray-100 text-gray-600'
+      }`}>
+        {ticket?.status?.replace(/_/g, ' ') || 'Draft'}
+      </span>
+    </div>
+    <div className="space-y-0 flex-1">
       {approvalHistory?.length > 0 ? (
         approvalHistory.map((item: any, index: any) => (
-          <div key={index} className="flex gap-3">
+          <div key={index} className="flex gap-2">
             <div className="flex flex-col items-center">
-              <div className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
+              <div className={`w-2 h-2 rounded-full mt-1 shrink-0 ${
                 item.action === 'approved' ? 'bg-[#2A9E6A]' :
                 item.action === 'rejected' ? 'bg-[#F85149]' :
                 item.action === 'submitted' ? 'bg-[#D7B797]' :
-                darkMode ? 'bg-[#666666]' : 'bg-gray-400'
+                darkMode ? 'bg-[#666666]' : 'bg-gray-300'
               }`} />
               {index < approvalHistory.length - 1 && (
-                <div className={`w-px flex-1 min-h-[20px] ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-200'}`} />
+                <div className={`w-px flex-1 min-h-[12px] ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-200'}`} />
               )}
             </div>
-            <div className="flex-1 pb-4">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                  item.action === 'approved' ? (darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-100 text-emerald-700') :
-                  item.action === 'rejected' ? (darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-100 text-red-700') :
-                  darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-amber-100 text-amber-700'
+            <div className="flex-1 pb-2">
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] font-semibold ${
+                  item.action === 'approved' ? 'text-[#2A9E6A]' :
+                  item.action === 'rejected' ? 'text-[#FF7B72]' :
+                  darkMode ? 'text-[#D7B797]' : 'text-amber-700'
                 }`}>
                   {item.action.charAt(0).toUpperCase() + item.action.slice(1)}
                 </span>
-                <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
-                  by {item.stepLabel || item.role || '-'}
+                <span className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+                  {item.stepLabel || item.role || '-'}
                 </span>
               </div>
               {item.decidedAt && (
-                <div className={`text-[10px] mt-0.5 font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                <div className={`text-[9px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#444]' : 'text-gray-400'}`}>
                   {new Date(item.decidedAt).toLocaleString('vi-VN')}
-                </div>
-              )}
-              {item.comment && (
-                <div className={`mt-1.5 px-3 py-0.5 rounded-lg text-xs italic ${
-                  darkMode ? 'bg-[#1A1A1A] text-[#999999] border border-[#2E2E2E]' : 'bg-gray-50 text-gray-600 border border-gray-300'
-                }`}>
-                  "{item.comment}"
                 </div>
               )}
             </div>
           </div>
         ))
       ) : (
-        <div className={`text-sm italic ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
-          {t ? t('ticketDetail.approvalHistory') : 'No approval history yet'}
+        <div className={`text-xs italic ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>
+          No history
         </div>
       )}
-    </div>
-
-    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
-      <div className="flex items-center justify-between">
-        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>{t ? t('common.status') : 'Current Status'}:</span>
-        <span className={`px-3 py-0.5 text-xs font-bold rounded-full ${
-          ['APPROVED', 'LEVEL2_APPROVED', 'FINAL'].includes(ticket?.status?.toUpperCase())
-            ? darkMode ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]' : 'bg-emerald-100 text-emerald-700'
-          : ['REJECTED', 'LEVEL1_REJECTED', 'LEVEL2_REJECTED'].includes(ticket?.status?.toUpperCase())
-            ? darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-100 text-red-700'
-          : ['SUBMITTED', 'LEVEL1_APPROVED'].includes(ticket?.status?.toUpperCase())
-            ? darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-amber-100 text-amber-700'
-          : darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-gray-100 text-gray-600'
-        }`}>
-          {ticket?.status?.replace(/_/g, ' ') || 'Draft'}
-        </span>
-      </div>
     </div>
   </div>
 );
@@ -731,6 +601,10 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const [detailData, setDetailData] = useState<any>(null);
   const [skuData, setSkuData] = useState<any[]>([]);
   const [skuViewMode, setSkuViewMode] = useState<string>('card');
+
+  // Diff/View Changes state
+  const [showDiff, setShowDiff] = useState(false);
+  const [previousSkuData, setPreviousSkuData] = useState<any[]>([]);
 
   // Determine the right service based on entity type
   const getEntityService = () => {
@@ -960,15 +834,56 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     fetchDetailData();
   }, [ticket]);
 
-  // Generate chart data from detail
-  const { collectionData, genderData, budgetData, budgetSeasonData } = useMemo(() => {
+  // Generate previous version data for diff comparison
+  // In production, this would fetch the actual previous version from the API
+  const generatePreviousVersion = useCallback((currentData: any[]) => {
+    return currentData.map((block: any) => ({
+      ...block,
+      items: block.items.map((item: any) => {
+        // Simulate previous version with slight differences in quantities and values
+        const orderDiff = Math.max(0, (item.order || 0) - Math.floor(Math.random() * 3 + 1));
+        const rexDiff = Math.max(0, Math.floor(orderDiff * 0.5));
+        const ttpDiff = orderDiff - rexDiff;
+        return {
+          ...item,
+          order: orderDiff,
+          rex: rexDiff,
+          ttp: ttpDiff,
+          ttlValue: orderDiff * (item.srp || 0),
+        };
+      }),
+    }));
+  }, []);
+
+  const handleToggleDiff = useCallback(() => {
+    if (!showDiff && previousSkuData.length === 0) {
+      const dataToUse = skuData.length > 0 ? skuData : MOCK_SKU_BLOCKS;
+      setPreviousSkuData(generatePreviousVersion(dataToUse));
+    }
+    setShowDiff((prev) => !prev);
+  }, [showDiff, previousSkuData, skuData, generatePreviousVersion]);
+
+  // Helper: find previous item by SKU code
+  const getPreviousItem = useCallback((sku: string) => {
+    for (const block of previousSkuData) {
+      const found = block.items?.find((i: any) => i.sku === sku);
+      if (found) return found;
+    }
+    return null;
+  }, [previousSkuData]);
+
+  // Helper: check if a value changed
+  const isDiffValue = useCallback((sku: string, field: string, currentValue: any) => {
+    if (!showDiff) return false;
+    const prev = getPreviousItem(sku);
+    if (!prev) return true; // new item
+    return prev[field] !== currentValue;
+  }, [showDiff, getPreviousItem]);
+
+  // Generate budget/season data from detail
+  const { budgetData, budgetSeasonData } = useMemo(() => {
     if (!detailData) {
-      return {
-        collectionData: MOCK_COLLECTION_DATA,
-        genderData: MOCK_GENDER_DATA,
-        budgetData: MOCK_BUDGET_DATA,
-        budgetSeasonData: MOCK_SEASON_DATA,
-      };
+      return { budgetData: MOCK_BUDGET_DATA, budgetSeasonData: MOCK_SEASON_DATA };
     }
 
     // For budget type
@@ -977,17 +892,11 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       const storeMap: any = {};
       details.forEach((d: any) => {
         const storeName = d.store?.name || 'Unknown';
-        if (!storeMap[storeName]) {
-          storeMap[storeName] = 0;
-        }
+        if (!storeMap[storeName]) storeMap[storeName] = 0;
         storeMap[storeName] += Number(d.budgetAmount) || 0;
       });
 
       return {
-        collectionData: [
-          { name: 'Total Allocation', rex: storeMap['REX'] || storeMap['Rex'] || Object.values(storeMap)[0] || 0, ttp: storeMap['TTP'] || storeMap['Ttp'] || Object.values(storeMap)[1] || 0 }
-        ],
-        genderData: MOCK_GENDER_DATA,
         budgetData: {
           id: detailData.id,
           fiscalYear: detailData.fiscalYear,
@@ -1011,28 +920,14 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     // For planning type
     if (ticket?.entityType === 'planning') {
       const details = detailData.details || [];
-      const collectionMap: any = {};
-      const genderMap: any = {};
-
+      const storeMap: any = { rex: 0, ttp: 0 };
       details.forEach((d: any) => {
-        const colName = d.collection?.name || 'Other';
-        const genName = d.gender?.name || 'Other';
-
-        if (!collectionMap[colName]) collectionMap[colName] = { rex: 0, ttp: 0 };
-        if (!genderMap[genName]) genderMap[genName] = { rex: 0, ttp: 0 };
-
         const otb = Number(d.otbValue) || 0;
-        collectionMap[colName].rex += otb * 0.5;
-        collectionMap[colName].ttp += otb * 0.5;
-        genderMap[genName].rex += otb * 0.5;
-        genderMap[genName].ttp += otb * 0.5;
+        storeMap.rex += otb * 0.5;
+        storeMap.ttp += otb * 0.5;
       });
 
       return {
-        collectionData: Object.entries(collectionMap).map(([name, data]: any) => ({ name, ...data })),
-        genderData: Object.keys(genderMap).length > 0
-          ? Object.entries(genderMap).map(([name, data]: any) => ({ name, ...data }))
-          : MOCK_GENDER_DATA,
         budgetData: {
           id: detailData.id,
           fiscalYear: detailData.budgetDetail?.budget?.fiscalYear || '-',
@@ -1045,17 +940,15 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         budgetSeasonData: {
           seasonGroup: detailData.budgetDetail?.budget?.seasonGroupId || '-',
           Season: detailData.budgetDetail?.budget?.seasonType || '-',
-          rex: Object.values(collectionMap).reduce((sum: any, c: any) => sum + (c.rex || 0), 0) || 343000000,
-          ttp: Object.values(collectionMap).reduce((sum: any, c: any) => sum + (c.ttp || 0), 0) || 294000000,
+          rex: storeMap.rex || 343000000,
+          ttp: storeMap.ttp || 294000000,
           finalVersion: detailData.versionNumber || 1
         }
       };
     }
 
-    // Default / proposal — use rich mock data
+    // Default / proposal
     return {
-      collectionData: MOCK_COLLECTION_DATA,
-      genderData: MOCK_GENDER_DATA,
       budgetData: detailData ? {
         id: detailData.id,
         fiscalYear: ticket?.fiscalYear || MOCK_BUDGET_DATA.fiscalYear,
@@ -1078,7 +971,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
 
   if (loading) {
     return (
-      <div className={`p-6 min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50'}`}>
+      <div className={`p-6 min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : ''}`}>
         <div className="flex flex-col items-center gap-3">
           <Loader2 size={40} className={`animate-spin ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
           <span className={darkMode ? 'text-[#999999]' : 'text-gray-700'}>{t('ticketDetail.loadingDetail')}</span>
@@ -1089,7 +982,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
 
   if (!ticket) {
     return (
-      <div className={`p-6 min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50'}`}>
+      <div className={`p-6 min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : ''}`}>
         <div className={`text-center ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>
           <p>{t('common.noData')}</p>
           {onBack && (
@@ -1103,174 +996,120 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   }
 
   return (
-    <div className={`p-3 md:p-6 min-h-screen space-y-3 md:space-y-6 ${
-      darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50'
+    <div className={`p-3 md:p-4 min-h-screen space-y-2 md:space-y-3 ${
+      darkMode ? 'bg-[#0A0A0A]' : ''
     }`}>
-      {/* Back Button & Header */}
+      {/* ===== COMPACT HEADER ===== */}
       {onBack && (
-        <div className={`flex flex-wrap items-center justify-between gap-3 md:gap-4 mb-4 p-3 md:p-4 rounded-xl ${
+        <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg ${
           darkMode
             ? 'bg-gradient-to-r from-[#127749] to-[#0F5F3A]'
             : 'bg-gradient-to-r from-[#127749] to-[#2A9E6A]'
         }`}>
-          <div className="flex items-center gap-3 md:gap-4 min-w-0">
-            <button
-              onClick={onBack}
-              className="p-2 rounded-lg transition-all hover:bg-white/10 text-white shrink-0"
-            >
-              <ArrowLeft size={isMobile ? 20 : 24} />
+          <div className="flex items-center gap-2 min-w-0">
+            <button onClick={onBack} className="p-1 rounded transition-all hover:bg-white/10 text-white shrink-0">
+              <ArrowLeft size={18} />
             </button>
             <div className="min-w-0">
-              <h1 className="text-xs md:text-sm font-semibold font-['Montserrat'] text-white">
-                {t('ticketDetail.title')}
-              </h1>
-              <p className="text-xs text-white/70 truncate">
-                {ticket?.entityType?.charAt(0).toUpperCase() + ticket?.entityType?.slice(1)} • {ticket?.name}
-              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold font-['Montserrat'] text-white">{t('ticketDetail.title')}</span>
+                <span className={`px-1.5 py-px text-[9px] font-bold rounded ${
+                  ['APPROVED', 'LEVEL2_APPROVED', 'FINAL'].includes(ticket?.status?.toUpperCase())
+                    ? 'bg-white/20 text-white'
+                  : ['REJECTED', 'LEVEL1_REJECTED', 'LEVEL2_REJECTED'].includes(ticket?.status?.toUpperCase())
+                    ? 'bg-[#F85149]/30 text-white'
+                  : 'bg-white/15 text-white/80'
+                }`}>
+                  {ticket?.status?.replace(/_/g, ' ') || 'DRAFT'}
+                </span>
+              </div>
+              <p className="text-[10px] text-white/60 truncate">{ticket?.entityType?.charAt(0).toUpperCase() + ticket?.entityType?.slice(1)} • {ticket?.name}</p>
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 md:gap-3 w-full md:w-auto">
-            {/* Submit — only for DRAFT */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={handleToggleDiff}
+              className={`flex items-center gap-1.5 px-2.5 py-1 font-medium rounded text-[11px] border transition-all ${
+                showDiff ? 'bg-[#D7B797]/30 text-white border-[#D7B797]/50' : 'bg-white/10 hover:bg-white/20 text-white/80 border-white/15'
+              }`}
+            >
+              <GitCompare size={12} />
+              {t('ticketDetail.viewChanges')}
+            </button>
             {ticket?.status?.toUpperCase() === 'DRAFT' && (
-              <button
-                onClick={handleSubmitTicket}
-                disabled={actionLoading}
-                className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-white/20 hover:bg-white/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/20 backdrop-blur-sm disabled:opacity-50"
-              >
-                <Send size={14} />
-                {t('common.submit')}
+              <button onClick={handleSubmitTicket} disabled={actionLoading} className="flex items-center gap-1 px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white font-medium rounded text-[11px] border border-white/15 disabled:opacity-50">
+                <Send size={11} /> {t('common.submit')}
               </button>
             )}
-
-            {/* Approve / Reject — for pending approvers */}
-            {canApprove() && (
-              <>
-                <button
-                  onClick={handleRejectTicket}
-                  disabled={actionLoading}
-                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-[#F85149]/20 hover:bg-[#F85149]/30 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-[#F85149]/30 backdrop-blur-sm disabled:opacity-50"
-                >
-                  <XCircle size={14} />
-                  {t('ticketDetail.reject')}
-                </button>
-                <button
-                  onClick={handleApproveTicket}
-                  disabled={actionLoading}
-                  className="flex items-center justify-center gap-2 px-3 md:px-4 py-0.5 bg-white/25 hover:bg-white/35 text-white font-semibold rounded-lg transition-all text-xs md:text-sm border border-white/30 backdrop-blur-sm disabled:opacity-50"
-                >
-                  <CheckCircle size={14} />
-                  {t('ticketDetail.approve')}
-                </button>
-              </>
-            )}
+            {canApprove() && (<>
+              <button onClick={handleRejectTicket} disabled={actionLoading} className="flex items-center gap-1 px-2.5 py-1 bg-[#F85149]/20 hover:bg-[#F85149]/30 text-white font-medium rounded text-[11px] border border-[#F85149]/25 disabled:opacity-50">
+                <XCircle size={11} /> {t('ticketDetail.reject')}
+              </button>
+              <button onClick={handleApproveTicket} disabled={actionLoading} className="flex items-center gap-1 px-2.5 py-1 bg-white/25 hover:bg-white/35 text-white font-medium rounded text-[11px] border border-white/25 disabled:opacity-50">
+                <CheckCircle size={11} /> {t('ticketDetail.approve')}
+              </button>
+            </>)}
           </div>
         </div>
       )}
 
-      {/* ===== APPROVAL PROGRESS BAR ===== */}
-      <ApprovalProgressBar
-        currentStep={currentStep}
-        approvalHistory={approvalHistory}
-        darkMode={darkMode}
-        t={t}
-      />
+      {/* ===== APPROVAL + INFO — single compact row ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-2 items-stretch">
+        {/* Left: Approval progress + Budget/Season inline */}
+        <div className="flex flex-col gap-2">
+          <ApprovalProgressBar currentStep={currentStep} approvalHistory={approvalHistory} darkMode={darkMode} t={t} />
 
-      {/* ===== STATUS TRACKING + BUDGET INFO ===== */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
-        {/* Budget + Budget Season — 2/3 width */}
-        <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+          {/* Budget + Season — compact inline grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
+            <div className={`border rounded-lg p-2.5 flex flex-col ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className={`text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('skuProposal.budget')}</span>
+                <span className={`text-[10px] font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budgetData.totalBudget)}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-x-3 gap-y-1 flex-1 items-end">
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('budget.fiscalYear')}</span>
+                  <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.fiscalYear}</p>
+                </div>
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('budget.brand')}</span>
+                  <p className={`text-xs font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.brandName}</p>
+                </div>
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('budget.budgetName')}</span>
+                  <p className={`text-xs font-semibold truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.budgetName}</p>
+                </div>
+              </div>
+            </div>
 
-      {/* 1. Budget + Budget Season */}
-        <div className={`border rounded-xl shadow-sm p-3 md:p-5 ${
-          darkMode
-            ? 'bg-[#121212] border-[#2E2E2E]'
-            : 'bg-white border-gray-300'
-        }`}>
-          <h3 className={`text-sm md:text-base font-semibold mb-3 md:mb-4 font-['Montserrat'] ${
-            darkMode ? 'text-[#F2F2F2]' : 'text-gray-600'
-          }`}>{t('skuProposal.budget')}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.fiscalYear')}</p>
-              <p className={`text-sm md:text-base font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.fiscalYear}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.groupBrand')}</p>
-              <p className={`text-sm md:text-base font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.groupBrand}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.brand')}</p>
-              <p className={`text-sm md:text-base font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.brandName}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.totalBudget')}</p>
-              <p className={`text-xs md:text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(budgetData.totalBudget)}</p>
-            </div>
-            <div className="col-span-2 sm:col-span-1">
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('budget.budgetName')}</p>
-              <p className={`text-sm md:text-base font-semibold truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetData.budgetName}</p>
+            <div className={`border rounded-lg p-2.5 flex flex-col ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className={`text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('skuProposal.season')}</span>
+                <span className={`text-[10px] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalRexTtp)}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-x-3 gap-y-1 flex-1 items-end">
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>{t('skuProposal.seasonGroup')}</span>
+                  <p className={`text-xs font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetSeasonData.seasonGroup} — {budgetSeasonData.Season}</p>
+                </div>
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>REX</span>
+                  <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(rexNum)}</p>
+                </div>
+                <div>
+                  <span className={`text-[9px] ${darkMode ? 'text-[#555]' : 'text-gray-400'}`}>TTP</span>
+                  <p className={`text-xs font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(ttpNum)}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className={`border rounded-xl shadow-sm p-3 md:p-5 ${
-          darkMode
-            ? 'bg-[#121212] border-[#2E2E2E]'
-            : 'bg-white border-gray-300'
-        }`}>
-          <h3 className={`text-sm md:text-base font-semibold mb-3 md:mb-4 font-['Montserrat'] ${
-            darkMode ? 'text-[#F2F2F2]' : 'text-gray-600'
-          }`}>{t('skuProposal.season')}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:gap-3">
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.seasonGroup')}</p>
-              <p className={`text-sm md:text-base font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetSeasonData.seasonGroup}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.season')}</p>
-              <p className={`text-sm md:text-base font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{budgetSeasonData.Season}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('common.version')}</p>
-              <p className={`text-sm md:text-base font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>v{budgetSeasonData.finalVersion}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>REX</p>
-              <p className={`text-xs md:text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(rexNum)}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>TTP</p>
-              <p className={`text-xs md:text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(ttpNum)}</p>
-            </div>
-            <div>
-              <p className={`text-xs md:text-sm ${darkMode ? 'text-[#999999]' : 'text-gray-700'}`}>{t('skuProposal.total')}</p>
-              <p className={`text-xs md:text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(totalRexTtp)}</p>
-            </div>
-          </div>
-        </div>
-
+        {/* Right: Status tracking — stretch full height */}
+        <StatusTrackingPanel approvalHistory={approvalHistory} ticket={ticket} darkMode={darkMode} t={t} />
       </div>
 
-        {/* Status Tracking Panel — 1/3 width */}
-        <StatusTrackingPanel
-          approvalHistory={approvalHistory}
-          ticket={ticket}
-          darkMode={darkMode}
-          t={t}
-        />
-      </div>
-
-      {/* 3. Charts - Collection & Gender (grouped bar: REX, TTP per category) */}
-      {(collectionData.length > 0 || genderData.length > 0) && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 md:gap-3">
-          {collectionData.length > 0 && <CollectionBarChart data={collectionData} darkMode={darkMode} t={t} />}
-          {genderData.length > 0 && <GenderBarChart data={genderData} darkMode={darkMode} t={t} />}
-        </div>
-      )}
-
-      {/* 4. SKU Cards - grouped by type and gender (only for proposals) */}
+      {/* SKU Cards - grouped by type and gender (only for proposals) */}
       {displaySkuData.length > 0 && (
       <div className="space-y-3 md:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
@@ -1309,46 +1148,102 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
             </button>
           </div>
         </div>
+        {/* Diff Legend */}
+        {showDiff && (
+          <div className={`flex items-center gap-4 px-4 py-2 rounded-xl text-xs font-['Montserrat'] ${darkMode ? 'bg-[rgba(215,183,151,0.05)] border border-[#2E2E2E]' : 'bg-amber-50 border border-amber-200'}`}>
+            <span className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}>
+              <GitCompare size={12} className="inline mr-1" />
+              {t('ticketDetail.comparingVersions') || 'Comparing with previous version'}
+            </span>
+            <span className="flex items-center gap-1">
+              <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(42,158,106,0.25)] ring-1 ring-[#2A9E6A]/40' : 'bg-emerald-100 ring-1 ring-emerald-300'}`} />
+              <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.increased') || 'Increased'}</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(248,81,73,0.15)] ring-1 ring-[#F85149]/40' : 'bg-red-100 ring-1 ring-red-300'}`} />
+              <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.decreased') || 'Decreased'}</span>
+            </span>
+          </div>
+        )}
+
         {/* === TABLE VIEW (desktop only) === */}
         {skuViewMode === 'table' && !isMobile && (
           <div className={`border rounded-2xl shadow-sm overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm border-separate border-spacing-0 [&_th]:whitespace-nowrap [&_td]:whitespace-nowrap">
                 <thead>
                   <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}></th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider sticky left-0 z-10 ${darkMode ? 'text-[#999999] bg-[#1A1A1A]' : 'text-[#666666] bg-[rgba(160,120,75,0.18)]'}`}></th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.category')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.subCategory')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rail')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.color')}</th>
                     <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.skuCode')}</th>
                     <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productName')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productType')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.color')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rex')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.ttp')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.order')}</th>
+                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.sizing')}</th>
+                    <th className={`px-4 py-0.5 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.srp')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('proposal.rex')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider text-[#127749]`}>{t('proposal.ttp')}</th>
+                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalQty')}</th>
                     <th className={`px-4 py-0.5 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalValue')}</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-gray-100'}`}>
-                  {displaySkuData.flatMap((block: any) => block.items.map((item: any, idx: any) => (
+                  {displaySkuData.flatMap((block: any) => block.items.map((item: any, idx: any) => {
+                    const prevItem = showDiff ? getPreviousItem(item.sku) : null;
+                    const diffCls = (field: string) => {
+                      if (!showDiff || !prevItem) return '';
+                      const curr = item[field];
+                      const prev = prevItem[field];
+                      if (curr === prev) return '';
+                      return curr > prev
+                        ? (darkMode ? 'bg-[rgba(42,158,106,0.15)] ring-1 ring-inset ring-[#2A9E6A]/30 rounded' : 'bg-emerald-50 ring-1 ring-inset ring-emerald-300 rounded')
+                        : (darkMode ? 'bg-[rgba(248,81,73,0.12)] ring-1 ring-inset ring-[#F85149]/30 rounded' : 'bg-red-50 ring-1 ring-inset ring-red-300 rounded');
+                    };
+                    const diffLabel = (field: string) => {
+                      if (!showDiff || !prevItem) return null;
+                      const curr = item[field];
+                      const prev = prevItem[field];
+                      if (curr === prev) return null;
+                      const delta = curr - prev;
+                      return (
+                        <span className={`text-[9px] ml-1 ${delta > 0 ? 'text-[#2A9E6A]' : 'text-[#F85149]'}`}>
+                          {delta > 0 ? `+${delta}` : delta}
+                        </span>
+                      );
+                    };
+                    return (
                     <tr key={`${item.sku}_${idx}`} className={`transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.1)]'}`}>
-                      <td className="px-4 py-0.5">
-                        <div className={`w-10 h-10 rounded-lg border flex items-center justify-center ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-gray-50 border-gray-300'}`}>
-                          <ImageIcon size={16} className={darkMode ? 'text-[#666666]' : 'text-gray-500'} />
-                        </div>
+                      <td className={`px-4 py-0.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
+                        <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={40} darkMode={darkMode} />
                       </td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.gender || '-'}</td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.subCategory || '-'}</td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.theme || '-'}</td>
+                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
                       <td className={`px-4 py-0.5 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
                       <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.productType || block.productType}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex || 0}</td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium text-[#127749]`}>{item.ttp || 0}</td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
-                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.ttlValue || 0)}</td>
+                      <td className={`px-4 py-0.5 text-[11px] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.sizing?.sizes?.join(', ') || '-'}</td>
+                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.srp || 0)}</td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${diffCls('rex')}`}>
+                        {item.rex || 0}{diffLabel('rex')}
+                      </td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium text-[#127749] ${diffCls('ttp')}`}>
+                        {item.ttp || 0}{diffLabel('ttp')}
+                      </td>
+                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'} ${diffCls('order')}`}>
+                        {item.order || 0}{diffLabel('order')}
+                      </td>
+                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'} ${diffCls('ttlValue')}`}>
+                        {formatCurrency(item.ttlValue || 0)}
+                      </td>
                     </tr>
-                  )))}
+                    );
+                  }))}
                 </tbody>
                 <tfoot>
                   <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td colSpan={5} className={`px-4 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
+                    <td colSpan={9} className={`px-4 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
                     <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                       {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.rex || 0), 0), 0)}
                     </td>
@@ -1414,18 +1309,106 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
               </button>
 
               {!isCollapsed && (
-                <div className={`p-3 md:p-5 ${darkMode ? 'bg-[#0A0A0A]/50' : 'bg-gray-50/50'}`}>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-                    {block.items.map((item: any, idx: any) => (
-                      <SKUCard
-                        key={`${item.sku}_${idx}`}
-                        item={{ ...item, productType: block.productType }}
-                        block={block}
-                        cardIdx={idx}
-                        darkMode={darkMode}
-                      />
-                    ))}
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className={`w-full text-xs border-separate border-spacing-0 ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
+                    <tbody>
+                      {/* Image row */}
+                      <tr>
+                        <td className={`px-3 py-2 font-semibold whitespace-nowrap sticky left-0 z-10 min-w-[100px] ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>Image</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-2 text-center min-w-[130px] ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
+                            <div className="mx-auto w-fit">
+                              <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={56} darkMode={darkMode} />
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
+                      {/* Category */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.category')}</td>
+                        {block.items.map((_: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.gender || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Sub Category */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.subCategory')}</td>
+                        {block.items.map((_: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.subCategory || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Rail */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.rail')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.theme || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Color */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.color')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-700'}`}>{item.color || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* SKU */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.skuCode')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] text-[11px] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
+                        ))}
+                      </tr>
+                      {/* SKU Name */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.productName')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
+                        ))}
+                      </tr>
+                      {/* Sizing */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.sizing')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center text-[11px] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.sizing?.sizes?.join(', ') || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* SRP */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#999999]' : 'bg-white text-[#666666]'}`}>{t('proposal.srp')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.srp || 0)}</td>
+                        ))}
+                      </tr>
+                      {/* REX */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#D7B797]' : 'bg-white text-[#6B4D30]'}`}>{t('proposal.rex')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.rex || 0}</td>
+                        ))}
+                      </tr>
+                      {/* TTP */}
+                      <tr>
+                        <td className={`px-3 py-1.5 font-semibold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[#121212] text-[#127749]' : 'bg-white text-[#127749]'}`}>{t('proposal.ttp')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-medium text-[#127749]`}>{item.ttp || 0}</td>
+                        ))}
+                      </tr>
+                      {/* Total Qty — highlighted */}
+                      <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.08)]'}>
+                        <td className={`px-3 py-1.5 font-bold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[rgba(215,183,151,0.1)] text-[#F2F2F2]' : 'bg-[rgba(160,120,75,0.12)] text-[#333333]'}`}>{t('proposal.totalQty')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.order || 0}</td>
+                        ))}
+                      </tr>
+                      {/* Total Value — highlighted */}
+                      <tr className={darkMode ? 'bg-[rgba(42,158,106,0.06)]' : 'bg-[rgba(18,119,73,0.05)]'}>
+                        <td className={`px-3 py-1.5 font-bold whitespace-nowrap sticky left-0 z-10 ${darkMode ? 'bg-[rgba(42,158,106,0.1)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.08)] text-[#127749]'}`}>{t('proposal.totalValue')}</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(item.ttlValue || 0)}</td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
