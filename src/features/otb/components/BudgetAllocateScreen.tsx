@@ -648,45 +648,14 @@ const BudgetAllocateScreen = ({
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
-      {/* Header Section */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm relative ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+      {/* Header Section — hides entirely on scroll */}
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b transition-[transform,opacity] duration-200 ease-out ${
+        darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
+      } ${barState === 'collapsed' ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
 
-        {/* ===== COLLAPSED BAR ===== */}
-        <div className={`overflow-hidden transform-gpu transition-[opacity,max-height] duration-200 ease-out ${
-          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-14 opacity-100'
-        }`}>
-          <div onClick={handleBarClick} className={`cursor-pointer flex items-center gap-3 px-3 md:px-6 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}>
-            <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`px-2 py-0.5 rounded text-[11px] font-medium font-['JetBrains_Mono'] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                FY{selectedYear}
-              </span>
-              {selectedBudget && (
-                <span className={`px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[120px] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                  {selectedBudget.budgetName}
-                </span>
-              )}
-              {selectedGroupBrandObj && (
-                <span className={`px-2 py-0.5 rounded text-[11px] font-medium hidden sm:inline ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                  {selectedGroupBrandObj.name}
-                </span>
-              )}
-              {selectedVersion?.isFinal && (
-                <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#D7B797] text-[#0A0A0A] rounded">FINAL</span>
-              )}
-            </div>
-          </div>
-        </div>{/* end collapsed bar outer */}
-
-        {/* ===== Gold accent line ===== */}
-        <div className={`absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C4A77D] to-transparent transition-opacity duration-150 ease-out ${barState !== 'expanded' ? 'opacity-80' : 'opacity-0'}`} />
-
-        {/* ===== EXPANDED SECTION ===== */}
-        <div
-          className="grid transition-[grid-template-rows] duration-200 ease-out"
-          style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
-        >
-        <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>
+        {/* ===== FILTER CONTENT ===== */}
+        <div>
+        <div>
         <div className="relative">
           <div className={darkMode ? '' : ''}>
             <div className={`flex items-center gap-1.5 px-3 md:px-6 py-1.5 relative z-[100]`}>
