@@ -7,7 +7,7 @@
 
 ---
 
-## Cap nhat lan cuoi: 13/02/2026 (Session 21 - Filter Bar Redesign + Fashion SVGs)
+## Cap nhat lan cuoi: 14/02/2026 (Session 23 - Performance: Zero-Lag Filter Bar + Flip Card)
 
 ---
 
@@ -746,6 +746,73 @@ npm run dev
 | class-validator | — | DTO validation |
 | helmet | — | HTTP security headers |
 | @nestjs/swagger | — | API documentation |
+
+---
+
+## SESSION 14/02/2026 - Session 23 (Performance: Zero-Lag Filter Bar + Flip Card)
+
+### Thay doi chinh
+
+**Premium SKU Card Flip (`da1bd93`):**
+- 3D flip card trên TicketDetailPage PremiumSKUCard
+- Front: hình ảnh, SRP, REX/TTP, totals (existing)
+- Back: Cost & Margin (unitCost, margin%, markup), Store Allocation bars, Size Breakdown table, Product Info
+- CSS 3D: `perspective`, `rotateY(180deg)`, `backface-visibility: hidden`
+- Click-triggered flip icon (RotateCcw from lucide-react)
+- Fix: `pointerEvents` toggling giữa front/back faces (backface-visibility chỉ ẩn visual, không ẩn pointer events)
+- Added `unitCost`, `collection`, `customerTarget` to mock data + API transform
+
+**X-Ray UX Minimalist (`6927ee0`):**
+- Loại bỏ ALL fancy animations: cubic-bezier, scale-[0.995], stagger delays, gold line grow, duration-400+
+- Tất cả transitions ≤200ms ease-out
+- `useSmartScrollState.ts`: giản lược từ 138→70 lines, 5 mechanisms→2 (hysteresis + state lock)
+- Removed stagger CSS classes từ globals.css và tailwind.css
+- 10 files updated
+
+**Hide Entire Filter Bar on Scroll (`36794e0`, `d5a11ac`):**
+- 3 screens (BudgetAllocate, OTBAnalysis, SKUProposal): ẩn TOÀN BỘ filter bar khi cuộn xuống
+- Removed collapsed summary bars (badges, stats) — chỉ show/hide toàn bộ
+- Pattern: `-translate-y-full opacity-0 pointer-events-none` khi collapsed
+
+**Zero-Lag Filter Bar — Bypass React Re-render (`898e72e`, `1adf915`):**
+- **Root cause**: `setBarState()` triggered full React re-render (100+ SKU cards = ~1s lag)
+- **Fix**: `useSmartScrollState` returns `barRef` instead of React state
+- Scroll handler toggles `el.hidden` directly — pure DOM manipulation, zero re-render
+- Removed RAF batching, reduced lock 300→100ms→80ms, tightened thresholds 20/60→10/40px
+- All 3 screens use `barRef` + instant `hidden` class
+
+**Remove Sticky Image Row (`6f57c07`, `72b9386`):**
+- Sticky image row (top:0, z:20) tạo 80px dark blank band trên SKU row khi scroll
+- Removed sticky behavior + tất cả supporting code (MutationObserver, ResizeObserver, stickyImageTopRef)
+- Image row giờ scroll bình thường cùng table
+- -36 lines code deleted
+
+### useSmartScrollState Architecture (Final)
+```ts
+// Hook returns barRef (not React state) — zero re-renders
+export function useSmartScrollState() {
+  const barRef = useRef<HTMLDivElement>(null);
+  // Scroll handler: el.hidden = true/false (direct DOM)
+  // Hysteresis: show at <10px, hide at >40px
+  // Lock: 80ms after each toggle
+  return { barRef, handleBarClick };
+}
+// Usage: <div ref={barRef} ...> — no className for collapsed state
+```
+
+### Files chinh (14 files)
+```
+src/hooks/useSmartScrollState.ts                      # Complete rewrite: DOM-direct, no React state
+src/features/tickets/components/TicketDetailPage.tsx   # Flip card, duration-200
+src/features/otb/components/SKUProposalScreen.tsx      # Zero-lag filter, remove sticky image
+src/features/otb/components/OTBAnalysisScreen.tsx      # Zero-lag filter bar
+src/features/otb/components/BudgetAllocateScreen.tsx   # Zero-lag filter bar
+src/components/ui/ExpandableStatCard.tsx               # duration-200
+src/components/ui/KPIDetailModal.tsx                   # duration-200
+src/components/mobile/MobileCard.tsx                   # duration-200
+src/app/globals.css                                    # Remove stagger classes
+src/styles/tailwind.css                                # Remove stagger classes
+```
 
 ---
 
@@ -1514,6 +1581,10 @@ src/locales/vi.js                             # 105+ new keys
 - [x] ~~Fashion product SVGs (3D realistic)~~ → Done Session 21
 - [x] ~~Smart auto expand/collapse filter bar~~ → Done Session 21
 - [x] ~~Render cold-start login timeout handling~~ → Done Session 21
+- [x] ~~Premium SKU Card flip (detail back face)~~ → Done Session 23
+- [x] ~~X-Ray UX minimalist (remove fancy animations)~~ → Done Session 23
+- [x] ~~Zero-lag filter bar (bypass React re-render)~~ → Done Session 23
+- [x] ~~Remove sticky image row (blank gap fix)~~ → Done Session 23
 - [ ] TicketScreen.tsx: TODO - Implement create ticket API call
 - [ ] Azure Portal manual config (Node 22 LTS, `node .next/standalone/server.js` / `node dist/src/main.js`, env vars)
 - [ ] Backend import endpoints — importService.ts references `/import/*` endpoints chua co trong NestJS backend
@@ -1543,7 +1614,7 @@ Khi doc file nay:
 13. Permissions: `budget:read`, `budget:write`, `budget:approve_l1`, `budget:approve_l2`, etc.
 14. Testing: `npm run test` (Vitest + jsdom, 114 tests)
 15. Types: `src/types/index.ts` (50+ shared interfaces)
-16. Filter bars: sticky flat toolbar, auto-expand/collapse on scroll, badges when collapsed
+16. Filter bars: sticky flat toolbar, auto-hide on scroll via `useSmartScrollState` (DOM-direct, zero re-render)
 17. SKU Proposal table: Excel format (W25 DAFC_proposal.xlsx), transposed Rail-based, dynamic store columns
 18. Store columns: dynamic from API (khong hardcode REX/TTP)
 19. VersionDiffModal: so sanh planning versions tren Approvals screen
