@@ -250,7 +250,7 @@ const KPIDetailModal = ({
                             rx={4}
                             fill={BAR_COLORS[i % BAR_COLORS.length]}
                             opacity={0.85}
-                            className="transition-all duration-700"
+                            className="transition-all duration-200"
                           />
                           <text
                             x={x + 11}
@@ -305,7 +305,7 @@ const KPIDetailModal = ({
                         </div>
                         <div className={`h-1.5 rounded-full overflow-hidden ${darkMode ? 'bg-[#1E1E1E]' : 'bg-gray-200'}`}>
                           <div
-                            className="h-full rounded-full transition-all duration-700"
+                            className="h-full rounded-full transition-all duration-200"
                             style={{
                               width: `${Math.min(item.pct || 0, 100)}%`,
                               backgroundColor: BAR_COLORS[i % BAR_COLORS.length],

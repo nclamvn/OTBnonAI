@@ -179,7 +179,7 @@ export const MobileCard: React.FC<MobileCardProps> = ({
             </div>
             <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-500"
+                className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all duration-200"
                 style={{ width: `${percentage}%` }}
               />
             </div>

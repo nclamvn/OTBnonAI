@@ -1473,9 +1473,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       {/* Filter Toolbar */}
       <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm relative ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
 
-        {/* ===== COLLAPSED BAR — silk-smooth premium transitions ===== */}
-        <div className={`overflow-hidden transform-gpu transition-[opacity,max-height,transform] duration-[400ms] ease-[cubic-bezier(0.22,0.68,0.35,1.0)] ${
-          barState === 'expanded' ? 'max-h-0 opacity-0 scale-[0.995] -translate-y-1 pointer-events-none' : 'max-h-14 opacity-100 scale-100 translate-y-0 delay-[50ms]'
+        {/* ===== COLLAPSED BAR ===== */}
+        <div className={`overflow-hidden transform-gpu transition-[opacity,max-height] duration-200 ease-out ${
+          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-14 opacity-100'
         }`}>
           <div onClick={handleBarClick} className={`cursor-pointer flex items-center gap-3 px-3 md:px-6 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}>
             <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
@@ -1500,12 +1500,12 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           </div>
         </div>{/* end collapsed bar outer */}
 
-        {/* ===== Gold accent line — grows from center on collapse ===== */}
-        <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[1.5px] bg-gradient-to-r from-transparent via-[#C4A77D] to-transparent transition-all duration-500 ease-[cubic-bezier(0.22,0.68,0.35,1.0)] ${barState !== 'expanded' ? 'w-full opacity-80' : 'w-0 opacity-0'}`} />
+        {/* ===== Gold accent line ===== */}
+        <div className={`absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C4A77D] to-transparent transition-opacity duration-150 ease-out ${barState !== 'expanded' ? 'opacity-80' : 'opacity-0'}`} />
 
-        {/* ===== EXPANDED SECTION — silk-smooth grid height animation ===== */}
+        {/* ===== EXPANDED SECTION ===== */}
         <div
-          className="grid transition-[grid-template-rows] duration-[350ms] ease-[cubic-bezier(0.22,0.68,0.35,1.0)]"
+          className="grid transition-[grid-template-rows] duration-200 ease-out"
           style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
         >
         <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>

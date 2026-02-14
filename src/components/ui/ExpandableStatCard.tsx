@@ -131,7 +131,7 @@ const ExpandableStatCard = ({
                 </div>
                 <div className={`h-1 rounded-full overflow-hidden ${darkMode ? 'bg-[#1E1E1E]' : 'bg-gray-200'}`}>
                   <div
-                    className="h-full rounded-full transition-all duration-700"
+                    className="h-full rounded-full transition-all duration-200"
                     style={{
                       width: `${Math.min(progress, 100)}%`,
                       backgroundColor: a.color,
@@ -212,7 +212,7 @@ const ExpandableStatCard = ({
                     </div>
                     <div className={`h-0.5 rounded-full overflow-hidden mt-0.5 ${darkMode ? 'bg-[#1E1E1E]' : 'bg-gray-200'}`}>
                       <div
-                        className="h-full rounded-full transition-all duration-700"
+                        className="h-full rounded-full transition-all duration-200"
                         style={{
                           width: `${Math.min(pct, 100)}%`,
                           backgroundColor: item.color || BAR_COLORS[i % BAR_COLORS.length],

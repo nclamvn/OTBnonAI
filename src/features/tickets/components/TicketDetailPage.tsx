@@ -256,7 +256,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
       >
         {/* ===== FRONT FACE ===== */}
         <div
-          className={`group/card relative w-full rounded-2xl border overflow-hidden transition-all duration-500 ${
+          className={`group/card relative w-full rounded-2xl border overflow-hidden transition-all duration-200 ease-out ${
             darkMode
               ? 'bg-[#121212] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)] hover:shadow-[0_8px_32px_rgba(215,183,151,0.12)]'
               : 'bg-white border-[rgba(160,120,75,0.2)] hover:border-[rgba(160,120,75,0.5)] hover:shadow-[0_8px_32px_rgba(160,120,75,0.15)]'
@@ -278,7 +278,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
                 backgroundSize: '12px 12px',
               }}
             />
-            <div className="relative z-[1] transition-transform duration-500 group-hover/card:scale-105">
+            <div className="relative z-[1] transition-transform duration-200 ease-out group-hover/card:scale-105">
               <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={140} darkMode={darkMode} rounded="rounded-xl" />
             </div>
             <span className={`absolute top-3 right-3 px-2.5 py-1 text-[10px] font-semibold rounded-full z-[2] font-['Montserrat'] tracking-wide ${
@@ -445,7 +445,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
                       darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-100'
                     }`}>
                       <div
-                        className="h-full rounded-full transition-all duration-500"
+                        className="h-full rounded-full transition-all duration-200"
                         style={{ width: `${barWidth}%`, backgroundColor: store.color, opacity: 0.7 }}
                       />
                     </div>
