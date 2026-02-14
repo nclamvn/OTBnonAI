@@ -751,69 +751,13 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative ${darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'}`}>
+      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative transition-[transform,opacity] duration-200 ease-out ${
+        darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
+      } ${barState === 'collapsed' ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
 
-        {/* ===== COLLAPSED BAR ===== */}
-        <div className={`overflow-hidden transform-gpu transition-[opacity,max-height] duration-200 ease-out ${
-          barState === 'expanded' ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-14 opacity-100'
-        }`}>
-          <div
-            onClick={handleBarClick}
-            className={`cursor-pointer flex items-center gap-3 px-3 md:px-4 py-2 select-none ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.05)]'}`}
-          >
-            {/* Expand arrow */}
-            <ChevronDown size={20} className={`shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
-
-            {/* Filter badges */}
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className={`px-2 py-0.5 rounded text-[11px] font-medium truncate max-w-[120px] ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                {budgetDisplayName}
-              </span>
-              <span className={`px-2 py-0.5 rounded text-[11px] font-medium shrink-0 ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                {currentVersionLabel}
-              </span>
-              <span className={`px-2 py-0.5 rounded text-[11px] font-medium shrink-0 hidden md:inline ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(215,183,151,0.4)] text-[#6B4D30]'}`}>
-                {currentChoiceLabel}
-              </span>
-            </div>
-
-            {/* Separator */}
-            <div className={`h-4 w-px shrink-0 hidden sm:block ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[rgba(215,183,151,0.3)]'}`} />
-
-            {/* Quick stats */}
-            <div className={`hidden sm:flex items-center gap-2 text-[11px] font-['JetBrains_Mono'] shrink-0 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-              <span>{filteredSkuItems.length} SKUs</span>
-              <span className={`hidden md:inline ${darkMode ? 'text-[#555]' : 'text-[#bbb]'}`}>|</span>
-              <span className="hidden md:inline">{filteredSkuBlocks.length} Rails</span>
-              <span className={`${darkMode ? 'text-[#555]' : 'text-[#bbb]'}`}>|</span>
-              <span>Order <span className={`font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{grandTotals.order}</span></span>
-            </div>
-
-            {/* Spacer */}
-            <div className="flex-1" />
-
-            {/* Value + View toggle */}
-            <div className="flex items-center gap-2 shrink-0">
-              <span className={`text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
-                {formatCurrency(grandTotals.ttlValue)}
-              </span>
-              <div className={`flex items-center gap-0.5 rounded-lg p-0.5 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}`} onClick={(e) => e.stopPropagation()}>
-                <button type="button" onClick={() => setViewMode('table')} className={`p-1 rounded-md transition-colors ${viewMode === 'table' ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm') : (darkMode ? 'text-[#999999]' : 'text-[#666666]')}`} title="Table"><List size={14} /></button>
-                <button type="button" onClick={() => canShowCardView && setViewMode('card')} disabled={!canShowCardView} className={`p-1 rounded-md transition-colors ${viewMode === 'card' ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-white text-[#6B4D30] shadow-sm') : (darkMode ? 'text-[#999999]' : 'text-[#666666]')} ${!canShowCardView ? 'opacity-50 cursor-not-allowed' : ''}`} title="Card"><LayoutGrid size={14} /></button>
-              </div>
-            </div>
-          </div>
-        </div>{/* end collapsed bar outer */}
-
-        {/* ===== Gold accent line ===== */}
-        <div className={`absolute bottom-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#C4A77D] to-transparent transition-opacity duration-150 ease-out ${barState !== 'expanded' ? 'opacity-80' : 'opacity-0'}`} />
-
-        {/* ===== EXPANDED SECTION ===== */}
-        <div
-          className="grid transition-[grid-template-rows] duration-200 ease-out"
-          style={{ gridTemplateRows: barState === 'expanded' ? '1fr' : '0fr' }}
-        >
-        <div className={`min-h-0 ${barState !== 'expanded' ? 'overflow-hidden pointer-events-none' : ''}`}>
+        {/* ===== FILTER CONTENT ===== */}
+        <div>
+        <div>
         <div className="p-2 md:p-3">
         <div className="flex flex-wrap items-center justify-between mb-2 gap-2">
 
