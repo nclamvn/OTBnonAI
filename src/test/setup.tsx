@@ -101,13 +101,31 @@ afterAll(() => {
   vi.restoreAllMocks();
 });
 
+// ─── Mock react-hot-toast ────────────────────────────────────────
+vi.mock('react-hot-toast', () => ({
+  default: {
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  },
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  },
+  Toaster: () => null,
+}));
+
 // ─── Console error suppression for expected errors ──────────────
 const originalError = console.error;
 console.error = (...args: unknown[]) => {
   // Suppress React act() warnings in tests
   if (
     typeof args[0] === 'string' &&
-    args[0].includes('Warning: ReactDOM.render is no longer supported')
+    (args[0].includes('Warning: ReactDOM.render is no longer supported') ||
+     args[0].includes('act('))
   ) {
     return;
   }

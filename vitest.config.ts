@@ -10,7 +10,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/test/setup.tsx'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
-    exclude: ['node_modules', '.next', 'backend', '.migration-backup'],
+    exclude: ['node_modules', '.next', 'backend', '.migration-backup', 'e2e'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
@@ -24,10 +24,10 @@ export default defineConfig({
       ],
       thresholds: {
         global: {
-          branches: 60,
-          functions: 60,
-          lines: 60,
-          statements: 60,
+          branches: 70,
+          functions: 70,
+          lines: 70,
+          statements: 70,
         },
       },
     },

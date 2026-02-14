@@ -1,6 +1,8 @@
 // src/test/utils.tsx
-import { render, RenderOptions } from '@testing-library/react';
+import { render, renderHook as rtlRenderHook, RenderOptions, RenderHookOptions } from '@testing-library/react';
 import { ReactElement, ReactNode } from 'react';
+import { AuthProvider } from '../contexts/AuthContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
 
 // ─── Mock Data Factory ──────────────────────────────────────────
 
@@ -181,9 +183,20 @@ interface WrapperProps {
   children: ReactNode;
 }
 
-// Basic wrapper - extend as needed with actual providers
+// Basic wrapper - no providers (for unit tests that mock everything)
 const AllTheProviders = ({ children }: WrapperProps) => {
   return <>{children}</>;
+};
+
+// Full wrapper with providers (for integration tests)
+const AllTheProvidersWithContext = ({ children }: WrapperProps) => {
+  return (
+    <LanguageProvider>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </LanguageProvider>
+  );
 };
 
 const customRender = (
@@ -191,8 +204,27 @@ const customRender = (
   options?: Omit<RenderOptions, 'wrapper'>
 ) => render(ui, { wrapper: AllTheProviders, ...options });
 
+const customRenderWithProviders = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>
+) => render(ui, { wrapper: AllTheProvidersWithContext, ...options });
+
+// renderHook wrapper for testing hooks
+const customRenderHook = <TResult, TProps>(
+  hook: (props: TProps) => TResult,
+  options?: Omit<RenderHookOptions<TProps>, 'wrapper'>
+) => rtlRenderHook(hook, { wrapper: AllTheProviders, ...options });
+
+const customRenderHookWithProviders = <TResult, TProps>(
+  hook: (props: TProps) => TResult,
+  options?: Omit<RenderHookOptions<TProps>, 'wrapper'>
+) => rtlRenderHook(hook, { wrapper: AllTheProvidersWithContext, ...options });
+
 export * from '@testing-library/react';
 export { customRender as render };
+export { customRenderWithProviders as renderWithProviders };
+export { customRenderHook as renderHook };
+export { customRenderHookWithProviders as renderHookWithProviders };
 
 // ─── Wait Helpers ───────────────────────────────────────────────
 
@@ -200,4 +232,4 @@ export const waitForLoadingToFinish = () =>
   new Promise((resolve) => setTimeout(resolve, 0));
 
 export const flushPromises = () =>
-  new Promise((resolve) => setImmediate(resolve));
+  new Promise((resolve) => setTimeout(resolve, 0));

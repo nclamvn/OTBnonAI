@@ -190,6 +190,7 @@ const LoginScreen = () => {
             {/* Email */}
             <div className="relative mb-[18px]">
               <input
+                data-testid="email-input"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -219,6 +220,7 @@ const LoginScreen = () => {
             {/* Password */}
             <div className="relative mb-[18px]">
               <input
+                data-testid="password-input"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -251,7 +253,7 @@ const LoginScreen = () => {
 
             {/* Error */}
             {localError && (
-              <div className="mb-4 p-3 rounded-xl text-sm text-red-600 border"
+              <div data-testid="error-message" className="mb-4 p-3 rounded-xl text-sm text-red-600 border"
                 style={{ background: 'rgba(220, 38, 38, 0.06)', borderColor: 'rgba(220, 38, 38, 0.15)' }}>
                 {localError}
               </div>
@@ -283,6 +285,7 @@ const LoginScreen = () => {
 
             {/* Submit */}
             <button
+              data-testid="submit-button"
               type="submit"
               disabled={loading}
               className="w-full py-[18px] rounded-[14px] text-white text-[12px] font-medium tracking-[0.25em] uppercase cursor-pointer relative overflow-hidden transition-all duration-400 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-px"
