@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import {
   FileText, Clock, CheckCircle, XCircle,
   ArrowRight, Building2, Star

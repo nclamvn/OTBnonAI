@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { formatCurrency } from '../../../utils';
 import { STORES, GENDERS } from '../../../utils/constants';
 import { budgetService, masterDataService, planningService } from '../../../services';
-import { FilterBottomSheet, FilterChips, useBottomSheet } from '@/components/mobile';
+import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';

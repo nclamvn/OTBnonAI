@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowUpRight, ChevronDown, TrendingUp, TrendingDown } from 'lucide-react';
+import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const BAR_COLORS = ['#D7B797', '#2A9E6A', '#58A6FF', '#F87171', '#F59E0B', '#14B8A6', '#A78BFA'];

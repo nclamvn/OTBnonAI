@@ -23,7 +23,7 @@ import { budgetService, masterDataService } from '../services';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import KPIDetailModal from '../components/ui/KPIDetailModal';
-import { PullToRefresh, FilterChips, useBottomSheet, FilterBottomSheet } from '../components/mobile';
+import { FilterChips, useBottomSheet, FilterBottomSheet } from '../components/mobile';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 const STAT_ACCENTS = {

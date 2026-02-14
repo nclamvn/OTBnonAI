@@ -2,7 +2,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // Error Message Component
 // ═══════════════════════════════════════════════════════════════════════════
-import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 

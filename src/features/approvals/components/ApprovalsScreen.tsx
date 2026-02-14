@@ -11,9 +11,8 @@ import { useRouter } from 'next/navigation';
 import { approvalService } from '../../../services';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency } from '../../../utils';
-import { ExpandableStatCard, SwipeAction } from '../../../components/ui';
-import { MobileList, FilterChips, FilterBottomSheet, PullToRefresh, useBottomSheet } from '../../../components/mobile';
+import { ExpandableStatCard } from '../../../components/ui';
+import { MobileList, FilterBottomSheet, PullToRefresh, useBottomSheet } from '../../../components/mobile';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════

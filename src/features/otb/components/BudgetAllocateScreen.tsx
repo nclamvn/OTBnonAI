@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, useCallback, Fragment } from 'react';
+import { useState, useRef, useEffect, useMemo, Fragment } from 'react';
 import {
   DollarSign, Sparkles, Filter, Clock, ChevronDown, Check,
   ChevronRight, TrendingUp, Sun, Snowflake,
@@ -13,7 +13,7 @@ import { budgetService, masterDataService, planningService } from '../../../serv
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
-import { FilterBottomSheet, FilterChips, useBottomSheet } from '@/components/mobile';
+import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 
 // Constants - same as BudgetManagementScreen
 const YEARS = [2023, 2024, 2025, 2026];

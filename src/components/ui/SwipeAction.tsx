@@ -1,6 +1,6 @@
 'use client';
 import { useRef, useState } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 
 const SWIPE_THRESHOLD = 80;

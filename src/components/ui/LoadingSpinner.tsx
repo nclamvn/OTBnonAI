@@ -2,7 +2,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // Loading Spinner Component
 // ═══════════════════════════════════════════════════════════════════════════
-import React from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const LoadingSpinner = ({ darkMode = true, size = 'md', message }: any) => {

@@ -14,7 +14,7 @@ import { budgetService, masterDataService, proposalService } from '../../../serv
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
-import { FilterBottomSheet, FilterChips, useBottomSheet } from '@/components/mobile';
+import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { SlidersHorizontal } from 'lucide-react';
 
 const SEASON_GROUPS = [

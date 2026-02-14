@@ -2,7 +2,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // Empty State Component
 // ═══════════════════════════════════════════════════════════════════════════
-import React from 'react';
 import { Inbox, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
