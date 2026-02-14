@@ -46,5 +46,5 @@ export function useSmartScrollState() {
     el.hidden = isCollapsed.current;
   }, []);
 
-  return { barRef, handleBarClick, isCollapsed };
+  return { barRef, handleBarClick };
 }

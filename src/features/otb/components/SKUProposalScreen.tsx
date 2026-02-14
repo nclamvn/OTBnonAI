@@ -259,7 +259,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const sizingVersionDropdownRef = useRef<any>(null);
 
   // Smart Filter Bar — direct DOM toggle, zero re-render
-  const { barRef, handleBarClick, isCollapsed: barCollapsed } = useSmartScrollState();
+  const { barRef, handleBarClick } = useSmartScrollState();
 
   // Close version dropdowns on outside click
   useEffect(() => {
@@ -416,35 +416,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [editValue, setEditValue] = useState('');
   const lightboxRef = useRef<HTMLDivElement>(null);
 
-  // ═══ CSS-native sticky Image rows — zero jitter, compositor-level ═══
-  // Track filter bar height + update sticky image rows directly (no re-render)
-  const stickyImageTopRef = useRef(0);
-  useEffect(() => {
-    const el = barRef.current;
-    if (!el) return;
-
-    const updateStickyRows = () => {
-      const barH = el.hidden ? 0 : el.offsetHeight;
-      const top = el.hidden ? 0 : (isMobile ? barH - 12 : barH - 24);
-      stickyImageTopRef.current = top;
-      // Update all sticky image rows directly in DOM
-      document.querySelectorAll('[data-sticky-image]').forEach((row) => {
-        (row as HTMLElement).style.top = `${top}px`;
-      });
-    };
-
-    updateStickyRows();
-
-    // Watch bar size changes
-    const ro = new ResizeObserver(updateStickyRows);
-    ro.observe(el);
-
-    // Watch hidden attribute changes
-    const mo = new MutationObserver(updateStickyRows);
-    mo.observe(el, { attributes: true, attributeFilter: ['hidden'] });
-
-    return () => { ro.disconnect(); mo.disconnect(); };
-  }, [barRef, isMobile]);
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
   const getDefaultSizing = () => {
@@ -1311,11 +1282,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                       return (
                     <table className={`w-full text-xs border-separate border-spacing-0 ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
                       <tbody>
-                        {/* Image row — CSS native sticky (zero jitter, compositor-level) */}
-                        <tr
-                          className={`${trCls('image')} sticky`}
-                          data-sticky-image style={{ top: stickyImageTopRef.current, zIndex: 20 }}
-                        >
+                        {/* Image row */}
+                        <tr className={trCls('image')}>
                           <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-2 text-center min-w-[140px] ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
