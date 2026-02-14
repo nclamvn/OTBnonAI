@@ -6,7 +6,7 @@ import { useEffect, useCallback, useRef } from 'react';
  */
 export function useSmartScrollState() {
   const barRef = useRef<HTMLDivElement>(null);
-  const collapsed = useRef(false);
+  const isCollapsed = useRef(false);
 
   useEffect(() => {
     const scrollEl = document.getElementById('main-scroll');
@@ -22,13 +22,13 @@ export function useSmartScrollState() {
 
       const scrollTop = scrollEl.scrollTop;
 
-      if (scrollTop < 10 && collapsed.current) {
-        collapsed.current = false;
+      if (scrollTop < 10 && isCollapsed.current) {
+        isCollapsed.current = false;
         el.hidden = false;
         locked = true;
         setTimeout(() => { locked = false; }, 80);
-      } else if (scrollTop > 40 && !collapsed.current) {
-        collapsed.current = true;
+      } else if (scrollTop > 40 && !isCollapsed.current) {
+        isCollapsed.current = true;
         el.hidden = true;
         locked = true;
         setTimeout(() => { locked = false; }, 80);
@@ -42,9 +42,9 @@ export function useSmartScrollState() {
   const handleBarClick = useCallback(() => {
     const el = barRef.current;
     if (!el) return;
-    collapsed.current = !collapsed.current;
-    el.hidden = collapsed.current;
+    isCollapsed.current = !isCollapsed.current;
+    el.hidden = isCollapsed.current;
   }, []);
 
-  return { barRef, handleBarClick };
+  return { barRef, handleBarClick, isCollapsed };
 }

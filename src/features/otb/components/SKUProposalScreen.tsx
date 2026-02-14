@@ -259,7 +259,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const sizingVersionDropdownRef = useRef<any>(null);
 
   // Smart Filter Bar — direct DOM toggle, zero re-render
-  const { barRef, handleBarClick } = useSmartScrollState();
+  const { barRef, handleBarClick, isCollapsed: barCollapsed } = useSmartScrollState();
 
   // Close version dropdowns on outside click
   useEffect(() => {
@@ -417,19 +417,34 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const lightboxRef = useRef<HTMLDivElement>(null);
 
   // ═══ CSS-native sticky Image rows — zero jitter, compositor-level ═══
-  // Track filter bar height for sticky top offset calculation
-  const [filterBarH, setFilterBarH] = useState(44);
+  // Track filter bar height + update sticky image rows directly (no re-render)
+  const stickyImageTopRef = useRef(0);
   useEffect(() => {
     const el = barRef.current;
     if (!el) return;
-    const update = () => setFilterBarH(el.offsetHeight);
-    update();
-    const ro = new ResizeObserver(update);
+
+    const updateStickyRows = () => {
+      const barH = el.hidden ? 0 : el.offsetHeight;
+      const top = el.hidden ? 0 : (isMobile ? barH - 12 : barH - 24);
+      stickyImageTopRef.current = top;
+      // Update all sticky image rows directly in DOM
+      document.querySelectorAll('[data-sticky-image]').forEach((row) => {
+        (row as HTMLElement).style.top = `${top}px`;
+      });
+    };
+
+    updateStickyRows();
+
+    // Watch bar size changes
+    const ro = new ResizeObserver(updateStickyRows);
     ro.observe(el);
-    return () => ro.disconnect();
-  }, [barRef]);
-  // sticky top = filterBar's sticky top (-12px mobile / -24px md) + filterBarH
-  const stickyImageTop = isMobile ? filterBarH - 12 : filterBarH - 24;
+
+    // Watch hidden attribute changes
+    const mo = new MutationObserver(updateStickyRows);
+    mo.observe(el, { attributes: true, attributeFilter: ['hidden'] });
+
+    return () => { ro.disconnect(); mo.disconnect(); };
+  }, [barRef, isMobile]);
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
   const getDefaultSizing = () => {
@@ -1299,7 +1314,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         {/* Image row — CSS native sticky (zero jitter, compositor-level) */}
                         <tr
                           className={`${trCls('image')} sticky`}
-                          style={{ top: stickyImageTop, zIndex: 20 }}
+                          data-sticky-image style={{ top: stickyImageTopRef.current, zIndex: 20 }}
                         >
                           <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
