@@ -13,7 +13,7 @@ export const approvalService = {
   async getPending() {
     // Aggregate from individual modules (direct /approvals/pending not yet implemented)
     {
-      const [budgets, plannings, proposals] = await Promise.all([
+      const [budgetsL1, budgetsL2, planningsL1, planningsL2, proposalsL1, proposalsL2] = await Promise.all([
         budgetService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
         budgetService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => ({ data: [] })),
         planningService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
@@ -24,8 +24,8 @@ export const approvalService = {
 
       const pending: any[] = [];
 
-      // Add budgets
-      [...(budgets.data || [])].forEach((b: any) => {
+      // Add budgets (L1 + L2)
+      [...(budgetsL1.data || []), ...(budgetsL2.data || [])].forEach((b: any) => {
         pending.push({
           entityType: 'budget',
           entityId: b.id,
@@ -35,8 +35,8 @@ export const approvalService = {
         });
       });
 
-      // Add plannings
-      [...(plannings.data || [])].forEach((p: any) => {
+      // Add plannings (L1 + L2)
+      [...(planningsL1.data || []), ...(planningsL2.data || [])].forEach((p: any) => {
         pending.push({
           entityType: 'planning',
           entityId: p.id,
@@ -46,8 +46,8 @@ export const approvalService = {
         });
       });
 
-      // Add proposals
-      [...(proposals.data || [])].forEach((p: any) => {
+      // Add proposals (L1 + L2)
+      [...(proposalsL1.data || []), ...(proposalsL2.data || [])].forEach((p: any) => {
         pending.push({
           entityType: 'proposal',
           entityId: p.id,

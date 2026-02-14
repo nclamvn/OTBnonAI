@@ -21,7 +21,7 @@ const TABS = [
 ];
 
 // Reusable editable cell component
-const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStartEdit, onSaveEdit, onChangeValue, onKeyDown, readOnly = false }: any) => {
+const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStartEdit, onSaveEdit, onChangeValue, onKeyDown, readOnly = false, darkMode = false }: any) => {
   const { t } = useLanguage();
   if (isEditing && !readOnly) {
     return (
@@ -32,7 +32,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
           onChange={(e) => onChangeValue(e.target.value)}
           onBlur={() => onSaveEdit(cellKey)}
           onKeyDown={(e) => onKeyDown(e, cellKey)}
-          className="w-20 px-2 py-0.5 text-center border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 bg-white text-slate-700 font-medium transition-all"
+          className={`w-20 px-2 py-0.5 text-center border-2 rounded-lg focus:outline-none focus:ring-2 font-medium transition-all ${darkMode ? 'border-[#D7B797] focus:ring-[#D7B797]/50 bg-[#1A1A1A] text-[#F2F2F2]' : 'border-blue-500 focus:ring-blue-400 bg-white text-slate-700'}`}
           autoFocus
         />
       </div>
@@ -42,8 +42,8 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
   if (readOnly) {
     return (
       <div className="flex items-center justify-center">
-        <div className="flex items-center gap-1.5 px-3 py-0.5 bg-slate-100 border border-slate-200 rounded-lg min-w-[70px] justify-center">
-          <span className="text-slate-600 font-medium">{typeof value === 'number' ? value.toFixed(0) : value}%</span>
+        <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-lg min-w-[70px] justify-center ${darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-slate-100 border border-slate-200'}`}>
+          <span className={`font-medium ${darkMode ? 'text-[#999999]' : 'text-slate-600'}`}>{typeof value === 'number' ? value.toFixed(0) : value}%</span>
         </div>
       </div>
     );
@@ -55,9 +55,9 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
       className="group flex items-center justify-center gap-1 cursor-pointer"
       title={t ? t('planningDetail.clickToEdit') : 'Click to edit'}
     >
-      <div className="flex items-center gap-1.5 px-3 py-0.5 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 hover:border-blue-300 transition-all min-w-[70px] justify-center">
-        <span className="text-slate-700 font-medium">{typeof value === 'number' ? value.toFixed(0) : value}%</span>
-        <Pencil size={12} className="text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className={`flex items-center gap-1.5 px-3 py-0.5 rounded-lg transition-all min-w-[70px] justify-center ${darkMode ? 'bg-[rgba(215,183,151,0.15)] border border-[rgba(215,183,151,0.3)] hover:bg-[rgba(215,183,151,0.25)] hover:border-[rgba(215,183,151,0.5)]' : 'bg-blue-50 border border-blue-200 hover:bg-blue-100 hover:border-blue-300'}`}>
+        <span className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-slate-700'}`}>{typeof value === 'number' ? value.toFixed(0) : value}%</span>
+        <Pencil size={12} className={`opacity-0 group-hover:opacity-100 transition-opacity ${darkMode ? 'text-[#D7B797]' : 'text-blue-400'}`} />
       </div>
     </div>
   );
@@ -84,11 +84,12 @@ const ApprovalStatusBadge = ({ status }: any) => {
 };
 
 const PlanningDetailPage = ({
-  selectedBudgetDetail,
-  planningDetailData,
+  selectedBudgetDetail: selectedBudgetDetailProp,
+  planningDetailData: planningDetailDataProp,
   onBack,
   onSave,
-  entityId
+  entityId,
+  darkMode
 }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
@@ -97,6 +98,58 @@ const PlanningDetailPage = ({
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
   const [localData, setLocalData] = useState<Record<string, any>>({});
+
+  // Fallback: fetch planning data by entityId if not passed via context
+  const [fetchedBudgetDetail, setFetchedBudgetDetail] = useState<any>(null);
+  const [fetchedPlanningData, setFetchedPlanningData] = useState<any>(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedBudgetDetailProp && entityId) {
+      const fetchPlanningById = async () => {
+        setFetchLoading(true);
+        try {
+          const planning = await planningService.getOne(entityId);
+          if (planning) {
+            const bd = planning.budgetDetail || {};
+            const budget = bd.budget || {};
+            const store = bd.store || {};
+            setFetchedBudgetDetail({
+              id: planning.budgetDetailId || bd.id || entityId,
+              budgetName: budget.budgetCode || planning.planningCode || 'Planning',
+              totalAmount: bd.budgetAmount || budget.totalBudget || 0,
+              storeName: store.name || '',
+              storeCode: store.code || '',
+              budget: budget,
+            });
+            setFetchedPlanningData(planning);
+          }
+        } catch (err: any) {
+          // silently fail - page shows "no data"
+        } finally {
+          setFetchLoading(false);
+        }
+      };
+      fetchPlanningById();
+    }
+  }, [selectedBudgetDetailProp, entityId]);
+
+  const selectedBudgetDetail = selectedBudgetDetailProp || fetchedBudgetDetail;
+  const planningDetailData = planningDetailDataProp || fetchedPlanningData;
+
+  // Theme helpers
+  const bgPage = darkMode ? 'bg-[#0A0A0A]' : 'bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30';
+  const cardBg = darkMode ? 'bg-[#121212]' : 'bg-white';
+  const borderColor = darkMode ? 'border-[#2E2E2E]' : 'border-slate-200';
+  const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-slate-800';
+  const textSecondary = darkMode ? 'text-[#999999]' : 'text-slate-600';
+  const textMuted = darkMode ? 'text-[#666666]' : 'text-slate-400';
+  const headerBg = darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-gradient-to-r from-blue-600 to-blue-500';
+  const headerText = darkMode ? 'text-[#F2F2F2]' : 'text-white';
+  const subtleBg = darkMode ? 'bg-[#1A1A1A]' : 'bg-slate-50';
+  const accentText = darkMode ? 'text-[#D7B797]' : 'text-blue-600';
+  const btnPrimary = darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682]' : 'bg-blue-600 text-white hover:bg-blue-700';
+  const hoverBg = darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-slate-100';
 
   // API data states
   const [categoryStructure, setCategoryStructure] = useState<any[]>([]);
@@ -521,10 +574,22 @@ const PlanningDetailPage = ({
   }, [planningDetailData]);
 
   // Common table styles - DAFC Design System warm beige
-  const headerClass = "bg-gradient-to-r from-[rgba(160,120,75,0.35)] to-[rgba(160,120,75,0.22)] text-[#5C4A32]";
+  const headerClass = darkMode
+    ? "bg-[rgba(215,183,151,0.15)] text-[#D7B797]"
+    : "bg-gradient-to-r from-[rgba(160,120,75,0.35)] to-[rgba(160,120,75,0.22)] text-[#5C4A32]";
   const headerCellClass = "px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wide";
-  const groupRowClass = "bg-gradient-to-r from-[rgba(160,120,75,0.18)] to-[rgba(160,120,75,0.1)] border-l-4 border-[#D7B797]";
-  const sumRowClass = "bg-gradient-to-r from-[rgba(160,120,75,0.28)] to-[rgba(160,120,75,0.22)] text-[#5C4A32] font-semibold";
+  const groupRowClass = darkMode
+    ? "bg-[rgba(215,183,151,0.08)] border-l-4 border-[#D7B797]"
+    : "bg-gradient-to-r from-[rgba(160,120,75,0.18)] to-[rgba(160,120,75,0.1)] border-l-4 border-[#D7B797]";
+  const sumRowClass = darkMode
+    ? "bg-[rgba(215,183,151,0.15)] text-[#D7B797] font-semibold"
+    : "bg-gradient-to-r from-[rgba(160,120,75,0.28)] to-[rgba(160,120,75,0.22)] text-[#5C4A32] font-semibold";
+  const tableRowClass = darkMode
+    ? `border-b border-[#2E2E2E] hover:bg-[#1A1A1A] transition-colors`
+    : `border-b border-slate-100 hover:bg-slate-50 transition-colors`;
+  const tableCellText = darkMode ? 'text-[#999999]' : 'text-slate-600';
+  const tableCellTextBold = darkMode ? 'text-[#F2F2F2]' : 'text-slate-700';
+  const groupLabelText = darkMode ? 'text-[#F2F2F2]' : 'text-slate-800';
 
   // Render Collection Tab
   const renderCollectionTab = () => {
@@ -574,8 +639,8 @@ const PlanningDetailPage = ({
                 <tr className={groupRowClass}>
                   <td className="px-4 py-0.5" colSpan={8}>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs uppercase tracking-wide text-slate-800">{colData.section.name}</span>
-                      <Info size={12} className="text-slate-400" />
+                      <span className={`font-semibold text-xs uppercase tracking-wide ${groupLabelText}`}>{colData.section.name}</span>
+                      <Info size={12} className={textMuted} />
                     </div>
                   </td>
                 </tr>
@@ -590,15 +655,15 @@ const PlanningDetailPage = ({
                   return (
                     <tr
                       key={cellKey}
-                      className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                      className={tableRowClass}
                     >
                       <td className="px-4 py-0.5 pl-8">
-                        <span className="text-slate-600">{storeRow.store.name}</span>
+                        <span className={tableCellText}>{storeRow.store.name}</span>
                       </td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.moc.toFixed(1)}</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.buyPct.toFixed(1)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.salesPct.toFixed(0)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.stPct.toFixed(0)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.moc.toFixed(1)}</td>
                       <td className={`px-4 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                         <EditableCell
                           cellKey={cellKey}
@@ -610,11 +675,12 @@ const PlanningDetailPage = ({
                           onChangeValue={setEditValue}
                           onKeyDown={handleKeyDown}
                           readOnly={isReadOnly}
+                          darkMode={darkMode}
                         />
                       </td>
-                      <td className="px-4 py-0.5 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
+                      <td className={`px-4 py-0.5 text-center font-medium ${tableCellTextBold}`}>{formatCurrency(storeRow.otbValue)}</td>
                       <td className={`px-4 py-0.5 text-center font-medium ${
-                        variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : 'text-slate-600'
+                        variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : tableCellText
                       }`}>
                         {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
                       </td>
@@ -684,8 +750,8 @@ const PlanningDetailPage = ({
                 <tr className={groupRowClass}>
                   <td className="px-4 py-0.5" colSpan={7}>
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-xs uppercase tracking-wide text-slate-800">{genData.gender.name}</span>
-                      <Info size={12} className="text-slate-400" />
+                      <span className={`font-semibold text-xs uppercase tracking-wide ${groupLabelText}`}>{genData.gender.name}</span>
+                      <Info size={12} className={textMuted} />
                     </div>
                   </td>
                 </tr>
@@ -700,14 +766,14 @@ const PlanningDetailPage = ({
                   return (
                     <tr
                       key={cellKey}
-                      className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                      className={tableRowClass}
                     >
                       <td className="px-4 py-0.5 pl-8">
-                        <span className="text-slate-600">{storeRow.store.name}</span>
+                        <span className={tableCellText}>{storeRow.store.name}</span>
                       </td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.buyPct.toFixed(1)}%</td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.salesPct.toFixed(0)}%</td>
-                      <td className="px-4 py-0.5 text-center text-slate-600">{storeRow.stPct.toFixed(0)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.buyPct.toFixed(1)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.salesPct.toFixed(0)}%</td>
+                      <td className={`px-4 py-0.5 text-center ${tableCellText}`}>{storeRow.stPct.toFixed(0)}%</td>
                       <td className={`px-4 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                         <EditableCell
                           cellKey={cellKey}
@@ -719,11 +785,12 @@ const PlanningDetailPage = ({
                           onChangeValue={setEditValue}
                           onKeyDown={handleKeyDown}
                           readOnly={isReadOnly}
+                          darkMode={darkMode}
                         />
                       </td>
-                      <td className="px-4 py-0.5 text-center font-medium text-slate-700">{formatCurrency(storeRow.otbValue)}</td>
+                      <td className={`px-4 py-0.5 text-center font-medium ${tableCellTextBold}`}>{formatCurrency(storeRow.otbValue)}</td>
                       <td className={`px-4 py-0.5 text-center font-medium ${
-                        variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : 'text-slate-600'
+                        variance < 0 ? 'text-red-600' : variance > 0 ? 'text-green-600' : tableCellText
                       }`}>
                         {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
                       </td>
@@ -811,7 +878,7 @@ const PlanningDetailPage = ({
     return (
       <div className="p-2 md:p-4 space-y-3">
         {/* Filter Section */}
-        <div className="sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm bg-white/95 border-slate-200 px-3 md:px-6 py-1.5">
+        <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm px-3 md:px-6 py-1.5 ${darkMode ? 'bg-[#0A0A0A]/95 border-[#2E2E2E]' : 'bg-white/95 border-slate-200'}`}>
           <div className="flex items-end gap-2">
             {/* Gender Filter */}
             <div className="relative flex-1 min-w-0" ref={genderDropdownRef}>
@@ -822,23 +889,23 @@ const PlanningDetailPage = ({
                   setIsCategoryDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-pink-300 transition-all min-w-[90px]"
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 ${darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-white border border-slate-200'} rounded-md hover:border-pink-300 transition-all min-w-[90px]`}
               >
                 <Users size={12} className="text-pink-500" />
-                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
+                <span className={`text-xs font-medium ${tableCellTextBold} flex-1 text-left truncate`}>
                   {getSelectedLabel(filterOptions.genders, genderFilter)}
                 </span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`${textMuted} transition-transform ${isGenderDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isGenderDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden">
+                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-slate-200'} border-2 rounded-lg shadow-lg z-50 overflow-hidden`}>
                   {filterOptions.genders.map((option: any) => (
                     <div
                       key={option.id}
                       onClick={() => handleGenderFilterChange(option.id)}
-                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-pink-50 cursor-pointer transition-colors"
+                      className={`px-4 py-0.5 flex items-center gap-2 ${darkMode ? 'hover:bg-pink-500/10' : 'hover:bg-pink-50'} cursor-pointer transition-colors`}
                     >
-                      <span className={`text-sm ${genderFilter === option.id ? 'text-pink-600 font-semibold' : 'text-slate-700'}`}>
+                      <span className={`text-sm ${genderFilter === option.id ? 'text-pink-600 font-semibold' : tableCellTextBold}`}>
                         {option.name}
                       </span>
                       {genderFilter === option.id && <Check size={14} className="text-pink-500 ml-auto" />}
@@ -857,23 +924,23 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsSubCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-violet-300 transition-all min-w-[100px]"
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 ${darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-white border border-slate-200'} rounded-md hover:border-violet-300 transition-all min-w-[100px]`}
               >
                 <Tag size={12} className="text-violet-500" />
-                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
+                <span className={`text-xs font-medium ${tableCellTextBold} flex-1 text-left truncate`}>
                   {getSelectedLabel(filterOptions.categories, categoryFilter)}
                 </span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`${textMuted} transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
+                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-slate-200'} border-2 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto`}>
                   {filteredCategoryOptions.map((option: any) => (
                     <div
                       key={option.id}
                       onClick={() => handleCategoryFilterChange(option.id)}
-                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-violet-50 cursor-pointer transition-colors"
+                      className={`px-4 py-0.5 flex items-center gap-2 ${darkMode ? 'hover:bg-violet-500/10' : 'hover:bg-violet-50'} cursor-pointer transition-colors`}
                     >
-                      <span className={`text-sm ${categoryFilter === option.id ? 'text-violet-600 font-semibold' : 'text-slate-700'}`}>
+                      <span className={`text-sm ${categoryFilter === option.id ? 'text-violet-600 font-semibold' : tableCellTextBold}`}>
                         {option.name}
                       </span>
                       {categoryFilter === option.id && <Check size={14} className="text-violet-500 ml-auto" />}
@@ -892,23 +959,23 @@ const PlanningDetailPage = ({
                   setIsGenderDropdownOpen(false);
                   setIsCategoryDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 text-xs px-2 py-1 bg-white border border-slate-200 rounded-md hover:border-emerald-300 transition-all min-w-[100px]"
+                className={`flex items-center gap-1.5 text-xs px-2 py-1 ${darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-white border border-slate-200'} rounded-md hover:border-emerald-300 transition-all min-w-[100px]`}
               >
                 <Layers size={12} className="text-emerald-500" />
-                <span className="text-xs font-medium text-slate-700 flex-1 text-left truncate">
+                <span className={`text-xs font-medium ${tableCellTextBold} flex-1 text-left truncate`}>
                   {getSelectedLabel(filterOptions.subCategories, subCategoryFilter)}
                 </span>
-                <ChevronDown size={12} className={`text-slate-400 transition-transform ${isSubCategoryDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className={`${textMuted} transition-transform ${isSubCategoryDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
               {isSubCategoryDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full bg-white border-2 border-slate-200 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto">
+                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-slate-200'} border-2 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto`}>
                   {filteredSubCategoryOptions.map((option: any) => (
                     <div
                       key={option.id}
                       onClick={() => handleSubCategoryFilterChange(option.id)}
-                      className="px-4 py-0.5 flex items-center gap-2 hover:bg-emerald-50 cursor-pointer transition-colors"
+                      className={`px-4 py-0.5 flex items-center gap-2 ${darkMode ? 'hover:bg-emerald-500/10' : 'hover:bg-emerald-50'} cursor-pointer transition-colors`}
                     >
-                      <span className={`text-sm ${subCategoryFilter === option.id ? 'text-emerald-600 font-semibold' : 'text-slate-700'}`}>
+                      <span className={`text-sm ${subCategoryFilter === option.id ? 'text-emerald-600 font-semibold' : tableCellTextBold}`}>
                         {option.name}
                       </span>
                       {subCategoryFilter === option.id && <Check size={14} className="text-emerald-500 ml-auto" />}
@@ -926,7 +993,7 @@ const PlanningDetailPage = ({
                   setCategoryFilter('all');
                   setSubCategoryFilter('all');
                 }}
-                className="shrink-0 p-1 rounded transition-colors text-slate-400 hover:text-red-500 hover:bg-red-50"
+                className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#666666] hover:text-red-400 hover:bg-red-500/10' : 'text-slate-400 hover:text-red-500 hover:bg-red-50'}`}
                 title={t('common.clearAll')}
               >
                 <X size={14} />
@@ -942,7 +1009,7 @@ const PlanningDetailPage = ({
           const isFemale = genderGroup.gender.id === 'female';
 
           return (
-            <div key={genderGroup.gender.id} className="rounded-xl border-2 border-slate-200 overflow-hidden">
+            <div key={genderGroup.gender.id} className={`rounded-xl border-2 overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-slate-200'}`}>
               {/* Gender Header - Level 1 */}
               <div
                 onClick={() => toggleGenderExpanded(genderGroup.gender.id)}
@@ -974,14 +1041,14 @@ const PlanningDetailPage = ({
 
               {/* Gender Content */}
               {isGenderExpanded && (
-                <div className="p-3 space-y-2 bg-slate-50">
+                <div className={`p-3 space-y-2 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-slate-50'}`}>
                   {genderGroup.categories.map((cat: any, catIdx: any) => {
                     const catKey = `${genderGroup.gender.id}_${cat.id}`;
                     const isCatExpanded = expandedCategories[catKey] !== false;
                     const catTotals = calculateCategoryTotals(genderGroup.gender.id, cat);
 
                     return (
-                      <div key={cat.id} className="rounded-xl border border-slate-200 overflow-hidden bg-white">
+                      <div key={cat.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-slate-200'}`}>
                         {/* Category Header - Level 2 */}
                         <div
                           onClick={() => toggleCategoryExpanded(genderGroup.gender.id, cat.id)}
@@ -1006,11 +1073,11 @@ const PlanningDetailPage = ({
                             <span className={`font-semibold text-sm md:text-base ${catIdx % 2 === 0 ? 'text-violet-800' : 'text-amber-800'}`}>
                               {cat.name}
                             </span>
-                            <span className="ml-auto md:ml-0 text-slate-500 text-xs md:text-sm">
+                            <span className={`ml-auto md:ml-0 ${textMuted} text-xs md:text-sm`}>
                               {cat.subCategories.length} {t('planningDetail.subCategory').toLowerCase()}
                             </span>
                           </div>
-                          <div className="flex flex-wrap items-center gap-2 md:gap-4 md:ml-auto text-slate-600 text-xs md:text-sm pl-7 md:pl-0">
+                          <div className={`flex flex-wrap items-center gap-2 md:gap-4 md:ml-auto ${tableCellText} text-xs md:text-sm pl-7 md:pl-0`}>
                             <span>Buy: <strong>{catTotals.buyPct}%</strong></span>
                             <span>Proposed: <strong>{catTotals.buyProposed}%</strong></span>
                             <span>OTB: <strong>{catTotals.otbProposed.toLocaleString()}</strong></span>
@@ -1043,19 +1110,19 @@ const PlanningDetailPage = ({
                                   return (
                                     <tr
                                       key={subCat.id}
-                                      className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                                        subIdx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
+                                      className={`${darkMode ? 'border-b border-[#2E2E2E] hover:bg-[#1A1A1A]' : 'border-b border-slate-100 hover:bg-slate-50'} transition-colors ${
+                                        subIdx % 2 === 0 ? (darkMode ? 'bg-[#121212]' : 'bg-white') : (darkMode ? 'bg-[#0A0A0A]/50' : 'bg-slate-50/50')
                                       }`}
                                     >
                                       <td className="px-4 py-0.5">
                                         <div className="flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                          <span className="text-slate-700">{subCat.name}</span>
+                                          <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-[#666666]' : 'bg-slate-400'}`}></div>
+                                          <span className={tableCellTextBold}>{subCat.name}</span>
                                         </div>
                                       </td>
-                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.buyPct || 0}%</td>
-                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.salesPct || 0}%</td>
-                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.stPct || 0}%</td>
+                                      <td className={`px-3 py-0.5 text-center ${tableCellText}`}>{rowData.buyPct || 0}%</td>
+                                      <td className={`px-3 py-0.5 text-center ${tableCellText}`}>{rowData.salesPct || 0}%</td>
+                                      <td className={`px-3 py-0.5 text-center ${tableCellText}`}>{rowData.stPct || 0}%</td>
                                       <td className={`px-3 py-0.5 ${isReadOnly ? 'bg-[rgba(160,120,75,0.1)]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                                         <EditableCell
                                           cellKey={cellKey}
@@ -1069,7 +1136,7 @@ const PlanningDetailPage = ({
                                           readOnly={isReadOnly}
                                         />
                                       </td>
-                                      <td className="px-3 py-0.5 text-center text-slate-700 font-medium">
+                                      <td className={`px-3 py-0.5 text-center ${tableCellTextBold} font-medium`}>
                                         {(rowData.otbProposed || 0).toLocaleString()}
                                       </td>
                                       <td className={`px-3 py-0.5 text-center font-medium ${
@@ -1077,10 +1144,10 @@ const PlanningDetailPage = ({
                                       }`}>
                                         {(rowData.varPct || 0) > 0 ? '+' : ''}{rowData.varPct || 0}%
                                       </td>
-                                      <td className="px-3 py-0.5 text-center text-slate-600">
+                                      <td className={`px-3 py-0.5 text-center ${tableCellText}`}>
                                         {(rowData.otbSubmitted || 0).toLocaleString()}
                                       </td>
-                                      <td className="px-3 py-0.5 text-center text-slate-600">{rowData.buyActual || 0}%</td>
+                                      <td className={`px-3 py-0.5 text-center ${tableCellText}`}>{rowData.buyActual || 0}%</td>
                                     </tr>
                                   );
                                 })}
@@ -1143,7 +1210,7 @@ const PlanningDetailPage = ({
   const renderApprovalHistory = () => {
     if (!currentVersion) {
       return (
-        <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+        <div className={`flex flex-col items-center justify-center py-12 ${textMuted}`}>
           <FileText size={48} className="mb-4 opacity-50" />
           <p className="text-lg font-medium">{t('planningDetail.noApprovedVersions')}</p>
           <p className="text-sm">{t('planningDetail.editHint')}</p>
@@ -1154,37 +1221,37 @@ const PlanningDetailPage = ({
     return (
       <div className="space-y-3 md:space-y-6 animate-in fade-in slide-in-from-right duration-500">
         {/* Version Info */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-200">
+        <div className={`rounded-xl p-4 border ${darkMode ? 'bg-[rgba(215,183,151,0.08)] border-[#2E2E2E]' : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'}`}>
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-blue-500 rounded-lg">
-              <FileText size={20} className="text-white" />
+            <div className={`p-2 rounded-lg ${darkMode ? 'bg-[#D7B797]' : 'bg-blue-500'}`}>
+              <FileText size={20} className={darkMode ? 'text-[#0A0A0A]' : 'text-white'} />
             </div>
             <div>
-              <h4 className="font-bold text-blue-800">{t('common.version')} {currentVersion.versionNumber}</h4>
-              <p className="text-sm text-blue-600">{formatDate(currentVersion.createdAt)}</p>
+              <h4 className={`font-bold ${darkMode ? 'text-[#D7B797]' : 'text-blue-800'}`}>{t('common.version')} {currentVersion.versionNumber}</h4>
+              <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-blue-600'}`}>{formatDate(currentVersion.createdAt)}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-blue-700">
+          <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-blue-700'}`}>
             <User size={14} />
             <span>{t('budget.createdBy')}: <strong>{currentVersion.createdBy.name}</strong></span>
           </div>
         </div>
 
         {/* Level 1 Approvers */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className={`${cardBg} rounded-xl border ${borderColor} overflow-hidden`}>
           <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-0.5">
             <h4 className="font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={18} />
               {t('planningDetail.approve')} L1
             </h4>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-slate-100'}`}>
             {currentVersion.approvals.level1.map((approval: any, idx: any) => {
               const approver = getApproverInfo(approval.approverId, 1);
               return (
                 <div
                   key={approval.approverId}
-                  className="p-4 hover:bg-slate-50 transition-colors animate-in fade-in slide-in-from-left"
+                  className={`p-4 ${hoverBg} transition-colors animate-in fade-in slide-in-from-left`}
                   style={{ animationDelay: `${idx * 100}ms`, animationFillMode: 'backwards' }}
                 >
                   <div className="flex items-start gap-3">
@@ -1194,22 +1261,22 @@ const PlanningDetailPage = ({
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <div>
-                          <span className="font-semibold text-slate-800">{approver?.name}</span>
-                          <span className="text-sm text-slate-500 ml-2">({approver?.role})</span>
+                          <span className={`font-semibold ${textPrimary}`}>{approver?.name}</span>
+                          <span className={`text-sm ${textMuted} ml-2`}>({approver?.role})</span>
                         </div>
                         <ApprovalStatusBadge status={approval.status} />
                       </div>
                       {approval.approvedAt && (
-                        <div className="text-xs text-slate-500 flex items-center gap-1 mb-2">
+                        <div className={`text-xs ${textMuted} flex items-center gap-1 mb-2`}>
                           <Calendar size={12} />
                           {formatDate(approval.approvedAt)}
                         </div>
                       )}
                       {approval.comment && (
-                        <div className="bg-slate-100 rounded-lg p-3 mt-2">
+                        <div className={`rounded-lg p-3 mt-2 ${subtleBg}`}>
                           <div className="flex items-start gap-2">
-                            <MessageSquare size={14} className="text-slate-400 mt-0.5" />
-                            <p className="text-sm text-slate-600 italic">"{approval.comment}"</p>
+                            <MessageSquare size={14} className={`${textMuted} mt-0.5`} />
+                            <p className={`text-sm ${textSecondary} italic`}>"{approval.comment}"</p>
                           </div>
                         </div>
                       )}
@@ -1222,20 +1289,20 @@ const PlanningDetailPage = ({
         </div>
 
         {/* Level 2 Approvers */}
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <div className={`${cardBg} rounded-xl border ${borderColor} overflow-hidden`}>
           <div className="bg-gradient-to-r from-purple-500 to-indigo-500 px-4 py-0.5">
             <h4 className="font-bold text-white flex items-center gap-2">
               <CheckCircle2 size={18} />
               {t('planningDetail.approve')} L2
             </h4>
           </div>
-          <div className="divide-y divide-slate-100">
+          <div className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-slate-100'}`}>
             {currentVersion.approvals.level2.map((approval: any, idx: any) => {
               const approver = getApproverInfo(approval.approverId, 2);
               return (
                 <div
                   key={approval.approverId}
-                  className="p-4 hover:bg-slate-50 transition-colors animate-in fade-in slide-in-from-left"
+                  className={`p-4 ${hoverBg} transition-colors animate-in fade-in slide-in-from-left`}
                   style={{ animationDelay: `${(idx + 2) * 100}ms`, animationFillMode: 'backwards' }}
                 >
                   <div className="flex items-start gap-3">
@@ -1245,22 +1312,22 @@ const PlanningDetailPage = ({
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <div>
-                          <span className="font-semibold text-slate-800">{approver?.name}</span>
-                          <span className="text-sm text-slate-500 ml-2">({approver?.role})</span>
+                          <span className={`font-semibold ${textPrimary}`}>{approver?.name}</span>
+                          <span className={`text-sm ${textMuted} ml-2`}>({approver?.role})</span>
                         </div>
                         <ApprovalStatusBadge status={approval.status} />
                       </div>
                       {approval.approvedAt && (
-                        <div className="text-xs text-slate-500 flex items-center gap-1 mb-2">
+                        <div className={`text-xs ${textMuted} flex items-center gap-1 mb-2`}>
                           <Calendar size={12} />
                           {formatDate(approval.approvedAt)}
                         </div>
                       )}
                       {approval.comment && (
-                        <div className="bg-slate-100 rounded-lg p-3 mt-2">
+                        <div className={`rounded-lg p-3 mt-2 ${subtleBg}`}>
                           <div className="flex items-start gap-2">
-                            <MessageSquare size={14} className="text-slate-400 mt-0.5" />
-                            <p className="text-sm text-slate-600 italic">"{approval.comment}"</p>
+                            <MessageSquare size={14} className={`${textMuted} mt-0.5`} />
+                            <p className={`text-sm ${textSecondary} italic`}>"{approval.comment}"</p>
                           </div>
                         </div>
                       )}
@@ -1275,30 +1342,49 @@ const PlanningDetailPage = ({
     );
   };
 
-  if (!selectedBudgetDetail) return null;
+  if (!selectedBudgetDetail) {
+    if (fetchLoading) {
+      return (
+        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : 'bg-slate-50'}`}>
+          <div className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-slate-500'}`}>{t('common.loading') || 'Loading...'}</div>
+        </div>
+      );
+    }
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0A0A0A]' : 'bg-slate-50'}`}>
+        <div className="text-center">
+          <FileText size={40} className={darkMode ? 'text-[#666666] mx-auto mb-3' : 'text-slate-300 mx-auto mb-3'} />
+          <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-slate-500'}`}>{t('common.noData') || 'No planning data found'}</p>
+          <button onClick={onBack} className={`mt-4 px-4 py-2 rounded-lg text-sm font-medium ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2] hover:bg-[#2E2E2E]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
+            <ArrowLeft size={14} className="inline mr-2" />{t('common.back') || 'Back'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 animate-in fade-in duration-500 overflow-x-hidden">
+    <div className={`min-h-screen ${bgPage} overflow-x-hidden`}>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-500 px-3 md:px-8 py-0.5 md:py-6 shadow-xl relative z-50">
-        <div className="absolute inset-0 bg-white/5 backdrop-blur-xl"></div>
-        <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+      <div className={`${headerBg} px-3 md:px-8 py-0.5 md:py-6 shadow-xl relative z-50`}>
+        {!darkMode && <div className="absolute inset-0 bg-white/5 backdrop-blur-xl"></div>}
+        {!darkMode && <div className="absolute inset-0 animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>}
 
         <div className="relative flex flex-wrap items-center justify-between gap-3">
           {/* Left - Back & Title */}
           <div className="flex items-center gap-3 md:gap-6">
             <button
               onClick={onBack}
-              className="p-3 bg-white/20 hover:bg-white/30 rounded-xl text-white transition-all duration-300"
+              className={`p-3 rounded-xl transition-all duration-300 ${darkMode ? 'bg-[rgba(215,183,151,0.2)] hover:bg-[rgba(215,183,151,0.3)] text-[#F2F2F2]' : 'bg-white/20 hover:bg-white/30 text-white'}`}
             >
               <ArrowLeft size={24} />
             </button>
             <div>
-              <h1 className="text-lg md:text-2xl font-bold text-white flex items-center gap-2 md:gap-3">
-                <TrendingUp size={isMobile ? 22 : 28} className="animate-pulse" />
+              <h1 className={`text-lg md:text-2xl font-bold ${headerText} flex items-center gap-2 md:gap-3`}>
+                <TrendingUp size={isMobile ? 22 : 28} />
                 {t('planningDetail.title')}
               </h1>
-              <p className="text-blue-100 mt-1 text-xs md:text-base">
+              <p className={`mt-1 text-xs md:text-base ${darkMode ? 'text-[#999999]' : 'text-blue-100'}`}>
                 {selectedBudgetDetail.budget?.groupBrandName} - {selectedBudgetDetail.budget?.seasonGroupId} {selectedBudgetDetail.budget?.seasonName}
               </p>
             </div>
@@ -1306,14 +1392,14 @@ const PlanningDetailPage = ({
 
           {/* Center - Budget Info */}
           <div className="flex flex-wrap items-center gap-3 md:gap-8">
-            <div className="text-center px-3 md:px-6 py-0.5 bg-white/10 rounded-xl backdrop-blur-sm">
-              <div className="text-xs text-blue-100 uppercase tracking-wide">{t('planningDetail.totalBudget')}</div>
-              <div className="text-lg md:text-2xl font-bold text-white">
-                {formatCurrency(selectedBudgetDetail.budget?.totalBudget || 0)}
+            <div className={`text-center px-3 md:px-6 py-0.5 rounded-xl ${darkMode ? 'bg-[rgba(255,255,255,0.05)]' : 'bg-white/10 backdrop-blur-sm'}`}>
+              <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#666666]' : 'text-blue-100'}`}>{t('planningDetail.totalBudget')}</div>
+              <div className={`text-lg md:text-2xl font-bold ${headerText}`}>
+                {formatCurrency(selectedBudgetDetail.budget?.totalBudget || selectedBudgetDetail.totalAmount || 0)}
               </div>
             </div>
-            <div className="text-center px-3 md:px-6 py-0.5 bg-white/10 rounded-xl backdrop-blur-sm">
-              <div className="text-xs text-blue-100 uppercase tracking-wide">{t('planningDetail.allocated')}</div>
+            <div className={`text-center px-3 md:px-6 py-0.5 rounded-xl ${darkMode ? 'bg-[rgba(255,255,255,0.05)]' : 'bg-white/10 backdrop-blur-sm'}`}>
+              <div className={`text-xs uppercase tracking-wide ${darkMode ? 'text-[#666666]' : 'text-blue-100'}`}>{t('planningDetail.allocated')}</div>
               <div className="text-lg md:text-2xl font-bold text-emerald-300">
                 {formatCurrency(grandTotals.otbValue)}
               </div>
@@ -1346,7 +1432,7 @@ const PlanningDetailPage = ({
             </button>
 
             {isVersionDropdownOpen && (
-              <div className="absolute top-full right-0 mt-2 w-80 bg-white border-2 border-slate-200 rounded-xl shadow-2xl z-[99999] overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+              <div className={`absolute top-full right-0 mt-2 w-80 border-2 rounded-xl shadow-2xl z-[99999] overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-slate-200'}`}>
                 {/* Draft Option */}
                 <div
                   onClick={() => {
@@ -1355,26 +1441,26 @@ const PlanningDetailPage = ({
                   }}
                   className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
                     selectedVersion === 'draft'
-                      ? 'bg-amber-50 border-l-4 border-amber-400'
-                      : 'hover:bg-slate-50'
+                      ? (darkMode ? 'bg-amber-500/10 border-l-4 border-amber-400' : 'bg-amber-50 border-l-4 border-amber-400')
+                      : hoverBg
                   }`}
                 >
-                  <div className={`p-2 rounded-lg ${selectedVersion === 'draft' ? 'bg-amber-100' : 'bg-slate-100'}`}>
-                    <Sparkles size={18} className={selectedVersion === 'draft' ? 'text-amber-600' : 'text-slate-500'} />
+                  <div className={`p-2 rounded-lg ${selectedVersion === 'draft' ? 'bg-amber-100' : (darkMode ? 'bg-[#2E2E2E]' : 'bg-slate-100')}`}>
+                    <Sparkles size={18} className={selectedVersion === 'draft' ? 'text-amber-600' : textMuted} />
                   </div>
                   <div className="flex-1">
-                    <div className={`font-semibold ${selectedVersion === 'draft' ? 'text-amber-700' : 'text-slate-700'}`}>
+                    <div className={`font-semibold ${selectedVersion === 'draft' ? 'text-amber-700' : tableCellTextBold}`}>
                       {t('planningDetail.draftCurrent')}
                     </div>
-                    <div className="text-xs text-slate-500">{t('planningDetail.editableVersion')}</div>
+                    <div className={`text-xs ${textMuted}`}>{t('planningDetail.editableVersion')}</div>
                   </div>
                   {selectedVersion === 'draft' && <Check size={20} className="text-amber-500" />}
                 </div>
 
                 {/* Divider */}
                 {versions.length > 0 && (
-                  <div className="px-4 py-0.5 bg-slate-100 border-y border-slate-200">
-                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide flex items-center gap-2">
+                  <div className={`px-4 py-0.5 border-y ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-slate-100 border-slate-200'}`}>
+                    <span className={`text-xs font-semibold ${textMuted} uppercase tracking-wide flex items-center gap-2`}>
                       <History size={14} />
                       {t('planningDetail.approvedVersions')} ({versions.length})
                     </span>
@@ -1384,7 +1470,7 @@ const PlanningDetailPage = ({
                 {/* Version List */}
                 <div className="max-h-[250px] overflow-y-auto">
                   {versions.length === 0 ? (
-                    <div className="px-4 py-8 text-center text-slate-400">
+                    <div className={`px-4 py-8 text-center ${textMuted}`}>
                       <Clock size={32} className="mx-auto mb-2 opacity-50" />
                       <p className="text-sm">{t('planningDetail.noApprovedVersions')}</p>
                     </div>
@@ -1398,19 +1484,19 @@ const PlanningDetailPage = ({
                         }}
                         className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 ${
                           selectedVersion === version.id
-                            ? 'bg-emerald-50 border-l-4 border-emerald-400'
-                            : 'hover:bg-slate-50'
+                            ? (darkMode ? 'bg-emerald-500/10 border-l-4 border-emerald-400' : 'bg-emerald-50 border-l-4 border-emerald-400')
+                            : hoverBg
                         }`}
                         style={{ animationDelay: `${idx * 50}ms` }}
                       >
-                        <div className={`p-2 rounded-lg ${selectedVersion === version.id ? 'bg-emerald-100' : 'bg-slate-100'}`}>
-                          <CheckCircle2 size={18} className={selectedVersion === version.id ? 'text-emerald-600' : 'text-slate-500'} />
+                        <div className={`p-2 rounded-lg ${selectedVersion === version.id ? 'bg-emerald-100' : (darkMode ? 'bg-[#2E2E2E]' : 'bg-slate-100')}`}>
+                          <CheckCircle2 size={18} className={selectedVersion === version.id ? 'text-emerald-600' : textMuted} />
                         </div>
                         <div className="flex-1">
-                          <div className={`font-semibold ${selectedVersion === version.id ? 'text-emerald-700' : 'text-slate-700'}`}>
+                          <div className={`font-semibold ${selectedVersion === version.id ? 'text-emerald-700' : tableCellTextBold}`}>
                             {t('common.version')} {version.versionNumber}
                           </div>
-                          <div className="text-xs text-slate-500 flex items-center gap-1">
+                          <div className={`text-xs ${textMuted} flex items-center gap-1`}>
                             <Clock size={12} />
                             {formatDate(version.createdAt)}
                           </div>
@@ -1433,7 +1519,7 @@ const PlanningDetailPage = ({
           <span>{t('planningDetail.viewingApprovedVersion').replace('{{version}}', versions.find((v: any) => v.id === selectedVersion)?.versionNumber)}</span>
           <button
             onClick={() => setSelectedVersion('draft')}
-            className="ml-4 px-4 py-0.5 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200"
+            className={`ml-4 px-4 py-0.5 rounded-lg transition-all duration-200 ${darkMode ? 'bg-[rgba(215,183,151,0.2)] hover:bg-[rgba(215,183,151,0.3)]' : 'bg-white/20 hover:bg-white/30'}`}
           >
             {t('planningDetail.switchToDraft')}
           </button>
@@ -1443,9 +1529,9 @@ const PlanningDetailPage = ({
       {/* Main Content */}
       <div className="flex flex-col md:flex-row gap-3 md:gap-6 p-3 md:p-6 relative z-10 overflow-hidden">
         {/* Left - Tabs & Table Content */}
-        <div className="flex-1 min-w-0 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className={`flex-1 min-w-0 rounded-2xl shadow-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-slate-200'}`}>
           {/* Tabs */}
-          <div className="border-b border-slate-200 px-3 md:px-6 bg-slate-50">
+          <div className={`border-b px-3 md:px-6 ${darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-slate-200 bg-slate-50'}`}>
             <div className="flex gap-1">
               {TABS.map((tab: any) => {
                 const Icon = tab.icon;
@@ -1456,8 +1542,8 @@ const PlanningDetailPage = ({
                     onClick={() => setActiveTab(tab.id)}
                     className={`px-3 md:px-6 py-0.5 md:py-4 font-medium flex items-center gap-2 border-b-2 transition-all duration-200 ${
                       isActive
-                        ? 'border-blue-500 text-blue-600 bg-white -mb-px rounded-t-lg'
-                        : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-t-lg'
+                        ? (darkMode ? 'border-[#D7B797] text-[#D7B797] bg-[#121212] -mb-px rounded-t-lg' : 'border-blue-500 text-blue-600 bg-white -mb-px rounded-t-lg')
+                        : (darkMode ? 'border-transparent text-[#666666] hover:text-[#999999] hover:bg-[#1A1A1A] rounded-t-lg' : 'border-transparent text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-t-lg')
                     }`}
                   >
                     <Icon size={18} />
@@ -1470,7 +1556,7 @@ const PlanningDetailPage = ({
 
           {/* Hint for editable cells */}
           {!isReadOnly && (
-            <div className="px-3 md:px-6 py-0.5 bg-blue-50 border-b border-blue-100 flex items-center gap-2 text-sm text-blue-600">
+            <div className={`px-3 md:px-6 py-0.5 border-b flex items-center gap-2 text-sm ${darkMode ? 'bg-[rgba(215,183,151,0.08)] border-[#2E2E2E] text-[#D7B797]' : 'bg-blue-50 border-blue-100 text-blue-600'}`}>
               <Pencil size={14} className="animate-bounce" style={{ animationDuration: '2s' }} />
               <span>{t('planningDetail.editHint')}</span>
             </div>
@@ -1484,12 +1570,12 @@ const PlanningDetailPage = ({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-slate-200 px-3 md:px-6 py-0.5 md:py-4 flex flex-wrap items-center justify-between bg-slate-50 gap-3">
+          <div className={`border-t px-3 md:px-6 py-0.5 md:py-4 flex flex-wrap items-center justify-between gap-3 ${darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-slate-200 bg-slate-50'}`}>
             <div className="flex flex-wrap items-center gap-3 md:gap-6">
               {versions.length > 0 && (
                 <div className="text-sm">
-                  <span className="text-slate-500">{t('planningDetail.versions')}</span>
-                  <span className="ml-2 font-bold text-purple-600">{versions.length} {t('planningDetail.approved')}</span>
+                  <span className={textMuted}>{t('planningDetail.versions')}</span>
+                  <span className={`ml-2 font-bold ${accentText}`}>{versions.length} {t('planningDetail.approved')}</span>
                 </div>
               )}
             </div>
@@ -1524,8 +1610,8 @@ const PlanningDetailPage = ({
                 disabled={isReadOnly}
                 className={`px-4 md:px-6 py-0.5 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2 shadow-lg text-sm md:text-base ${
                   isReadOnly
-                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20 hover:shadow-xl'
+                    ? (darkMode ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed shadow-none' : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none')
+                    : (darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682] shadow-[#D7B797]/20 hover:shadow-xl' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20 hover:shadow-xl')
                 }`}
               >
                 <Save size={18} />
@@ -1536,8 +1622,8 @@ const PlanningDetailPage = ({
         </div>
 
         {/* Right - Approval History */}
-        <div className="w-full md:w-96 shrink-0 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col">
-          <div className="bg-gradient-to-r from-slate-700 to-slate-600 px-5 py-4 flex items-center gap-3">
+        <div className={`w-full md:w-96 shrink-0 rounded-2xl shadow-xl border overflow-hidden flex flex-col ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-slate-200'}`}>
+          <div className={`px-5 py-4 flex items-center gap-3 ${darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-gradient-to-r from-slate-700 to-slate-600'}`}>
             <History size={20} className="text-white" />
             <h3 className="font-bold text-white">{t('ticketDetail.approvalHistory')}</h3>
           </div>
@@ -1546,8 +1632,8 @@ const PlanningDetailPage = ({
           </div>
           {/* Conditional Approve/Reject Actions */}
           {pendingApproval && (
-            <div className="border-t border-slate-200 p-4 bg-slate-50 space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <div className={`border-t p-4 space-y-3 ${darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-slate-200 bg-slate-50'}`}>
+              <div className={`text-xs font-semibold uppercase tracking-wider ${textMuted} flex items-center gap-1.5`}>
                 <AlertCircle size={12} />
                 {t('approvals.level1Pending').replace('Level 1', `L${pendingApproval.level}`)} — {t('approvals.awaitingReview')}
               </div>
@@ -1555,7 +1641,7 @@ const PlanningDetailPage = ({
                 value={approvalComment}
                 onChange={(e) => setApprovalComment(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-sm outline-none resize-none focus:border-blue-400"
+                className={`w-full px-3 py-2 rounded-xl border text-sm outline-none resize-none ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] focus:border-[#D7B797]' : 'bg-white border-slate-200 focus:border-blue-400'}`}
                 placeholder={t('approvals.commentPlaceholder')}
               />
               <div className="flex gap-2">

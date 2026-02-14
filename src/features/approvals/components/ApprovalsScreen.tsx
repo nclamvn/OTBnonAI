@@ -39,11 +39,14 @@ const ENTITY_ICONS: any = {
 const getItemDisplayInfo = (item: any) => {
   const d = item.data || {};
   // Name: try common fields, then type-specific codes
-  const name = d.name || d.budgetName || d.planningName || d.proposalName
+  const name = d.name || d.budgetName || d.planningName || d.ticketName
     || d.budgetCode || d.planningCode || d.proposalCode
     || `${item.entityType} #${String(item.entityId).substring(0, 8)}`;
-  // Brand: try groupBrand (budgets/plannings), then brand (proposals)
-  const brand = d.groupBrand?.name || d.brand?.name || d.brandName || '-';
+  // Brand: try direct groupBrand, then nested paths for planning/proposal
+  const brand = d.groupBrand?.name
+    || d.budgetDetail?.budget?.groupBrand?.name
+    || d.budget?.groupBrand?.name
+    || d.brand?.name || d.brandName || '-';
   return { name, brand };
 };
 

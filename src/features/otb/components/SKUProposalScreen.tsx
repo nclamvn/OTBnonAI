@@ -269,6 +269,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       }
       if (sizingVersionDropdownRef.current && !sizingVersionDropdownRef.current.contains(e.target)) {
         setIsSizingVersionOpen(false);
+        setShowAddChoiceInput(false);
+        setNewChoiceName('');
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -286,6 +288,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   };
 
   const [newChoiceName, setNewChoiceName] = useState('');
+  const [showAddChoiceInput, setShowAddChoiceInput] = useState(false);
 
   const handleAddChoice = () => {
     const name = newChoiceName.trim();
@@ -294,6 +297,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     setSizingChoices((prev: any) => [...prev, { id, name, isFinal: false }]);
     setSizingVersion(id);
     setNewChoiceName('');
+    setShowAddChoiceInput(false);
     setIsSizingVersionOpen(false);
   };
 
@@ -966,80 +970,75 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 </button>
 
                 {isSizingVersionOpen && (
-                  <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
-                    <div className={`px-3 py-0.5 border-b ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[rgba(215,183,151,0.2)]'}`}>
-                      <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('skuProposal.sizing')}</span>
-                    </div>
+                  <div className={`absolute top-full left-0 mt-1 min-w-[260px] rounded-xl shadow-xl border z-50 overflow-hidden ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
                     {sizingChoices.map((choice: any) => (
-                      <button
+                      <div
                         key={choice.id}
-                        type="button"
-                        onClick={() => { setSizingVersion(choice.id); setIsSizingVersionOpen(false); }}
-                        className={`w-full px-3 py-0.5 flex items-center justify-between transition-colors ${
+                        className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors border-b last:border-b-0 ${
                           choice.id === sizingVersion
-                            ? darkMode ? 'bg-[rgba(215,183,151,0.1)]' : 'bg-[rgba(160,120,75,0.12)]'
-                            : darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.08)]'
+                            ? darkMode ? 'bg-[rgba(215,183,151,0.1)] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.08)] border-[#E8E0D8]'
+                            : darkMode ? 'hover:bg-[rgba(255,255,255,0.03)] border-[#2E2E2E]' : 'hover:bg-gray-50 border-[#E8E0D8]'
                         }`}
+                        onClick={() => { setSizingVersion(choice.id); setIsSizingVersionOpen(false); }}
                       >
+                        <span className={`text-sm font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{choice.name}</span>
                         <div className="flex items-center gap-2">
-                          {choice.isFinal
-                            ? <Star size={14} className={darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'} />
-                            : <Layers size={14} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                          }
-                          <div className="flex items-center gap-2">
-                            <span className={`text-sm font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{choice.name}</span>
-                            {choice.isFinal && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]">FINAL</span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {!choice.isFinal && (
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={(e) => handleSetFinalSizing(choice.id, e)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleSetFinalSizing(choice.id, e); }}
-                              className={`text-xs px-2 py-0.5 rounded transition-colors cursor-pointer ${darkMode ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'}`}
-                            >
-                              {t('planning.latestVersion')}
-                            </span>
-                          )}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); if (!choice.isFinal) handleSetFinalSizing(choice.id, e); }}
+                            className={`px-3 py-1 text-xs font-semibold rounded border transition-colors ${
+                              choice.isFinal
+                                ? darkMode ? 'bg-[#D7B797] text-[#0A0A0A] border-[#D7B797]' : 'bg-[#333333] text-white border-[#333333]'
+                                : darkMode ? 'bg-transparent text-[#999999] border-[#444444] hover:border-[#D7B797] hover:text-[#D7B797]' : 'bg-transparent text-[#666666] border-[#C4B5A5] hover:border-[#333333] hover:text-[#333333]'
+                            }`}
+                          >
+                            Final
+                          </button>
                           {sizingChoices.length > 1 && !choice.isFinal && (
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={(e) => handleDeleteChoice(choice.id, e)}
-                              onKeyDown={(e) => { if (e.key === 'Enter') handleDeleteChoice(choice.id, e); }}
-                              className="text-xs p-0.5 rounded transition-colors cursor-pointer text-red-400 hover:bg-red-50 hover:text-red-600"
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); handleDeleteChoice(choice.id, e); }}
+                              className="p-1 rounded transition-colors text-red-400 hover:bg-red-50 hover:text-red-600"
                             >
-                              <Trash2 size={12} />
-                            </span>
+                              <Trash2 size={14} />
+                            </button>
                           )}
-                          {choice.id === sizingVersion && <Check size={16} className="text-[#2A9E6A]" />}
                         </div>
-                      </button>
+                      </div>
                     ))}
                     {/* Add new choice */}
-                    <div className={`px-3 py-2 border-t flex items-center gap-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.2)]'}`}>
-                      <input
-                        type="text"
-                        value={newChoiceName}
-                        onChange={(e) => setNewChoiceName(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') handleAddChoice(); }}
-                        placeholder={t('common.addNew') || 'New choice...'}
-                        className={`flex-1 px-2 py-1 text-sm rounded-lg border outline-none ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] placeholder:text-[#666666]' : 'bg-gray-50 border-gray-200 text-gray-800 placeholder:text-gray-400'}`}
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                    {showAddChoiceInput ? (
+                      <div className={`px-4 py-3 border-t flex items-center gap-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[#E8E0D8]'}`}>
+                        <input
+                          type="text"
+                          autoFocus
+                          value={newChoiceName}
+                          onChange={(e) => setNewChoiceName(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleAddChoice(); if (e.key === 'Escape') { setShowAddChoiceInput(false); setNewChoiceName(''); } }}
+                          placeholder="Choice name..."
+                          className={`flex-1 px-3 py-1.5 text-sm rounded-lg border outline-none ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] placeholder:text-[#666666]' : 'bg-gray-50 border-[#C4B5A5] text-gray-800 placeholder:text-gray-400'}`}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleAddChoice(); }}
+                          disabled={!newChoiceName.trim()}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${newChoiceName.trim() ? (darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682]' : 'bg-[#333333] text-white hover:bg-[#222222]') : 'opacity-30 cursor-not-allowed bg-gray-300 text-gray-500'}`}
+                        >
+                          Add
+                        </button>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); handleAddChoice(); }}
-                        disabled={!newChoiceName.trim()}
-                        className={`p-1.5 rounded-lg transition-colors ${newChoiceName.trim() ? (darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(160,120,75,0.15)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.25)]') : 'opacity-30 cursor-not-allowed text-gray-400'}`}
+                        onClick={(e) => { e.stopPropagation(); setShowAddChoiceInput(true); }}
+                        className={`w-full px-4 py-3 text-sm font-medium text-center border-t transition-colors ${
+                          darkMode ? 'border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797]' : 'border-[#E8E0D8] text-[#666666] hover:bg-gray-50 hover:text-[#333333]'
+                        }`}
                       >
-                        <Plus size={14} />
+                        Add new choice
                       </button>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>

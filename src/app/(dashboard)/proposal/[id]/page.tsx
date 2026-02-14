@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAppContext } from '@/contexts/AppContext';
+import { proposalService } from '@/services';
 import ProposalDetailPage from '@/screens/ProposalDetailPage';
 
 export default function ProposalDetailRoute() {
@@ -11,16 +12,21 @@ export default function ProposalDetailRoute() {
   const [proposal, setProposal] = useState<any>(null);
 
   useEffect(() => {
-    // Try to get proposal data from sessionStorage
+    // Try to get proposal data from sessionStorage first
     const stored = sessionStorage.getItem('selectedProposal');
     if (stored) {
       setProposal(JSON.parse(stored));
+    } else if (params.id) {
+      // Fallback: fetch from API (e.g. navigating from Approvals)
+      proposalService.getOne(params.id as string)
+        .then((data: any) => setProposal(data))
+        .catch(() => {});
     }
   }, [params.id]);
 
   const handleBack = () => {
     sessionStorage.removeItem('selectedProposal');
-    router.push('/proposal');
+    router.back();
   };
 
   const handleSave = (_data: any) => {
