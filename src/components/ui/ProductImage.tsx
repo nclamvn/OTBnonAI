@@ -8,7 +8,7 @@ import { getDemoImageSvg } from '../../utils';
 interface ProductImageProps {
   subCategory: string;
   sku: string;
-  size?: 40 | 48 | 56 | 64;
+  size?: 40 | 48 | 56 | 64 | 140;
   darkMode?: boolean;
   rounded?: string;
 }
@@ -18,6 +18,7 @@ const sizeMap: Record<number, string> = {
   48: 'w-12 h-12',
   56: 'w-14 h-14',
   64: 'w-16 h-16',
+  140: 'w-[140px] h-[140px]',
 };
 
 /* ── Premium Image Editor Popup ─────────────────────────── */
