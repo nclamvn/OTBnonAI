@@ -1,38 +1,37 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-
-type BarState = 'expanded' | 'collapsed';
+import { useEffect, useCallback, useRef } from 'react';
 
 /**
- * Instant scroll-based filter bar hide/show.
- * No animation, no RAF batching — pure speed.
- * Hysteresis only: show at top (< 10px), hide when scrolled (> 40px).
+ * Zero-lag filter bar hide/show.
+ * Directly toggles DOM `hidden` attribute — no React re-render.
  */
 export function useSmartScrollState() {
-  const [barState, setBarState] = useState<BarState>('expanded');
-  const lockedUntil = useRef(0);
+  const barRef = useRef<HTMLDivElement>(null);
+  const collapsed = useRef(false);
 
   useEffect(() => {
     const scrollEl = document.getElementById('main-scroll');
     if (!scrollEl) return;
 
+    let locked = false;
+
     const handleScroll = () => {
-      const now = performance.now();
-      if (now < lockedUntil.current) return;
+      if (locked) return;
+
+      const el = barRef.current;
+      if (!el) return;
 
       const scrollTop = scrollEl.scrollTop;
 
-      if (scrollTop < 10) {
-        setBarState(prev => {
-          if (prev === 'expanded') return prev;
-          lockedUntil.current = performance.now() + 100;
-          return 'expanded';
-        });
-      } else if (scrollTop > 40) {
-        setBarState(prev => {
-          if (prev === 'collapsed') return prev;
-          lockedUntil.current = performance.now() + 100;
-          return 'collapsed';
-        });
+      if (scrollTop < 10 && collapsed.current) {
+        collapsed.current = false;
+        el.hidden = false;
+        locked = true;
+        setTimeout(() => { locked = false; }, 80);
+      } else if (scrollTop > 40 && !collapsed.current) {
+        collapsed.current = true;
+        el.hidden = true;
+        locked = true;
+        setTimeout(() => { locked = false; }, 80);
       }
     };
 
@@ -41,12 +40,11 @@ export function useSmartScrollState() {
   }, []);
 
   const handleBarClick = useCallback(() => {
-    setBarState(prev => {
-      const next: BarState = prev === 'collapsed' ? 'expanded' : 'collapsed';
-      lockedUntil.current = performance.now() + 200;
-      return next;
-    });
+    const el = barRef.current;
+    if (!el) return;
+    collapsed.current = !collapsed.current;
+    el.hidden = collapsed.current;
   }, []);
 
-  return { barState, handleBarClick };
+  return { barRef, handleBarClick };
 }

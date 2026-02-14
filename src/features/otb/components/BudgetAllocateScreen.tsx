@@ -174,8 +174,8 @@ const BudgetAllocateScreen = ({
 
   // Budget name dropdown state
   const [isBudgetNameDropdownOpen, setIsBudgetNameDropdownOpen] = useState(false);
-  // Smart Filter Bar — anti-jitter scroll hook
-  const { barState, handleBarClick } = useSmartScrollState();
+  // Smart Filter Bar — direct DOM toggle, zero re-render
+  const { barRef, handleBarClick } = useSmartScrollState();
 
   // Store allocation data locally to survive the race condition with API fetch
   const [pendingAllocation, setPendingAllocation] = useState<any>(null);
@@ -649,9 +649,9 @@ const BudgetAllocateScreen = ({
   return (
     <>
       {/* Header Section — hides entirely on scroll */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
+      <div ref={barRef} className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
-      } ${barState === 'collapsed' ? 'hidden' : ''}`}>
+      }`}>
 
         {/* ===== FILTER CONTENT ===== */}
         <div>

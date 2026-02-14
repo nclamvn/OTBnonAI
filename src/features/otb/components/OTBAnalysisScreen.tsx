@@ -163,8 +163,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
   const [seasonCount, setSeasonCount] = useState<number>(1);
 
-  // Smart Filter Bar — anti-jitter scroll hook
-  const { barState, handleBarClick } = useSmartScrollState();
+  // Smart Filter Bar — direct DOM toggle, zero re-render
+  const { barRef, handleBarClick } = useSmartScrollState();
 
   // Auto-select first budget when budgets are loaded and none selected
   useEffect(() => {
@@ -1471,9 +1471,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   return (
     <div className="space-y-2">
       {/* Filter Toolbar — hides entirely on scroll */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm relative ${
+      <div ref={barRef} className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 border-b backdrop-blur-sm relative ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
-      } ${barState === 'collapsed' ? 'hidden' : ''}`}>
+      }`}>
 
         {/* ===== FILTER CONTENT ===== */}
         <div>

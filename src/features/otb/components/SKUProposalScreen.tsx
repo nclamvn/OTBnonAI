@@ -258,8 +258,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const skuVersionDropdownRef = useRef<any>(null);
   const sizingVersionDropdownRef = useRef<any>(null);
 
-  // Smart Filter Bar — anti-jitter scroll hook
-  const { barState, handleBarClick } = useSmartScrollState();
+  // Smart Filter Bar — direct DOM toggle, zero re-render
+  const { barRef, handleBarClick } = useSmartScrollState();
 
   // Close version dropdowns on outside click
   useEffect(() => {
@@ -418,17 +418,16 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   // ═══ CSS-native sticky Image rows — zero jitter, compositor-level ═══
   // Track filter bar height for sticky top offset calculation
-  const filterBarRef = useRef<HTMLDivElement>(null);
   const [filterBarH, setFilterBarH] = useState(44);
   useEffect(() => {
-    const el = filterBarRef.current;
+    const el = barRef.current;
     if (!el) return;
     const update = () => setFilterBarH(el.offsetHeight);
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [barState]);
+  }, [barRef]);
   // sticky top = filterBar's sticky top (-12px mobile / -24px md) + filterBarH
   const stickyImageTop = isMobile ? filterBarH - 12 : filterBarH - 24;
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
@@ -751,9 +750,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative ${
+      <div ref={barRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
-      } ${barState === 'collapsed' ? 'hidden' : ''}`}>
+      }`}>
 
         {/* ===== FILTER CONTENT ===== */}
         <div>
