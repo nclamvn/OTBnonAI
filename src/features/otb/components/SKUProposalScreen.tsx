@@ -751,9 +751,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   return (
     <div className="space-y-2 md:space-y-3">
-      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative transition-[transform,opacity] duration-200 ease-out ${
+      <div ref={filterBarRef} data-filter-bar className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-1 md:mb-2 backdrop-blur-sm border-b relative ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
-      } ${barState === 'collapsed' ? '-translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+      } ${barState === 'collapsed' ? 'hidden' : ''}`}>
 
         {/* ===== FILTER CONTENT ===== */}
         <div>
