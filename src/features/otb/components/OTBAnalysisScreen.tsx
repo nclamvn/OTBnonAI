@@ -1278,10 +1278,10 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                               });
                                             }
                                           }}
-                                          className="inline-flex items-center gap-1.5 px-3 py-1 border border-[#8B7355]/40 hover:border-[#D7B797]/60 bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#D7B797] rounded-lg font-medium text-xs transition-all"
+                                          className="p-1.5 border border-[#8B7355]/40 hover:border-[#D7B797]/60 bg-[#8B7355]/10 hover:bg-[#8B7355]/20 text-[#D7B797] rounded-lg transition-all"
+                                          title={t('otbAnalysis.allocateSKU')}
                                         >
                                           <Split size={12} />
-                                          {t('otbAnalysis.allocateSKU')}
                                         </button>
                                       </td>
                                     </tr>

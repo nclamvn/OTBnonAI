@@ -423,9 +423,10 @@ const BudgetManagementScreen = ({
                           id: budget.id, year: budget.fiscalYear,
                           totalBudget: budget.totalBudget, budgetName: budget.budgetName,
                         })}
-                        className="flex-1 px-3 py-0.5 text-xs font-semibold rounded-lg bg-[#127749] text-white"
+                        className="px-2 py-1 rounded-lg bg-[#127749] text-white"
+                        title={t('budget.allocate')}
                       >
-                        {t('budget.allocate')}
+                        <Split size={14} />
                       </button>
                     </div>
                   </div>
@@ -487,14 +488,13 @@ const BudgetManagementScreen = ({
                           setSelectedBudget(budget);
                           setShowViewModal(true);
                         }}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-medium rounded-md transition
-                          ${darkMode
+                        className={`p-1.5 rounded-md transition ${darkMode
                             ? 'text-[#999999] hover:text-[#F2F2F2] hover:bg-[#2E2E2E]'
                             : 'text-[#666666] hover:text-[#0A0A0A] hover:bg-[#F2F2F2]'
                           }`}
+                        title={t('budget.view')}
                       >
                         <Eye size={14} />
-                        {t('budget.view')}
                       </button>
 
                       {/* Allocate */}
@@ -508,14 +508,13 @@ const BudgetManagementScreen = ({
                             budgetName: budget.budgetName,
                           })
                         }
-                        className={`inline-flex items-center gap-1.5 px-3 py-0.5 text-xs font-semibold rounded-md transition
-        ${darkMode
+                        className={`p-1.5 rounded-md transition ${darkMode
                             ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(160,120,75,0.18)] border border-[rgba(215,183,151,0.25)]'
                             : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)] border border-[rgba(215,183,151,0.4)]'
                           }`}
+                        title={t('budget.allocate')}
                       >
                         <Split size={14} />
-                        {t('budget.allocate')}
                       </button>
                     </div>
                   </td>

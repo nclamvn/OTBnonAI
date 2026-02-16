@@ -143,7 +143,7 @@ const BulkActionsMenu = ({
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors border ${
+        className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors border ${
           darkMode
             ? 'border-[#2E2E2E] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
             : 'border-[#C4B5A5] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
@@ -151,8 +151,7 @@ const BulkActionsMenu = ({
         title={t('planning.bulkActions') || 'Bulk Actions'}
       >
         <Zap size={12} />
-        <span className="hidden md:inline">{t('planning.bulkActions') || 'Bulk'}</span>
-        <ChevronDown size={10} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={8} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (

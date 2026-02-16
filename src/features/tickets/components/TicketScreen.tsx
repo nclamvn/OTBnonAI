@@ -327,14 +327,14 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
 
           <button
             onClick={() => setShowCreatePopup(true)}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all duration-150 ${
+            className={`p-2 rounded-lg transition-all duration-150 ${
               darkMode
                 ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]'
                 : 'bg-[#D7B797] text-[#333333] hover:bg-[#C4A584]'
             }`}
+            title={t('ticket.createTicket')}
           >
             <Plus size={18} />
-            {t('ticket.createTicket')}
           </button>
         </div>
       </div>
@@ -535,14 +535,14 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
                   <td className="px-4 py-3 text-center">
                     <button
                       onClick={() => onOpenTicketDetail(ticket)}
-                      className={`inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold border rounded-lg transition-all duration-150 ${
+                      className={`p-1.5 border rounded-lg transition-all duration-150 ${
                         darkMode
                           ? 'text-[#D7B797] border-[rgba(215,183,151,0.3)] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.5)]'
                           : 'text-[#6B4D30] border-[rgba(184,153,112,0.4)] hover:bg-[rgba(215,183,151,0.15)]'
                       }`}
+                      title={t('common.view')}
                     >
                       <Eye size={14} />
-                      {t('common.view')}
                     </button>
                   </td>
                 </tr>

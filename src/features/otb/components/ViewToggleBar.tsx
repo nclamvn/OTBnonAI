@@ -76,9 +76,6 @@ const ViewToggleBar = ({
     >
       {/* View mode */}
       <div className="flex items-center gap-0.5 shrink-0">
-        <span className={`text-[10px] mr-1 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
-          {t('planning.viewMode') || 'View'}:
-        </span>
         {viewOptions.map(({ key, icon: Icon, label }) => (
           <button
             key={key}
@@ -86,8 +83,7 @@ const ViewToggleBar = ({
             className={`${btnBase} ${view === key ? btnActive : btnInactive}`}
             title={label}
           >
-            <Icon size={10} className="inline mr-0.5" />
-            {label}
+            <Icon size={10} className="inline" />
           </button>
         ))}
       </div>

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import {
   Crown,
@@ -162,12 +163,15 @@ const HomeScreen = ({ darkMode = true }) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const router = useRouter();
   const panelBg = darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300';
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-700';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
 
   // KPI expand state
   const [expandedCard, setExpandedCard] = useState<any>(null);
+  // Alert expand state
+  const [expandedAlert, setExpandedAlert] = useState<string | null>(null);
 
   // Stats from API
   const [stats, setStats] = useState({
@@ -476,240 +480,375 @@ const HomeScreen = ({ darkMode = true }) => {
         />
       </div>
 
-      {/* Charts & Alerts */}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        {/* Sales Performance Chart */}
-        <div className={`border ${panelBg} rounded-lg p-5 transition-all duration-150 hover:border-[rgba(215,183,151,0.25)]`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className={`text-lg font-semibold font-['Montserrat'] ${textPrimary}`}>{t('home.salesPerformance')}</h3>
-              <p className={`text-xs ${textMuted}`}>{t('home.monthlyComparison')}</p>
+      {/* Sales Performance Chart - Full Width Premium */}
+      <div className={`border rounded-xl overflow-hidden transition-all duration-300 ${
+        darkMode
+          ? 'border-[#1E1E1E] bg-gradient-to-br from-[#0D0D0D] via-[#111111] to-[#0A0A0A]'
+          : 'border-gray-200 bg-gradient-to-br from-white via-gray-50/50 to-white'
+      }`} style={darkMode ? { boxShadow: '0 0 40px rgba(215,183,151,0.03), inset 0 1px 0 rgba(255,255,255,0.02)' } : { boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-0">
+          <div className="flex items-center gap-4">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              darkMode ? 'bg-gradient-to-br from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.05)]' : 'bg-gradient-to-br from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.05)]'
+            }`}>
+              <TrendingUp size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#8B6914]'} />
             </div>
-            <span className={`inline-flex px-3 py-1 text-xs font-semibold uppercase tracking-wider font-['Montserrat'] rounded-full border ${darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] border-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border-[rgba(215,183,151,0.3)]'}`}>
+            <div>
+              <h3 className={`text-lg font-semibold font-['Montserrat'] tracking-tight ${textPrimary}`}>{t('home.salesPerformance')}</h3>
+              <p className={`text-xs ${textMuted} mt-0.5`}>{t('home.monthlyComparison')}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Legend */}
+            <div className="hidden sm:flex items-center gap-5 mr-2">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-[2.5px] rounded-full bg-[#D7B797]"></span>
+                <span className={`text-[11px] font-medium font-['Montserrat'] ${textMuted}`}>{t('home.actualSales')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-[2.5px] rounded-full" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #2A9E6A 0, #2A9E6A 4px, transparent 4px, transparent 7px)', backgroundSize: '7px 2.5px' }}></span>
+                <span className={`text-[11px] font-medium font-['Montserrat'] ${textMuted}`}>{t('home.targetSales')}</span>
+              </div>
+            </div>
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-semibold uppercase tracking-widest font-['Montserrat'] rounded-full border ${
+              darkMode
+                ? 'bg-[rgba(42,158,106,0.1)] text-[#2A9E6A] border-[rgba(42,158,106,0.2)]'
+                : 'bg-[rgba(42,158,106,0.08)] text-[#1a7a4f] border-[rgba(42,158,106,0.2)]'
+            }`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#2A9E6A] animate-pulse"></span>
               {t('common.liveData')}
             </span>
           </div>
+        </div>
 
-          {/* Summary Stats Row */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-            {[
-              { label: t('home.totalRevenue'), value: '12,5T', trend: '+12.5%', up: true },
-              { label: t('home.monthlyGrowth'), value: '+8.2%', trend: t('home.aboveTarget'), up: true },
-              { label: t('home.bestMonth'), value: t('home.aug'), trend: '2,1T đ', up: true },
-              { label: t('home.avgMonthly'), value: '1,39T', trend: '+5.4%', up: true },
-            ].map((s, i) => (
-              <div
-                key={i}
-                className={`rounded-lg px-3 py-1 border ${darkMode ? 'border-[#2E2E2E] bg-[rgba(255,255,255,0.02)]' : 'border-gray-300 bg-gray-50'}`}
-              >
-                <p className={`text-[10px] font-medium uppercase tracking-wider ${textMuted} font-['Montserrat']`}>{s.label}</p>
-                <p className={`text-base font-bold font-['JetBrains_Mono'] tabular-nums mt-0.5 ${textPrimary}`}>{s.value}</p>
-                <span className={`text-[10px] font-semibold font-['JetBrains_Mono'] ${s.up ? 'text-[#2A9E6A]' : 'text-[#FF7B72]'}`}>
-                  {s.up ? '▲' : '▼'} {s.trend}
-                </span>
+        {/* Summary Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 mt-4">
+          {[
+            { label: t('home.totalRevenue'), value: '12,5T', trend: '+12.5%', up: true, icon: '₫' },
+            { label: t('home.monthlyGrowth'), value: '+8.2%', trend: t('home.aboveTarget'), up: true, icon: '↗' },
+            { label: t('home.bestMonth'), value: t('home.aug'), trend: '2,1T đ', up: true, icon: '★' },
+            { label: t('home.avgMonthly'), value: '1,39T', trend: '+5.4%', up: true, icon: '◎' },
+          ].map((s, i) => (
+            <div
+              key={i}
+              className={`rounded-xl px-4 py-3 border transition-all duration-200 ${
+                darkMode
+                  ? 'border-[#1A1A1A] bg-[rgba(255,255,255,0.015)] hover:border-[#2A2A2A] hover:bg-[rgba(255,255,255,0.03)]'
+                  : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <p className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted} font-['Montserrat']`}>{s.label}</p>
+                <span className={`text-[10px] ${darkMode ? 'text-[#333]' : 'text-gray-300'}`}>{s.icon}</span>
               </div>
+              <p className={`text-xl font-bold font-['JetBrains_Mono'] tabular-nums mt-1 ${textPrimary}`}>{s.value}</p>
+              <span className={`text-[10px] font-semibold font-['JetBrains_Mono'] ${s.up ? 'text-[#2A9E6A]' : 'text-[#FF7B72]'}`}>
+                {s.up ? '▲' : '▼'} {s.trend}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Chart - Full Width */}
+        <div className="px-2 sm:px-4 mt-4 pb-5">
+          <svg viewBox="0 0 960 300" className="w-full" preserveAspectRatio="xMidYMid meet" style={{ height: 'clamp(220px, 30vw, 340px)' }}>
+            <defs>
+              <linearGradient id="salesFillPremium" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#D7B797" stopOpacity="0.30" />
+                <stop offset="40%" stopColor="#D7B797" stopOpacity="0.12" />
+                <stop offset="100%" stopColor="#D7B797" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="targetFillPremium" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2A9E6A" stopOpacity="0.12" />
+                <stop offset="60%" stopColor="#2A9E6A" stopOpacity="0.04" />
+                <stop offset="100%" stopColor="#2A9E6A" stopOpacity="0" />
+              </linearGradient>
+              <linearGradient id="salesLineGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stopColor="#C4A07A" />
+                <stop offset="50%" stopColor="#D7B797" />
+                <stop offset="100%" stopColor="#E8CDB0" />
+              </linearGradient>
+              <filter id="glowSales" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="3" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="glowTarget" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="labelShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3" />
+              </filter>
+            </defs>
+
+            {/* Y-axis labels + grid lines */}
+            {[
+              { y: 30, label: '2,5T' },
+              { y: 80, label: '2,0T' },
+              { y: 130, label: '1,5T' },
+              { y: 180, label: '1,0T' },
+              { y: 230, label: '0,5T' },
+            ].map((tick) => (
+              <g key={tick.y}>
+                <text x="52" y={tick.y + 4} textAnchor="end" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="JetBrains Mono" fontWeight="500">{tick.label}</text>
+                <line x1="64" y1={tick.y} x2="920" y2={tick.y} stroke={darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'} strokeWidth="1" />
+              </g>
             ))}
-          </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-5 mt-4 mb-2">
-            <div className="flex items-center gap-2">
-              <span className="w-5 h-[3px] rounded-full bg-[#D7B797]"></span>
-              <span className={`text-[11px] font-medium font-['Montserrat'] ${textMuted}`}>{t('home.actualSales')}</span>
+            {/* Area fill - target (behind) */}
+            <path
+              d="M92,238 L195,218 L299,202 L402,183 L506,170 L609,153 L713,140 L816,127 L920,112 L920,255 L92,255 Z"
+              fill="url(#targetFillPremium)"
+            />
+            {/* Area fill - actual */}
+            <path
+              d="M92,225 L195,200 L299,175 L402,160 L506,135 L609,115 L713,90 L816,65 L920,42 L920,255 L92,255 Z"
+              fill="url(#salesFillPremium)"
+            />
+
+            {/* Target line */}
+            <polyline
+              fill="none"
+              stroke="#2A9E6A"
+              strokeDasharray="8 5"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points="92,238 195,218 299,202 402,183 506,170 609,153 713,140 816,127 920,112"
+              opacity="0.7"
+            />
+            {/* Actual line - with gradient */}
+            <polyline
+              fill="none"
+              stroke="url(#salesLineGrad)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              points="92,225 195,200 299,175 402,160 506,135 609,115 713,90 816,65 920,42"
+              filter="url(#glowSales)"
+            />
+
+            {/* Target dots */}
+            {[
+              [92,238], [195,218], [299,202], [402,183], [506,170], [609,153], [713,140], [816,127], [920,112]
+            ].map(([cx, cy], i) => (
+              <circle key={`dot-t-${i}`} cx={cx} cy={cy} r="3" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#2A9E6A" strokeWidth="1.5" opacity="0.7" />
+            ))}
+
+            {/* Actual dots */}
+            {[
+              [92,225], [195,200], [299,175], [402,160], [506,135], [609,115], [713,90], [816,65], [920,42]
+            ].map(([cx, cy], i) => (
+              <g key={`dot-a-${i}`}>
+                <circle cx={cx} cy={cy} r="6" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#D7B797" strokeWidth="2.5" />
+                {i === 8 && (
+                  <>
+                    <circle cx={cx} cy={cy} r="10" fill="none" stroke="#D7B797" strokeWidth="1" opacity="0.3">
+                      <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
+                      <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
+                    </circle>
+                  </>
+                )}
+              </g>
+            ))}
+
+            {/* Value labels on actual line */}
+            {[
+              { x: 92, y: 225, label: '0,8T' },
+              { x: 195, y: 200, label: '0,9T' },
+              { x: 299, y: 175, label: '1,2T' },
+              { x: 402, y: 160, label: '1,3T' },
+              { x: 506, y: 135, label: '1,5T' },
+              { x: 609, y: 115, label: '1,7T' },
+              { x: 713, y: 90, label: '1,9T' },
+              { x: 816, y: 65, label: '2,1T' },
+              { x: 920, y: 42, label: '2,3T' },
+            ].map((p, i) => (
+              <g key={`val-${i}`} filter="url(#labelShadow)">
+                <rect x={p.x - 20} y={p.y - 24} width="40" height="17" rx="5"
+                  fill={darkMode ? 'rgba(215,183,151,0.12)' : 'rgba(215,183,151,0.18)'}
+                  stroke={darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}
+                  strokeWidth="0.5"
+                />
+                <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize="9.5" fill="#D7B797" fontFamily="JetBrains Mono" fontWeight="700">{p.label}</text>
+              </g>
+            ))}
+
+            {/* X-axis month labels */}
+            {[
+              { x: 92, m: 'jan' }, { x: 195, m: 'feb' }, { x: 299, m: 'mar' },
+              { x: 402, m: 'apr' }, { x: 506, m: 'may' }, { x: 609, m: 'jun' },
+              { x: 713, m: 'jul' }, { x: 816, m: 'aug' }, { x: 920, m: 'sep' },
+            ].map((tick) => (
+              <text key={tick.m} x={tick.x} y={275} textAnchor="middle" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="Montserrat" fontWeight="600" letterSpacing="0.5">
+                {t(`home.${tick.m}`)}
+              </text>
+            ))}
+
+            {/* Best month highlight */}
+            <line x1="816" y1="65" x2="816" y2="255" stroke="#D7B797" strokeWidth="1" strokeDasharray="4 4" opacity="0.15" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Active Alerts */}
+      <div className={`border ${panelBg} rounded-xl p-5 transition-all duration-150 hover:border-[rgba(215,183,151,0.25)]`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(215,183,151,0.1)]'
+            }`}>
+              <Bell size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="w-5 h-[3px] rounded-full bg-[#2A9E6A]" style={{ backgroundImage: 'repeating-linear-gradient(90deg, #2A9E6A 0, #2A9E6A 4px, transparent 4px, transparent 8px)' }}></span>
-              <span className={`text-[11px] font-medium font-['Montserrat'] ${textMuted}`}>{t('home.targetSales')}</span>
+            <div>
+              <h3 className={`text-lg font-semibold font-['Montserrat'] ${textPrimary}`}>{t('home.activeAlerts')}</h3>
+              <p className={`text-xs ${textMuted}`}>{t('home.activeAlertsCount', { count: 3 })}</p>
             </div>
           </div>
-
-          {/* Chart */}
-          <div className="mt-1">
-            <svg viewBox="0 0 540 230" className="w-full" style={{ height: '220px' }}>
-              <defs>
-                <linearGradient id="salesFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#D7B797" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#D7B797" stopOpacity="0" />
-                </linearGradient>
-                <linearGradient id="targetFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2A9E6A" stopOpacity="0.10" />
-                  <stop offset="100%" stopColor="#2A9E6A" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-
-              {/* Y-axis labels */}
-              {[
-                { y: 30, label: '2,5T' },
-                { y: 70, label: '2,0T' },
-                { y: 110, label: '1,5T' },
-                { y: 150, label: '1,0T' },
-                { y: 190, label: '0,5T' },
-              ].map((tick) => (
-                <g key={tick.y}>
-                  <text x="38" y={tick.y + 3} textAnchor="end" fontSize="9" fill={darkMode ? '#555555' : '#6B7280'} fontFamily="JetBrains Mono">{tick.label}</text>
-                  <line x1="44" y1={tick.y} x2="520" y2={tick.y} stroke={darkMode ? '#1E1E1E' : '#f3f4f6'} strokeWidth="1" />
-                </g>
-              ))}
-
-              {/* Area fill - actual */}
-              <path
-                d="M62,185 L119,168 L176,148 L233,138 L290,120 L347,105 L404,88 L461,72 L518,58 L518,200 L62,200 Z"
-                fill="url(#salesFill)"
-              />
-              {/* Area fill - target */}
-              <path
-                d="M62,192 L119,176 L176,162 L233,148 L290,138 L347,125 L404,115 L461,105 L518,95 L518,200 L62,200 Z"
-                fill="url(#targetFill)"
-              />
-
-              {/* Actual line */}
-              <polyline
-                fill="none"
-                stroke="#D7B797"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                points="62,185 119,168 176,148 233,138 290,120 347,105 404,88 461,72 518,58"
-              />
-              {/* Target line */}
-              <polyline
-                fill="none"
-                stroke="#2A9E6A"
-                strokeDasharray="6 4"
-                strokeWidth="2"
-                strokeLinecap="round"
-                points="62,192 119,176 176,162 233,148 290,138 347,125 404,115 461,105 518,95"
-              />
-
-              {/* Data point dots - actual */}
-              {[
-                [62,185], [119,168], [176,148], [233,138], [290,120], [347,105], [404,88], [461,72], [518,58]
-              ].map(([cx, cy], i) => (
-                <g key={`dot-a-${i}`}>
-                  <circle cx={cx} cy={cy} r="5" fill={darkMode ? '#121212' : '#ffffff'} stroke="#D7B797" strokeWidth="2.5" />
-                </g>
-              ))}
-              {/* Data point dots - target */}
-              {[
-                [62,192], [119,176], [176,162], [233,148], [290,138], [347,125], [404,115], [461,105], [518,95]
-              ].map(([cx, cy], i) => (
-                <g key={`dot-t-${i}`}>
-                  <circle cx={cx} cy={cy} r="3.5" fill={darkMode ? '#121212' : '#ffffff'} stroke="#2A9E6A" strokeWidth="2" />
-                </g>
-              ))}
-
-              {/* Value labels on actual line (every other point) */}
-              {[
-                { x: 62, y: 185, label: '0,8T' },
-                { x: 176, y: 148, label: '1,2T' },
-                { x: 290, y: 120, label: '1,5T' },
-                { x: 404, y: 88, label: '1,9T' },
-                { x: 518, y: 58, label: '2,3T' },
-              ].map((p, i) => (
-                <g key={`val-${i}`}>
-                  <rect x={p.x - 16} y={p.y - 20} width="32" height="14" rx="4" fill={darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.2)'} />
-                  <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="8" fill="#D7B797" fontFamily="JetBrains Mono" fontWeight="600">{p.label}</text>
-                </g>
-              ))}
-
-              {/* X-axis month labels */}
-              {[
-                { x: 62, m: 'jan' }, { x: 119, m: 'feb' }, { x: 176, m: 'mar' },
-                { x: 233, m: 'apr' }, { x: 290, m: 'may' }, { x: 347, m: 'jun' },
-                { x: 404, m: 'jul' }, { x: 461, m: 'aug' }, { x: 518, m: 'sep' },
-              ].map((tick) => (
-                <text key={tick.m} x={tick.x} y={215} textAnchor="middle" fontSize="9" fill={darkMode ? '#555555' : '#6B7280'} fontFamily="Montserrat" fontWeight="500">
-                  {t(`home.${tick.m}`)}
-                </text>
-              ))}
-
-              {/* Highlight best month marker */}
-              <line x1="461" y1="72" x2="461" y2="200" stroke="#D7B797" strokeWidth="1" strokeDasharray="3 3" opacity="0.3" />
-              <rect x="443" y="62" width="36" height="14" rx="4" fill="rgba(215,183,151,0.2)" stroke="rgba(215,183,151,0.3)" strokeWidth="0.5" />
-              <text x="461" y="72" textAnchor="middle" fontSize="8" fill="#D7B797" fontFamily="JetBrains Mono" fontWeight="700">2,1T</text>
-            </svg>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-2 py-1 rounded-md bg-[rgba(248,81,73,0.15)] text-[#FF7B72] font-semibold font-['Montserrat']">1 {t('home.critical') || 'Critical'}</span>
+            <span className="px-2 py-1 rounded-md bg-[rgba(210,153,34,0.15)] text-[#E3B341] font-semibold font-['Montserrat']">1 {t('home.warning') || 'Warning'}</span>
+            <span className="px-2 py-1 rounded-md bg-[rgba(88,166,255,0.15)] text-[#79C0FF] font-semibold font-['Montserrat']">1 Info</span>
           </div>
         </div>
 
-        {/* Active Alerts */}
-        <div className={`border ${panelBg} rounded-lg p-5 transition-all duration-150 hover:border-[rgba(215,183,151,0.25)]`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-                darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(215,183,151,0.1)]'
-              }`}>
-                <Bell size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-              </div>
-              <div>
-                <h3 className={`text-lg font-semibold font-['Montserrat'] ${textPrimary}`}>{t('home.activeAlerts')}</h3>
-                <p className={`text-xs ${textMuted}`}>{t('home.activeAlertsCount', { count: 4 })}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="px-2 py-1 rounded bg-[rgba(248,81,73,0.15)] text-[#FF7B72] font-semibold">1</span>
-              <span className="px-2 py-1 rounded bg-[rgba(210,153,34,0.15)] text-[#E3B341] font-semibold">1</span>
-              <span className="px-2 py-1 rounded bg-[rgba(88,166,255,0.15)] text-[#79C0FF] font-semibold">1</span>
-            </div>
-          </div>
-
-          <div className="mt-4 space-y-3">
-            {/* Critical Alert */}
-            <div className={`border rounded-lg p-4 transition-all duration-150 border-[rgba(248,81,73,0.3)] bg-[rgba(248,81,73,0.08)] hover:border-[rgba(248,81,73,0.5)]`}>
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[rgba(248,81,73,0.2)]">
-                  <Bell size={16} className="text-[#F85149]" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold ${textPrimary}`}>{t('home.lowStockAlert')}</span>
-                    <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>{t('home.timeAgo15m')}</span>
+        <div className="mt-4 space-y-3">
+          {/* Alert items */}
+          {[
+            {
+              id: 'lowStock',
+              icon: Bell,
+              iconColor: 'text-[#F85149]',
+              iconBg: 'bg-[rgba(248,81,73,0.2)]',
+              borderColor: 'border-[rgba(248,81,73,0.3)]',
+              borderHover: 'hover:border-[rgba(248,81,73,0.5)]',
+              bgColor: 'bg-[rgba(248,81,73,0.08)]',
+              accentColor: '#FF7B72',
+              accentHover: '#F85149',
+              title: t('home.lowStockAlert'),
+              time: t('home.timeAgo15m'),
+              message: t('home.lowStockMessage'),
+              route: '/proposal',
+              detailItems: [
+                { label: 'SKU', value: 'Nike Air Max 90' },
+                { label: 'Size', value: '42' },
+                { label: t('home.currentStock') || 'Tồn kho hiện tại', value: '3 ' + (t('home.units') || 'đôi') },
+                { label: t('home.minThreshold') || 'Ngưỡng tối thiểu', value: '10 ' + (t('home.units') || 'đôi') },
+              ],
+            },
+            {
+              id: 'budgetThreshold',
+              icon: TrendingUp,
+              iconColor: 'text-[#D29922]',
+              iconBg: 'bg-[rgba(210,153,34,0.2)]',
+              borderColor: 'border-[rgba(210,153,34,0.3)]',
+              borderHover: 'hover:border-[rgba(210,153,34,0.5)]',
+              bgColor: 'bg-[rgba(210,153,34,0.08)]',
+              accentColor: '#E3B341',
+              accentHover: '#D29922',
+              title: t('home.budgetThresholdWarning'),
+              time: t('home.timeAgo1h'),
+              message: t('home.budgetThresholdMessage'),
+              route: '/budget-management',
+              detailItems: [
+                { label: t('home.budgetName') || 'Ngân sách', value: 'Adidas SS25' },
+                { label: t('home.used') || 'Đã sử dụng', value: '92%' },
+                { label: t('home.remaining') || 'Còn lại', value: '800M đ' },
+                { label: t('home.totalBudget') || 'Tổng ngân sách', value: '10T đ' },
+              ],
+            },
+            {
+              id: 'salesSpike',
+              icon: BarChart3,
+              iconColor: 'text-[#58A6FF]',
+              iconBg: 'bg-[rgba(88,166,255,0.2)]',
+              borderColor: 'border-[rgba(88,166,255,0.3)]',
+              borderHover: 'hover:border-[rgba(88,166,255,0.5)]',
+              bgColor: 'bg-[rgba(88,166,255,0.08)]',
+              accentColor: '#79C0FF',
+              accentHover: '#58A6FF',
+              title: t('home.salesSpike'),
+              time: t('home.timeAgo3h'),
+              message: t('home.salesSpikeMessage'),
+              route: '/otb-analysis',
+              detailItems: [
+                { label: t('home.collection') || 'Dòng sản phẩm', value: 'Gucci Heritage' },
+                { label: t('home.overTarget') || 'Vượt kế hoạch', value: '+18%' },
+                { label: t('home.period') || 'Thời gian', value: t('home.thisWeek') || 'Tuần này' },
+                { label: t('home.action') || 'Hành động', value: t('home.checkInventory') || 'Kiểm tra tồn kho' },
+              ],
+            },
+          ].map((alert) => {
+            const AlertIcon = alert.icon;
+            const isExpanded = expandedAlert === alert.id;
+            return (
+              <div key={alert.id} className={`border rounded-xl overflow-hidden transition-all duration-300 ${alert.borderColor} ${alert.bgColor} ${alert.borderHover}`}>
+                <div
+                  className="p-4 cursor-pointer"
+                  onClick={() => setExpandedAlert(isExpanded ? null : alert.id)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${alert.iconBg}`}>
+                      <AlertIcon size={16} className={alert.iconColor} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`text-sm font-semibold ${textPrimary}`}>{alert.title}</span>
+                        <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>{alert.time}</span>
+                      </div>
+                      <p className={`text-xs mt-1 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
+                        {alert.message}
+                      </p>
+                      <button
+                        className="mt-2 text-xs font-semibold transition-colors flex items-center gap-1"
+                        style={{ color: alert.accentColor }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = alert.accentHover)}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = alert.accentColor)}
+                      >
+                        {t('common.viewDetails')}
+                        <ChevronDown size={12} className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
                   </div>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
-                    {t('home.lowStockMessage')}
-                  </p>
-                  <button className="mt-2 text-xs font-semibold text-[#FF7B72] hover:text-[#F85149] transition-colors">{t('common.viewDetails')}</button>
                 </div>
-              </div>
-            </div>
 
-            {/* Warning Alert */}
-            <div className={`border rounded-lg p-4 transition-all duration-150 border-[rgba(210,153,34,0.3)] bg-[rgba(210,153,34,0.08)] hover:border-[rgba(210,153,34,0.5)]`}>
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[rgba(210,153,34,0.2)]">
-                  <TrendingUp size={16} className="text-[#D29922]" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold ${textPrimary}`}>{t('home.budgetThresholdWarning')}</span>
-                    <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>{t('home.timeAgo1h')}</span>
+                {/* Expandable Detail Panel */}
+                <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
+                  <div className={`px-4 pb-4 pt-0 border-t ${darkMode ? 'border-[rgba(255,255,255,0.06)]' : 'border-[rgba(0,0,0,0.06)]'}`}>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                      {alert.detailItems.map((item, idx) => (
+                        <div key={idx} className={`rounded-lg px-3 py-2 ${darkMode ? 'bg-[rgba(0,0,0,0.3)]' : 'bg-[rgba(255,255,255,0.6)]'}`}>
+                          <p className={`text-[10px] font-medium uppercase tracking-wider ${textMuted} font-['Montserrat']`}>{item.label}</p>
+                          <p className={`text-sm font-bold font-['JetBrains_Mono'] tabular-nums mt-0.5 ${textPrimary}`}>{item.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); router.push(alert.route); }}
+                      className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all duration-200"
+                      style={{
+                        backgroundColor: `${alert.accentColor}20`,
+                        color: alert.accentColor,
+                        border: `1px solid ${alert.accentColor}30`,
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${alert.accentColor}35`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = `${alert.accentColor}20`; }}
+                    >
+                      <ArrowUpRight size={14} />
+                      {t('home.goToPage') || 'Đi đến trang chi tiết'}
+                    </button>
                   </div>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
-                    {t('home.budgetThresholdMessage')}
-                  </p>
-                  <button className="mt-2 text-xs font-semibold text-[#E3B341] hover:text-[#D29922] transition-colors">{t('common.viewDetails')}</button>
                 </div>
               </div>
-            </div>
-
-            {/* Info Alert */}
-            <div className={`border rounded-lg p-4 transition-all duration-150 border-[rgba(88,166,255,0.3)] bg-[rgba(88,166,255,0.08)] hover:border-[rgba(88,166,255,0.5)]`}>
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center bg-[rgba(88,166,255,0.2)]">
-                  <BarChart3 size={16} className="text-[#58A6FF]" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className={`text-sm font-semibold ${textPrimary}`}>{t('home.salesSpike')}</span>
-                    <span className={`text-xs font-['JetBrains_Mono'] ${textMuted}`}>{t('home.timeAgo3h')}</span>
-                  </div>
-                  <p className={`text-xs mt-1 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
-                    {t('home.salesSpikeMessage')}
-                  </p>
-                  <button className="mt-2 text-xs font-semibold text-[#79C0FF] hover:text-[#58A6FF] transition-colors">{t('common.viewDetails')}</button>
-                </div>
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </div>
 

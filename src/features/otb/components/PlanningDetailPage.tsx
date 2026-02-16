@@ -1358,8 +1358,8 @@ const PlanningDetailPage = ({
         <div className="text-center">
           <FileText size={40} className={darkMode ? 'text-[#666666] mx-auto mb-3' : 'text-slate-300 mx-auto mb-3'} />
           <p className={`text-sm ${darkMode ? 'text-[#999999]' : 'text-slate-500'}`}>{t('common.noData') || 'No planning data found'}</p>
-          <button onClick={onBack} className={`mt-4 px-4 py-2 rounded-lg text-sm font-medium ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2] hover:bg-[#2E2E2E]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>
-            <ArrowLeft size={14} className="inline mr-2" />{t('common.back') || 'Back'}
+          <button onClick={onBack} className={`mt-4 p-2 rounded-lg ${darkMode ? 'bg-[#1A1A1A] text-[#F2F2F2] hover:bg-[#2E2E2E]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`} title={t('common.back') || 'Back'}>
+            <ArrowLeft size={16} />
           </button>
         </div>
       </div>

@@ -69,7 +69,7 @@ const UnsavedChangesBanner = ({
             ) : (
               <Save size={12} />
             )}
-            {t('planning.saveDraft')}
+            <span className="hidden md:inline">{t('planning.saveDraft')}</span>
           </button>
         </div>
       </div>

@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { formatCurrency, parseSmartInput } from '../../../utils';
 import { SEASON_GROUPS, SEASON_CONFIG } from '../../../utils/constants';
 import { budgetService, masterDataService, planningService } from '../../../services';
+import { useAppContext } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
@@ -22,7 +23,6 @@ import { useClipboardPaste } from '../hooks/useClipboardPaste';
 import { useTableFilters } from '../hooks/useTableFilters';
 import AllocationToolbar from './AllocationToolbar';
 import AllocationProgressBar from './AllocationProgressBar';
-import AllocationStatusBar from './AllocationStatusBar';
 import AllocationSidePanel from './AllocationSidePanel';
 import UnsavedChangesBanner from './UnsavedChangesBanner';
 import BulkActionsMenu from './BulkActionsMenu';
@@ -55,6 +55,7 @@ const BudgetAllocateScreen = ({
 }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { kpiData } = useAppContext();
 
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
@@ -800,6 +801,15 @@ const BudgetAllocateScreen = ({
           onToggleSidePanel={() => setSidePanelOpen(!sidePanelOpen)}
           sidePanelOpen={sidePanelOpen}
           darkMode={darkMode}
+          kpiData={kpiData}
+          statusInfo={{
+            budgetName: selectedBudget?.budgetName || fallbackBudgetName,
+            status: selectedVersion?.status || selectedBudget?.status || 'draft',
+            versionName: selectedVersion?.name,
+            isDirty,
+            autoSaving: allocation.autoSaving,
+            lastSavedAt: allocation.lastSavedAt,
+          }}
         />
 
         {/* Quick actions bar — Bulk Actions + Export */}
@@ -816,7 +826,7 @@ const BudgetAllocateScreen = ({
             />
             <button
               onClick={handleExportExcel}
-              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors border ${
+              className={`p-1.5 rounded-md transition-colors border ${
                 darkMode
                   ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
                   : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
@@ -824,7 +834,6 @@ const BudgetAllocateScreen = ({
               title={t('planning.exportExcel')}
             >
               <Download size={12} />
-              <span className="hidden md:inline">{t('planning.exportExcel')}</span>
             </button>
           </div>
         )}
@@ -835,21 +844,10 @@ const BudgetAllocateScreen = ({
           totalAllocated={totalAllocated}
           darkMode={darkMode}
         />
-
-        {/* Allocation Status Bar */}
-        <AllocationStatusBar
-          budgetName={selectedBudget?.budgetName || fallbackBudgetName}
-          status={selectedVersion?.status || selectedBudget?.status || 'draft'}
-          versionName={selectedVersion?.name}
-          isDirty={isDirty}
-          autoSaving={allocation.autoSaving}
-          lastSavedAt={allocation.lastSavedAt}
-          darkMode={darkMode}
-        />
       </div>
 
       {/* Filter Section — hides entirely on scroll */}
-      <div ref={barRef} className={`sticky top-[4.5rem] md:top-[4rem] z-20 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
+      <div ref={barRef} className={`z-20 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
       }`}>
 
@@ -1639,13 +1637,13 @@ const BudgetAllocateScreen = ({
                                                     });
                                                   }
                                                 }}
-                                                className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold rounded-md transition whitespace-nowrap ${darkMode
+                                                className={`p-1 rounded-md transition ${darkMode
                                                   ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(160,120,75,0.18)] border border-[rgba(215,183,151,0.25)]'
                                                   : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)] border border-[rgba(215,183,151,0.4)]'
                                                 }`}
+                                                title={t('budget.allocateOTB')}
                                               >
-                                                <Split size={14} />
-                                                {t('budget.allocateOTB')}
+                                                <Split size={12} />
                                               </button>
 
                                             </td>
