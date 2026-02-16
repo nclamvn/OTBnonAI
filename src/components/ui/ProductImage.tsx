@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Camera, Upload, Trash2, X, ZoomIn, Image as ImageIcon } from 'lucide-react';
 import { getDemoImageSvg } from '../../utils';
@@ -235,7 +235,7 @@ function ImageEditorPopup({
 }
 
 /* ── ProductImage Thumbnail ─────────────────────────────── */
-export default function ProductImage({
+function ProductImage({
   subCategory,
   sku,
   size = 48,
@@ -291,3 +291,5 @@ export default function ProductImage({
     </>
   );
 }
+
+export default React.memo(ProductImage);

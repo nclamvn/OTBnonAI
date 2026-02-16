@@ -6,11 +6,11 @@ import {
   Search, ChevronDown, ChevronRight, X, AlertTriangle, FileText,
   ClipboardCheck, XCircle, AlertCircle, BarChart3, Image as ImageIcon
 } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency } from '../../../utils';
-import { proposalService } from '../../../services/proposalService';
-import { MobileDataCard } from '../../../components/ui';
+import { formatCurrency } from '@/utils';
+import { proposalService } from '@/services/proposalService';
+import { MobileDataCard } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════

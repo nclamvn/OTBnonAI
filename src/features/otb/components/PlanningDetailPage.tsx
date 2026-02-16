@@ -7,10 +7,10 @@ import {
   Calendar, User, MessageSquare, AlertCircle, CheckCircle, XCircle,
   Send, FileText, DollarSign
 } from 'lucide-react';
-import { formatCurrency } from '../../../utils';
-import { GENDERS, STORES } from '../../../utils/constants';
-import { masterDataService, planningService, approvalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { formatCurrency } from '@/utils';
+import { GENDERS, STORES } from '@/utils/constants';
+import { masterDataService, planningService, approvalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 

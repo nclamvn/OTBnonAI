@@ -8,9 +8,9 @@ import {
   Download, RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatCurrency, parseSmartInput } from '../../../utils';
-import { SEASON_GROUPS, SEASON_CONFIG } from '../../../utils/constants';
-import { budgetService, masterDataService, planningService } from '../../../services';
+import { formatCurrency, parseSmartInput } from '@/utils';
+import { SEASON_GROUPS, SEASON_CONFIG } from '@/utils/constants';
+import { budgetService, masterDataService, planningService } from '@/services';
 import { useAppContext } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';

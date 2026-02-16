@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { formatCurrency, formatFullCurrency } from '../../../utils';
+import { formatCurrency, formatFullCurrency } from '@/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AllocationProgressBarProps {
@@ -162,4 +162,4 @@ const AllocationProgressBar = ({
   );
 };
 
-export default AllocationProgressBar;
+export default React.memo(AllocationProgressBar);

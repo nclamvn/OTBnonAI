@@ -3,63 +3,105 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
 
+const extract = (response: any) => response.data?.data ?? response.data;
+
 export const masterDataService = {
   // Get all brands
   async getBrands() {
-    const response: any = await api.get('/master/brands');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/brands');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getBrands]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get all stores
   async getStores() {
-    const response: any = await api.get('/master/stores');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/stores');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getStores]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get all collections
   async getCollections() {
-    const response: any = await api.get('/master/collections');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/collections');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getCollections]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get all genders
   async getGenders() {
-    const response: any = await api.get('/master/genders');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/genders');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getGenders]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get all categories (with hierarchy)
   async getCategories() {
-    const response: any = await api.get('/master/categories');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/categories');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getCategories]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get seasons configuration
   async getSeasons() {
-    const response: any = await api.get('/master/seasons');
-    return response.data.data || response.data;
+    try {
+      const response = await api.get('/master/seasons');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getSeasons]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get SKU catalog with filters
   async getSkuCatalog(params: any = {}) {
-    const response: any = await api.get('/master/sku-catalog', { params });
-    return response.data;
+    try {
+      const response = await api.get('/master/sku-catalog', { params });
+      return response.data;
+    } catch (err: any) {
+      console.error('[masterDataService.getSkuCatalog]', err?.response?.status, err?.message);
+      throw err;
+    }
   },
 
   // Get all sub-categories (flatten from categories hierarchy — direct endpoint not yet implemented)
   async getSubCategories() {
-    const categories: any = await this.getCategories();
-    const list: any[] = Array.isArray(categories) ? categories : [];
-    const subs: any[] = [];
-    list.forEach((cat: any) => {
-      (cat.subCategories || []).forEach((sub: any) => {
-        subs.push({
-          ...sub,
-          parent: { id: cat.id, name: cat.name, code: cat.code }
+    try {
+      const categories: any = await this.getCategories();
+      const list: any[] = Array.isArray(categories) ? categories : [];
+      const subs: any[] = [];
+      list.forEach((cat: any) => {
+        (cat.subCategories || []).forEach((sub: any) => {
+          subs.push({
+            ...sub,
+            parent: { id: cat.id, name: cat.name, code: cat.code }
+          });
         });
       });
-    });
-    return subs;
+      return subs;
+    } catch (err: any) {
+      console.error('[masterDataService.getSubCategories]', err?.response?.status, err?.message);
+      throw err;
+    }
   }
 };
 

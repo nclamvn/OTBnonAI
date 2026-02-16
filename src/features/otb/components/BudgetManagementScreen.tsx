@@ -6,9 +6,9 @@ import {
   Wallet, CircleCheckBig, Hourglass
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatCurrency } from '../../../utils/formatters';
-import { budgetService, masterDataService } from '../../../services';
-import { LoadingSpinner, ErrorMessage, EmptyState, ExpandableStatCard } from '../../../components/ui';
+import { formatCurrency } from '@/utils/formatters';
+import { budgetService, masterDataService } from '@/services';
+import { LoadingSpinner, ErrorMessage, EmptyState, ExpandableStatCard } from '@/components/ui';
 import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';

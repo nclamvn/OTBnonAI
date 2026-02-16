@@ -7,11 +7,11 @@ import {
   DollarSign, Truck, XCircle, Eye, Ruler, Store, Image as ImageIcon,
   ArrowRight, RefreshCw, Filter, BarChart3
 } from 'lucide-react';
-import { proposalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { proposalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency } from '../../../utils';
-import api from '../../../services/api';
+import { formatCurrency } from '@/utils';
+import api from '@/services/api';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════

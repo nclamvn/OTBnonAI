@@ -8,11 +8,11 @@ import {
   Wallet, BarChart3, Package, ClipboardList
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { approvalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { approvalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { ExpandableStatCard } from '../../../components/ui';
-import { MobileList, FilterBottomSheet, PullToRefresh, useBottomSheet } from '../../../components/mobile';
+import { ExpandableStatCard } from '@/components/ui';
+import { MobileList, FilterBottomSheet, PullToRefresh, useBottomSheet } from '@/components/mobile';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════

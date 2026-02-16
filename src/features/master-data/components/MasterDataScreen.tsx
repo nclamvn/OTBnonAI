@@ -6,11 +6,11 @@ import {
   Building2, Package, FolderTree, Tag,
   RefreshCw, Filter, X
 } from 'lucide-react';
-import { masterDataService } from '../../../services';
+import { masterDataService } from '@/services';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency } from '../../../utils';
+import { formatCurrency } from '@/utils';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { MobileList, MobileSearchBar, PullToRefresh, FilterBottomSheet, useBottomSheet } from '../../../components/mobile';
+import { MobileList, MobileSearchBar, PullToRefresh, FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 
 // Config per master data type (takes t for i18n)
 const getTypeConfig = (t: any) => ({

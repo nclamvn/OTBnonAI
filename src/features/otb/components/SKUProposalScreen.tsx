@@ -4,18 +4,17 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
-  Star, Layers, Check, LayoutGrid, List
+  Star, Layers, Check, LayoutGrid, List, SlidersHorizontal
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatCurrency } from '../../../utils';
-import { ProductImage, ConfirmDialog } from '../../../components/ui';
+import { formatCurrency } from '@/utils';
+import { budgetService, masterDataService, proposalService } from '@/services';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { budgetService, masterDataService, proposalService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
-import { SlidersHorizontal } from 'lucide-react';
+import { ProductImage, ConfirmDialog } from '@/components/ui';
 
 const SEASON_GROUPS = [
   { id: 'all', label: 'All' },

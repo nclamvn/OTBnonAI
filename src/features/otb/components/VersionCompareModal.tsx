@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { X, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
-import { formatCurrency, formatPercent } from '../../../utils';
-import { planningService } from '../../../services';
+import { formatCurrency, formatPercent } from '@/utils';
+import { planningService } from '@/services';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface VersionCompareModalProps {
@@ -114,8 +114,8 @@ const VersionCompareModal = ({
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div
-        className={`w-full max-w-2xl mx-4 max-h-[80vh] rounded-xl border shadow-2xl flex flex-col overflow-hidden ${
-          darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
+        className={`w-full md:max-w-2xl mx-0 md:mx-4 max-h-[92vh] md:max-h-[80vh] rounded-none md:rounded-xl border-0 md:border shadow-2xl flex flex-col overflow-hidden ${
+          darkMode ? 'bg-[#1A1A1A] md:border-[#2E2E2E]' : 'bg-white md:border-[#C4B5A5]'
         }`}
       >
         {/* Header */}

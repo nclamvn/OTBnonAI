@@ -3,7 +3,7 @@ import {
   FileText, Clock, CheckCircle, XCircle,
   ArrowRight, Building2, Star
 } from 'lucide-react';
-import { formatCurrency } from '../../../utils';
+import { formatCurrency } from '@/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const COLUMNS = [

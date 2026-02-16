@@ -6,13 +6,13 @@ import {
   Package, DollarSign, ShoppingCart, Store, ChevronDown, ChevronRight,
   Check, X, AlertCircle, Send, Hash, CheckCircle, XCircle
 } from 'lucide-react';
-import { formatCurrency } from '../../../utils';
-import { masterDataService, proposalService, budgetService, approvalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { formatCurrency } from '@/utils';
+import { masterDataService, proposalService, budgetService, approvalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { ConfirmDialog } from '../../../components/ui';
+import { ConfirmDialog } from '@/components/ui';
 
 const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: any) => {
   const { t } = useLanguage();

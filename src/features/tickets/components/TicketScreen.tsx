@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Eye, Loader2, Plus, X, LayoutList, LayoutGrid, Ticket, CircleCheckBig, DollarSign, Search } from 'lucide-react';
 import TicketKanbanBoard from './TicketKanbanBoard';
-import { ExpandableStatCard } from '../../../components/ui';
-import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, useBottomSheet, FilterBottomSheet } from '../../../components/mobile';
-import { budgetService, planningService, proposalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { ExpandableStatCard } from '@/components/ui';
+import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, useBottomSheet, FilterBottomSheet } from '@/components/mobile';
+import { budgetService, planningService, proposalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { formatCurrency } from '../../../utils';
+import { formatCurrency } from '@/utils';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* =========================

@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatCurrency } from '../../../utils';
-import { ProductImage } from '../../../components/ui';
-import { budgetService, planningService, proposalService } from '../../../services';
-import { useAuth } from '../../../contexts/AuthContext';
+import { formatCurrency } from '@/utils';
+import { ProductImage } from '@/components/ui';
+import { budgetService, planningService, proposalService } from '@/services';
+import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 

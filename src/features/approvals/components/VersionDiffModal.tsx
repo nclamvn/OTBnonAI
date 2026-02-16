@@ -5,8 +5,8 @@ import {
   X, ArrowRight, TrendingUp, TrendingDown, Minus, Loader2,
   GitCompare, AlertTriangle
 } from 'lucide-react';
-import { planningService } from '../../../services';
-import { formatCurrency } from '../../../utils';
+import { planningService } from '@/services';
+import { formatCurrency } from '@/utils';
 
 interface VersionDiffModalProps {
   isOpen: boolean;

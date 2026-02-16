@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowLeft, ArrowRight, Undo2, Redo2, Save, ChevronDown,
   Send, PanelRightOpen, Check, FileText, Clock
@@ -397,4 +397,4 @@ const AllocationToolbar = ({
   );
 };
 
-export default AllocationToolbar;
+export default React.memo(AllocationToolbar);

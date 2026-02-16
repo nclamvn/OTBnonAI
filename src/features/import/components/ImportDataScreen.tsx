@@ -4,10 +4,10 @@ import {
   Upload, FileSpreadsheet, Trash2, RefreshCw, ChevronDown, ChevronLeft, ChevronRight,
   AlertCircle, CheckCircle, XCircle, Search, ArrowUpDown, Download, X, Play, Pause, Filter
 } from 'lucide-react';
-import { useLanguage } from '../../../contexts/LanguageContext';
-import { useDataImport } from '../../../hooks/useDataImport';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useDataImport } from '@/hooks/useDataImport';
 import { useIsMobile } from '@/hooks/useIsMobile';
-import { MobileFilterSheet, MobileDataCard } from '../../../components/ui';
+import { MobileFilterSheet, MobileDataCard } from '@/components/ui';
 
 const ImportDataScreen = ({ darkMode }: any) => {
   const { t } = useLanguage();

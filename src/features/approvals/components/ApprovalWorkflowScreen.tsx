@@ -7,9 +7,9 @@ import {
   LayoutList, GitBranch, Filter
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { approvalWorkflowService } from '../../../services/approvalWorkflowService';
-import { masterDataService } from '../../../services';
-import { MobileDataCard } from '../../../components/ui';
+import { approvalWorkflowService } from '@/services/approvalWorkflowService';
+import { masterDataService } from '@/services';
+import { MobileDataCard } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
