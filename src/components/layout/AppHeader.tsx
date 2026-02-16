@@ -353,7 +353,7 @@ const AppHeader = ({
 
             {/* Search Modal */}
             {showSearch && (
-              <div className={`absolute right-0 top-full mt-2 w-96 rounded-xl shadow-2xl border overflow-hidden z-[9999] ${
+              <div className={`absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-96 rounded-xl shadow-2xl border overflow-hidden z-[9999] ${
                 darkMode
                   ? 'bg-[#121212] border-[#2E2E2E]'
                   : 'bg-white border-gray-300'
@@ -492,7 +492,7 @@ const AppHeader = ({
 
             {/* Notification Dropdown */}
             {showNotifications && (
-              <div className={`absolute right-0 top-full mt-2 w-80 rounded-xl shadow-2xl border overflow-hidden z-50 ${
+              <div className={`absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-80 rounded-xl shadow-2xl border overflow-hidden z-50 ${
                 darkMode
                   ? 'bg-[#121212] border-[#2E2E2E]'
                   : 'bg-white border-gray-300'

@@ -209,7 +209,7 @@ const VersionDiffModal = ({ isOpen, onClose, entityId, entityType, darkMode }: V
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div
-        className={`w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col rounded-2xl border ${border} shadow-2xl overflow-hidden`}
+        className={`w-full max-w-[calc(100vw-1rem)] md:max-w-4xl mx-1 md:mx-4 max-h-[90vh] flex flex-col rounded-2xl border ${border} shadow-2xl overflow-hidden`}
         style={{
           background: darkMode
             ? 'linear-gradient(135deg, #121212 0%, rgba(215,183,151,0.04) 40%, rgba(215,183,151,0.12) 100%)'

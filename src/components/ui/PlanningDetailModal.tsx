@@ -951,11 +951,11 @@ const PlanningDetailModal = ({
       style={{ pointerEvents: 'auto' }}
     >
       <div
-        className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col transform animate-in zoom-in-95 duration-300 border border-[#2E2E2E]"
+        className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1rem)] md:max-w-7xl max-h-[90vh] flex flex-col transform animate-in zoom-in-95 duration-300 border border-[#2E2E2E]"
         onClick={(e: any) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-[#D7B797] px-8 py-5 flex items-center justify-between relative overflow-hidden rounded-t-2xl">
+        <div className="bg-[#D7B797] px-4 py-3 md:px-8 md:py-5 flex items-center justify-between relative overflow-hidden rounded-t-2xl">
           <div className="relative z-10 flex items-center gap-6">
             <div>
               <h2 className="text-xl font-bold text-[#0A0A0A] flex items-center gap-3 font-['Montserrat']">

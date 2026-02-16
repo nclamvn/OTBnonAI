@@ -62,14 +62,14 @@ export default function MobileBottomNav({ currentScreen, darkMode }: any) {
               onClick={() => setShowMore(false)}
             />
             <motion.div
-              className={`fixed bottom-[68px] left-3 right-3 z-[91] rounded-2xl border overflow-hidden ${
+              className={`fixed left-3 right-3 z-[91] rounded-2xl border overflow-hidden ${
                 darkMode ? 'bg-surface-secondary border-border' : 'bg-white border-gray-200'
               }`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.3)' }}
+              style={{ boxShadow: '0 -8px 30px rgba(0,0,0,0.3)', bottom: 'calc(68px + env(safe-area-inset-bottom, 0px))' }}
             >
               <div className={`px-4 py-3 border-b flex items-center justify-between ${
                 darkMode ? 'border-border' : 'border-gray-100'
@@ -79,7 +79,7 @@ export default function MobileBottomNav({ currentScreen, darkMode }: any) {
                 }`}>
                   More
                 </span>
-                <button onClick={() => setShowMore(false)} className={`p-1 rounded-lg ${
+                <button onClick={() => setShowMore(false)} className={`p-2 rounded-lg ${
                   darkMode ? 'text-content-muted hover:bg-surface-elevated' : 'text-gray-500 hover:bg-gray-100'
                 }`}>
                   <X size={18} />

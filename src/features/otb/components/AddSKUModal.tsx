@@ -89,7 +89,7 @@ const AddSKUModal = ({
   return createPortal(
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div
-        className={`w-full max-w-lg mx-4 max-h-[80vh] flex flex-col rounded-xl border shadow-2xl ${
+        className={`w-full max-w-lg mx-0 md:mx-4 max-h-[100dvh] md:max-h-[80vh] h-[100dvh] md:h-auto rounded-none md:rounded-xl border shadow-2xl ${
           darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -108,7 +108,7 @@ const AddSKUModal = ({
               </p>
             )}
           </div>
-          <button onClick={onClose} className={`p-1.5 rounded-lg transition-colors ${
+          <button onClick={onClose} className={`p-2.5 md:p-1.5 rounded-lg transition-colors ${
             darkMode ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]'
           }`}>
             <X size={18} />
@@ -124,7 +124,7 @@ const AddSKUModal = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('common.search') + '...'}
-              className={`w-full pl-8 pr-3 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${
+              className={`w-full pl-8 pr-3 py-2.5 md:py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${
                 darkMode
                   ? 'border-[#2E2E2E] bg-[#121212] text-[#F2F2F2] placeholder-[#666]'
                   : 'border-[#C4B5A5] bg-white text-[#0A0A0A] placeholder-[#999]'
@@ -209,7 +209,7 @@ const AddSKUModal = ({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                 darkMode
                   ? 'text-[#999] hover:bg-[#2E2E2E]'
                   : 'text-[#666] hover:bg-gray-100'
@@ -220,7 +220,7 @@ const AddSKUModal = ({
             <button
               onClick={handleAdd}
               disabled={selectedSkus.size === 0}
-              className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+              className={`px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                 selectedSkus.size > 0
                   ? darkMode
                     ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'

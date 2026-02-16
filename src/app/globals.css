@@ -892,8 +892,8 @@ button:active {
 /* ===== MOBILE-SPECIFIC STYLES ===== */
 @media (max-width: 767px) {
   button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }
-  button, [role="button"] { min-height: 36px; min-width: 36px; }
-  input, select, textarea { min-height: 36px; font-size: 16px !important; }
+  button, [role="button"] { min-height: 44px; min-width: 44px; }
+  input, select, textarea { min-height: 44px; font-size: 16px !important; }
   .ind-badge, .dafc-badge { font-size: 13px; height: 24px; padding: 0 10px; }
   ::-webkit-scrollbar { width: 0; height: 0; }
   .skeleton-card { height: 120px; border-radius: 12px; }

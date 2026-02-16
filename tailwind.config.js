@@ -153,9 +153,9 @@ module.exports = {
         'input': '36px',
         'input-sm': '32px',
         'input-lg': '40px',
-        'btn': '32px',
+        'btn': '36px',
         'btn-sm': '28px',
-        'btn-lg': '40px',
+        'btn-lg': '44px',
       },
 
       // ===== COMPONENT WIDTHS =====

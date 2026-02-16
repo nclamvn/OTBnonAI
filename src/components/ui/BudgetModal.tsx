@@ -32,9 +32,9 @@ const BudgetModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-300 overflow-y-auto" style={{ pointerEvents: 'auto' }}>
-      <div className="bg-[#121212] rounded-3xl shadow-2xl max-w-4xl w-full my-8 flex flex-col transform animate-in zoom-in-95 duration-300 border border-[#2E2E2E]" style={{ pointerEvents: 'auto' }}>
+      <div className="bg-[#121212] rounded-3xl shadow-2xl max-w-[calc(100vw-1rem)] md:max-w-4xl w-full my-8 flex flex-col transform animate-in zoom-in-95 duration-300 border border-[#2E2E2E]" style={{ pointerEvents: 'auto' }}>
         {/* Header */}
-        <div className="bg-[#D7B797] px-8 py-6 flex items-center justify-between relative overflow-hidden rounded-t-3xl">
+        <div className="bg-[#D7B797] px-4 py-4 md:px-8 md:py-6 flex items-center justify-between relative overflow-hidden rounded-t-3xl">
           <div className="relative z-10 animate-in slide-in-from-left duration-500">
             <h2 className="text-2xl font-bold text-[#0A0A0A] flex items-center gap-3 font-['Montserrat']">
               <Sparkles size={24} className="animate-spin" style={{ animationDuration: '3s' }} />

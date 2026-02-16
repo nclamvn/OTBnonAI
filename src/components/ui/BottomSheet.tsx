@@ -59,6 +59,7 @@ export default function BottomSheet({
               maxHeight: `${SNAP_POINTS[snapPoint] * 100}vh`,
               y,
               boxShadow: '0 -4px 30px rgba(0,0,0,0.3)',
+              paddingBottom: 'env(safe-area-inset-bottom)',
             }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
