@@ -305,6 +305,16 @@ const PlanningDetailPage = ({
   const genderDropdownRef = useRef<any>(null);
   const categoryDropdownRef = useRef<any>(null);
   const subCategoryDropdownRef = useRef<any>(null);
+  const animationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup timeout on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Collection sections - defined early for useEffect
   const COLLECTION_SECTIONS = [
@@ -453,7 +463,10 @@ const PlanningDetailPage = ({
     setVersions((prev: any) => [...prev, newVersion]);
     setApproveAnimation(true);
 
-    setTimeout(() => {
+    if (animationTimeoutRef.current) {
+      clearTimeout(animationTimeoutRef.current);
+    }
+    animationTimeoutRef.current = setTimeout(() => {
       setApproveAnimation(false);
       setSelectedVersion(newVersion.id);
     }, 1500);

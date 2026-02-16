@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import {
   Zap, Copy, Scale, ChevronDown, ArrowLeftRight,
 } from 'lucide-react';
@@ -260,4 +260,4 @@ const BulkActionsMenu = ({
   );
 };
 
-export default BulkActionsMenu;
+export default memo(BulkActionsMenu);

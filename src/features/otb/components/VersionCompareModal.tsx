@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import { X, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { formatCurrency, formatPercent } from '@/utils';
 import { planningService } from '@/services';
@@ -251,4 +251,4 @@ const VersionCompareModal = ({
   );
 };
 
-export default VersionCompareModal;
+export default memo(VersionCompareModal);

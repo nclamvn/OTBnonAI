@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, memo } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Search, Check, Package } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -240,4 +240,4 @@ const AddSKUModal = ({
   );
 };
 
-export default AddSKUModal;
+export default memo(AddSKUModal);

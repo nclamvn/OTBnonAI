@@ -2,6 +2,7 @@
 // Budget Service - CRUD + Approval Workflow
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
+import { approvalHelper } from './approvalHelper';
 
 const extract = (response: any) => response.data?.data ?? response.data;
 
@@ -72,49 +73,11 @@ export const budgetService = {
     }
   },
 
-  // Approve Level 1
-  async approveL1(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/budgets/${id}/approve/level1`, { action: 'APPROVED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[budgetService.approveL1]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Approve Level 2
-  async approveL2(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/budgets/${id}/approve/level2`, { action: 'APPROVED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[budgetService.approveL2]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Reject Level 1
-  async rejectL1(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/budgets/${id}/approve/level1`, { action: 'REJECTED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[budgetService.rejectL1]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Reject Level 2
-  async rejectL2(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/budgets/${id}/approve/level2`, { action: 'REJECTED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[budgetService.rejectL2]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
+  // Approval methods (delegated to approvalHelper)
+  approveL1: (id: string, comment?: string) => approvalHelper.approveL1('budget', id, comment),
+  approveL2: (id: string, comment?: string) => approvalHelper.approveL2('budget', id, comment),
+  rejectL1: (id: string, comment?: string) => approvalHelper.rejectL1('budget', id, comment),
+  rejectL2: (id: string, comment?: string) => approvalHelper.rejectL2('budget', id, comment),
 
   // Delete budget (DRAFT only, no linked planning)
   async delete(id: string) {

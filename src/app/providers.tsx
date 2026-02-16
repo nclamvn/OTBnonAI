@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { LanguageProvider } from '@/contexts/LanguageContext';
 import { AppProvider, useAppContext } from '@/contexts/AppContext';
+import { ErrorBoundary } from '@/components/ui';
 
 function ToasterWithTheme() {
   const { darkMode } = useAppContext();
@@ -29,13 +30,15 @@ function ToasterWithTheme() {
 
 export function Providers({ children }: any) {
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <AppProvider>
-          {children}
-          <ToasterWithTheme />
-        </AppProvider>
-      </LanguageProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <LanguageProvider>
+          <AppProvider>
+            {children}
+            <ToasterWithTheme />
+          </AppProvider>
+        </LanguageProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

@@ -2,6 +2,7 @@
 // Proposal Service - SKU Products + Store Allocation
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
+import { approvalHelper } from './approvalHelper';
 
 const extract = (response: any) => response.data?.data ?? response.data;
 
@@ -117,49 +118,11 @@ export const proposalService = {
     }
   },
 
-  // Approve Level 1
-  async approveL1(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/proposals/${id}/approve/level1`, { action: 'APPROVED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[proposalService.approveL1]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Approve Level 2
-  async approveL2(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/proposals/${id}/approve/level2`, { action: 'APPROVED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[proposalService.approveL2]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Reject Level 1
-  async rejectL1(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/proposals/${id}/approve/level1`, { action: 'REJECTED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[proposalService.rejectL1]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
-
-  // Reject Level 2
-  async rejectL2(id: string, comment: string = '') {
-    try {
-      const response = await api.post(`/proposals/${id}/approve/level2`, { action: 'REJECTED', comment });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[proposalService.rejectL2]', id, err?.response?.status, err?.message);
-      throw err;
-    }
-  },
+  // Approval methods (delegated to approvalHelper)
+  approveL1: (id: string, comment?: string) => approvalHelper.approveL1('proposal', id, comment),
+  approveL2: (id: string, comment?: string) => approvalHelper.approveL2('proposal', id, comment),
+  rejectL1: (id: string, comment?: string) => approvalHelper.rejectL1('proposal', id, comment),
+  rejectL2: (id: string, comment?: string) => approvalHelper.rejectL2('proposal', id, comment),
 
   // Delete proposal (DRAFT only)
   async delete(id: string) {
