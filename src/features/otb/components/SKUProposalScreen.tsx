@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { ProductImage, ConfirmDialog, FilterSelect } from '@/components/ui';
+import AddSKUModal from './AddSKUModal';
 
 const SEASON_GROUPS = [
   { id: 'all', label: 'All' },
@@ -235,8 +236,24 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     fetchBudgets();
   }, [fetchBudgets]);
 
+  // Auto-select budget from sessionStorage when budgets are loaded
+  useEffect(() => {
+    if (apiBudgets.length === 0 || budgetFilter !== 'all') return;
+    if (storedBudgetFilters?.selectedYear) {
+      const match = apiBudgets.find((b: any) => b.fiscalYear === storedBudgetFilters.selectedYear);
+      if (match) setBudgetFilter(match.id);
+    }
+  }, [apiBudgets]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-fill filters from sessionStorage (shared with BudgetAllocateScreen)
+  const storedBudgetFilters = (() => {
+    try {
+      const stored = sessionStorage.getItem('otb_budget_filters');
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  })();
   const [budgetFilter, setBudgetFilter] = useState('all');
-  const [seasonGroupFilter, setSeasonGroupFilter] = useState('all');
+  const [seasonGroupFilter, setSeasonGroupFilter] = useState(storedBudgetFilters?.selectedSeasonGroup || 'all');
   const [seasonFilter, setSeasonFilter] = useState('all');
 
   const [genderFilter, setGenderFilter] = useState('all');
@@ -419,6 +436,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [editValue, setEditValue] = useState('');
   const lightboxRef = useRef<HTMLDivElement>(null);
 
+  // Add SKU Modal state
+  const [addSkuModal, setAddSkuModal] = useState<{ open: boolean; blockKey: string; block: any } | null>(null);
+
   const [sizingData, setSizingData] = useState<Record<string, any>>({});
 
   const getDefaultSizing = () => {
@@ -466,6 +486,26 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   const calculateSum = (choiceData: any): number => {
     return Object.values(choiceData).reduce((sum: any, val: any) => sum + (parseInt(val) || 0), 0) as number;
+  };
+
+  // Check if sizing is complete for a given SKU item (any final choice has non-zero quantities)
+  const isSizingComplete = (blockKey: any, itemIdx: any) => {
+    const sizing = getSizing(blockKey, itemIdx);
+    const finalChoice = sizingChoices.find((c: any) => c.isFinal);
+    if (!finalChoice) return false;
+    const choiceKey = choiceIdToKey(finalChoice.id);
+    const choiceData = sizing[choiceKey];
+    if (!choiceData) return false;
+    return Object.values(choiceData).some((v: any) => (parseInt(v) || 0) > 0);
+  };
+
+  // Count sizing completion for a block
+  const getSizingCount = (blockKey: any, items: any[]) => {
+    let completed = 0;
+    items.forEach((_: any, idx: number) => {
+      if (isSizingComplete(blockKey, idx)) completed++;
+    });
+    return { completed, total: items.length };
   };
 
   const handleOpenLightbox = (key: string, tab: 'details' | 'storeOrder' | 'sizing', item: any, blockKey: string, idx: number, block: any) => {
@@ -698,6 +738,40 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         };
       });
       return { ...block, items };
+    }));
+  };
+
+  const handleAddSkusFromModal = (blockKey: any, selectedSkus: any[]) => {
+    setSkuBlocks((prev: any) => prev.map((block: any) => {
+      const key = `${block.gender}_${block.category}_${block.subCategory}`;
+      if (key !== blockKey) return block;
+      const newItems = selectedSkus.map((sku: any) => ({
+        sku: sku.sku,
+        name: sku.name,
+        collectionName: sku.collectionName || '',
+        color: sku.color || '',
+        colorCode: sku.colorCode || '',
+        division: sku.division || block.category || '',
+        productType: sku.productType || block.subCategory || '',
+        departmentGroup: sku.departmentGroup || '',
+        fsr: sku.fsr || '',
+        carryForward: sku.carryForward || 'NEW',
+        composition: sku.composition || '',
+        unitCost: sku.unitCost || 0,
+        importTaxPct: sku.importTaxPct || 0,
+        srp: sku.srp || 0,
+        wholesale: sku.wholesale || 0,
+        rrp: sku.rrp || 0,
+        regionalRrp: sku.regionalRrp || 0,
+        theme: sku.theme || '',
+        size: sku.size || '',
+        order: 0,
+        storeQty: {},
+        ttlValue: 0,
+        customerTarget: 'New',
+        isNew: false,
+      }));
+      return { ...block, items: [...block.items, ...newItems] };
     }));
   };
 
@@ -1162,7 +1236,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
               onClick={() => {
                 const firstBlock = filteredSkuBlocks[0];
                 const blockKey = `${firstBlock.gender}_${firstBlock.category}_${firstBlock.subCategory}`;
-                handleAddSkuRow(blockKey);
+                setAddSkuModal({ open: true, blockKey, block: firstBlock });
               }}
               className={`rounded-2xl border-2 border-dashed p-8 flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.02] ${
                 darkMode
@@ -1210,6 +1284,18 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                         <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#6B5B4D]'}`}>
                           {block.items.length} SKUs
                         </span>
+                        {(() => {
+                          const { completed, total } = getSizingCount(key, block.items);
+                          return completed > 0 ? (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
+                              completed === total
+                                ? 'bg-[#127749]/15 text-[#2A9E6A]'
+                                : 'bg-[#D97706]/15 text-[#D97706]'
+                            }`}>
+                              {completed}/{total} sized
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
                       <div className={`text-xs mt-0.5 ${darkMode ? 'text-[#666666]' : 'text-[#8A6340]'}`}>
                         {block.gender} • {block.category}
@@ -1404,7 +1490,14 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1 text-center">
                               <div className="flex items-center justify-center gap-1">
-                                <button type="button" onClick={() => handleOpenLightbox(`${key}_${item.sku || 'new'}_${idx}`, 'sizing', item, key, idx, block)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing"><Ruler size={14} /></button>
+                                <button type="button" onClick={() => handleOpenLightbox(`${key}_${item.sku || 'new'}_${idx}`, 'sizing', item, key, idx, block)} className={`p-1 rounded-md transition-colors relative ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing">
+                                  <Ruler size={14} />
+                                  {isSizingComplete(key, idx) && (
+                                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#2A9E6A] rounded-full flex items-center justify-center">
+                                      <Check size={8} className="text-white" />
+                                    </span>
+                                  )}
+                                </button>
                                 <button type="button" onClick={() => handleDeleteSkuRow(key, idx)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`} title={t('proposal.deleteSku')}><Trash2 size={14} /></button>
                               </div>
                             </td>
@@ -1419,11 +1512,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   <div className={`border-t border-dashed px-3 py-2 ${darkMode ? 'border-[#2E2E2E] bg-[rgba(215,183,151,0.03)]' : 'border-[rgba(215,183,151,0.3)] bg-[rgba(215,183,151,0.03)]'}`}>
                     <button
                       type="button"
-                      onClick={() => handleAddSkuRow(key)}
+                      onClick={() => setAddSkuModal({ open: true, blockKey: key, block })}
                       className={`w-full flex items-center justify-center gap-2 py-1 text-xs rounded-lg transition-colors ${darkMode ? 'text-[#999999] hover:text-[#D7B797]' : 'text-[#666666] hover:text-[#6B4D30]'}`}
                     >
                       <Plus size={14} />
-                      <span>Add new SKU</span>
+                      <span>{t('skuProposal.addNewSku')}</span>
                     </button>
                   </div>
                 </>)}
@@ -1739,6 +1832,25 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         }}
       />
       <ConfirmDialog darkMode={darkMode} {...dialogProps} />
+
+      {/* Add SKU Modal */}
+      {addSkuModal && (
+        <AddSKUModal
+          isOpen={addSkuModal.open}
+          onClose={() => setAddSkuModal(null)}
+          skuCatalog={skuCatalog}
+          blockGender={addSkuModal.block?.gender}
+          blockCategory={addSkuModal.block?.category}
+          blockSubCategory={addSkuModal.block?.subCategory}
+          existingSkus={
+            skuBlocks
+              .find((b: any) => `${b.gender}_${b.category}_${b.subCategory}` === addSkuModal.blockKey)
+              ?.items.map((i: any) => i.sku).filter(Boolean) || []
+          }
+          onAddSkus={(skus) => handleAddSkusFromModal(addSkuModal.blockKey, skus)}
+          darkMode={darkMode}
+        />
+      )}
     </div>
   );
 };

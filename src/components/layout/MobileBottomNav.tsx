@@ -10,7 +10,7 @@ const PRIMARY_TABS = [
   { id: 'home', icon: Home, labelKey: 'nav.homeDashboard', shortLabel: 'Home' },
   { id: 'budget-management', icon: Wallet, labelKey: 'nav.budgetManagement', shortLabel: 'Budget' },
   { id: 'planning', icon: DollarSign, labelKey: 'nav.budgetAllocation', shortLabel: 'Planning' },
-  { id: 'approvals', icon: FileCheck, labelKey: 'nav.approvals', shortLabel: 'Approvals' },
+  { id: 'tickets', icon: Ticket, labelKey: 'nav.tickets', shortLabel: 'Tickets' },
 ];
 
 const MORE_ITEMS = [

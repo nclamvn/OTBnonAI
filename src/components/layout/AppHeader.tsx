@@ -524,7 +524,7 @@ const AppHeader = ({
       </div>
 
       {/* KPI Tracking Bar - Only show for Planning workflow */}
-      {currentScreen !== 'budget-management' && currentScreen !== 'planning' && isInPlanningWorkflow && (
+      {currentScreen !== 'budget-management' && currentScreen !== 'planning' && currentScreen !== 'otb-analysis' && currentScreen !== 'proposal' && isInPlanningWorkflow && (
         <div className={`px-4 ${isMobile ? 'py-1.5' : 'py-1.5'}`} style={{
           borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode

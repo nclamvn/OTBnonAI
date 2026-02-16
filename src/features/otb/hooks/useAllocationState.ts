@@ -24,12 +24,14 @@ interface AllocationSnapshot {
   allocationValues: Record<string, any>;
   seasonTotalValues: Record<string, any>;
   brandTotalValues: Record<string, any>;
+  allocationComments: Record<string, string>;
 }
 
 const emptySnapshot: AllocationSnapshot = {
   allocationValues: {},
   seasonTotalValues: {},
   brandTotalValues: {},
+  allocationComments: {},
 };
 
 const snapshotsEqual = (a: AllocationSnapshot, b: AllocationSnapshot) =>
@@ -40,6 +42,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
   const [allocationValues, setAllocationValues] = useState<Record<string, any>>({});
   const [seasonTotalValues, setSeasonTotalValues] = useState<Record<string, any>>({});
   const [brandTotalValues, setBrandTotalValues] = useState<Record<string, any>>({});
+  const [allocationComments, setAllocationComments] = useState<Record<string, string>>({});
 
   // ── Undo / redo stacks ────────────────────────────────────────────────
   const [undoStack, setUndoStack] = useState<AllocationSnapshot[]>([]);
@@ -58,8 +61,8 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
 
   // ── Current snapshot helper ───────────────────────────────────────────
   const currentSnapshot = useMemo<AllocationSnapshot>(
-    () => ({ allocationValues, seasonTotalValues, brandTotalValues }),
-    [allocationValues, seasonTotalValues, brandTotalValues],
+    () => ({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments }),
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments],
   );
 
   // ── Dirty tracking ───────────────────────────────────────────────────
@@ -89,13 +92,13 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
       const key = `${brandId}-${seasonGroup}-${subSeason}`;
       const numValue = parseFloat(String(value).replace(/[^0-9.-]/g, '')) || 0;
 
-      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues });
+      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
       setAllocationValues((prev: any) => ({
         ...prev,
         [key]: { ...prev[key], [field]: numValue },
       }));
     },
-    [allocationValues, seasonTotalValues, brandTotalValues, pushUndo],
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, pushUndo],
   );
 
   const handleSeasonTotalChange = useCallback(
@@ -103,26 +106,35 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
       const key = `${brandId}-${seasonGroup}`;
       const numValue = parseFloat(String(value).replace(/[^0-9.-]/g, '')) || 0;
 
-      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues });
+      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
       setSeasonTotalValues((prev: any) => ({
         ...prev,
         [key]: { ...prev[key], [field]: numValue },
       }));
     },
-    [allocationValues, seasonTotalValues, brandTotalValues, pushUndo],
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, pushUndo],
   );
 
   const handleBrandTotalChange = useCallback(
     (brandId: any, field: any, value: any) => {
       const numValue = parseFloat(String(value).replace(/[^0-9.-]/g, '')) || 0;
 
-      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues });
+      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
       setBrandTotalValues((prev: any) => ({
         ...prev,
         [brandId]: { ...prev[brandId], [field]: numValue },
       }));
     },
-    [allocationValues, seasonTotalValues, brandTotalValues, pushUndo],
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, pushUndo],
+  );
+
+  const handleCommentChange = useCallback(
+    (brandId: any, seasonGroup: any, subSeason: any, comment: string) => {
+      const key = `${brandId}-${seasonGroup}-${subSeason}`;
+      pushUndo({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
+      setAllocationComments((prev) => ({ ...prev, [key]: comment }));
+    },
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, pushUndo],
   );
 
   // ── Undo / Redo ──────────────────────────────────────────────────────
@@ -132,22 +144,24 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
   const undo = useCallback(() => {
     if (!canUndo) return;
     const prev = undoStack[undoStack.length - 1];
-    setRedoStack((r) => [...r, { allocationValues, seasonTotalValues, brandTotalValues }]);
+    setRedoStack((r) => [...r, { allocationValues, seasonTotalValues, brandTotalValues, allocationComments }]);
     setUndoStack((s) => s.slice(0, -1));
     setAllocationValues(prev.allocationValues);
     setSeasonTotalValues(prev.seasonTotalValues);
     setBrandTotalValues(prev.brandTotalValues);
-  }, [canUndo, undoStack, allocationValues, seasonTotalValues, brandTotalValues]);
+    setAllocationComments(prev.allocationComments);
+  }, [canUndo, undoStack, allocationValues, seasonTotalValues, brandTotalValues, allocationComments]);
 
   const redo = useCallback(() => {
     if (!canRedo) return;
     const next = redoStack[redoStack.length - 1];
-    setUndoStack((s) => [...s, { allocationValues, seasonTotalValues, brandTotalValues }]);
+    setUndoStack((s) => [...s, { allocationValues, seasonTotalValues, brandTotalValues, allocationComments }]);
     setRedoStack((r) => r.slice(0, -1));
     setAllocationValues(next.allocationValues);
     setSeasonTotalValues(next.seasonTotalValues);
     setBrandTotalValues(next.brandTotalValues);
-  }, [canRedo, redoStack, allocationValues, seasonTotalValues, brandTotalValues]);
+    setAllocationComments(next.allocationComments);
+  }, [canRedo, redoStack, allocationValues, seasonTotalValues, brandTotalValues, allocationComments]);
 
   // ── Keyboard shortcuts (Ctrl+Z, Ctrl+Shift+Z) ──────────────────────
   useEffect(() => {
@@ -182,8 +196,9 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           allocationValues,
           seasonTotalValues,
           brandTotalValues,
+          allocationComments,
         });
-        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues });
+        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
         const now = new Date();
         setLastSavedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       } catch {
@@ -199,7 +214,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
         autoSaveTimerRef.current = null;
       }
     };
-  }, [isDirty, saving, allocationValues, seasonTotalValues, brandTotalValues]);
+  }, [isDirty, saving, allocationValues, seasonTotalValues, brandTotalValues, allocationComments]);
 
   // ── Set versionId ref (called from parent) ────────────────────────────
   const setVersionId = useCallback((id: any) => {
@@ -285,8 +300,9 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           allocationValues,
           seasonTotalValues,
           brandTotalValues,
+          allocationComments,
         });
-        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues });
+        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
         const now = new Date();
         setLastSavedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         toast.success(t('planning.draftSaved'));
@@ -297,7 +313,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
         setSaving(false);
       }
     },
-    [allocationValues, seasonTotalValues, brandTotalValues, t],
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, t],
   );
 
   // ── Submit for approval ───────────────────────────────────────────────
@@ -311,9 +327,10 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           allocationValues,
           seasonTotalValues,
           brandTotalValues,
+          allocationComments,
         });
         await planningService.submit(versionId);
-        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues });
+        setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
         toast.success(t('planning.submittedForApproval'));
       } catch (err: any) {
         console.error('Failed to submit:', err);
@@ -322,7 +339,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
         setSaving(false);
       }
     },
-    [allocationValues, seasonTotalValues, brandTotalValues, t],
+    [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, t],
   );
 
   // ── Ctrl+S keyboard shortcut for save ───────────────────────────────
@@ -345,14 +362,15 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
     setAllocationValues(cleanSnapshot.allocationValues);
     setSeasonTotalValues(cleanSnapshot.seasonTotalValues);
     setBrandTotalValues(cleanSnapshot.brandTotalValues);
+    setAllocationComments(cleanSnapshot.allocationComments);
     setUndoStack([]);
     setRedoStack([]);
   }, [cleanSnapshot]);
 
   // ── Mark current state as clean (after external save) ─────────────────
   const markClean = useCallback(() => {
-    setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues });
-  }, [allocationValues, seasonTotalValues, brandTotalValues]);
+    setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
+  }, [allocationValues, seasonTotalValues, brandTotalValues, allocationComments]);
 
   return {
     // State
@@ -362,10 +380,13 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
     setSeasonTotalValues,
     brandTotalValues,
     setBrandTotalValues,
+    allocationComments,
+    setAllocationComments,
     // Handlers
     handleAllocationChange,
     handleSeasonTotalChange,
     handleBrandTotalChange,
+    handleCommentChange,
     // Undo/Redo
     canUndo,
     canRedo,

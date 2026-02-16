@@ -52,7 +52,6 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
       icon: CheckCircle,
       items: [
         { id: 'tickets', label: t('nav.tickets'), icon: Ticket },
-        { id: 'approvals', label: t('nav.approvals'), icon: FileCheck },
         { id: 'approval-config', label: t('nav.workflowConfig'), icon: Settings },
       ]
     },

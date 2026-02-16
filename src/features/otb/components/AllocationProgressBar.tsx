@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Circle } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { formatCurrency, formatFullCurrency } from '@/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -40,6 +41,7 @@ const AllocationProgressBar = ({
   darkMode = false,
 }: AllocationProgressBarProps) => {
   const { t } = useLanguage();
+  const { isMobile } = useIsMobile();
 
   const { pct, remaining, isOver, isComplete } = useMemo(() => {
     if (totalBudget <= 0) return { pct: 0, remaining: 0, isOver: false, isComplete: false };
@@ -91,6 +93,23 @@ const AllocationProgressBar = ({
           />
         </div>
       </div>
+
+      {/* Allocation Status Badge */}
+      {(() => {
+        const badge = totalAllocated === 0
+          ? { color: 'bg-[#6B7280]', dotColor: 'text-[#9CA3AF]', label: t('planning.statusNotAllocated'), short: t('planning.statusNotAllocatedShort') }
+          : isOver
+            ? { color: 'bg-[#F85149]', dotColor: 'text-[#FF6B6B]', label: t('planning.statusOverBudget'), short: t('planning.statusOverBudgetShort') }
+            : isComplete
+              ? { color: 'bg-[#127749]', dotColor: 'text-[#2A9E6A]', label: t('planning.statusAllocated'), short: t('planning.statusAllocatedShort') }
+              : { color: 'bg-[#D97706]', dotColor: 'text-[#FBBF24]', label: t('planning.statusProcessing'), short: t('planning.statusProcessingShort') };
+        return (
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shrink-0 ${badge.color}`}>
+            <Circle size={6} className={`fill-current ${badge.dotColor}`} />
+            {isMobile ? badge.short : badge.label}
+          </span>
+        );
+      })()}
 
       {/* Percentage with color coding */}
       <span className={`text-xs font-bold font-['JetBrains_Mono'] shrink-0 ${pctColor}`}>

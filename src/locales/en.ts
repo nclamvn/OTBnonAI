@@ -373,6 +373,17 @@ const en = {
     remaining: 'Remaining',
     totalBudget: 'Total Budget',
     overBudget: 'Over budget',
+    // Allocation status badges
+    statusNotAllocated: 'Not Allocated',
+    statusProcessing: 'Processing',
+    statusAllocated: 'Allocated',
+    statusOverBudget: 'Over Budget',
+    statusNotAllocatedShort: 'N/A',
+    statusProcessingShort: 'In Progress',
+    statusAllocatedShort: 'Done',
+    statusOverBudgetShort: 'Over',
+    comment: 'Comment',
+    commentPlaceholder: 'Add comment...',
     // Status bar
     draft: 'Draft',
     pending: 'Pending',

@@ -373,6 +373,17 @@ const vi = {
     remaining: 'Còn lại',
     totalBudget: 'Tổng ngân sách',
     overBudget: 'Vượt ngân sách',
+    // Allocation status badges
+    statusNotAllocated: 'Chưa phân bổ',
+    statusProcessing: 'Đang xử lý',
+    statusAllocated: 'Đã phân bổ',
+    statusOverBudget: 'Vượt ngân sách',
+    statusNotAllocatedShort: 'Chưa PB',
+    statusProcessingShort: 'Đang XL',
+    statusAllocatedShort: 'Đã PB',
+    statusOverBudgetShort: 'Vượt NS',
+    comment: 'Ghi chú',
+    commentPlaceholder: 'Nhập ghi chú...',
     // Status bar
     draft: 'Nháp',
     pending: 'Chờ duyệt',

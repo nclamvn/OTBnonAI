@@ -157,11 +157,31 @@ const BudgetAllocateScreen = ({
     return () => { ignore = true; };
   }, []);
 
-  // Filter states - all single choice
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [selectedGroupBrand, setSelectedGroupBrand] = useState<any>(null);
-  const [selectedBrand, setSelectedBrand] = useState<any>(null);
-  const [selectedSeasonGroup, setSelectedSeasonGroup] = useState<any>(null); // null means "All Seasons"
+  // Filter states - persisted via sessionStorage
+  const FILTER_STORAGE_KEY = 'otb_budget_filters';
+  const getStoredFilters = () => {
+    try {
+      const stored = sessionStorage.getItem(FILTER_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  };
+  const storedFilters = getStoredFilters();
+  const [selectedYear, setSelectedYear] = useState(storedFilters?.selectedYear ?? 2025);
+  const [selectedGroupBrand, setSelectedGroupBrand] = useState<any>(storedFilters?.selectedGroupBrand ?? null);
+  const [selectedBrand, setSelectedBrand] = useState<any>(storedFilters?.selectedBrand ?? null);
+  const [selectedSeasonGroup, setSelectedSeasonGroup] = useState<any>(storedFilters?.selectedSeasonGroup ?? null);
+
+  // Persist filters to sessionStorage on change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({
+        selectedYear,
+        selectedGroupBrand,
+        selectedBrand,
+        selectedSeasonGroup,
+      }));
+    } catch { /* ignore */ }
+  }, [selectedYear, selectedGroupBrand, selectedBrand, selectedSeasonGroup]);
 
   // Available budgets for dropdown selection - prefer API data
   const allBudgets = apiBudgets.length > 0 ? apiBudgets : (propAvailableBudgets || []);
@@ -208,6 +228,7 @@ const BudgetAllocateScreen = ({
     allocationValues, setAllocationValues,
     seasonTotalValues, setSeasonTotalValues,
     brandTotalValues, setBrandTotalValues,
+    allocationComments, handleCommentChange,
     handleAllocationChange, handleSeasonTotalChange, handleBrandTotalChange,
     canUndo, canRedo, undo, redo,
     isDirty, discardChanges, saving, saveDraft, submitForApproval, validate,
@@ -260,9 +281,9 @@ const BudgetAllocateScreen = ({
 
   // Handle bulk update from BulkActionsMenu
   const handleBulkUpdate = useCallback((newValues: Record<string, any>) => {
-    allocation.pushUndo({ allocationValues, seasonTotalValues, brandTotalValues });
+    allocation.pushUndo({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
     setAllocationValues(newValues);
-  }, [allocationValues, seasonTotalValues, brandTotalValues, setAllocationValues, allocation]);
+  }, [allocationValues, seasonTotalValues, brandTotalValues, allocationComments, setAllocationValues, allocation]);
 
   // Handle session recovery
   const handleRecoverDraft = useCallback(() => {
@@ -1443,8 +1464,19 @@ const BudgetAllocateScreen = ({
                     {/* Group Total */}
                     <div className="text-right">
                       <div className="text-xs text-white/80 font-['Montserrat']">{t('skuProposal.totalPlanned')}</div>
-                      <div className="font-bold text-sm text-white font-['JetBrains_Mono']">
+                      <div className="font-bold text-sm text-white font-['JetBrains_Mono'] flex items-center gap-2 justify-end">
                         {formatCurrency(groupTotals.sum)}
+                        {totalBudget > 0 && (() => {
+                          const allocPct = Math.round((groupTotals.sum / totalBudget) * 100);
+                          const badgeColor = allocPct === 0
+                            ? 'bg-white/20 text-white/80'
+                            : allocPct > 100
+                              ? 'bg-[#F85149] text-white'
+                              : allocPct === 100
+                                ? 'bg-[#2A9E6A] text-white'
+                                : 'bg-[#D97706] text-white';
+                          return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${badgeColor}`}>{allocPct}%</span>;
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -1481,9 +1513,20 @@ const BudgetAllocateScreen = ({
                                     <span className={`text-xs md:text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{formatCurrency(brandTotals[store.id] || 0)}</span>
                                   </div>
                                   ))}
-                                  <div className="text-right">
+                                  <div className="text-right flex items-center gap-1.5">
                                     <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.total')}: </span>
                                     <span className={`font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(brandTotals.sum)}</span>
+                                    {totalBudget > 0 && (() => {
+                                      const bPct = Math.round((brandTotals.sum / totalBudget) * 100);
+                                      const bc = bPct === 0
+                                        ? (darkMode ? 'bg-[#333] text-[#999]' : 'bg-[#E5E7EB] text-[#6B7280]')
+                                        : bPct > 100
+                                          ? 'bg-[#F85149]/15 text-[#F85149]'
+                                          : bPct === 100
+                                            ? (darkMode ? 'bg-[#127749]/20 text-[#2A9E6A]' : 'bg-[#127749]/15 text-[#127749]')
+                                            : 'bg-[#D97706]/15 text-[#D97706]';
+                                      return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${bc}`}>{bPct}%</span>;
+                                    })()}
                                   </div>
                                 </div>
                               </div>
@@ -1509,6 +1552,7 @@ const BudgetAllocateScreen = ({
                                     ))}
                                     <th className={`px-1.5 py-0.5 text-center text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white' : 'text-[#333333]'}`}>{t('planning.totalValue')}</th>
                                     <th className={`px-1.5 py-0.5 text-center text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white' : 'text-[#333333]'}`}>MIX</th>
+                                    <th className={`px-1.5 py-0.5 text-center text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white' : 'text-[#333333]'}`}>{t('planning.comment')}</th>
                                     <th className={`px-1.5 py-0.5 text-center text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white' : 'text-[#333333]'}`}>{t('common.actions')}</th>
                                   </tr>
                                 </thead>
@@ -1547,6 +1591,7 @@ const BudgetAllocateScreen = ({
                                         <td className={`px-2 py-1 text-center text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#4A3728]'}`}>
                                           {selectedSeasonGroup ? '100%' : `${calculateMix(stores.reduce((s: number, st: any) => s + (getSeasonTotalValue(brand.id, seasonGroup, st.id) || 0), 0), brand.id)}%`}
                                         </td>
+                                        <td className="px-2 py-1"></td>
                                         <td className="px-2 py-1"></td>
                                       </tr>
 
@@ -1619,6 +1664,19 @@ const BudgetAllocateScreen = ({
                                             <td className={`px-2 py-0.5 text-center text-xs font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
                                               {mix}%
                                             </td>
+                                            <td className="px-1.5 py-0.5">
+                                              <input
+                                                type="text"
+                                                value={allocationComments[`${brand.id}-${seasonGroup}-${subSeason}`] || ''}
+                                                onChange={(e) => handleCommentChange(brand.id, seasonGroup, subSeason, e.target.value)}
+                                                className={`w-full min-w-[80px] px-1.5 py-0.5 text-xs border rounded focus:outline-none focus:ring-1 focus:ring-[#D7B797] focus:border-[#D7B797] ${
+                                                  darkMode
+                                                    ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212] hover:border-[rgba(215,183,151,0.25)]'
+                                                    : 'border-[#C4B5A5] text-[#0A0A0A] bg-white hover:border-[rgba(215,183,151,0.4)]'
+                                                }`}
+                                                placeholder={t('planning.commentPlaceholder')}
+                                              />
+                                            </td>
                                             <td className="px-1.5 py-0.5 text-center">
                                               <button
                                                 onClick={() => {
@@ -1678,6 +1736,7 @@ const BudgetAllocateScreen = ({
                                       </div>
                                     </td>
                                     <td className={`px-2 py-1.5 text-center text-sm font-black font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>100%</td>
+                                    <td className="px-2 py-1.5"></td>
                                     <td className="px-2 py-1.5"></td>
                                   </tr>
                                 </tbody>

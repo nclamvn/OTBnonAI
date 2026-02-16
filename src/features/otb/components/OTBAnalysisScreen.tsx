@@ -166,14 +166,29 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   // Smart Filter Bar — direct DOM toggle, zero re-render
   const { barRef, handleBarClick } = useSmartScrollState();
 
-  // Auto-select first budget when budgets are loaded and none selected
+  // Auto-fill from sessionStorage (shared with BudgetAllocateScreen), fallback to first budget
   useEffect(() => {
-    if (apiBudgets.length > 0 && selectedBudgetIds.length === 0 && selectedBudgetId === 'all') {
-      const first = apiBudgets[0];
-      setSelectedBudgetIds([first.id]);
-      setSelectedBudgetId(first.id);
-      if (first.fiscalYear) setSelectedYear(first.fiscalYear);
-    }
+    if (apiBudgets.length === 0 || selectedBudgetIds.length > 0) return;
+    try {
+      const stored = sessionStorage.getItem('otb_budget_filters');
+      if (stored) {
+        const filters = JSON.parse(stored);
+        if (filters.selectedYear) setSelectedYear(filters.selectedYear);
+        if (filters.selectedSeasonGroup) setSelectedSeasonGroup(filters.selectedSeasonGroup);
+        // Try to find matching budget by year
+        const matchingBudgets = apiBudgets.filter((b: any) => b.fiscalYear === filters.selectedYear);
+        if (matchingBudgets.length > 0) {
+          setSelectedBudgetIds([matchingBudgets[0].id]);
+          setSelectedBudgetId(matchingBudgets[0].id);
+          return;
+        }
+      }
+    } catch { /* ignore */ }
+    // Fallback: select first budget
+    const first = apiBudgets[0];
+    setSelectedBudgetIds([first.id]);
+    setSelectedBudgetId(first.id);
+    if (first.fiscalYear) setSelectedYear(first.fiscalYear);
   }, [apiBudgets]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sync single-budget mode when exactly 1 budget selected in multi-select
