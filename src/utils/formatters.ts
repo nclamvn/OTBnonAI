@@ -3,6 +3,63 @@
 // Exchange rate VND to USD (approximate)
 const VND_TO_USD_RATE = 25000;
 
+// ── Smart input parsing ──────────────────────────────────────────
+// Handles shortcuts like: 1.5t, 500tr, 2b, 100m, 50k, plain numbers,
+// and VN-format numbers (1.500.000.000)
+export function parseSmartInput(input: string): number | null {
+  if (!input || typeof input !== 'string') return null;
+  const cleaned = input.toLowerCase().trim().replace(/,/g, '.');
+
+  const patterns: { regex: RegExp; multiplier: number }[] = [
+    { regex: /^(-?[\d.]+)\s*(t|ty|tỷ|b)$/i, multiplier: 1_000_000_000 },
+    { regex: /^(-?[\d.]+)\s*(tr|trieu|triệu|m)$/i, multiplier: 1_000_000 },
+    { regex: /^(-?[\d.]+)\s*(k|ng|nghin|nghìn)$/i, multiplier: 1_000 },
+    { regex: /^(-?[\d.]+)\s*(đ|d|vnd)?$/i, multiplier: 1 },
+  ];
+
+  for (const { regex, multiplier } of patterns) {
+    const match = cleaned.match(regex);
+    if (match) {
+      const num = parseFloat(match[1]);
+      if (!isNaN(num)) return num * multiplier;
+    }
+  }
+
+  // Handle VN dot-separated format: 1.500.000.000
+  // Only if there are 3+ digits between dots (not a decimal like 1.5)
+  if (/^\d{1,3}(\.\d{3})+$/.test(cleaned)) {
+    const num = parseFloat(cleaned.replace(/\./g, ''));
+    return isNaN(num) ? null : num;
+  }
+
+  return null;
+}
+
+// Full VND format with currency symbol (for tooltips)
+export function formatFullCurrency(value: number | string | null | undefined): string {
+  let num = 0;
+  if (typeof value === 'string') {
+    num = parseFloat(value.replace(/[^\d.-]/g, '')) || 0;
+  } else if (typeof value === 'number') {
+    num = isNaN(value) ? 0 : value;
+  }
+  return new Intl.NumberFormat('vi-VN').format(num) + ' VND';
+}
+
+// Format percentage with optional sign and color hint
+export function formatPercent(value: number, decimals = 1): string {
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${value.toFixed(decimals)}%`;
+}
+
+// Format change between two values as percentage
+export function formatChange(oldVal: number, newVal: number): { text: string; direction: 'up' | 'down' | 'none' } {
+  if (oldVal === 0) return { text: newVal > 0 ? '+100%' : '—', direction: newVal > 0 ? 'up' : 'none' };
+  const pct = ((newVal - oldVal) / oldVal) * 100;
+  const direction = pct > 0 ? 'up' as const : pct < 0 ? 'down' as const : 'none' as const;
+  return { text: formatPercent(pct), direction };
+}
+
 interface FormatCurrencyOptions {
   full?: boolean;
   currency?: 'VND' | 'USD';

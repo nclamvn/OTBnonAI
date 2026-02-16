@@ -1,19 +1,34 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo, Fragment } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, Fragment } from 'react';
 import {
   DollarSign, Sparkles, Filter, Clock, ChevronDown, Check,
   ChevronRight, TrendingUp, Sun, Snowflake,
-  Star, Layers, Tag, FileText, X, Split, Pencil
+  Star, Layers, Tag, FileText, X, Split, Pencil,
+  Download, RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { formatCurrency } from '../../../utils';
+import { formatCurrency, parseSmartInput } from '../../../utils';
 import { SEASON_GROUPS, SEASON_CONFIG } from '../../../utils/constants';
 import { budgetService, masterDataService, planningService } from '../../../services';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
+import { TableSkeleton } from '@/components/ui';
+import { useAllocationState } from '../hooks/useAllocationState';
+import { useSessionRecovery } from '../hooks/useSessionRecovery';
+import { useClipboardPaste } from '../hooks/useClipboardPaste';
+import { useTableFilters } from '../hooks/useTableFilters';
+import AllocationToolbar from './AllocationToolbar';
+import AllocationProgressBar from './AllocationProgressBar';
+import AllocationStatusBar from './AllocationStatusBar';
+import AllocationSidePanel from './AllocationSidePanel';
+import UnsavedChangesBanner from './UnsavedChangesBanner';
+import BulkActionsMenu from './BulkActionsMenu';
+import ViewToggleBar from './ViewToggleBar';
+import VersionCompareModal from './VersionCompareModal';
+import { exportAllocationToExcel } from '../utils/exportExcel';
 
 // Constants - same as BudgetManagementScreen
 const YEARS = [2023, 2024, 2025, 2026];
@@ -32,6 +47,7 @@ const BudgetAllocateScreen = ({
   getPlanningStatus,
   handleOpenPlanningDetail,
   onOpenOtbAnalysis,
+  onNavigateBack,
   allocationData,
   onAllocationDataUsed,
   availableBudgets: propAvailableBudgets,
@@ -185,20 +201,78 @@ const BudgetAllocateScreen = ({
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, any>>({});
   const [collapsedBrands, setCollapsedBrands] = useState<Record<string, any>>({});
 
-  // Editable allocation values state
-  // Structure: { 'brandId-seasonGroup-subSeason': { rex: number, ttp: number } }
-  const [allocationValues, setAllocationValues] = useState<Record<string, any>>({});
+  // Allocation state hook (undo/redo, dirty tracking, validation, save)
+  const allocation = useAllocationState(t);
+  const {
+    allocationValues, setAllocationValues,
+    seasonTotalValues, setSeasonTotalValues,
+    brandTotalValues, setBrandTotalValues,
+    handleAllocationChange, handleSeasonTotalChange, handleBrandTotalChange,
+    canUndo, canRedo, undo, redo,
+    isDirty, discardChanges, saving, saveDraft, submitForApproval, validate,
+  } = allocation;
 
   // Track which cell is currently being edited (for showing raw value)
   const [editingCell, setEditingCell] = useState<any>(null); // 'brandId-seasonGroup-subSeason-field'
 
-  // Season totals editable state (for season header rows)
-  // Structure: { 'brandId-seasonGroup': { rex: number, ttp: number } }
-  const [seasonTotalValues, setSeasonTotalValues] = useState<Record<string, any>>({});
+  // Side panel state
+  const [sidePanelOpen, setSidePanelOpen] = useState(false);
 
-  // Brand totals editable state (for total row)
-  // Structure: { 'brandId': { rex: number, ttp: number } }
-  const [brandTotalValues, setBrandTotalValues] = useState<Record<string, any>>({});
+  // Leave dialog state (3 options: Save & Leave / Leave / Stay)
+  const [leaveDialog, setLeaveDialog] = useState<{ target?: string } | null>(null);
+
+  // Version compare modal state
+  const [compareModal, setCompareModal] = useState<{ a: any; b: any } | null>(null);
+
+  // Session recovery
+  const sessionRecovery = useSessionRecovery(selectedBudgetId);
+
+  // Table view filters
+  const tableFilters = useTableFilters();
+
+  // Clipboard paste handler
+  const handlePasteValues = useCallback((startIndex: number, values: number[]) => {
+    const cells = Array.from(document.querySelectorAll<HTMLInputElement>('[data-alloc-cell]'));
+    // We need to map cell indices back to brand/season/store keys
+    // For now, trigger change events directly
+    values.forEach((val, i) => {
+      const cell = cells[startIndex + i];
+      if (cell) {
+        // Trigger a synthetic input event
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+        if (nativeInputValueSetter) {
+          nativeInputValueSetter.call(cell, String(val));
+          cell.dispatchEvent(new Event('input', { bubbles: true }));
+          cell.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+  }, []);
+  useClipboardPaste(handlePasteValues);
+
+  // Auto-save to localStorage when allocation values change
+  useEffect(() => {
+    if (selectedBudgetId && isDirty) {
+      sessionRecovery.saveDraft(allocationValues, seasonTotalValues, brandTotalValues);
+    }
+  }, [allocationValues, seasonTotalValues, brandTotalValues, selectedBudgetId, isDirty]);
+
+  // Handle bulk update from BulkActionsMenu
+  const handleBulkUpdate = useCallback((newValues: Record<string, any>) => {
+    allocation.pushUndo({ allocationValues, seasonTotalValues, brandTotalValues });
+    setAllocationValues(newValues);
+  }, [allocationValues, seasonTotalValues, brandTotalValues, setAllocationValues, allocation]);
+
+  // Handle session recovery
+  const handleRecoverDraft = useCallback(() => {
+    const draft = sessionRecovery.recoverDraft();
+    if (draft) {
+      setAllocationValues(draft.allocationValues || {});
+      setSeasonTotalValues(draft.seasonTotalValues || {});
+      setBrandTotalValues(draft.brandTotalValues || {});
+      toast.success(t('planning.recoverData'));
+    }
+  }, [sessionRecovery, setAllocationValues, setSeasonTotalValues, setBrandTotalValues, t]);
 
   // Dropdown states
   const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
@@ -209,6 +283,12 @@ const BudgetAllocateScreen = ({
   const [versions, setVersions] = useState<any[]>([]);
   const [selectedVersionId, setSelectedVersionId] = useState<any>(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
+
+  // Sync versionId to hook for auto-save + Ctrl+S
+  useEffect(() => {
+    allocation.setVersionId(selectedVersionId);
+  }, [selectedVersionId, allocation.setVersionId]);
+
   // Refs
   const budgetNameDropdownRef = useRef<any>(null);
   const yearDropdownRef = useRef<any>(null);
@@ -411,45 +491,78 @@ const BudgetAllocateScreen = ({
     return `${brandId}-${seasonGroup}-${subSeason}`;
   };
 
-  // Handle allocation input change
-  const handleAllocationChange = (brandId: any, seasonGroup: any, subSeason: any, field: any, value: any) => {
-    const key = getAllocationKey(brandId, seasonGroup, subSeason);
-    const numValue = parseFloat(value.replace(/[^0-9.-]/g, '')) || 0;
-
-    setAllocationValues((prev: any) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        [field]: numValue
+  // Calculate total allocated for progress bar
+  const totalAllocated = useMemo(() => {
+    let sum = 0;
+    Object.values(allocationValues).forEach((storeValues: any) => {
+      if (storeValues && typeof storeValues === 'object') {
+        Object.values(storeValues).forEach((val: any) => {
+          if (typeof val === 'number') sum += val;
+        });
       }
-    }));
+    });
+    return sum;
+  }, [allocationValues]);
+
+  // Validation issues for side panel
+  const validationIssues = useMemo(
+    () => validate(totalBudget, totalAllocated),
+    [validate, totalBudget, totalAllocated],
+  );
+
+  // Navigate away (with unsaved changes check)
+  const navigateTo = (target: string) => {
+    if (isDirty) {
+      setLeaveDialog({ target });
+    } else {
+      if (target === '/budget-management') {
+        onNavigateBack?.();
+      } else if (target === '/otb-analysis') {
+        handleContinueNav();
+      } else {
+        onNavigateBack?.(); // fallback — stepper click
+      }
+    }
   };
 
-  // Handle season total input change
-  const handleSeasonTotalChange = (brandId: any, seasonGroup: any, field: any, value: any) => {
-    const key = `${brandId}-${seasonGroup}`;
-    const numValue = parseFloat(value.replace(/[^0-9.-]/g, '')) || 0;
+  const handleBack = () => navigateTo('/budget-management');
 
-    setSeasonTotalValues((prev: any) => ({
-      ...prev,
-      [key]: {
-        ...prev[key],
-        [field]: numValue
-      }
-    }));
+  const handleContinueNav = () => {
+    if (onOpenOtbAnalysis) {
+      onOpenOtbAnalysis({
+        budgetId: selectedBudgetId,
+        budgetName: selectedBudget?.budgetName || fallbackBudgetName || null,
+        fiscalYear: selectedBudget?.fiscalYear || selectedYear,
+        totalBudget: selectedBudget?.totalBudget || 0,
+        status: selectedBudget?.status,
+      });
+    }
   };
 
-  // Handle brand total input change
-  const handleBrandTotalChange = (brandId: any, field: any, value: any) => {
-    const numValue = parseFloat(value.replace(/[^0-9.-]/g, '')) || 0;
+  const handleContinue = () => navigateTo('/otb-analysis');
 
-    setBrandTotalValues((prev: any) => ({
-      ...prev,
-      [brandId]: {
-        ...prev[brandId],
-        [field]: numValue
-      }
-    }));
+  // Leave dialog handlers
+  const handleLeaveWithSave = async () => {
+    await saveDraft(selectedVersionId);
+    const target = leaveDialog?.target;
+    setLeaveDialog(null);
+    if (target === '/budget-management') onNavigateBack?.();
+    else if (target === '/otb-analysis') handleContinueNav();
+  };
+
+  const handleLeaveWithoutSave = () => {
+    discardChanges();
+    const target = leaveDialog?.target;
+    setLeaveDialog(null);
+    if (target === '/budget-management') onNavigateBack?.();
+    else if (target === '/otb-analysis') handleContinueNav();
+  };
+
+  // Stepper click handler
+  const handleStepClick = (route: string) => {
+    if (route === '/budget-management') handleBack();
+    else if (route === '/otb-analysis') handleContinue();
+    else navigateTo(route);
   };
 
   // Get season total value (from state or calculated)
@@ -579,6 +692,28 @@ const BudgetAllocateScreen = ({
     return groupBrandList;
   }, [selectedGroupBrand, groupBrandList]);
 
+  // Handle export (placed after displayBrands + totalAllocated are defined)
+  const handleExportExcel = useCallback(() => {
+    if (!selectedBudgetId) return;
+    try {
+      exportAllocationToExcel({
+        budgetName: selectedBudget?.budgetName || fallbackBudgetName || 'Allocation',
+        fiscalYear: selectedBudget?.fiscalYear || selectedYear,
+        stores,
+        seasonGroups: selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS,
+        seasonConfig: SEASON_CONFIG,
+        brands: displayBrands,
+        allocationValues,
+        totalBudget,
+        totalAllocated,
+      });
+      toast.success(t('planning.exportSuccess'));
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error(t('planning.saveFailed'));
+    }
+  }, [selectedBudgetId, selectedBudget, fallbackBudgetName, selectedYear, stores, selectedSeasonGroup, displayBrands, allocationValues, totalBudget, totalAllocated, t]);
+
   // Handle budget selection from dropdown - auto-populate other filters
   const handleBudgetSelect = (budget: any) => {
     if (!budget) {
@@ -648,8 +783,73 @@ const BudgetAllocateScreen = ({
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
-      {/* Header Section — hides entirely on scroll */}
-      <div ref={barRef} className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
+      {/* Allocation Toolbar — Back, Stepper, Undo/Redo, Save, Continue */}
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
+        <AllocationToolbar
+          onBack={handleBack}
+          onContinue={handleContinue}
+          onStepClick={handleStepClick}
+          onUndo={undo}
+          onRedo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onSaveDraft={() => saveDraft(selectedVersionId)}
+          onSubmit={() => submitForApproval(selectedVersionId)}
+          saving={saving}
+          isDirty={isDirty}
+          onToggleSidePanel={() => setSidePanelOpen(!sidePanelOpen)}
+          sidePanelOpen={sidePanelOpen}
+          darkMode={darkMode}
+        />
+
+        {/* Quick actions bar — Bulk Actions + Export */}
+        {(selectedBudget || selectedBudgetId) && (
+          <div className={`px-3 md:px-6 py-1 border-b flex items-center gap-2 ${
+            darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'
+          }`}>
+            <BulkActionsMenu
+              stores={stores}
+              allocationValues={allocationValues}
+              onBulkUpdate={handleBulkUpdate}
+              totalBudget={totalBudget}
+              darkMode={darkMode}
+            />
+            <button
+              onClick={handleExportExcel}
+              className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors border ${
+                darkMode
+                  ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
+              }`}
+              title={t('planning.exportExcel')}
+            >
+              <Download size={12} />
+              <span className="hidden md:inline">{t('planning.exportExcel')}</span>
+            </button>
+          </div>
+        )}
+
+        {/* Allocation Progress Bar */}
+        <AllocationProgressBar
+          totalBudget={totalBudget}
+          totalAllocated={totalAllocated}
+          darkMode={darkMode}
+        />
+
+        {/* Allocation Status Bar */}
+        <AllocationStatusBar
+          budgetName={selectedBudget?.budgetName || fallbackBudgetName}
+          status={selectedVersion?.status || selectedBudget?.status || 'draft'}
+          versionName={selectedVersion?.name}
+          isDirty={isDirty}
+          autoSaving={allocation.autoSaving}
+          lastSavedAt={allocation.lastSavedAt}
+          darkMode={darkMode}
+        />
+      </div>
+
+      {/* Filter Section — hides entirely on scroll */}
+      <div ref={barRef} className={`sticky top-[4.5rem] md:top-[4rem] z-20 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
       }`}>
 
@@ -1127,6 +1327,72 @@ const BudgetAllocateScreen = ({
         </div>{/* end overflow-hidden min-h-0 */}
         </div>{/* end grid animation wrapper */}
       </div>
+      {/* View Toggle Bar */}
+      {(selectedBudget || selectedBudgetId) && (
+        <ViewToggleBar
+          view={tableFilters.filters.view}
+          showOnly={tableFilters.filters.showOnly}
+          channelFilter={tableFilters.filters.channelFilter}
+          stores={stores}
+          onViewChange={tableFilters.setView}
+          onShowOnlyChange={tableFilters.setShowOnly}
+          onChannelChange={tableFilters.setChannelFilter}
+          onReset={tableFilters.resetFilters}
+          hasActiveFilters={tableFilters.hasActiveFilters}
+          seasonGroups={selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS}
+          seasonConfig={SEASON_CONFIG}
+          onJumpTo={(sg) => {
+            const el = document.querySelector(`[data-season-group="${sg}"]`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+          darkMode={darkMode}
+        />
+      )}
+
+      {/* Session Recovery Banner */}
+      {sessionRecovery.hasDraft && (
+        <div className={`mx-0 mb-2 px-4 py-2.5 rounded-lg border flex items-center gap-3 ${
+          darkMode
+            ? 'bg-[rgba(227,179,65,0.1)] border-[#E3B341]/30'
+            : 'bg-[rgba(227,179,65,0.08)] border-[#E3B341]/20'
+        }`}>
+          <RefreshCw size={16} className="text-[#E3B341] shrink-0" />
+          <div className="flex-1 min-w-0">
+            <span className={`text-xs font-semibold ${darkMode ? 'text-[#E3B341]' : 'text-[#8A6340]'}`}>
+              {t('planning.recoveryTitle')}
+            </span>
+            {sessionRecovery.draftInfo && (
+              <span className={`text-[10px] ml-2 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+                {new Date(sessionRecovery.draftInfo.savedAt).toLocaleString('vi-VN')} — {sessionRecovery.draftInfo.changeCount} {t('planning.fieldsChanged', { count: String(sessionRecovery.draftInfo.changeCount) })}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={handleRecoverDraft}
+            className={`px-2 py-1 rounded text-xs font-semibold transition-colors ${
+              darkMode
+                ? 'bg-[rgba(227,179,65,0.2)] text-[#E3B341] hover:bg-[rgba(227,179,65,0.3)]'
+                : 'bg-[rgba(227,179,65,0.15)] text-[#8A6340] hover:bg-[rgba(227,179,65,0.25)]'
+            }`}
+          >
+            {t('planning.recoverData')}
+          </button>
+          <button
+            onClick={() => sessionRecovery.dismissDraft()}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              darkMode ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666] hover:bg-[rgba(160,120,75,0.08)]'
+            }`}
+          >
+            {t('planning.discardRecovery')}
+          </button>
+        </div>
+      )}
+
+      {/* Loading skeleton */}
+      {loadingBudgets && !selectedBudgetId && (
+        <TableSkeleton rows={4} cols={stores.length + 3} darkMode={darkMode} />
+      )}
+
       {/* Budget Table - Collapsible by Group Brand and Brand */}
       {(selectedBudget || selectedBudgetId) && (
         <div className="space-y-2">
@@ -1253,7 +1519,7 @@ const BudgetAllocateScreen = ({
                                   {(selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS).map((seasonGroup: any) => (
                                     <Fragment key={`${brand.id}-${seasonGroup}`}>
                                       {/* Season Group Header — summary row (non-editable) */}
-                                      <tr className={`border-b ${darkMode ? 'bg-[#1e1a14] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.18)] border-[#C4B5A5]'}`}>
+                                      <tr data-season-group={seasonGroup} className={`border-b ${darkMode ? 'bg-[#1e1a14] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.18)] border-[#C4B5A5]'}`}>
                                         <td className="px-3 md:px-4 py-1">
                                           <div className="flex items-center gap-2">
                                             <div className={`w-1.5 h-4 rounded-full ${seasonGroup === 'SS' ? 'bg-[#E3B341]' : 'bg-[#D7B797]'}`}></div>
@@ -1296,25 +1562,54 @@ const BudgetAllocateScreen = ({
                                             <td className="px-3 md:px-4 py-0.5 pl-10 md:pl-12">
                                               <span className={`text-xs font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{subSeason}</span>
                                             </td>
-                                            {stores.map((store: any) => (
+                                            {stores.map((store: any) => {
+                                              const cellVal = data[store.id] || 0;
+                                              const isNegative = typeof cellVal === 'number' && cellVal < 0;
+                                              const isEditing = editingCell === `${brand.id}-${seasonGroup}-${subSeason}-${store.id}`;
+                                              return (
                                             <td key={store.id} className="px-1.5 py-0.5 text-center">
                                               <div className="relative group">
                                                 <input
                                                   type="text"
-                                                  value={editingCell === `${brand.id}-${seasonGroup}-${subSeason}-${store.id}` ? (data[store.id] || '') : formatCurrency(data[store.id] || 0)}
+                                                  data-alloc-cell
+                                                  value={isEditing ? (cellVal || '') : formatCurrency(cellVal)}
                                                   onChange={(e) => handleAllocationChange(brand.id, seasonGroup, subSeason, store.id, e.target.value)}
-                                                  onFocus={() => setEditingCell(`${brand.id}-${seasonGroup}-${subSeason}-${store.id}`)}
+                                                  onFocus={(e) => {
+                                                    setEditingCell(`${brand.id}-${seasonGroup}-${subSeason}-${store.id}`);
+                                                    e.target.select();
+                                                  }}
                                                   onBlur={() => setEditingCell(null)}
-                                                  className={`w-full pl-4 pr-1.5 py-0.5 text-center border rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#D7B797] focus:border-[#D7B797] font-medium font-['JetBrains_Mono'] transition-colors ${darkMode
-                                                    ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212] hover:border-[rgba(215,183,151,0.25)]'
-                                                    : 'border-[#C4B5A5] text-[#0A0A0A] bg-white hover:border-[rgba(215,183,151,0.4)]'
+                                                  onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === 'Tab') {
+                                                      e.preventDefault();
+                                                      const cells = Array.from(document.querySelectorAll<HTMLInputElement>('[data-alloc-cell]'));
+                                                      const idx = cells.indexOf(e.currentTarget);
+                                                      if (idx >= 0) {
+                                                        const nextIdx = e.shiftKey ? idx - 1 : idx + (e.key === 'Enter' ? stores.length : 1);
+                                                        const nextCell = cells[nextIdx];
+                                                        if (nextCell) nextCell.focus();
+                                                      }
+                                                    }
+                                                    if (e.key === 'Escape') {
+                                                      e.currentTarget.blur();
+                                                    }
+                                                  }}
+                                                  className={`w-full pl-4 pr-1.5 py-0.5 text-center border rounded text-xs focus:outline-none focus:ring-1 font-medium font-['JetBrains_Mono'] transition-colors ${
+                                                    isNegative
+                                                      ? 'border-[#F85149] focus:ring-[#F85149] focus:border-[#F85149] text-[#F85149]'
+                                                      : `focus:ring-[#D7B797] focus:border-[#D7B797] ${darkMode
+                                                        ? 'border-[#2E2E2E] text-[#F2F2F2] bg-[#121212] hover:border-[rgba(215,183,151,0.25)]'
+                                                        : 'border-[#C4B5A5] text-[#0A0A0A] bg-white hover:border-[rgba(215,183,151,0.4)]'
+                                                      }`
                                                   }`}
                                                   placeholder="0"
+                                                  title={isNegative ? t('planning.cellNegative') : undefined}
                                                 />
-                                                <Pencil size={8} className={`absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none ${darkMode ? 'text-[#D7B797]/40' : 'text-[#8A6340]/30'}`} />
+                                                <Pencil size={8} className={`absolute left-1 top-1/2 -translate-y-1/2 pointer-events-none ${isNegative ? 'text-[#F85149]/60' : darkMode ? 'text-[#D7B797]/40' : 'text-[#8A6340]/30'}`} />
                                               </div>
                                             </td>
-                                            ))}
+                                              );
+                                            })}
                                             <td className="px-1.5 py-0.5 text-center">
                                               <div className={`px-1.5 py-0.5 border rounded font-semibold text-xs font-['JetBrains_Mono'] ${darkMode
                                                 ? 'bg-[rgba(18,119,73,0.15)] border-[#127749] text-[#2A9E6A]'
@@ -1402,6 +1697,85 @@ const BudgetAllocateScreen = ({
         </div>
       )}
       {/* Category Breakdown Table - removed per customer request */}
+
+      {/* Allocation Side Panel */}
+      <AllocationSidePanel
+        isOpen={sidePanelOpen}
+        onClose={() => setSidePanelOpen(false)}
+        validationIssues={validationIssues}
+        versions={versions}
+        selectedVersionId={selectedVersionId}
+        onCompareVersion={(versionId) => {
+          if (selectedVersionId && versionId !== selectedVersionId) {
+            const vA = versions.find(v => v.id === selectedVersionId);
+            const vB = versions.find(v => v.id === versionId);
+            if (vA && vB) setCompareModal({ a: vA, b: vB });
+          }
+        }}
+        darkMode={darkMode}
+      />
+
+      {/* Unsaved Changes Banner */}
+      <UnsavedChangesBanner
+        isDirty={isDirty}
+        onSaveDraft={() => saveDraft(selectedVersionId)}
+        onDiscard={discardChanges}
+        saving={saving}
+        darkMode={darkMode}
+      />
+
+      {/* Leave Confirmation Dialog (3 options) */}
+      {leaveDialog && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className={`w-full max-w-sm mx-4 rounded-xl border shadow-2xl p-5 ${
+            darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
+          }`}>
+            <h3 className={`font-semibold font-['Montserrat'] mb-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+              {t('planning.leaveWithoutSaving')}
+            </h3>
+            <p className={`text-sm mb-4 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+              {t('planning.leaveDesc')}
+            </p>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleLeaveWithSave}
+                className={`w-full px-4 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                  darkMode
+                    ? 'bg-[rgba(18,119,73,0.2)] text-[#2A9E6A] hover:bg-[rgba(18,119,73,0.3)]'
+                    : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
+                }`}
+              >
+                {t('planning.saveAndLeave')}
+              </button>
+              <button
+                onClick={handleLeaveWithoutSave}
+                className="w-full px-4 py-2 rounded-lg text-xs font-semibold text-[#F85149] hover:bg-[rgba(248,81,73,0.1)] transition-colors"
+              >
+                {t('planning.leaveWithoutSave')}
+              </button>
+              <button
+                onClick={() => setLeaveDialog(null)}
+                className={`w-full px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  darkMode ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)]' : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
+                }`}
+              >
+                {t('planning.stay')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version Compare Modal */}
+      {compareModal && (
+        <VersionCompareModal
+          isOpen={!!compareModal}
+          onClose={() => setCompareModal(null)}
+          versionA={compareModal.a}
+          versionB={compareModal.b}
+          darkMode={darkMode}
+        />
+      )}
 
       {/* Mobile Filter Bottom Sheet */}
       <FilterBottomSheet

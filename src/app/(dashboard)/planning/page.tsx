@@ -27,6 +27,7 @@ export default function PlanningPage() {
       getPlanningStatus={getPlanningStatus}
       handleOpenPlanningDetail={handleOpenPlanningDetail}
       onOpenOtbAnalysis={handleOpenOtbAnalysis}
+      onNavigateBack={() => router.push('/budget-management')}
       allocationData={allocationData}
       onAllocationDataUsed={() => setAllocationData(null)}
       availableBudgets={budgets}
