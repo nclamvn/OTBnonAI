@@ -14,7 +14,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
-import { ProductImage, ConfirmDialog } from '@/components/ui';
+import { ProductImage, ConfirmDialog, FilterSelect } from '@/components/ui';
 
 const SEASON_GROUPS = [
   { id: 'all', label: 'All' },
@@ -799,79 +799,50 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           )}
         </div>
 
-        {!isMobile && <div className="grid grid-cols-3 lg:grid-cols-6 gap-2">
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.budget')}</label>
-                <select
-                  value={budgetFilter}
-                  onChange={(e) => setBudgetFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {budgetOptions.map((opt: any) => (
-                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.seasonGroup')}</label>
-                <select
-                  value={seasonGroupFilter}
-                  onChange={(e) => setSeasonGroupFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {SEASON_GROUPS.map((opt: any) => (
-                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.season')}</label>
-                <select
-                  value={seasonFilter}
-                  onChange={(e) => setSeasonFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {SEASONS.map((opt: any) => (
-                    <option key={opt.id} value={opt.id}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.gender')}</label>
-                <select
-                  value={genderFilter}
-                  onChange={(e) => setGenderFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {genderOptions.map((g: any) => (
-                    <option key={g} value={g}>{g === 'all' ? 'All' : g}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.category')}</label>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {categoryOptions.map((c: any) => (
-                    <option key={c} value={c}>{c === 'all' ? 'All' : c}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={`block text-xs font-medium mb-1 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.subCategory')}</label>
-                <select
-                  value={subCategoryFilter}
-                  onChange={(e) => setSubCategoryFilter(e.target.value)}
-                  className={`w-full border rounded-lg pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                >
-                  {subCategoryOptions.map((s: any) => (
-                    <option key={s} value={s}>{s === 'all' ? 'All' : s}</option>
-                  ))}
-                </select>
-              </div>
+        {!isMobile && <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+              <FilterSelect
+                label={t('skuProposal.budget')}
+                value={budgetFilter}
+                options={budgetOptions.map((opt: any) => ({ value: opt.id, label: opt.label }))}
+                onChange={setBudgetFilter}
+                darkMode={darkMode}
+                placeholder={t('common.all') || 'All'}
+              />
+              <FilterSelect
+                label={t('skuProposal.seasonGroup')}
+                value={seasonGroupFilter}
+                options={SEASON_GROUPS.map((opt: any) => ({ value: opt.id, label: opt.label }))}
+                onChange={setSeasonGroupFilter}
+                darkMode={darkMode}
+              />
+              <FilterSelect
+                label={t('skuProposal.season')}
+                value={seasonFilter}
+                options={SEASONS.map((opt: any) => ({ value: opt.id, label: opt.label }))}
+                onChange={setSeasonFilter}
+                darkMode={darkMode}
+              />
+              <FilterSelect
+                label={t('skuProposal.gender')}
+                value={genderFilter}
+                options={genderOptions.map((g: any) => ({ value: g, label: g === 'all' ? 'All' : g }))}
+                onChange={setGenderFilter}
+                darkMode={darkMode}
+              />
+              <FilterSelect
+                label={t('skuProposal.category')}
+                value={categoryFilter}
+                options={categoryOptions.map((c: any) => ({ value: c, label: c === 'all' ? 'All' : c }))}
+                onChange={setCategoryFilter}
+                darkMode={darkMode}
+              />
+              <FilterSelect
+                label={t('skuProposal.subCategory')}
+                value={subCategoryFilter}
+                options={subCategoryOptions.map((s: any) => ({ value: s, label: s === 'all' ? 'All' : s }))}
+                onChange={setSubCategoryFilter}
+                darkMode={darkMode}
+              />
         </div>}
 
         {/* Versions + View Mode - Single Row */}

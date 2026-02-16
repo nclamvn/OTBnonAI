@@ -15,3 +15,4 @@ export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as FormattedCurrency } from './FormattedCurrency';
 export { default as CurrencyInput } from './CurrencyInput';
 export { default as TableSkeleton } from './TableSkeleton';
+export { default as FilterSelect } from './FilterSelect';
