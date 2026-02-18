@@ -2,6 +2,7 @@
 import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { proposalService, masterDataService } from '../../../services';
+import { invalidateCache } from '../../../services/api';
 
 export const useProposal = () => {
   const [proposals, setProposals] = useState<any[]>([]);
@@ -22,7 +23,7 @@ export const useProposal = () => {
     try {
       const params = budgetId ? { budgetId } : {};
       const response = await proposalService.getAll(params);
-      const data = Array.isArray(response) ? response : (response.data || []);
+      const data = Array.isArray(response) ? response : [];
       const transformedProposals = data.map((p: any) => ({
         id: p.id,
         ticketName: p.ticketName,
@@ -84,6 +85,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       const result = await proposalService.create(data);
+      invalidateCache('/proposals');
       await fetchProposals(data.budgetId);
       return result;
     } catch (err: any) {
@@ -101,6 +103,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.addProduct(proposalId, productData);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to add product:', err);
@@ -117,6 +120,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.bulkAddProducts(proposalId, products);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to bulk add products:', err);
@@ -133,6 +137,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.updateProduct(proposalId, productId, data);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to update product:', err);
@@ -149,6 +154,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.removeProduct(proposalId, productId);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to remove product:', err);
@@ -165,6 +171,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.submit(proposalId);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to submit proposal:', err);
@@ -186,6 +193,7 @@ export const useProposal = () => {
       } else {
         await (isReject ? proposalService.rejectL2(proposalId, comment) : proposalService.approveL2(proposalId, comment));
       }
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to approve proposal:', err);
@@ -202,6 +210,7 @@ export const useProposal = () => {
     try {
       setLoading(true);
       await proposalService.delete(proposalId);
+      invalidateCache('/proposals');
       await fetchProposals();
     } catch (err: any) {
       console.error('Failed to delete proposal:', err);

@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
 import { STORES, GENDERS } from '@/utils/constants';
 import { budgetService, masterDataService, planningService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -117,7 +118,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     setLoadingBudgets(true);
     try {
       const response = await budgetService.getAll({ status: 'APPROVED' });
-      const budgetList = (response.data || response || []).map((budget: any) => ({
+      const budgetList = (Array.isArray(response) ? response : []).map((budget: any) => ({
         id: budget.id,
         fiscalYear: budget.fiscalYear,
         groupBrand: typeof budget.groupBrand === 'object' ? (budget.groupBrand?.name || budget.groupBrand?.code || 'A') : (budget.groupBrand || 'A'),
@@ -216,16 +217,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       setLoadingVersions(true);
       try {
         const response = await planningService.getAll({ budgetId: selectedBudgetId });
-        const list = Array.isArray(response) ? response : (response?.data || []);
+        const list = Array.isArray(response) ? response : [];
         setVersions(list.map((v: any) => ({
           id: v.id,
           name: v.name || v.versionName || `Version ${v.versionNumber || v.id}`,
           status: v.status || 'DRAFT',
-          isFinal: v.isFinal || v.status === 'FINAL' || false,
+          isFinal: v.isFinal || v.status?.toLowerCase() === 'final' || false,
           versionNumber: v.versionNumber
         })));
         // Auto-select the final version if one exists
-        const finalVersion = list.find((v: any) => v.isFinal || v.status === 'FINAL');
+        const finalVersion = list.find((v: any) => v.isFinal || v.status?.toLowerCase() === 'final');
         if (finalVersion) {
           setSelectedVersionId(finalVersion.id);
         } else {
@@ -523,6 +524,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     e.stopPropagation();
     try {
       await planningService.finalize(versionId);
+      invalidateCache('/planning');
       toast.success(t('planning.latestVersion'));
       setVersions((prev: any) => prev.map((v: any) => ({
         ...v,
@@ -2040,10 +2042,10 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                   v{idx + 1}{version.isFinal ? ' ★' : ''}
                                 </span>
                                 <span className={`text-[10px] px-1 py-px rounded-[3px] shrink-0 ${
-                                  version.status === 'APPROVED' ? 'bg-[rgba(18,119,73,0.15)] text-[#127749]' :
-                                  version.status === 'SUBMITTED' ? 'bg-[rgba(227,179,65,0.15)] text-[#E3B341]' :
+                                  version.status?.toLowerCase() === 'approved' ? 'bg-[rgba(18,119,73,0.15)] text-[#127749]' :
+                                  version.status?.toLowerCase() === 'submitted' ? 'bg-[rgba(227,179,65,0.15)] text-[#E3B341]' :
                                   darkMode ? 'bg-[#2E2E2E] text-[#888]' : 'bg-[#F0EDE8] text-[#888]'
-                                }`}>{version.status}</span>
+                                }`}>{version.status?.toUpperCase()}</span>
                               </div>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 {!version.isFinal && (

@@ -14,44 +14,44 @@ export const approvalService = {
     // Aggregate from individual modules (direct /approvals/pending not yet implemented)
     {
       const [budgetsL1, budgetsL2, planningsL1, planningsL2, proposalsL1, proposalsL2] = await Promise.all([
-        budgetService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
-        budgetService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => ({ data: [] })),
-        planningService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
-        planningService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => ({ data: [] })),
-        proposalService.getAll({ status: 'SUBMITTED' }).catch(() => ({ data: [] })),
-        proposalService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => ({ data: [] })),
+        budgetService.getAll({ status: 'SUBMITTED' }).catch(() => []),
+        budgetService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => []),
+        planningService.getAll({ status: 'SUBMITTED' }).catch(() => []),
+        planningService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => []),
+        proposalService.getAll({ status: 'SUBMITTED' }).catch(() => []),
+        proposalService.getAll({ status: 'LEVEL1_APPROVED' }).catch(() => []),
       ]);
 
       const pending: any[] = [];
 
       // Add budgets (L1 + L2)
-      [...(budgetsL1.data || []), ...(budgetsL2.data || [])].forEach((b: any) => {
+      [...(Array.isArray(budgetsL1) ? budgetsL1 : []), ...(Array.isArray(budgetsL2) ? budgetsL2 : [])].forEach((b: any) => {
         pending.push({
           entityType: 'budget',
           entityId: b.id,
-          level: b.status === 'SUBMITTED' ? 1 : 2,
+          level: b.status === 'submitted' ? 1 : 2,
           data: b,
           submittedAt: b.updatedAt
         });
       });
 
       // Add plannings (L1 + L2)
-      [...(planningsL1.data || []), ...(planningsL2.data || [])].forEach((p: any) => {
+      [...(Array.isArray(planningsL1) ? planningsL1 : []), ...(Array.isArray(planningsL2) ? planningsL2 : [])].forEach((p: any) => {
         pending.push({
           entityType: 'planning',
           entityId: p.id,
-          level: p.status === 'SUBMITTED' ? 1 : 2,
+          level: p.status === 'submitted' ? 1 : 2,
           data: p,
           submittedAt: p.updatedAt
         });
       });
 
       // Add proposals (L1 + L2)
-      [...(proposalsL1.data || []), ...(proposalsL2.data || [])].forEach((p: any) => {
+      [...(Array.isArray(proposalsL1) ? proposalsL1 : []), ...(Array.isArray(proposalsL2) ? proposalsL2 : [])].forEach((p: any) => {
         pending.push({
           entityType: 'proposal',
           entityId: p.id,
-          level: p.status === 'SUBMITTED' ? 1 : 2,
+          level: p.status === 'submitted' ? 1 : 2,
           data: p,
           submittedAt: p.updatedAt
         });

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { formatCurrency } from '@/utils';
 import { masterDataService, proposalService, budgetService, approvalService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -299,6 +300,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
           })));
         }
       }
+      invalidateCache('/proposals');
       onSave && onSave({ ticketName, skuList, totals: grandTotals, savedProposal });
     } catch (err: any) {
       console.error('Failed to save proposal:', err);

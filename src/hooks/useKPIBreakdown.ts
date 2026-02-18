@@ -25,10 +25,10 @@ async function fetchBreakdown(cardKey: string) {
         masterDataService.getBrands(),
       ]);
       const budgets = budgetsResult.status === 'fulfilled'
-        ? (Array.isArray(budgetsResult.value) ? budgetsResult.value : budgetsResult.value?.data || [])
+        ? (Array.isArray(budgetsResult.value) ? budgetsResult.value : [])
         : [];
       const brands = brandsResult.status === 'fulfilled'
-        ? (Array.isArray(brandsResult.value) ? brandsResult.value : brandsResult.value?.data || [])
+        ? (Array.isArray(brandsResult.value) ? brandsResult.value : [])
         : [];
 
       const brandMap: Record<string, string> = {};
@@ -58,7 +58,7 @@ async function fetchBreakdown(cardKey: string) {
 
     case 'budgetUtilization': {
       const result = await budgetService.getAll();
-      const budgets = Array.isArray(result) ? result : result?.data || [];
+      const budgets = Array.isArray(result) ? result : [];
 
       const statusCount: Record<string, number> = {};
       budgets.forEach((b: any) => {
@@ -127,7 +127,7 @@ async function fetchBreakdown(cardKey: string) {
 
     case 'totalBrands': {
       const brands = await masterDataService.getBrands();
-      const list: any[] = Array.isArray(brands) ? brands : (brands as any)?.data || [];
+      const list: any[] = Array.isArray(brands) ? brands : [];
 
       const breakdown = list.map((b: any) => ({
         label: b.name || b.code || 'Unknown',
@@ -195,7 +195,7 @@ async function fetchBreakdown(cardKey: string) {
 
     case 'activePlans': {
       const result = await planningService.getAll();
-      const plans = Array.isArray(result) ? result : result?.data || [];
+      const plans = Array.isArray(result) ? result : [];
 
       const byStatus: Record<string, number> = {};
       plans.forEach((p: any) => {

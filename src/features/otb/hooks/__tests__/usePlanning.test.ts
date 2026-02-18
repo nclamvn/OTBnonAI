@@ -11,7 +11,7 @@ import {
 
 const { mockPlanningService, mockMasterDataService } = vi.hoisted(() => {
   const planningSvc = {
-    getAll: vi.fn().mockResolvedValue({ data: [] }),
+    getAll: vi.fn().mockResolvedValue([]),
     getOne: vi.fn().mockResolvedValue({ data: {} }),
     create: vi.fn().mockResolvedValue({}),
     update: vi.fn().mockResolvedValue({}),
@@ -32,7 +32,7 @@ const { mockPlanningService, mockMasterDataService } = vi.hoisted(() => {
     getGenders: vi.fn().mockResolvedValue([]),
     getCategories: vi.fn().mockResolvedValue([]),
     getSeasons: vi.fn().mockResolvedValue([]),
-    getSkuCatalog: vi.fn().mockResolvedValue({ data: [] }),
+    getSkuCatalog: vi.fn().mockResolvedValue([]),
     getSubCategories: vi.fn().mockResolvedValue([]),
   };
   return { mockPlanningService: planningSvc, mockMasterDataService: masterSvc };
@@ -57,7 +57,7 @@ describe('usePlanning', () => {
     mockMasterDataService.getCollections.mockResolvedValue(mockCollections);
     mockMasterDataService.getGenders.mockResolvedValue(mockGenders);
     mockMasterDataService.getCategories.mockResolvedValue(mockCategories);
-    mockPlanningService.getAll.mockResolvedValue({ data: [mockApiPlanning()] });
+    mockPlanningService.getAll.mockResolvedValue([mockApiPlanning()]);
     mockPlanningService.getOne.mockResolvedValue({ data: mockApiPlanning() });
   });
 

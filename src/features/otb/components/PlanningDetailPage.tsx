@@ -199,8 +199,8 @@ const PlanningDetailPage = ({
 
         // Fetch planning versions if budgetDetailId available
         if (selectedBudgetDetail?.id) {
-          const versionsRes = await planningService.getAll({ budgetDetailId: selectedBudgetDetail.id }).catch(() => ({ data: [] }));
-          const versionsList = Array.isArray(versionsRes) ? versionsRes : (versionsRes?.data || []);
+          const versionsRes = await planningService.getAll({ budgetDetailId: selectedBudgetDetail.id }).catch(() => []);
+          const versionsList = Array.isArray(versionsRes) ? versionsRes : [];
           if (versionsList.length > 0) {
             const mappedVersions = versionsList.map((v: any, idx: any) => ({
               id: v.id,

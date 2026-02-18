@@ -6,10 +6,12 @@ import {
   Search, ChevronDown, ChevronRight, X, AlertTriangle, FileText,
   ClipboardCheck, XCircle, AlertCircle, BarChart3, Image as ImageIcon
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils';
-import { proposalService } from '@/services/proposalService';
+import { proposalService, orderService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { MobileDataCard } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
@@ -22,20 +24,6 @@ const RECEIPT_STATUS: any = {
   DISCREPANCY: { color: '#F85149', bg: 'rgba(248,81,73,0.12)', label: 'Discrepancy' },
   PARTIAL: { color: '#A371F7', bg: 'rgba(163,113,247,0.12)', label: 'Partial' },
 };
-
-/* ═══════════════════════════════════════════════
-   DEMO SKU DATA
-═══════════════════════════════════════════════ */
-const DEMO_SKUS = [
-  { sku: 'BAL-OW-001', name: 'Wool Blend Overcoat', productType: 'W Outerwear', gender: 'Women', color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 45000000, rex: 4, ttp: 3, orderedQty: 7, receivedQty: 7, sizes: { '36': { salesMix: 8, st: 45 }, '38': { salesMix: 30, st: 52 }, '40': { salesMix: 35, st: 48 }, '42': { salesMix: 27, st: 40 } } },
-  { sku: 'BAL-BG-002', name: 'Le City Medium Bag', productType: 'W Bags', gender: 'Women', color: 'Nero', composition: '100% Arena Leather', srp: 32000000, rex: 6, ttp: 4, orderedQty: 10, receivedQty: 10, sizes: { 'OS': { salesMix: 100, st: 65 } } },
-  { sku: 'BAL-TP-003', name: 'Silk Bow Blouse', productType: 'W Tops', gender: 'Women', color: 'Ivory', composition: '100% Silk', srp: 28000000, rex: 5, ttp: 3, orderedQty: 8, receivedQty: 8, sizes: { '38': { salesMix: 15, st: 55 }, '40': { salesMix: 40, st: 60 }, '42': { salesMix: 30, st: 50 }, '44': { salesMix: 15, st: 42 } } },
-  { sku: 'BAL-TL-004', name: 'Tailored Wool Blazer', productType: 'W Tailoring', gender: 'Women', color: 'Navy', composition: '95% Wool, 5% Elastane', srp: 38000000, rex: 3, ttp: 2, orderedQty: 5, receivedQty: 4, sizes: { '36': { salesMix: 10, st: 48 }, '38': { salesMix: 35, st: 55 }, '40': { salesMix: 35, st: 50 }, '42': { salesMix: 20, st: 43 } } },
-  { sku: 'BAL-MO-005', name: 'Leather Bomber Jacket', productType: 'M Outerwear', gender: 'Men', color: 'Dark Brown', composition: '100% Lamb Leather', srp: 52000000, rex: 3, ttp: 2, orderedQty: 5, receivedQty: 5, sizes: { '48': { salesMix: 20, st: 50 }, '50': { salesMix: 40, st: 55 }, '52': { salesMix: 30, st: 48 }, '54': { salesMix: 10, st: 38 } } },
-  { sku: 'BAL-KN-006', name: 'Cashmere Turtleneck', productType: 'W Tops', gender: 'Women', color: 'Cream', composition: '100% Cashmere', srp: 35000000, rex: 4, ttp: 3, orderedQty: 7, receivedQty: 7, sizes: { 'S': { salesMix: 15, st: 50 }, 'M': { salesMix: 40, st: 58 }, 'L': { salesMix: 30, st: 52 }, 'XL': { salesMix: 15, st: 44 } } },
-  { sku: 'BAL-MT-007', name: 'Slim Fit Wool Trousers', productType: 'M Tailoring', gender: 'Men', color: 'Charcoal', composition: '98% Wool, 2% Elastane', srp: 25000000, rex: 5, ttp: 3, orderedQty: 8, receivedQty: 8, sizes: { '46': { salesMix: 10, st: 42 }, '48': { salesMix: 30, st: 55 }, '50': { salesMix: 35, st: 52 }, '52': { salesMix: 25, st: 46 } } },
-  { sku: 'BAL-SL-008', name: 'Card Holder Wallet', productType: 'W Bags', gender: 'Women', color: 'Black', composition: '100% Calf Leather', srp: 12000000, rex: 8, ttp: 6, orderedQty: 14, receivedQty: 13, sizes: { 'OS': { salesMix: 100, st: 72 } } },
-];
 
 /* ═══════════════════════════════════════════════
    SIZING TABLE
@@ -91,12 +79,23 @@ const SizingTable = ({ item, darkMode }: any) => {
 ═══════════════════════════════════════════════ */
 const ReceiptDetailPanel = ({ receipt, darkMode }: any) => {
   const [expandedSku, setExpandedSku] = useState<string | null>(null);
-  const products = receipt.products && receipt.products.length > 0 ? receipt.products : DEMO_SKUS;
+  const products = receipt.products || [];
 
   const border = darkMode ? 'border-[#2E2E2E]' : 'border-gray-300';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
   const textSecondary = darkMode ? 'text-[#999999]' : 'text-gray-700';
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-600';
+
+  if (products.length === 0) {
+    return (
+      <div className={`px-4 py-8 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
+        <div className="flex flex-col items-center justify-center">
+          <Package size={24} className={textMuted} />
+          <p className={`text-xs mt-2 font-['Montserrat'] ${textMuted}`}>No products in this receipt</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`px-4 py-0.5 border-t ${border} ${darkMode ? 'bg-[#0A0A0A]' : 'bg-gray-50/50'}`}>
@@ -243,8 +242,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
     setError(null);
     try {
       const response = await proposalService.getAll({ status: 'APPROVED' });
-      const data = response.data || response;
-      const proposals = Array.isArray(data) ? data : [];
+      const proposals = Array.isArray(response) ? response : [];
       const mapped = proposals.map((p: any, idx: any) => ({
         id: p.id || idx + 1,
         receiptNumber: `REC-${String(idx + 1).padStart(5, '0')}`,
@@ -283,17 +281,37 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
 
   const handleConfirmReceipt = async (receipt: any) => {
     setProcessing(true);
-    setReceipts((prev: any) => prev.map((r: any) => r.id === receipt.id ? { ...r, status: 'CONFIRMED', receivedQty: r.orderedQty, receivedDate: new Date().toISOString() } : r));
-    setProcessing(false);
-    setConfirmModal(null);
+    try {
+      await orderService.confirmReceipt(receipt.id, { receivedQty: receipt.orderedQty });
+      invalidateCache('/receipts');
+      invalidateCache('/proposals');
+      toast.success(t('receiptConfirm.receiptConfirmed'));
+      fetchReceipts();
+    } catch (err: any) {
+      console.error('Failed to confirm receipt:', err);
+      toast.error(err.response?.data?.message || t('receiptConfirm.confirmFailed'));
+    } finally {
+      setProcessing(false);
+      setConfirmModal(null);
+    }
   };
 
   const handleFlagDiscrepancy = async (receipt: any) => {
     setProcessing(true);
-    setReceipts((prev: any) => prev.map((r: any) => r.id === receipt.id ? { ...r, status: 'DISCREPANCY', discrepancyNote } : r));
-    setProcessing(false);
-    setConfirmModal(null);
-    setDiscrepancyNote('');
+    try {
+      await orderService.flagDiscrepancy(receipt.id, discrepancyNote);
+      invalidateCache('/receipts');
+      invalidateCache('/proposals');
+      toast.success(t('receiptConfirm.discrepancyFlagged'));
+      fetchReceipts();
+    } catch (err: any) {
+      console.error('Failed to flag discrepancy:', err);
+      toast.error(err.response?.data?.message || t('receiptConfirm.flagFailed'));
+    } finally {
+      setProcessing(false);
+      setConfirmModal(null);
+      setDiscrepancyNote('');
+    }
   };
 
   const filtered = useMemo(() => {

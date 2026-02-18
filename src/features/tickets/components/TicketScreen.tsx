@@ -85,14 +85,14 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
     setError(null);
     try {
       const [budgetsRes, planningsRes, proposalsRes] = await Promise.all([
-        budgetService.getAll().catch(() => ({ data: [] })),
-        planningService.getAll().catch(() => ({ data: [] })),
-        proposalService.getAll().catch(() => ({ data: [] }))
+        budgetService.getAll().catch(() => []),
+        planningService.getAll().catch(() => []),
+        proposalService.getAll().catch(() => [])
       ]);
 
       const allTickets: any[] = [];
 
-      (budgetsRes.data || budgetsRes || []).forEach((b: any) => {
+      (Array.isArray(budgetsRes) ? budgetsRes : []).forEach((b: any) => {
         allTickets.push({
           id: b.id,
           entityType: 'budget',
@@ -108,7 +108,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
         });
       });
 
-      (planningsRes.data || planningsRes || []).forEach((p: any) => {
+      (Array.isArray(planningsRes) ? planningsRes : []).forEach((p: any) => {
         allTickets.push({
           id: p.id,
           entityType: 'planning',
@@ -124,7 +124,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
         });
       });
 
-      (proposalsRes.data || proposalsRes || []).forEach((pr: any) => {
+      (Array.isArray(proposalsRes) ? proposalsRes : []).forEach((pr: any) => {
         allTickets.push({
           id: pr.id,
           entityType: 'proposal',

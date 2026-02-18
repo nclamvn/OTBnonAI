@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { masterDataService, planningService } from '../../../services';
+import { invalidateCache } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const usePlanning = () => {
@@ -48,7 +49,8 @@ export const usePlanning = () => {
     try {
       const params = budgetId ? { budgetId } : {};
       const response = await planningService.getAll(params);
-      const transformedPlannings = (response.data || []).map((p: any) => ({
+      const data = Array.isArray(response) ? response : [];
+      const transformedPlannings = data.map((p: any) => ({
         id: p.id,
         planningCode: p.planningCode,
         budgetDetailId: p.budgetDetailId,
@@ -192,7 +194,7 @@ export const usePlanning = () => {
         });
       }
 
-      // Refresh plannings
+      invalidateCache('/planning');
       await fetchPlannings();
 
       setShowPlanningDetail(false);
@@ -227,6 +229,7 @@ export const usePlanning = () => {
     try {
       setLoading(true);
       await planningService.submit(planningId);
+      invalidateCache('/planning');
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to submit planning:', err);
@@ -253,6 +256,7 @@ export const usePlanning = () => {
           await planningService.rejectL2(planningId, comment);
         }
       }
+      invalidateCache('/planning');
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to approve planning:', err);
@@ -267,6 +271,7 @@ export const usePlanning = () => {
     try {
       setLoading(true);
       await planningService.finalize(planningId);
+      invalidateCache('/planning');
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to mark planning as final:', err);
@@ -281,6 +286,7 @@ export const usePlanning = () => {
     try {
       setLoading(true);
       await planningService.copy(planningId);
+      invalidateCache('/planning');
       await fetchPlannings();
     } catch (err: any) {
       console.error('Failed to copy planning:', err);

@@ -11,7 +11,7 @@ import {
 
 const { mockBudgetService, mockMasterDataService } = vi.hoisted(() => {
   const budgetSvc = {
-    getAll: vi.fn().mockResolvedValue({ data: [] }),
+    getAll: vi.fn().mockResolvedValue([]),
     getOne: vi.fn().mockResolvedValue({}),
     getStatistics: vi.fn().mockResolvedValue({}),
     create: vi.fn().mockResolvedValue({}),
@@ -30,7 +30,7 @@ const { mockBudgetService, mockMasterDataService } = vi.hoisted(() => {
     getGenders: vi.fn().mockResolvedValue([]),
     getCategories: vi.fn().mockResolvedValue([]),
     getSeasons: vi.fn().mockResolvedValue([]),
-    getSkuCatalog: vi.fn().mockResolvedValue({ data: [] }),
+    getSkuCatalog: vi.fn().mockResolvedValue([]),
     getSubCategories: vi.fn().mockResolvedValue([]),
   };
   return { mockBudgetService: budgetSvc, mockMasterDataService: masterSvc };
@@ -71,7 +71,7 @@ describe('useBudget', () => {
     mockMasterDataService.getBrands.mockResolvedValue(mockBrands);
     mockMasterDataService.getStores.mockResolvedValue(mockStores);
     mockMasterDataService.getSeasons.mockResolvedValue(mockSeasons);
-    mockBudgetService.getAll.mockResolvedValue({ data: [mockApiBudget()] });
+    mockBudgetService.getAll.mockResolvedValue([mockApiBudget()]);
   });
 
   // ── Initialization ──────────────────────────────────────────

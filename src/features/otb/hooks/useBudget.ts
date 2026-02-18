@@ -4,6 +4,7 @@ import { STORES, CURRENT_YEAR, CURRENT_SEASON_GROUP } from '../../../utils/const
 import { generateSeasonsMultiple } from '../../../utils/formatters';
 import toast from 'react-hot-toast';
 import { masterDataService, budgetService } from '../../../services';
+import { invalidateCache } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const useBudget = () => {
@@ -66,7 +67,8 @@ export const useBudget = () => {
     try {
       const response = await budgetService.getAll({ fiscalYear: selectedYear });
       // Transform API response to match local format
-      const transformedBudgets = (response.data || response || []).map((b: any) => ({
+      const data = Array.isArray(response) ? response : [];
+      const transformedBudgets = data.map((b: any) => ({
         id: b.id,
         budgetCode: b.budgetCode,
         groupBrandId: b.groupBrandId,
@@ -194,7 +196,7 @@ export const useBudget = () => {
         });
       }
 
-      // Refresh budgets
+      invalidateCache('/budgets');
       await fetchBudgets();
 
       setShowBudgetForm(false);
@@ -212,6 +214,7 @@ export const useBudget = () => {
     try {
       setLoading(true);
       await budgetService.submit(budgetId);
+      invalidateCache('/budgets');
       await fetchBudgets();
     } catch (err: any) {
       console.error('Failed to submit budget:', err);
@@ -238,6 +241,7 @@ export const useBudget = () => {
           await budgetService.rejectL2(budgetId, comment);
         }
       }
+      invalidateCache('/budgets');
       await fetchBudgets();
     } catch (err: any) {
       console.error('Failed to approve budget:', err);

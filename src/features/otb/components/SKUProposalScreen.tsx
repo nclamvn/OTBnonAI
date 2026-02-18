@@ -39,10 +39,12 @@ const CARD_BG_CLASSES = [
   { light: 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)]', dark: 'bg-[rgba(215,183,151,0.05)] border-[rgba(215,183,151,0.15)]' }
 ];
 
+// Local version/choice selectors — UI-only state, not fetched from API.
+// isFinal is toggled locally by the user to mark their preferred version.
 const SKU_VERSIONS = [
-  { id: 'v1', name: 'Version 1', createdAt: '2025-01-15', isFinal: false },
-  { id: 'v2', name: 'Version 2', createdAt: '2025-01-20', isFinal: false },
-  { id: 'v3', name: 'Version 3', createdAt: '2025-01-25', isFinal: true },
+  { id: 'v1', name: 'Version 1', isFinal: false },
+  { id: 'v2', name: 'Version 2', isFinal: false },
+  { id: 'v3', name: 'Version 3', isFinal: true },
 ];
 
 const SIZING_CHOICES = [
@@ -105,12 +107,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       setSkuDataLoading(true);
       try {
         const [catalogRes, proposalsListRes] = await Promise.all([
-          masterDataService.getSkuCatalog().catch(() => ({ data: [] })),
-          proposalService.getAll().catch(() => ({ data: [] }))
+          masterDataService.getSkuCatalog().catch(() => []),
+          proposalService.getAll().catch(() => [])
         ]);
 
         // Transform SKU catalog
-        const catalog = Array.isArray(catalogRes) ? catalogRes : (catalogRes?.data || []);
+        const catalog = Array.isArray(catalogRes) ? catalogRes : [];
         setSkuCatalog(catalog.map((s: any) => ({
           sku: s.skuCode || s.sku || s.code || s.id,
           name: s.productName || s.name,
@@ -134,7 +136,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         })));
 
         // Fetch each proposal's detail to get products (list endpoint doesn't include them)
-        const proposalsList = Array.isArray(proposalsListRes) ? proposalsListRes : (proposalsListRes?.data || []);
+        const proposalsList = Array.isArray(proposalsListRes) ? proposalsListRes : [];
         const detailResults = await Promise.all(
           proposalsList.map((p: any) =>
             proposalService.getOne(p.id).catch(() => null)
@@ -212,7 +214,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
     setLoadingBudgets(true);
     try {
       const response = await budgetService.getAll({ status: 'APPROVED' });
-      const budgetList = (response.data || response || []).map((budget: any) => ({
+      const budgetList = (Array.isArray(response) ? response : []).map((budget: any) => ({
         id: budget.id,
         fiscalYear: budget.fiscalYear,
         groupBrand: typeof budget.groupBrand === 'object' ? (budget.groupBrand?.name || budget.groupBrand?.code || 'A') : (budget.groupBrand || 'A'),

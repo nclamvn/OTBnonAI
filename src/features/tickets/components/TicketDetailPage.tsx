@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
 import { ProductImage } from '@/components/ui';
 import { budgetService, planningService, proposalService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -17,185 +18,25 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 // Chart colors: REX = Champagne Gold, TTP = Forest Green
 
 /* =========================
-   MOCK DATA FOR TICKET DETAIL
+   EMPTY FALLBACK DATA
 ========================= */
 
-
-const MOCK_SKU_BLOCKS = [
-  {
-    gender: "Women's",
-    productType: 'W Outerwear',
-    subCategory: "Women's Outerwear",
-    pctBuyPropose: 32,
-    otbPropose: 1_680_000_000,
-    items: [
-      {
-        sku: 'BAL-WO-001', name: 'Oversized Wool Coat', theme: 'Winter Essentials',
-        color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 85_000_000,
-        unitCost: 38_250_000, collection: 'Seasonal', customerTarget: 'VIP',
-        order: 12, rex: 7, ttp: 5, ttlValue: 1_020_000_000,
-        sizing: {
-          sizes: ['XS', 'S', 'M', 'L', 'XL'],
-          salesMix: [5, 15, 35, 30, 15],
-          sellThrough: [40, 55, 62, 48, 35],
-          finalChoice: [1, 2, 4, 3, 2],
-        },
-      },
-      {
-        sku: 'BAL-WO-002', name: 'Double-Breasted Trench', theme: 'Classic Heritage',
-        color: 'Black', composition: '100% Cotton Gabardine', srp: 72_000_000,
-        unitCost: 32_400_000, collection: 'Carry Over', customerTarget: 'Existing',
-        order: 10, rex: 6, ttp: 4, ttlValue: 720_000_000,
-        sizing: {
-          sizes: ['XS', 'S', 'M', 'L', 'XL'],
-          salesMix: [8, 20, 30, 28, 14],
-          sellThrough: [45, 60, 58, 52, 38],
-          finalChoice: [1, 2, 3, 3, 1],
-        },
-      },
-      {
-        sku: 'BAL-WO-003', name: 'Quilted Puffer Jacket', theme: 'Urban Sport',
-        color: 'Navy', composition: '100% Nylon, Down Fill', srp: 65_000_000,
-        unitCost: 29_250_000, collection: 'Seasonal', customerTarget: 'New',
-        order: 8, rex: 5, ttp: 3, ttlValue: 520_000_000,
-        sizing: {
-          sizes: ['XS', 'S', 'M', 'L'],
-          salesMix: [10, 30, 35, 25],
-          sellThrough: [50, 65, 60, 42],
-          finalChoice: [1, 2, 3, 2],
-        },
-      },
-    ],
-  },
-  {
-    gender: "Women's",
-    productType: 'W Bags',
-    subCategory: "Women's Hard Accessories — Bags",
-    pctBuyPropose: 28,
-    otbPropose: 1_470_000_000,
-    items: [
-      {
-        sku: 'BAL-WB-001', name: 'Le Cagole Medium', theme: 'Iconic Carry',
-        color: 'Arena Beige', composition: 'Lambskin Leather', srp: 52_000_000,
-        unitCost: 23_400_000, collection: 'Carry Over', customerTarget: 'VIP',
-        order: 15, rex: 9, ttp: 6, ttlValue: 780_000_000,
-        sizing: {
-          sizes: ['Small', 'Medium', 'Large'],
-          salesMix: [25, 50, 25],
-          sellThrough: [58, 72, 45],
-          finalChoice: [4, 7, 4],
-        },
-      },
-      {
-        sku: 'BAL-WB-002', name: 'Hourglass Top Handle', theme: 'Signature Shape',
-        color: 'Black Croc', composition: 'Croc-Embossed Calfskin', srp: 68_000_000,
-        unitCost: 30_600_000, collection: 'Seasonal', customerTarget: 'Existing',
-        order: 10, rex: 6, ttp: 4, ttlValue: 680_000_000,
-        sizing: {
-          sizes: ['XS', 'Small', 'Medium'],
-          salesMix: [20, 45, 35],
-          sellThrough: [55, 68, 50],
-          finalChoice: [2, 5, 3],
-        },
-      },
-    ],
-  },
-  {
-    gender: "Men's",
-    productType: 'M Outerwear',
-    subCategory: "Men's Outerwear",
-    pctBuyPropose: 22,
-    otbPropose: 1_155_000_000,
-    items: [
-      {
-        sku: 'BAL-MO-001', name: 'Biker Leather Jacket', theme: 'Moto Heritage',
-        color: 'Black', composition: '100% Lambskin', srp: 95_000_000,
-        unitCost: 42_750_000, collection: 'Carry Over', customerTarget: 'New',
-        order: 8, rex: 5, ttp: 3, ttlValue: 760_000_000,
-        sizing: {
-          sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-          salesMix: [10, 25, 35, 20, 10],
-          sellThrough: [42, 58, 65, 50, 30],
-          finalChoice: [1, 2, 3, 1, 1],
-        },
-      },
-      {
-        sku: 'BAL-MO-002', name: 'Padded Bomber Jacket', theme: 'Urban Sport',
-        color: 'Olive Green', composition: 'Nylon Twill, Polyester Fill', srp: 48_000_000,
-        unitCost: 21_600_000, collection: 'Seasonal', customerTarget: 'Existing',
-        order: 10, rex: 6, ttp: 4, ttlValue: 480_000_000,
-        sizing: {
-          sizes: ['S', 'M', 'L', 'XL'],
-          salesMix: [15, 30, 35, 20],
-          sellThrough: [48, 62, 55, 40],
-          finalChoice: [1, 3, 4, 2],
-        },
-      },
-    ],
-  },
-  {
-    gender: "Men's",
-    productType: 'M Bags',
-    subCategory: "Men's Hard Accessories — Bags",
-    pctBuyPropose: 18,
-    otbPropose: 945_000_000,
-    items: [
-      {
-        sku: 'BAL-MB-001', name: 'Explorer Backpack', theme: 'Travel Essentials',
-        color: 'Black Nylon', composition: 'Recycled Nylon, Leather Trim', srp: 38_000_000,
-        unitCost: 17_100_000, collection: 'Carry Over', customerTarget: 'New',
-        order: 12, rex: 7, ttp: 5, ttlValue: 456_000_000,
-        sizing: {
-          sizes: ['One Size'],
-          salesMix: [100],
-          sellThrough: [65],
-          finalChoice: [12],
-        },
-      },
-      {
-        sku: 'BAL-MB-002', name: 'Belt Bag XL', theme: 'Streetwear',
-        color: 'Grey Canvas', composition: 'Cotton Canvas, Calfskin', srp: 28_000_000,
-        unitCost: 12_600_000, collection: 'Seasonal', customerTarget: 'VIP',
-        order: 14, rex: 8, ttp: 6, ttlValue: 392_000_000,
-        sizing: {
-          sizes: ['One Size'],
-          salesMix: [100],
-          sellThrough: [70],
-          finalChoice: [14],
-        },
-      },
-      {
-        sku: 'BAL-MB-003', name: 'Crossbody Messenger', theme: 'Daily Carry',
-        color: 'Dark Brown', composition: 'Full-Grain Calfskin', srp: 32_000_000,
-        unitCost: 14_400_000, collection: 'Carry Over', customerTarget: 'Existing',
-        order: 9, rex: 5, ttp: 4, ttlValue: 288_000_000,
-        sizing: {
-          sizes: ['Small', 'Medium'],
-          salesMix: [40, 60],
-          sellThrough: [55, 68],
-          finalChoice: [4, 5],
-        },
-      },
-    ],
-  },
-];
-
-const MOCK_BUDGET_DATA = {
-  id: 'mock-budget-001',
-  fiscalYear: 'FY2025',
-  groupBrand: 'Balenciaga',
-  brandName: 'Balenciaga',
-  totalBudget: 5_250_000_000,
-  budgetName: 'BUD-BAL-FW-main-2025',
-  status: 'LEVEL1_APPROVED',
+const EMPTY_BUDGET_DATA = {
+  id: '',
+  fiscalYear: '-',
+  groupBrand: '-',
+  brandName: '-',
+  totalBudget: 0,
+  budgetName: '-',
+  status: 'DRAFT',
 };
 
-const MOCK_SEASON_DATA = {
-  seasonGroup: 'FW',
-  Season: 'Fall/Winter 2025',
-  rex: 2_980_000_000,
-  ttp: 2_270_000_000,
-  finalVersion: 3,
+const EMPTY_SEASON_DATA = {
+  seasonGroup: '-',
+  Season: '-',
+  rex: 0,
+  ttp: 0,
+  finalVersion: 0,
 };
 
 /* =========================
@@ -725,6 +566,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     setActionLoading(true);
     try {
       await svc.submit(ticket.id);
+      invalidateCache(`/${ticket.entityType}`);
       toast.success(t('ticketDetail.submit'));
       if (onBack) onBack();
     } catch (err: any) {
@@ -745,6 +587,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       } else if (status === 'LEVEL1_APPROVED') {
         await svc.approveL2(ticket.id, 'Approved');
       }
+      invalidateCache(`/${ticket.entityType}`);
       toast.success(t('ticketDetail.approve'));
       if (onBack) onBack();
     } catch (err: any) {
@@ -767,6 +610,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       } else if (status === 'LEVEL1_APPROVED') {
         await svc.rejectL2(ticket.id, reason || 'Rejected');
       }
+      invalidateCache(`/${ticket.entityType}`);
       toast.success(t('ticketDetail.reject'));
       if (onBack) onBack();
     } catch (err: any) {
@@ -947,7 +791,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
 
   const handleToggleDiff = useCallback(() => {
     if (!showDiff && previousSkuData.length === 0) {
-      const dataToUse = skuData.length > 0 ? skuData : MOCK_SKU_BLOCKS;
+      const dataToUse = skuData;
       setPreviousSkuData(generatePreviousVersion(dataToUse));
     }
     setShowDiff((prev) => !prev);
@@ -973,7 +817,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   // Generate budget/season data from detail
   const { budgetData, budgetSeasonData } = useMemo(() => {
     if (!detailData) {
-      return { budgetData: MOCK_BUDGET_DATA, budgetSeasonData: MOCK_SEASON_DATA };
+      return { budgetData: EMPTY_BUDGET_DATA, budgetSeasonData: EMPTY_SEASON_DATA };
     }
 
     // For budget type
@@ -1041,14 +885,14 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     return {
       budgetData: detailData ? {
         id: detailData.id,
-        fiscalYear: ticket?.fiscalYear || MOCK_BUDGET_DATA.fiscalYear,
-        groupBrand: ticket?.brand || MOCK_BUDGET_DATA.groupBrand,
-        brandName: ticket?.brand || MOCK_BUDGET_DATA.brandName,
-        totalBudget: MOCK_BUDGET_DATA.totalBudget,
-        budgetName: ticket?.name || MOCK_BUDGET_DATA.budgetName,
+        fiscalYear: ticket?.fiscalYear || '-',
+        groupBrand: ticket?.brand || '-',
+        brandName: ticket?.brand || '-',
+        totalBudget: Number(detailData.totalBudget || detailData.totalValue) || 0,
+        budgetName: ticket?.name || detailData.proposalCode || '-',
         status: detailData.status
-      } : MOCK_BUDGET_DATA,
-      budgetSeasonData: MOCK_SEASON_DATA,
+      } : EMPTY_BUDGET_DATA,
+      budgetSeasonData: EMPTY_SEASON_DATA,
     };
   }, [detailData, ticket]);
 
@@ -1057,7 +901,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const totalRexTtp = rexNum + ttpNum;
 
   // Use real SKU data or mock fallback
-  const displaySkuData = skuData.length > 0 ? skuData : MOCK_SKU_BLOCKS;
+  const displaySkuData = skuData;
 
   if (loading) {
     return (

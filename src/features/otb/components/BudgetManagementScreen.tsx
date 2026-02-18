@@ -2,18 +2,19 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
-  ChevronDown, Plus, Search, Table, PieChart, X, Filter, Eye, Split,
-  Wallet, CircleCheckBig, Hourglass
+  ChevronDown, Plus, Search, Table, X, Filter, Eye, Split,
+  Wallet, CircleCheckBig, Hourglass, Trash2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils/formatters';
 import { budgetService, masterDataService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { LoadingSpinner, ErrorMessage, EmptyState, ExpandableStatCard } from '@/components/ui';
 import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
-const YEARS = [2023, 2024, 2025, 2026];
+const YEARS = Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - 2 + i);
 
 const CARD_ACCENTS = {
   total:     { color: '#D7B797', darkGrad: 'rgba(215,183,151,0.06)', lightGrad: 'rgba(180,140,95,0.25)', iconDark: 'rgba(215,183,151,0.07)', iconLight: 'rgba(160,120,75,0.20)' },
@@ -51,7 +52,7 @@ const BudgetManagementScreen = ({
 
       const response = await budgetService.getAll(filters);
       // Map API response to UI format
-      const budgets = (response.data || response || []).map((budget: any) => ({
+      const budgets = (Array.isArray(response) ? response : []).map((budget: any) => ({
         id: budget.id,
         fiscalYear: budget.fiscalYear,
         totalBudget: Number(budget.totalBudget || budget.totalAmount) || 0,
@@ -69,6 +70,23 @@ const BudgetManagementScreen = ({
       setLoading(false);
     }
   }, [selectedYear]);
+
+  // Delete budget (DRAFT only)
+  const handleDeleteBudget = async () => {
+    if (!selectedBudget?.id) return;
+    try {
+      await budgetService.delete(selectedBudget.id);
+      invalidateCache('/budgets');
+      toast.success(t('budget.deleteSuccess') || 'Budget deleted successfully');
+      setShowDeleteConfirm(false);
+      setShowViewModal(false);
+      setSelectedBudget(null);
+      await fetchBudgets();
+    } catch (err: any) {
+      console.error('Failed to delete budget:', err);
+      toast.error(t('budget.deleteFailed') || 'Failed to delete budget');
+    }
+  };
 
   // Initial fetch
   useEffect(() => {
@@ -96,6 +114,7 @@ const BudgetManagementScreen = ({
 
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<any>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Form state for create budget
   const [newBudgetForm, setNewBudgetForm] = useState({
@@ -612,8 +631,8 @@ const BudgetManagementScreen = ({
               <div className="px-6 py-5 space-y-4 text-sm">
                 <DetailRow label={t('budget.fiscalYear')} value={`FY${selectedBudget.fiscalYear}`} />
                 <DetailRow label={t('budget.budgetName')} value={selectedBudget.budgetName} />
-                <DetailRow label={t('budget.createdBy')} value="TC Admin" />
-                <DetailRow label={t('budget.createdOn')} value="02/02/2025" />
+                <DetailRow label={t('budget.createdBy')} value={selectedBudget.createdBy || t('common.unknown')} />
+                <DetailRow label={t('budget.createdOn')} value={selectedBudget.createdAt ? new Date(selectedBudget.createdAt).toLocaleDateString('vi-VN') : '-'} />
 
                 <DetailRow
                   label={t('budget.totalBudget')}
@@ -624,9 +643,18 @@ const BudgetManagementScreen = ({
 
               {/* Footer */}
               <div
-                className={`flex justify-end px-6 py-4 border-t
+                className={`flex items-center justify-between px-6 py-4 border-t
             ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}
               >
+                {selectedBudget.status === 'draft' ? (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-red-500 hover:bg-red-500/10"
+                  >
+                    <Trash2 size={14} />
+                    {t('common.delete') || 'Delete'}
+                  </button>
+                ) : <div />}
                 <button
                   onClick={() => setShowViewModal(false)}
                   className={`px-4 py-0.5 text-sm font-medium rounded-lg transition-colors
@@ -642,13 +670,34 @@ const BudgetManagementScreen = ({
         </div>
       )}
 
-
-      {/* Charts View Placeholder */}
-      {viewMode === 'charts' && (
-        <div className={`rounded-xl shadow-sm border p-12 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-          <div className="text-center">
-            <PieChart size={48} className={`mx-auto mb-4 ${darkMode ? 'text-[#2E2E2E]' : 'text-[#999999]'}`} />
-            <p className={darkMode ? 'text-[#666666]' : 'text-[#999999]'}>{t('common.chartsComingSoon')}</p>
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && selectedBudget && (
+        <div className="fixed inset-0 z-[10000]">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="relative flex min-h-screen items-center justify-center p-4">
+            <div className={`w-full max-w-sm rounded-2xl shadow-xl overflow-hidden ${darkMode ? 'bg-[#121212] text-[#F2F2F2]' : 'bg-white text-[#0A0A0A]'}`}>
+              <div className="px-6 py-5 space-y-3">
+                <h3 className="text-lg font-semibold font-['Montserrat']">{t('budget.confirmDelete') || 'Confirm Delete'}</h3>
+                <p className={`text-sm ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+                  {t('budget.deleteWarning') || 'Are you sure you want to delete this budget? This action cannot be undone.'}
+                </p>
+                <p className="text-sm font-medium">{selectedBudget.budgetName}</p>
+              </div>
+              <div className={`flex justify-end gap-3 px-6 py-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'bg-[#2E2E2E] hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'bg-[#F2F2F2] hover:bg-[#E5E5E5] text-[#0A0A0A]'}`}
+                >
+                  {t('common.cancel') || 'Cancel'}
+                </button>
+                <button
+                  onClick={handleDeleteBudget}
+                  className="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {t('common.delete') || 'Delete'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -757,10 +806,18 @@ const BudgetManagementScreen = ({
               <button
                 onClick={async () => {
                   if (!newBudgetForm.totalBudget) return;
+                  const totalAmount = parseInt(newBudgetForm.totalBudget) || 0;
+                  if (totalAmount <= 0) {
+                    toast.error(t('budget.amountMustBePositive') || 'Amount must be greater than 0');
+                    return;
+                  }
+                  if (totalAmount > 100_000_000_000) {
+                    toast.error(t('budget.amountTooLarge') || 'Amount exceeds maximum (100 billion VND)');
+                    return;
+                  }
 
                   setCreating(true);
                   try {
-                    const totalAmount = parseInt(newBudgetForm.totalBudget) || 0;
                     if (apiStores.length === 0) {
                       toast.error(t('budget.noStoresAvailable') || 'No stores available');
                       return;
@@ -774,16 +831,17 @@ const BudgetManagementScreen = ({
                     }));
 
                     await budgetService.create({
+                      budgetCode: newBudgetForm.name,
                       seasonGroupId: newBudgetForm.seasonGroup,
                       seasonType: newBudgetForm.seasonType,
                       fiscalYear: newBudgetForm.fiscalYear,
                       comment: newBudgetForm.description || undefined,
                       details,
                     });
+                    invalidateCache('/budgets');
                     toast.success(t('budget.budgetCreatedSuccess'));
                     setShowCreateModal(false);
-                    setNewBudgetForm({ fiscalYear: 2026, seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
-                    // Refresh the list
+                    setNewBudgetForm({ fiscalYear: new Date().getFullYear() + 1, seasonGroup: 'SS', seasonType: 'pre', name: '', totalBudget: '', description: '' });
                     fetchBudgets();
                   } catch (err: any) {
                     console.error('Failed to create budget:', err);

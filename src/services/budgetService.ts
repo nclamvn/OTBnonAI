@@ -5,13 +5,17 @@ import api from './api';
 import { approvalHelper } from './approvalHelper';
 
 const extract = (response: any) => response.data?.data ?? response.data;
+const normalizeList = (items: any) => {
+  if (!Array.isArray(items)) return items;
+  return items.map((item: any) => item.status ? { ...item, status: item.status.toLowerCase() } : item);
+};
 
 export const budgetService = {
   // Get all budgets with filters
   async getAll(filters: any = {}) {
     try {
       const response = await api.get('/budgets', { params: filters });
-      return response.data;
+      return normalizeList(extract(response));
     } catch (err: any) {
       console.error('[budgetService.getAll]', err?.response?.status, err?.message);
       throw err;

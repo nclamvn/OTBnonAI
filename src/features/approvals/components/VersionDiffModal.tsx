@@ -86,7 +86,7 @@ const VersionDiffModal = ({ isOpen, onClose, entityId, entityType, darkMode }: V
         // Fetch all sibling versions for the same budgetDetail
         if (current.budgetDetailId) {
           const allRes = await planningService.getAll({ budgetDetailId: current.budgetDetailId });
-          const versions = (allRes.data || allRes || [])
+          const versions = (Array.isArray(allRes) ? allRes : [])
             .sort((a: any, b: any) => b.versionNumber - a.versionNumber);
           setAllVersions(versions);
 

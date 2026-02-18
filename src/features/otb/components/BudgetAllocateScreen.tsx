@@ -11,6 +11,7 @@ import toast from 'react-hot-toast';
 import { formatCurrency, parseSmartInput } from '@/utils';
 import { SEASON_GROUPS, SEASON_CONFIG } from '@/utils/constants';
 import { budgetService, masterDataService, planningService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { useAppContext } from '@/contexts/AppContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -31,7 +32,7 @@ import VersionCompareModal from './VersionCompareModal';
 import { exportAllocationToExcel } from '../utils/exportExcel';
 
 // Constants - same as BudgetManagementScreen
-const YEARS = [2023, 2024, 2025, 2026];
+const YEARS = Array.from({ length: 4 }, (_, i) => new Date().getFullYear() - 2 + i);
 
 const GROUP_BRAND_COLORS = [
   'from-[#8A6340] to-[#6B4D30]',
@@ -122,8 +123,12 @@ const BudgetAllocateScreen = ({
         code: s.code || s.storeCode || s.name || '',
         name: s.name || s.storeName || s.code || '',
       }));
-      setStores(list.length > 0 ? list : [{ id: 'rex', code: 'REX', name: 'REX' }, { id: 'ttp', code: 'TTP', name: 'TTP' }]);
-    }).catch(() => setStores([{ id: 'rex', code: 'REX', name: 'REX' }, { id: 'ttp', code: 'TTP', name: 'TTP' }]));
+      setStores(list.length > 0 ? list : []);
+      if (list.length === 0) toast.error('No stores found — please check master data');
+    }).catch(() => {
+      setStores([]);
+      toast.error('Failed to load stores');
+    });
   }, []);
 
   // Fetch budgets on mount (with Strict Mode ignore pattern)
@@ -134,7 +139,7 @@ const BudgetAllocateScreen = ({
       try {
         const response = await budgetService.getAll({ status: 'APPROVED' });
         if (ignore) return;
-        const budgetList = (response.data || response || []).map((budget: any) => ({
+        const budgetList = (Array.isArray(response) ? response : []).map((budget: any) => ({
           id: budget.id,
           fiscalYear: budget.fiscalYear,
           groupBrand: typeof budget.groupBrand === 'object' ? (budget.groupBrand?.name || budget.groupBrand?.code || 'A') : (budget.groupBrand || 'A'),
@@ -428,16 +433,16 @@ const BudgetAllocateScreen = ({
       setLoadingVersions(true);
       try {
         const response = await planningService.getAll({ budgetId: selectedBudgetId });
-        const list = Array.isArray(response) ? response : (response?.data || []);
+        const list = Array.isArray(response) ? response : [];
         setVersions(list.map((v: any) => ({
           id: v.id,
           name: v.name || v.versionName || `Version ${v.versionNumber || v.id}`,
           status: v.status || 'DRAFT',
-          isFinal: v.isFinal || v.status === 'FINAL' || false,
+          isFinal: v.isFinal || v.status?.toLowerCase() === 'final' || false,
           versionNumber: v.versionNumber
         })));
         // Auto-select the final version if one exists
-        const finalVersion = list.find((v: any) => v.isFinal || v.status === 'FINAL');
+        const finalVersion = list.find((v: any) => v.isFinal || v.status?.toLowerCase() === 'final');
         if (finalVersion) {
           setSelectedVersionId(finalVersion.id);
         } else {
@@ -786,6 +791,7 @@ const BudgetAllocateScreen = ({
     e.stopPropagation();
     try {
       await planningService.finalize(versionId);
+      invalidateCache('/planning');
       toast.success(t('planning.latestVersion'));
       setVersions((prev: any) => prev.map((v: any) => ({
         ...v,
@@ -1293,10 +1299,10 @@ const BudgetAllocateScreen = ({
                                   <span className="px-1.5 py-0.5 text-[10px] font-bold bg-[#D7B797] text-[#0A0A0A] rounded flex-shrink-0">FINAL</span>
                                 )}
                                 <span className={`text-xs px-1.5 py-0.5 rounded flex-shrink-0 ${
-                                  version.status === 'APPROVED' ? 'bg-[rgba(18,119,73,0.15)] text-[#127749]' :
-                                  version.status === 'SUBMITTED' ? 'bg-[rgba(227,179,65,0.15)] text-[#E3B341]' :
+                                  version.status?.toLowerCase() === 'approved' ? 'bg-[rgba(18,119,73,0.15)] text-[#127749]' :
+                                  version.status?.toLowerCase() === 'submitted' ? 'bg-[rgba(227,179,65,0.15)] text-[#E3B341]' :
                                   darkMode ? 'bg-[#2E2E2E] text-[#999999]' : 'bg-[#F2F2F2] text-[#666666]'
-                                }`}>{version.status}</span>
+                                }`}>{version.status?.toUpperCase()}</span>
                               </div>
                               <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 {!version.isFinal && (

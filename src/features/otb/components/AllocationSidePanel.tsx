@@ -265,9 +265,9 @@ const AllocationSidePanel = ({
                         )}
                         <span
                           className={`text-[10px] px-1 py-px rounded ${
-                            version.status === 'APPROVED'
+                            version.status?.toLowerCase() === 'approved'
                               ? 'bg-[rgba(18,119,73,0.15)] text-[#127749]'
-                              : version.status === 'SUBMITTED'
+                              : version.status?.toLowerCase() === 'submitted'
                                 ? 'bg-[rgba(227,179,65,0.15)] text-[#E3B341]'
                                 : darkMode
                                   ? 'bg-[#2E2E2E] text-[#999]'
@@ -305,7 +305,7 @@ const AllocationSidePanel = ({
                             <GitCompare size={12} />
                           </button>
                         )}
-                        {onRollbackVersion && version.status === 'DRAFT' && (
+                        {onRollbackVersion && version.status?.toLowerCase() === 'draft' && (
                           <button
                             onClick={() => onRollbackVersion(version.id)}
                             className={`p-1 rounded text-[10px] font-medium transition-colors ${

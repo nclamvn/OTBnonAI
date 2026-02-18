@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { planningService } from '../../../services';
+import { invalidateCache } from '../../../services/api';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // useAllocationState — manages allocation values, undo/redo, dirty tracking,
@@ -302,6 +303,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           brandTotalValues,
           allocationComments,
         });
+        invalidateCache('/planning');
         setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
         const now = new Date();
         setLastSavedAt(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
@@ -330,6 +332,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           allocationComments,
         });
         await planningService.submit(versionId);
+        invalidateCache('/planning');
         setCleanSnapshot({ allocationValues, seasonTotalValues, brandTotalValues, allocationComments });
         toast.success(t('planning.submittedForApproval'));
       } catch (err: any) {

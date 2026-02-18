@@ -76,7 +76,7 @@ export const masterDataService = {
   async getSkuCatalog(params: any = {}) {
     try {
       const response = await api.get('/master/sku-catalog', { params });
-      return response.data;
+      return extract(response);
     } catch (err: any) {
       console.error('[masterDataService.getSkuCatalog]', err?.response?.status, err?.message);
       throw err;

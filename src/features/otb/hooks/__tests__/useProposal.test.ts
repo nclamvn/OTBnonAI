@@ -9,7 +9,7 @@ import {
 
 const { mockProposalService, mockMasterDataService } = vi.hoisted(() => {
   const proposalSvc = {
-    getAll: vi.fn().mockResolvedValue({ data: [] }),
+    getAll: vi.fn().mockResolvedValue([]),
     getOne: vi.fn().mockResolvedValue({}),
     getStatistics: vi.fn().mockResolvedValue({}),
     create: vi.fn().mockResolvedValue({}),
@@ -32,7 +32,7 @@ const { mockProposalService, mockMasterDataService } = vi.hoisted(() => {
     getGenders: vi.fn().mockResolvedValue([]),
     getCategories: vi.fn().mockResolvedValue([]),
     getSeasons: vi.fn().mockResolvedValue([]),
-    getSkuCatalog: vi.fn().mockResolvedValue({ data: [] }),
+    getSkuCatalog: vi.fn().mockResolvedValue([]),
     getSubCategories: vi.fn().mockResolvedValue([]),
   };
   return { mockProposalService: proposalSvc, mockMasterDataService: masterSvc };
@@ -50,9 +50,9 @@ import { useProposal } from '../useProposal';
 describe('useProposal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockProposalService.getAll.mockResolvedValue({ data: [mockApiProposal()] });
+    mockProposalService.getAll.mockResolvedValue([mockApiProposal()]);
     mockProposalService.getOne.mockResolvedValue(mockApiProposal());
-    mockMasterDataService.getSkuCatalog.mockResolvedValue({ data: mockSkuCatalog });
+    mockMasterDataService.getSkuCatalog.mockResolvedValue(mockSkuCatalog);
   });
 
   // ── Initialization ──────────────────────────────────────────

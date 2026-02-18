@@ -5,13 +5,17 @@ import api from './api';
 import { approvalHelper } from './approvalHelper';
 
 const extract = (response: any) => response.data?.data ?? response.data;
+const normalizeList = (items: any) => {
+  if (!Array.isArray(items)) return items;
+  return items.map((item: any) => item.status ? { ...item, status: item.status.toLowerCase() } : item);
+};
 
 export const planningService = {
   // Get all planning versions with filters
   async getAll(filters: any = {}) {
     try {
       const response = await api.get('/planning', { params: filters });
-      return response.data;
+      return normalizeList(extract(response));
     } catch (err: any) {
       console.error('[planningService.getAll]', err?.response?.status, err?.message);
       throw err;

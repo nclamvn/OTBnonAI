@@ -7,11 +7,12 @@ import {
   DollarSign, Truck, XCircle, Eye, Ruler, Store, Image as ImageIcon,
   ArrowRight, RefreshCw, Filter, BarChart3
 } from 'lucide-react';
-import { proposalService } from '@/services';
+import toast from 'react-hot-toast';
+import { proposalService, orderService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils';
-import api from '@/services/api';
 import { useIsMobile } from '@/hooks/useIsMobile';
 
 /* ═══════════════════════════════════════════════
@@ -24,20 +25,6 @@ const ORDER_STATUS: any = {
   CANCELLED: { color: '#F85149', bg: 'rgba(248,81,73,0.12)', label: 'Cancelled', icon: XCircle },
   PARTIAL: { color: '#A371F7', bg: 'rgba(163,113,247,0.12)', label: 'Partial', icon: Package },
 };
-
-/* ═══════════════════════════════════════════════
-   DEMO SKU DATA
-═══════════════════════════════════════════════ */
-const DEMO_SKUS = [
-  { sku: 'BAL-OW-001', name: 'Wool Blend Overcoat', productType: 'W Outerwear', gender: 'Women', color: 'Camel', composition: '80% Wool, 20% Cashmere', srp: 45000000, rex: 4, ttp: 3, sizes: { '36': { salesMix: 8, st: 45 }, '38': { salesMix: 30, st: 52 }, '40': { salesMix: 35, st: 48 }, '42': { salesMix: 27, st: 40 } } },
-  { sku: 'BAL-BG-002', name: 'Le City Medium Bag', productType: 'W Bags', gender: 'Women', color: 'Nero', composition: '100% Arena Leather', srp: 32000000, rex: 6, ttp: 4, sizes: { 'OS': { salesMix: 100, st: 65 } } },
-  { sku: 'BAL-TP-003', name: 'Silk Bow Blouse', productType: 'W Tops', gender: 'Women', color: 'Ivory', composition: '100% Silk', srp: 28000000, rex: 5, ttp: 3, sizes: { '38': { salesMix: 15, st: 55 }, '40': { salesMix: 40, st: 60 }, '42': { salesMix: 30, st: 50 }, '44': { salesMix: 15, st: 42 } } },
-  { sku: 'BAL-TL-004', name: 'Tailored Wool Blazer', productType: 'W Tailoring', gender: 'Women', color: 'Navy', composition: '95% Wool, 5% Elastane', srp: 38000000, rex: 3, ttp: 2, sizes: { '36': { salesMix: 10, st: 48 }, '38': { salesMix: 35, st: 55 }, '40': { salesMix: 35, st: 50 }, '42': { salesMix: 20, st: 43 } } },
-  { sku: 'BAL-MO-005', name: 'Leather Bomber Jacket', productType: 'M Outerwear', gender: 'Men', color: 'Dark Brown', composition: '100% Lamb Leather', srp: 52000000, rex: 3, ttp: 2, sizes: { '48': { salesMix: 20, st: 50 }, '50': { salesMix: 40, st: 55 }, '52': { salesMix: 30, st: 48 }, '54': { salesMix: 10, st: 38 } } },
-  { sku: 'BAL-KN-006', name: 'Cashmere Turtleneck', productType: 'W Tops', gender: 'Women', color: 'Cream', composition: '100% Cashmere', srp: 35000000, rex: 4, ttp: 3, sizes: { 'S': { salesMix: 15, st: 50 }, 'M': { salesMix: 40, st: 58 }, 'L': { salesMix: 30, st: 52 }, 'XL': { salesMix: 15, st: 44 } } },
-  { sku: 'BAL-MT-007', name: 'Slim Fit Wool Trousers', productType: 'M Tailoring', gender: 'Men', color: 'Charcoal', composition: '98% Wool, 2% Elastane', srp: 25000000, rex: 5, ttp: 3, sizes: { '46': { salesMix: 10, st: 42 }, '48': { salesMix: 30, st: 55 }, '50': { salesMix: 35, st: 52 }, '52': { salesMix: 25, st: 46 } } },
-  { sku: 'BAL-SL-008', name: 'Card Holder Wallet', productType: 'W Bags', gender: 'Women', color: 'Black', composition: '100% Calf Leather', srp: 12000000, rex: 8, ttp: 6, sizes: { 'OS': { salesMix: 100, st: 72 } } },
-];
 
 /* ═══════════════════════════════════════════════
    STATUS PIPELINE COMPONENT
@@ -102,11 +89,22 @@ const StatusPipeline = ({ stats, darkMode, statusFilter, setStatusFilter }: any)
 ═══════════════════════════════════════════════ */
 const OrderDetailPanel = ({ order, darkMode }: any) => {
   const [expandedSku, setExpandedSku] = useState<string | null>(null);
-  const products = order.products && order.products.length > 0 ? order.products : DEMO_SKUS;
+  const products = order.products || [];
 
   const border = darkMode ? 'border-[#2E2E2E]' : 'border-gray-200';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
   const textMuted = darkMode ? 'text-[#666666]' : 'text-gray-500';
+
+  if (products.length === 0) {
+    return (
+      <div className={`px-4 py-8 border-t ${border} ${darkMode ? 'bg-[#0D0D0D]' : 'bg-[#FAFAF8]'}`}>
+        <div className="flex flex-col items-center justify-center">
+          <Package size={24} className={textMuted} />
+          <p className={`text-xs mt-2 font-['Montserrat'] ${textMuted}`}>No products in this order</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`px-4 py-3 border-t ${border} ${darkMode ? 'bg-[#0D0D0D]' : 'bg-[#FAFAF8]'}`}>
@@ -328,7 +326,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     setError(null);
     try {
       const proposals = await proposalService.getAll({ status: 'APPROVED' });
-      const data = Array.isArray(proposals) ? proposals : (proposals?.data || []);
+      const data = Array.isArray(proposals) ? proposals : [];
       const mapped = data.map((p: any, idx: any) => ({
         id: p.id || idx + 1,
         poNumber: p.proposalCode ? `PO-${p.proposalCode.replace('PROP-', '')}` : `PO-${String(idx + 1).padStart(5, '0')}`,
@@ -365,10 +363,14 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
   const handleConfirmOrder = async (order: any) => {
     setProcessing(true);
     try {
-      await api.patch(`/orders/${order.id}/confirm`);
+      await orderService.confirmOrder(order.id);
+      invalidateCache('/orders');
+      invalidateCache('/proposals');
+      toast.success(t('orderConfirm.orderConfirmed'));
       fetchOrders();
     } catch (err: any) {
-      setOrders((prev: any) => prev.map((o: any) => o.id === order.id ? { ...o, status: 'CONFIRMED' } : o));
+      console.error('Failed to confirm order:', err);
+      toast.error(err.response?.data?.message || t('orderConfirm.confirmFailed'));
     } finally {
       setProcessing(false);
       setConfirmModal(null);
@@ -378,10 +380,14 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
   const handleCancelOrder = async (order: any) => {
     setProcessing(true);
     try {
-      await api.patch(`/orders/${order.id}/cancel`);
+      await orderService.cancelOrder(order.id);
+      invalidateCache('/orders');
+      invalidateCache('/proposals');
+      toast.success(t('orderConfirm.orderCancelled'));
       fetchOrders();
     } catch (err: any) {
-      setOrders((prev: any) => prev.map((o: any) => o.id === order.id ? { ...o, status: 'CANCELLED' } : o));
+      console.error('Failed to cancel order:', err);
+      toast.error(err.response?.data?.message || t('orderConfirm.cancelFailed'));
     } finally {
       setProcessing(false);
       setConfirmModal(null);
