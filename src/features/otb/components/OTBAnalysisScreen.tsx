@@ -31,7 +31,6 @@ const TABS = [
   { id: 'category', labelKey: 'otbAnalysis.category', fallback: 'Category', icon: Tag },
   { id: 'collection', labelKey: 'otbAnalysis.collection', fallback: 'Collection', icon: Layers },
   { id: 'gender', labelKey: 'otbAnalysis.gender', fallback: 'Gender', icon: Users },
-  { id: 'brandCompare', labelKey: 'otbAnalysis.compareBrands', fallback: 'Compare Brands', icon: GitCompareArrows }
 ];
 
 // Reusable editable cell component (memoized to prevent unnecessary re-renders)
@@ -1578,7 +1577,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     );
   };
 
-  // Render Brand Comparison Tab
+  // NOTE: Brand Comparison tab removed per client feedback (Round 2)
   const renderBrandComparisonTab = () => {
     const BRAND_COLORS = ['#D7B797', '#2A9E6A', '#7C3AED'];
     const selectedBrands = selectedBrandIds.map(id => availableBrands.find((b: any) => b.id === id)).filter(Boolean);
@@ -2715,7 +2714,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           {activeTab === 'collection' && renderCollectionTab()}
           {activeTab === 'gender' && renderGenderTab()}
           {activeTab === 'category' && renderCategoryTab()}
-          {activeTab === 'brandCompare' && renderBrandComparisonTab()}
         </div>
       </div>
       )}

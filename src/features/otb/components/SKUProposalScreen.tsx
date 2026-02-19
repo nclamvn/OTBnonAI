@@ -112,8 +112,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         ]);
 
         // Transform SKU catalog
-        const catalog = Array.isArray(catalogRes) ? catalogRes : [];
-        setSkuCatalog(catalog.map((s: any) => ({
+        const rawCatalog = Array.isArray(catalogRes) ? catalogRes : [];
+        const catalog = rawCatalog.map((s: any) => ({
           sku: s.skuCode || s.sku || s.code || s.id,
           name: s.productName || s.name,
           collectionName: s.collectionName || s.collection || '',
@@ -133,7 +133,10 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           regionalRrp: Number(s.regionalRrp) || 0,
           theme: s.theme || '',
           size: s.size || ''
-        })));
+        }));
+
+        // Set catalog initially (will be enriched after proposals are processed)
+        setSkuCatalog(catalog);
 
         // Fetch each proposal's detail to get products (list endpoint doesn't include them)
         const proposalsList = Array.isArray(proposalsListRes) ? proposalsListRes : [];
@@ -195,6 +198,43 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         });
         if (blocks.length > 0) {
           setSkuBlocks(blocks);
+        }
+
+        // Enrich catalog with unique SKUs extracted from proposal products
+        // This ensures AddSKU modal has items even if the catalog API is empty
+        const seenSkus = new Set(catalog.map((c: any) => c.sku));
+        const supplementarySkus: any[] = [];
+        proposals.forEach((p: any) => {
+          (p.products || []).forEach((prod: any) => {
+            const sku = prod.skuCode || prod.sku;
+            if (sku && !seenSkus.has(sku)) {
+              seenSkus.add(sku);
+              supplementarySkus.push({
+                sku,
+                name: prod.productName || prod.name || '',
+                collectionName: prod.collectionName || prod.collection || '',
+                color: prod.color || '',
+                colorCode: prod.colorCode || '',
+                division: prod.division || prod.category || '',
+                productType: prod.productType || prod.subCategory || '',
+                departmentGroup: prod.departmentGroup || prod.department || '',
+                fsr: prod.fsr || '',
+                carryForward: prod.carryForward || 'NEW',
+                composition: prod.composition || '',
+                unitCost: Number(prod.unitCost) || 0,
+                importTaxPct: Number(prod.importTaxPct || prod.importTax) || 0,
+                srp: Number(prod.srp) || 0,
+                wholesale: Number(prod.wholesale) || 0,
+                rrp: Number(prod.rrp) || 0,
+                regionalRrp: Number(prod.regionalRrp) || 0,
+                theme: prod.theme || '',
+                size: prod.size || ''
+              });
+            }
+          });
+        });
+        if (supplementarySkus.length > 0) {
+          setSkuCatalog((prev) => [...prev, ...supplementarySkus]);
         }
       } catch (err: any) {
         console.error('Failed to fetch SKU data:', err);

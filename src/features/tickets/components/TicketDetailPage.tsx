@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { ChevronDown, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronUp, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw, ExternalLink, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
 import { ProductImage, Breadcrumbs, ConfirmDialog } from '@/components/ui';
@@ -699,6 +699,43 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     return 'submitted';
   }, [ticket]);
 
+  // Helper: transform proposal items/products into grouped SKU blocks
+  const transformToSkuBlocks = (items: any[]) => {
+    const groupedSkus: any = {};
+    items.forEach((item: any) => {
+      const genderName = item.gender?.name || item.gender || 'Unknown';
+      const categoryName = item.category?.name || item.category || 'Unknown';
+      const key = `${genderName}_${categoryName}`;
+      if (!groupedSkus[key]) {
+        groupedSkus[key] = {
+          gender: genderName.toLowerCase(),
+          productType: categoryName,
+          subCategory: item.subCategory?.name || item.subCategory || categoryName,
+          pctBuyPropose: 0,
+          otbPropose: 0,
+          items: []
+        };
+      }
+      groupedSkus[key].items.push({
+        sku: item.sku?.code || item.skuCode || item.skuId || item.sku || '-',
+        name: item.sku?.name || item.productName || item.name || '-',
+        theme: item.sku?.theme || item.theme || '-',
+        color: item.sku?.color || item.color || '-',
+        composition: item.sku?.composition || item.composition || '-',
+        srp: Number(item.sku?.retailPrice || item.srp) || 0,
+        unitCost: Number(item.sku?.unitCost || item.unitCost) || 0,
+        collection: item.sku?.collection || item.collection || '-',
+        customerTarget: item.sku?.customerTarget || item.customerTarget || '-',
+        order: Number(item.quantity || item.orderQty) || 0,
+        rex: Number(item.rex) || Math.floor(Number(item.quantity) / 2) || 0,
+        ttp: Number(item.ttp) || Math.ceil(Number(item.quantity) / 2) || 0,
+        ttlValue: Number(item.totalValue) || 0
+      });
+      groupedSkus[key].otbPropose += Number(item.totalValue) || 0;
+    });
+    return Object.values(groupedSkus) as any[];
+  };
+
   // Fetch detailed data based on entity type
   useEffect(() => {
     if (!ticket) return;
@@ -708,7 +745,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       try {
         let data = ticket.data;
 
-        // If we have full data from ticket, use it; otherwise fetch
+        // Fetch full entity data from API
         if (ticket.entityType === 'budget' && ticket.id) {
           const res = await budgetService.getOne(ticket.id);
           data = res.data || res;
@@ -718,41 +755,16 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         } else if (ticket.entityType === 'proposal' && ticket.id) {
           const res = await proposalService.getOne(ticket.id);
           data = res.data || res;
-          // Transform proposal items to SKU format
-          if (data.items) {
-            const groupedSkus: any = {};
-            data.items.forEach((item: any) => {
-              const key = `${item.gender?.name || 'Unknown'}_${item.category?.name || 'Unknown'}`;
-              if (!groupedSkus[key]) {
-                groupedSkus[key] = {
-                  gender: item.gender?.name?.toLowerCase() || 'unknown',
-                  productType: item.category?.name || 'Unknown',
-                  subCategory: item.subCategory?.name || item.category?.name || 'Unknown',
-                  pctBuyPropose: 0,
-                  otbPropose: 0,
-                  items: []
-                };
-              }
-              groupedSkus[key].items.push({
-                sku: item.sku?.code || item.skuId,
-                name: item.sku?.name || '-',
-                theme: item.sku?.theme || '-',
-                color: item.sku?.color || '-',
-                composition: item.sku?.composition || '-',
-                srp: Number(item.sku?.retailPrice) || 0,
-                unitCost: Number(item.sku?.unitCost) || 0,
-                collection: item.sku?.collection || item.collection || '-',
-                customerTarget: item.sku?.customerTarget || item.customerTarget || '-',
-                order: Number(item.quantity) || 0,
-                rex: Math.floor(Number(item.quantity) / 2) || 0,
-                ttp: Math.ceil(Number(item.quantity) / 2) || 0,
-                ttlValue: Number(item.totalValue) || 0
-              });
-              groupedSkus[key].otbPropose += Number(item.totalValue) || 0;
-            });
-            const skuGroups: any[] = Object.values(groupedSkus);
+        }
+
+        setDetailData(data);
+
+        // === PROPOSAL: products array (backend field name) ===
+        if (ticket.entityType === 'proposal') {
+          const products = data?.products || data?.items || [];
+          if (products.length > 0) {
+            const skuGroups = transformToSkuBlocks(products);
             setSkuData(skuGroups);
-            // Default collapse all SKU groups
             const defaultCollapsed: any = {};
             skuGroups.forEach((block: any) => {
               defaultCollapsed[`${block.productType}_${block.gender}`] = true;
@@ -761,11 +773,117 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
           }
         }
 
-        setDetailData(data);
+        // === BUDGET: details array with store allocations ===
+        if (ticket.entityType === 'budget') {
+          const details = data?.details || [];
+          if (details.length > 0) {
+            const budgetBlocks: any[] = [];
+            const storeMap: Record<string, any[]> = {};
+            details.forEach((d: any) => {
+              const storeName = d.store?.name || d.store?.code || 'Unknown';
+              if (!storeMap[storeName]) storeMap[storeName] = [];
+              storeMap[storeName].push(d);
+            });
+            Object.entries(storeMap).forEach(([storeName, storeDetails]) => {
+              budgetBlocks.push({
+                gender: storeName,
+                productType: t('ticketDetail.storeAllocation') || 'Store Allocation',
+                subCategory: storeName,
+                pctBuyPropose: 0,
+                otbPropose: storeDetails.reduce((sum: number, d: any) => sum + (Number(d.budgetAmount) || 0), 0),
+                items: storeDetails.map((d: any) => ({
+                  sku: d.store?.code || storeName,
+                  name: storeName,
+                  theme: data.seasonType || '-',
+                  color: '-',
+                  composition: '-',
+                  srp: Number(d.budgetAmount) || 0,
+                  unitCost: 0,
+                  collection: data.seasonGroupId || '-',
+                  customerTarget: '-',
+                  order: 1,
+                  rex: storeName.toUpperCase().includes('REX') ? 1 : 0,
+                  ttp: storeName.toUpperCase().includes('TTP') ? 1 : 0,
+                  ttlValue: Number(d.budgetAmount) || 0,
+                })),
+              });
+            });
+            setSkuData(budgetBlocks);
+          }
+        }
+
+        // === PLANNING: details array OR fallback to budgetDetail ===
+        if (ticket.entityType === 'planning') {
+          const details = data?.details || [];
+          if (details.length > 0) {
+            // Has dimension details — group by category
+            const planningBlocks: any[] = [];
+            const categoryMap: Record<string, any[]> = {};
+            details.forEach((d: any) => {
+              const catName = d.category?.name || d.gender?.name || 'General';
+              if (!categoryMap[catName]) categoryMap[catName] = [];
+              categoryMap[catName].push(d);
+            });
+            Object.entries(categoryMap).forEach(([catName, catDetails]) => {
+              planningBlocks.push({
+                gender: catName.toLowerCase(),
+                productType: catName,
+                subCategory: catName,
+                pctBuyPropose: catDetails[0]?.userBuyPct || catDetails[0]?.buyPercentage || 0,
+                otbPropose: catDetails.reduce((sum: number, d: any) => sum + (Number(d.otbValue) || 0), 0),
+                items: catDetails.map((d: any) => ({
+                  sku: d.subCategory?.name || d.categoryId || '-',
+                  name: d.subCategory?.name || d.category?.name || catName,
+                  theme: '-',
+                  color: '-',
+                  composition: '-',
+                  srp: Number(d.otbValue) || 0,
+                  unitCost: Number(d.unitCost) || 0,
+                  collection: '-',
+                  customerTarget: '-',
+                  order: Number(d.quantity) || 0,
+                  rex: Math.floor((Number(d.quantity) || 0) / 2),
+                  ttp: Math.ceil((Number(d.quantity) || 0) / 2),
+                  ttlValue: Number(d.otbValue) || 0,
+                })),
+              });
+            });
+            setSkuData(planningBlocks);
+          } else if (data?.budgetDetail) {
+            // No planning details — use budgetDetail allocation info as fallback
+            const bd = data.budgetDetail;
+            const storeName = bd.store?.name || bd.store?.code || 'Store';
+            const budget = bd.budget || {};
+            const brandName = budget.groupBrand?.name || '-';
+            const budgetAmt = Number(bd.budgetAmount) || 0;
+            const planningBlock = {
+              gender: storeName.toLowerCase(),
+              productType: t('ticketDetail.planningDetails') || 'Planning Allocation',
+              subCategory: storeName,
+              pctBuyPropose: 0,
+              otbPropose: budgetAmt,
+              items: [{
+                sku: data.planningCode || data.id || '-',
+                name: `${brandName} — ${storeName}`,
+                theme: budget.seasonType || '-',
+                color: '-',
+                composition: '-',
+                srp: budgetAmt,
+                unitCost: 0,
+                collection: budget.seasonGroupId || '-',
+                customerTarget: '-',
+                order: 1,
+                rex: storeName.toUpperCase().includes('REX') ? 1 : 0,
+                ttp: storeName.toUpperCase().includes('TTP') ? 1 : 0,
+                ttlValue: budgetAmt,
+              }],
+            };
+            setSkuData([planningBlock]);
+          }
+        }
       } catch (err: any) {
         console.error('Failed to fetch ticket detail:', err);
         toast.error('Failed to load detail data');
-        // Use ticket's inline data if available
         if (ticket.data) {
           setDetailData(ticket.data);
         }
@@ -890,18 +1008,26 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
       };
     }
 
-    // Default / proposal
+    // Default / proposal — use nested budget relation for metadata
+    const proposalBudget = detailData?.budget || {};
+    const proposalBrand = proposalBudget.groupBrand || {};
     return {
       budgetData: detailData ? {
         id: detailData.id,
-        fiscalYear: ticket?.fiscalYear || '-',
-        groupBrand: ticket?.brand || '-',
-        brandName: ticket?.brand || '-',
-        totalBudget: Number(detailData.totalBudget || detailData.totalValue) || 0,
-        budgetName: ticket?.name || detailData.proposalCode || '-',
+        fiscalYear: proposalBudget.fiscalYear || ticket?.fiscalYear || '-',
+        groupBrand: proposalBrand.name || ticket?.brand || '-',
+        brandName: proposalBrand.name || ticket?.brand || '-',
+        totalBudget: Number(detailData.totalValue || detailData.totalBudget) || 0,
+        budgetName: detailData.ticketName || ticket?.name || 'Proposal',
         status: detailData.status
       } : EMPTY_BUDGET_DATA,
-      budgetSeasonData: EMPTY_SEASON_DATA,
+      budgetSeasonData: {
+        seasonGroup: proposalBudget.seasonGroupId || '-',
+        Season: proposalBudget.seasonType || '-',
+        rex: 0,
+        ttp: 0,
+        finalVersion: 0,
+      },
     };
   }, [detailData, ticket]);
 
@@ -1061,17 +1187,94 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         <StatusTrackingPanel approvalHistory={approvalHistory} ticket={ticket} darkMode={darkMode} t={t} />
       </div>
 
-      {/* SKU Cards - grouped by type and gender (only for proposals) */}
-      {displaySkuData.length > 0 && (
-      <div className="space-y-3 md:space-y-5">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className={`text-lg font-semibold flex items-center gap-2 font-['Montserrat'] ${
-            darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'
-          }`}>
-            <Package size={20} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-            {t('proposal.skuCode')} ({displaySkuData.reduce((sum: any, b: any) => sum + b.items.length, 0)})
-          </h3>
+      {/* SKU Proposal Details Section — always visible */}
+      <div className={`border rounded-xl overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+        {/* Section Header — collapsible */}
+        <button
+          type="button"
+          onClick={() => setCollapsed((p: any) => ({ ...p, _skuSection: !p._skuSection }))}
+          className={`w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors ${
+            darkMode
+              ? 'bg-gradient-to-r from-[rgba(215,183,151,0.08)] to-transparent hover:from-[rgba(215,183,151,0.12)]'
+              : 'bg-gradient-to-r from-[rgba(160,120,75,0.08)] to-transparent hover:from-[rgba(160,120,75,0.12)]'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            <Package size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+            <h3 className={`text-sm font-bold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
+              {ticket?.entityType === 'budget'
+                ? (t('ticketDetail.budgetDetails') || 'Budget Allocation Details')
+                : ticket?.entityType === 'planning'
+                ? (t('ticketDetail.planningDetails') || 'Planning Details')
+                : (t('ticketDetail.skuProposalDetails') || 'SKU Proposal Details')
+              }
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Summary pills */}
+            <div className="hidden sm:flex items-center gap-2">
+              {displaySkuData.length > 0 ? (<>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                  darkMode ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.1)] text-[#6B4D30]'
+                }`}>
+                  <Package size={10} />
+                  {displaySkuData.reduce((sum: any, b: any) => sum + b.items.length, 0)} SKUs
+                </span>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-['JetBrains_Mono'] ${
+                  darkMode ? 'bg-[rgba(42,158,106,0.12)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.08)] text-[#127749]'
+                }`}>
+                  <DollarSign size={10} />
+                  {formatCurrency(displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttlValue || (i.order || 0) * (i.srp || 0)), 0), 0))}
+                </span>
+              </>) : (
+                <span className={`text-[10px] ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
+                  {t('ticketDetail.noSkuData') || 'No SKU data'}
+                </span>
+              )}
+            </div>
+            {collapsed._skuSection
+              ? <ChevronDown size={16} className={darkMode ? 'text-[#666]' : 'text-[#999]'} />
+              : <ChevronUp size={16} className={darkMode ? 'text-[#666]' : 'text-[#999]'} />
+            }
+          </div>
+        </button>
 
+        {/* Summary bar (visible even when collapsed on mobile) */}
+        {displaySkuData.length > 0 && (
+        <div className={`sm:hidden flex items-center gap-3 px-4 py-1.5 border-t ${
+          darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-[rgba(215,183,151,0.15)] bg-[#FDFCFB]'
+        }`}>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+            <Package size={10} />
+            {displaySkuData.reduce((sum: any, b: any) => sum + b.items.length, 0)} SKUs
+          </span>
+          <span className={`inline-flex items-center gap-1 text-[10px] font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+            <DollarSign size={10} />
+            {formatCurrency(displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttlValue || (i.order || 0) * (i.srp || 0)), 0), 0))}
+          </span>
+        </div>
+        )}
+
+        {!collapsed._skuSection && displaySkuData.length === 0 && (
+          <div className={`px-4 py-8 text-center ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
+            <Package size={36} className="mx-auto mb-2.5 opacity-30" />
+            <p className={`text-sm font-semibold mb-1 ${darkMode ? 'text-[#999]' : 'text-gray-500'}`}>
+              {t('ticketDetail.noSkuProposals') || 'No SKU proposals linked yet'}
+            </p>
+            <p className="text-xs opacity-70">
+              {ticket?.entityType === 'budget'
+                ? (t('ticketDetail.createProposalHint') || 'Create an SKU proposal from the SKU Proposal screen to link it to this budget')
+                : ticket?.entityType === 'planning'
+                ? (t('ticketDetail.createProposalFromPlanning') || 'SKU proposals linked to this planning will appear here')
+                : (t('ticketDetail.addSkuHint') || 'Add SKUs to this proposal to see them here')
+              }
+            </p>
+          </div>
+        )}
+
+        {!collapsed._skuSection && displaySkuData.length > 0 && (
+        <div className="space-y-3 md:space-y-5 p-3 md:p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           {/* View Mode Toggle (hidden on mobile - always card view) */}
           <div className={`hidden md:flex items-center gap-1 rounded-lg p-1 ${darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.12)] border border-[rgba(160,120,75,0.3)]'}`}>
             <button
@@ -1099,6 +1302,21 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
               <List size={16} />
             </button>
           </div>
+
+          {/* Link to full SKU Proposal */}
+          {ticket?.entityType === 'proposal' && (
+            <a
+              href="/sku-proposal"
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-medium rounded-lg border transition-colors ${
+                darkMode
+                  ? 'border-[#2E2E2E] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'border-[rgba(215,183,151,0.3)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.08)]'
+              }`}
+            >
+              <ExternalLink size={11} />
+              {t('ticketDetail.viewFullProposal') || 'View Full Proposal'}
+            </a>
+          )}
         </div>
         {/* Diff Legend */}
         {showDiff && (
@@ -1284,6 +1502,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         })}
       </div>
       )}
+      </div>
       <ConfirmDialog darkMode={darkMode} {...dialogProps} />
     </div>
   );

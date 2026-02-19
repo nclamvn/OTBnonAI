@@ -22,13 +22,11 @@ import { TableSkeleton, Breadcrumbs, PrintButton } from '@/components/ui';
 import { useAllocationState, BRAND_BUDGET_CAP_PCT } from '../hooks/useAllocationState';
 import { useSessionRecovery } from '../hooks/useSessionRecovery';
 import { useClipboardPaste } from '../hooks/useClipboardPaste';
-import { useTableFilters } from '../hooks/useTableFilters';
 import AllocationToolbar from './AllocationToolbar';
 import AllocationProgressBar from './AllocationProgressBar';
 import AllocationSidePanel from './AllocationSidePanel';
 import UnsavedChangesBanner from './UnsavedChangesBanner';
 import BulkActionsMenu from './BulkActionsMenu';
-import ViewToggleBar from './ViewToggleBar';
 import VersionCompareModal from './VersionCompareModal';
 import { exportAllocationToExcel } from '../utils/exportExcel';
 
@@ -259,7 +257,6 @@ const BudgetAllocateScreen = ({
   const sessionRecovery = useSessionRecovery(selectedBudgetId);
 
   // Table view filters
-  const tableFilters = useTableFilters();
 
   // Clipboard paste handler
   const handlePasteValues = useCallback((startIndex: number, values: number[]) => {
@@ -1403,27 +1400,6 @@ const BudgetAllocateScreen = ({
         </div>{/* end overflow-hidden min-h-0 */}
         </div>{/* end grid animation wrapper */}
       </div>
-      {/* View Toggle Bar */}
-      {(selectedBudget || selectedBudgetId) && (
-        <ViewToggleBar
-          view={tableFilters.filters.view}
-          showOnly={tableFilters.filters.showOnly}
-          channelFilter={tableFilters.filters.channelFilter}
-          stores={stores}
-          onViewChange={tableFilters.setView}
-          onShowOnlyChange={tableFilters.setShowOnly}
-          onChannelChange={tableFilters.setChannelFilter}
-          onReset={tableFilters.resetFilters}
-          hasActiveFilters={tableFilters.hasActiveFilters}
-          seasonGroups={selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS}
-          seasonConfig={SEASON_CONFIG}
-          onJumpTo={(sg) => {
-            const el = document.querySelector(`[data-season-group="${sg}"]`);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }}
-          darkMode={darkMode}
-        />
-      )}
 
       {/* Session Recovery Banner */}
       {sessionRecovery.hasDraft && (

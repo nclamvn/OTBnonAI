@@ -128,14 +128,14 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
         allTickets.push({
           id: pr.id,
           entityType: 'proposal',
-          name: pr.proposalCode || `Proposal ${pr.versionName || ''}`,
-          brand: pr.planning?.budgetDetail?.budget?.groupBrand?.name || '-',
-          seasonGroup: pr.planning?.budgetDetail?.budget?.seasonGroupId || '-',
-          season: pr.planning?.budgetDetail?.budget?.seasonType || '-',
+          name: pr.ticketName || pr.proposalCode || `Proposal ${pr.versionName || ''}`,
+          brand: pr.budget?.groupBrand?.name || '-',
+          seasonGroup: pr.budget?.seasonGroupId || '-',
+          season: pr.budget?.seasonType || '-',
           createdBy: pr.createdBy?.name || 'System',
           createdOn: pr.createdAt ? new Date(pr.createdAt).toISOString().split('T')[0] : '-',
           status: pr.status,
-          totalBudget: 0,
+          totalBudget: Number(pr.totalValue) || 0,
           data: pr
         });
       });
@@ -210,30 +210,38 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
     );
   }, [tickets, searchTerm, t]);
 
-  // Status styles for dark/light mode
+  // Status styles for dark/light mode — keyed by raw status to avoid locale mismatch
   const getStatusStyle = (status: any) => {
-    const displayStatus = getDisplayStatus(status, t);
-    const styles: any = {
-      Approved: darkMode
+    const s = status?.toUpperCase();
+    if (['LEVEL2_APPROVED', 'APPROVED'].includes(s)) {
+      return darkMode
         ? 'bg-[rgba(18,119,73,0.15)] text-[#2A9E6A] border border-[rgba(18,119,73,0.4)]'
-        : 'bg-green-100 text-green-700',
-      Final: darkMode
+        : 'bg-green-100 text-green-700';
+    }
+    if (s === 'FINAL') {
+      return darkMode
         ? 'bg-[rgba(18,119,73,0.2)] text-[#2A9E6A] border border-[rgba(18,119,73,0.5)]'
-        : 'bg-green-200 text-green-800',
-      Pending: darkMode
+        : 'bg-green-200 text-green-800';
+    }
+    if (s === 'SUBMITTED') {
+      return darkMode
         ? 'bg-[rgba(210,153,34,0.15)] text-[#E3B341] border border-[rgba(210,153,34,0.4)]'
-        : 'bg-yellow-100 text-yellow-700',
-      'Pending L2': darkMode
+        : 'bg-yellow-100 text-yellow-700';
+    }
+    if (s === 'LEVEL1_APPROVED') {
+      return darkMode
         ? 'bg-[rgba(163,113,247,0.15)] text-[#A371F7] border border-[rgba(163,113,247,0.4)]'
-        : 'bg-purple-100 text-purple-700',
-      Draft: darkMode
-        ? 'bg-[rgba(102,102,102,0.15)] text-[#999999] border border-[rgba(102,102,102,0.4)]'
-        : 'bg-gray-100 text-gray-600',
-      Rejected: darkMode
+        : 'bg-purple-100 text-purple-700';
+    }
+    if (['LEVEL1_REJECTED', 'LEVEL2_REJECTED', 'REJECTED'].includes(s)) {
+      return darkMode
         ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72] border border-[rgba(248,81,73,0.4)]'
-        : 'bg-red-100 text-red-700',
-    };
-    return styles[displayStatus] || styles['Draft'];
+        : 'bg-red-100 text-red-700';
+    }
+    // Draft / unknown
+    return darkMode
+      ? 'bg-[rgba(102,102,102,0.15)] text-[#999999] border border-[rgba(102,102,102,0.4)]'
+      : 'bg-gray-100 text-gray-600';
   };
 
   // Entity type badge style

@@ -596,6 +596,10 @@ const vi = {
     saveProposal: 'Lưu đề xuất',
     confirmBulkDelete: 'Xóa {{count}} SKU đã chọn khỏi đề xuất này?',
     skusRemoved: 'SKU đã xóa',
+    showingAllSkus: 'Hiển thị tất cả SKU (không có kết quả phù hợp cho block này)',
+    noCatalogData: 'Không có dữ liệu danh mục SKU',
+    importCatalogHint: 'Import danh mục SKU qua dữ liệu chính để thêm sản phẩm',
+    allSkusAdded: 'Tất cả SKU đã được thêm',
   },
 
   // ──────────────────────────────────────────────
@@ -694,6 +698,20 @@ const vi = {
     rexTtpBreakdown: 'Phân tích Rex / TTP',
     loadingDetail: 'Đang tải chi tiết phiếu...',
     viewChanges: 'Xem thay đổi',
+    skuProposalDetails: 'Chi tiết đề xuất SKU',
+    noSkuData: 'Chưa có dữ liệu SKU',
+    noSkuProposals: 'Chưa có đề xuất SKU nào được liên kết',
+    createProposalHint: 'Tạo đề xuất SKU từ màn hình Đề xuất SKU để liên kết với ngân sách này',
+    createProposalFromPlanning: 'Các đề xuất SKU liên kết với kế hoạch này sẽ hiển thị ở đây',
+    addSkuHint: 'Thêm SKU vào đề xuất này để xem tại đây',
+    viewFullProposal: 'Xem đề xuất đầy đủ',
+    budgetDetails: 'Chi tiết phân bổ ngân sách',
+    planningDetails: 'Chi tiết kế hoạch',
+    rejectReason: 'Nhập lý do từ chối:',
+    rejectReasonPlaceholder: 'Lý do...',
+    comparingVersions: 'So sánh với phiên bản trước',
+    increased: 'Tăng',
+    decreased: 'Giảm',
   },
 
   // ──────────────────────────────────────────────

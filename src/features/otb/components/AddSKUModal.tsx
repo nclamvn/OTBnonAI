@@ -34,20 +34,31 @@ const AddSKUModal = ({
   const [selectedSkus, setSelectedSkus] = useState<Set<string>>(new Set());
 
   // Pre-filter catalog by block's gender/category/subCategory, then by search
-  const filteredCatalog = useMemo(() => {
+  const { filteredCatalog, isUnfiltered } = useMemo(() => {
     let items = skuCatalog;
+    let didFallback = false;
 
-    // Pre-filter by block context
+    // Pre-filter by block context — fall back to all items if block filter yields 0
     if (blockSubCategory) {
-      items = items.filter((s: any) =>
+      const filtered = items.filter((s: any) =>
         (s.productType || '').toLowerCase() === blockSubCategory.toLowerCase() ||
         (s.division || '').toLowerCase() === blockSubCategory.toLowerCase()
       );
+      if (filtered.length > 0) {
+        items = filtered;
+      } else {
+        didFallback = true;
+      }
     } else if (blockCategory) {
-      items = items.filter((s: any) =>
+      const filtered = items.filter((s: any) =>
         (s.division || '').toLowerCase() === blockCategory.toLowerCase() ||
         (s.productType || '').toLowerCase().includes(blockCategory.toLowerCase())
       );
+      if (filtered.length > 0) {
+        items = filtered;
+      } else {
+        didFallback = true;
+      }
     }
 
     // Exclude already-added SKUs
@@ -64,7 +75,7 @@ const AddSKUModal = ({
       );
     }
 
-    return items;
+    return { filteredCatalog: items, isUnfiltered: didFallback };
   }, [skuCatalog, blockGender, blockCategory, blockSubCategory, existingSkus, searchQuery]);
 
   const toggleSku = (sku: string) => {
@@ -136,10 +147,24 @@ const AddSKUModal = ({
 
         {/* SKU List */}
         <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
-          {filteredCatalog.length === 0 ? (
+          {/* Fallback notice when block filter didn't match */}
+          {isUnfiltered && filteredCatalog.length > 0 && (
+            <div className={`text-center py-1.5 mb-1 text-[10px] rounded-lg ${
+              darkMode ? 'bg-[rgba(227,179,65,0.1)] text-[#E3B341]' : 'bg-amber-50 text-amber-600'
+            }`}>
+              {t('proposal.showingAllSkus') || 'Showing all available SKUs (no exact match for this block)'}
+            </div>
+          )}
+          {skuCatalog.length === 0 ? (
             <div className={`text-center py-8 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
               <Package size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-xs">{t('common.noResults')}</p>
+              <p className="text-xs font-semibold mb-1">{t('proposal.noCatalogData') || 'No SKU catalog data'}</p>
+              <p className="text-[10px] opacity-70">{t('proposal.importCatalogHint') || 'Import SKU catalog via master data to add items'}</p>
+            </div>
+          ) : filteredCatalog.length === 0 ? (
+            <div className={`text-center py-8 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
+              <Package size={32} className="mx-auto mb-2 opacity-40" />
+              <p className="text-xs">{searchQuery ? (t('common.noResults') || 'No results') : (t('proposal.allSkusAdded') || 'All available SKUs already added')}</p>
             </div>
           ) : (
             <div className="space-y-1">

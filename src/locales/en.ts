@@ -596,6 +596,10 @@ const en = {
     saveProposal: 'Save Proposal',
     confirmBulkDelete: 'Remove {{count}} selected SKUs from this proposal?',
     skusRemoved: 'SKUs removed',
+    showingAllSkus: 'Showing all available SKUs (no exact match for this block)',
+    noCatalogData: 'No SKU catalog data',
+    importCatalogHint: 'Import SKU catalog via master data to add items',
+    allSkusAdded: 'All available SKUs already added',
   },
 
   // ──────────────────────────────────────────────
@@ -694,6 +698,20 @@ const en = {
     rexTtpBreakdown: 'Rex / TTP Breakdown',
     loadingDetail: 'Loading ticket detail...',
     viewChanges: 'View Changes',
+    skuProposalDetails: 'SKU Proposal Details',
+    noSkuData: 'No SKU data',
+    noSkuProposals: 'No SKU proposals linked yet',
+    createProposalHint: 'Create an SKU proposal from the SKU Proposal screen to link it to this budget',
+    createProposalFromPlanning: 'SKU proposals linked to this planning will appear here',
+    addSkuHint: 'Add SKUs to this proposal to see them here',
+    viewFullProposal: 'View Full Proposal',
+    budgetDetails: 'Budget Allocation Details',
+    planningDetails: 'Planning Details',
+    rejectReason: 'Enter rejection reason:',
+    rejectReasonPlaceholder: 'Reason...',
+    comparingVersions: 'Comparing with previous version',
+    increased: 'Increased',
+    decreased: 'Decreased',
   },
 
   // ──────────────────────────────────────────────
