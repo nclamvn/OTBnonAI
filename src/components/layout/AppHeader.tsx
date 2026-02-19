@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { ROUTE_MAP } from '@/utils/routeMap';
@@ -8,6 +8,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useAppContext } from '@/contexts/AppContext';
 import { notificationService, type Notification } from '@/services/notificationService';
+import { budgetService } from '@/services/budgetService';
+import { proposalService } from '@/services/proposalService';
 import {
   Wallet,
   DollarSign,
@@ -36,7 +38,8 @@ import {
   Layers,
   LineChart,
   PieChart,
-  Activity
+  Activity,
+  Loader2
 } from 'lucide-react';
 
 // Screen configuration builder (uses t() for translations)
@@ -211,8 +214,8 @@ const AppHeader = ({
   const notificationRef = useRef<any>(null);
   const searchRef = useRef<any>(null);
 
-  // Search results from screen config
-  const searchResults = useMemo(() => {
+  // Search results from screen config (always synchronous)
+  const screenResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase();
     return Object.entries(SCREEN_CONFIG)
@@ -222,8 +225,67 @@ const AppHeader = ({
         return label.includes(q) || shortLabel.includes(q) || id.includes(q);
       })
       .map(([id, cfg]: any) => ({ id, ...cfg }))
-      .slice(0, 8);
+      .slice(0, 5);
   }, [searchQuery, SCREEN_CONFIG]);
+
+  // Data search: budgets + proposals (debounced, 3+ chars)
+  const [dataLoading, setDataLoading] = useState(false);
+  const [budgetResults, setBudgetResults] = useState<any[]>([]);
+  const [proposalResults, setProposalResults] = useState<any[]>([]);
+  const debounceRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Clear previous timer
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const q = searchQuery.trim().toLowerCase();
+    if (q.length < 3) {
+      setBudgetResults([]);
+      setProposalResults([]);
+      setDataLoading(false);
+      return;
+    }
+
+    setDataLoading(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const [budgets, proposals] = await Promise.all([
+          budgetService.getAll().catch(() => []),
+          proposalService.getAll().catch(() => []),
+        ]);
+        const bList = Array.isArray(budgets) ? budgets : [];
+        const pList = Array.isArray(proposals) ? proposals : [];
+
+        setBudgetResults(
+          bList
+            .filter((b: any) => {
+              const name = (b.name || b.budgetName || '').toLowerCase();
+              const code = (b.budgetCode || '').toLowerCase();
+              return name.includes(q) || code.includes(q);
+            })
+            .slice(0, 5)
+        );
+        setProposalResults(
+          pList
+            .filter((p: any) => {
+              const name = (p.name || p.ticketName || '').toLowerCase();
+              const code = (p.proposalCode || p.ticketCode || '').toLowerCase();
+              return name.includes(q) || code.includes(q);
+            })
+            .slice(0, 5)
+        );
+      } catch {
+        setBudgetResults([]);
+        setProposalResults([]);
+      } finally {
+        setDataLoading(false);
+      }
+    }, 300);
+
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [searchQuery]);
+
+  const hasAnyResults = screenResults.length > 0 || budgetResults.length > 0 || proposalResults.length > 0;
 
   const isInPlanningWorkflow = PLANNING_STEPS.some((s: any) => s.id === currentScreen);
   const currentStepIndex = PLANNING_STEPS.findIndex((s: any) => s.id === currentScreen);
@@ -389,8 +451,8 @@ const AppHeader = ({
                       value={searchQuery}
                       onChange={(e: any) => setSearchQuery(e.target.value)}
                       onKeyDown={(e: any) => {
-                        if (e.key === 'Enter' && searchResults.length > 0) {
-                          onNavigate(searchResults[0].id);
+                        if (e.key === 'Enter' && screenResults.length > 0) {
+                          onNavigate(screenResults[0].id);
                           setShowSearch(false);
                           setSearchQuery('');
                         }
@@ -407,39 +469,138 @@ const AppHeader = ({
                   </div>
                 </div>
                 {/* Search Results */}
-                {searchQuery.trim() && searchResults.length > 0 ? (
-                  <div className="py-0.5 max-h-72 overflow-y-auto">
-                    {searchResults.map((result: any) => {
-                      const ResultIcon = result.icon || Home;
-                      return (
-                        <button
-                          key={result.id}
-                          onClick={() => {
-                            onNavigate(result.id);
-                            setShowSearch(false);
-                            setSearchQuery('');
-                          }}
-                          className={`w-full flex items-center gap-3 px-4 py-0.5 transition-colors ${
-                            darkMode
-                              ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                              : 'hover:bg-gray-50 text-gray-900'
-                          }`}
-                        >
-                          <ResultIcon size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                          <div className="flex-1 text-left">
-                            <div className={`text-sm font-medium font-['Montserrat']`}>{result.label}</div>
-                            {result.step && (
-                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>Step {result.step}</div>
-                            )}
-                          </div>
-                          <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : searchQuery.trim() ? (
-                  <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
-                    {t('common.noResults') || 'No results found'}
+                {searchQuery.trim() ? (
+                  <div className="py-0.5 max-h-80 overflow-y-auto">
+                    {/* Screens group */}
+                    {screenResults.length > 0 && (
+                      <>
+                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                          {t('header.searchCategoryScreens')}
+                        </div>
+                        {screenResults.map((result: any) => {
+                          const ResultIcon = result.icon || Home;
+                          return (
+                            <button
+                              key={result.id}
+                              onClick={() => {
+                                onNavigate(result.id);
+                                setShowSearch(false);
+                                setSearchQuery('');
+                              }}
+                              className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
+                                darkMode
+                                  ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
+                                  : 'hover:bg-gray-50 text-gray-900'
+                              }`}
+                            >
+                              <ResultIcon size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                              <div className="flex-1 text-left">
+                                <div className={`text-sm font-medium font-['Montserrat']`}>{result.label}</div>
+                                {result.step && (
+                                  <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>Step {result.step}</div>
+                                )}
+                              </div>
+                              <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                            </button>
+                          );
+                        })}
+                      </>
+                    )}
+
+                    {/* Budgets group */}
+                    {budgetResults.length > 0 && (
+                      <>
+                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                          {t('header.searchCategoryBudgets')}
+                        </div>
+                        {budgetResults.map((b: any) => (
+                          <button
+                            key={b.id || b._id}
+                            onClick={() => {
+                              router.push('/budget-management');
+                              setShowSearch(false);
+                              setSearchQuery('');
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
+                              darkMode
+                                ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
+                                : 'hover:bg-gray-50 text-gray-900'
+                            }`}
+                          >
+                            <Wallet size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                            <div className="flex-1 text-left">
+                              <div className={`text-sm font-medium font-['Montserrat']`}>{b.name || b.budgetName || 'Untitled'}</div>
+                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                                {b.budgetCode || b.status || ''}
+                              </div>
+                            </div>
+                            <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                          </button>
+                        ))}
+                      </>
+                    )}
+
+                    {/* Proposals group */}
+                    {proposalResults.length > 0 && (
+                      <>
+                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                          {t('header.searchCategoryProposals')}
+                        </div>
+                        {proposalResults.map((p: any) => (
+                          <button
+                            key={p.id || p._id}
+                            onClick={() => {
+                              router.push('/proposal');
+                              setShowSearch(false);
+                              setSearchQuery('');
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
+                              darkMode
+                                ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
+                                : 'hover:bg-gray-50 text-gray-900'
+                            }`}
+                          >
+                            <Package size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                            <div className="flex-1 text-left">
+                              <div className={`text-sm font-medium font-['Montserrat']`}>{p.name || p.ticketName || 'Untitled'}</div>
+                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                                {p.proposalCode || p.ticketCode || p.status || ''}
+                              </div>
+                            </div>
+                            <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                          </button>
+                        ))}
+                      </>
+                    )}
+
+                    {/* Loading spinner for data search */}
+                    {dataLoading && (
+                      <div className={`px-4 py-3 flex items-center justify-center gap-2 ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                        <Loader2 size={14} className="animate-spin" />
+                        <span className="text-xs">{t('common.loading')}...</span>
+                      </div>
+                    )}
+
+                    {/* Hint for short queries */}
+                    {searchQuery.trim().length < 3 && searchQuery.trim().length > 0 && screenResults.length === 0 && (
+                      <div className={`px-4 py-4 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                        {t('header.searchTyping')}
+                      </div>
+                    )}
+
+                    {/* No results at all */}
+                    {!dataLoading && !hasAnyResults && searchQuery.trim().length >= 3 && (
+                      <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                        {t('header.searchNoResults')}
+                      </div>
+                    )}
+
+                    {/* Short query, no screen matches, hint to type more */}
+                    {!dataLoading && !hasAnyResults && searchQuery.trim().length > 0 && searchQuery.trim().length < 3 && (
+                      <div className={`px-4 py-4 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                        {t('header.searchTyping')}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className={`p-2 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>

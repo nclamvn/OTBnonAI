@@ -149,8 +149,8 @@ export class PlanningController {
   @Delete(':id')
   @RequirePermissions('planning:write')
   @ApiOperation({ summary: 'Delete draft planning (no linked proposals)' })
-  async remove(@Param('id') id: string) {
-    await this.planningService.remove(id);
+  async remove(@Param('id') id: string, @Request() req) {
+    await this.planningService.remove(id, req.user.sub);
     return { success: true, message: 'Planning version deleted' };
   }
 }

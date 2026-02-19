@@ -13,7 +13,7 @@ export class ApprovalWorkflowService {
       where,
       include: {
         brand: { select: { id: true, name: true, code: true } },
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true } },
       },
       orderBy: [{ brandId: 'asc' }, { stepNumber: 'asc' }],
     });
@@ -24,7 +24,7 @@ export class ApprovalWorkflowService {
       where: { brandId, isActive: true },
       include: {
         brand: { select: { id: true, name: true } },
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true } },
       },
       orderBy: { stepNumber: 'asc' },
     });

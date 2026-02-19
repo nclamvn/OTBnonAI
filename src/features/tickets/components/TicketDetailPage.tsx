@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
-import { ProductImage } from '@/components/ui';
+import { ProductImage, Breadcrumbs } from '@/components/ui';
 import { budgetService, planningService, proposalService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -933,6 +933,15 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     <div className={`p-3 md:p-4 min-h-screen space-y-2 md:space-y-3 ${
       darkMode ? 'bg-[#0A0A0A]' : ''
     }`}>
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        darkMode={darkMode}
+        items={[
+          { label: t('common.breadcrumbTickets'), href: '/tickets' },
+          { label: ticket?.name || t('ticketDetail.title') },
+        ]}
+      />
+
       {/* ===== COMPACT HEADER ===== */}
       {onBack && (
         <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg ${

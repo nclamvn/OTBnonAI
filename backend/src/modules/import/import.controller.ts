@@ -71,6 +71,31 @@ export class ImportController {
     return { success: true, stats };
   }
 
+  @Get('wssi/analytics')
+  @ApiOperation({ summary: 'Get WSSI sell-through analytics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Sell-through analytics computed from WSSI imported data',
+  })
+  async getWssiAnalytics() {
+    const analytics = await this.importService.getWssiAnalytics();
+    return { success: true, data: analytics };
+  }
+
+  @Post('apply')
+  @RequirePermissions('import:write')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Apply imported data to transactional tables (ETL)' })
+  @ApiQuery({ name: 'target', enum: ImportTargetEnum, required: true })
+  @ApiQuery({ name: 'sessionId', required: false, type: String })
+  async applyImportedData(
+    @Query('target') target: ImportTargetEnum,
+    @Query('sessionId') sessionId?: string,
+  ) {
+    const result = await this.importService.applyImportedData(target, sessionId);
+    return { success: true, ...result };
+  }
+
   @Delete('data')
   @RequirePermissions('import:write')
   @HttpCode(HttpStatus.OK)

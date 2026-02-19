@@ -435,10 +435,12 @@ async function main() {
   ];
 
   for (const sku of skuData) {
+    // BIZ-03: Auto-calculate costPrice as ~40% of SRP (luxury fashion cost ratio)
+    const costPrice = Math.round(sku.srp * 0.4);
     await prisma.skuCatalog.upsert({
       where: { skuCode: sku.skuCode },
-      update: { brandId: sku.brandId },
-      create: sku,
+      update: { brandId: sku.brandId, costPrice },
+      create: { ...sku, costPrice },
     });
   }
   console.log(`  ✅ ${skuData.length} SKUs`);

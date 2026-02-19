@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { BudgetService } from './budget.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -105,7 +105,7 @@ export class BudgetController {
     @Body() dto: ApprovalDecisionDto,
     @Request() req: any,
   ) {
-    return { success: true, data: await this.budgetService.approveLevel1(id, dto, req.user.sub) };
+    return { success: true, data: await this.budgetService.approveLevel1(id, dto, req.user.sub, req.user.role) };
   }
 
   // ─── APPROVE LEVEL 2 ─────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export class BudgetController {
     @Body() dto: ApprovalDecisionDto,
     @Request() req: any,
   ) {
-    return { success: true, data: await this.budgetService.approveLevel2(id, dto, req.user.sub) };
+    return { success: true, data: await this.budgetService.approveLevel2(id, dto, req.user.sub, req.user.role) };
   }
 
   // ─── RESET TO DRAFT ──────────────────────────────────────────────────────
@@ -131,13 +131,31 @@ export class BudgetController {
     return { success: true, data: await this.budgetService.resetToDraft(id, req.user.sub) };
   }
 
-  // ─── DELETE ──────────────────────────────────────────────────────────────
+  // ─── ARCHIVE ─────────────────────────────────────────────────────────────
+
+  @Patch(':id/archive')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Archive an approved budget (APPROVED → ARCHIVED)' })
+  async archive(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.budgetService.archive(id, req.user.sub) };
+  }
+
+  // ─── DELETE (soft) ───────────────────────────────────────────────────────
 
   @Delete(':id')
   @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Delete draft budget (only if no linked planning)' })
-  async remove(@Param('id') id: string) {
-    await this.budgetService.remove(id);
+  @ApiOperation({ summary: 'Soft-delete draft budget (only if no linked planning)' })
+  async remove(@Param('id') id: string, @Request() req: any) {
+    await this.budgetService.remove(id, req.user.sub);
     return { success: true, message: 'Budget deleted' };
+  }
+
+  // ─── RESTORE ──────────────────────────────────────────────────────────────
+
+  @Patch(':id/restore')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Restore a soft-deleted budget' })
+  async restore(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.budgetService.restore(id, req.user.sub) };
   }
 }

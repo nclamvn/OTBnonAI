@@ -1,5 +1,9 @@
 // Utility functions for formatting
 
+// VAL-03: Default currency constant — change here to switch system currency
+export const DEFAULT_CURRENCY = 'VND' as const;
+export type SupportedCurrency = 'VND' | 'USD';
+
 // Exchange rate VND to USD (approximate)
 const VND_TO_USD_RATE = 25000;
 

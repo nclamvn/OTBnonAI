@@ -6,17 +6,46 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class MasterDataService {
   constructor(private prisma: PrismaService) {}
 
-  async getBrands() {
-    return this.prisma.groupBrand.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
-    });
+  async getBrands(pagination?: { page?: number; limit?: number }) {
+    const where = { isActive: true };
+    const orderBy = { sortOrder: 'asc' as const };
+
+    if (pagination?.page && pagination?.limit) {
+      const page = Number(pagination.page);
+      const limit = Number(pagination.limit);
+      const [data, total] = await Promise.all([
+        this.prisma.groupBrand.findMany({
+          where,
+          orderBy,
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        this.prisma.groupBrand.count({ where }),
+      ]);
+      return { data, total, page, limit };
+    }
+
+    return this.prisma.groupBrand.findMany({ where, orderBy });
   }
 
-  async getStores() {
-    return this.prisma.store.findMany({
-      where: { isActive: true },
-    });
+  async getStores(pagination?: { page?: number; limit?: number }) {
+    const where = { isActive: true };
+
+    if (pagination?.page && pagination?.limit) {
+      const page = Number(pagination.page);
+      const limit = Number(pagination.limit);
+      const [data, total] = await Promise.all([
+        this.prisma.store.findMany({
+          where,
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        this.prisma.store.count({ where }),
+      ]);
+      return { data, total, page, limit };
+    }
+
+    return this.prisma.store.findMany({ where });
   }
 
   async getCollections() {
@@ -31,20 +60,35 @@ export class MasterDataService {
     });
   }
 
-  async getCategories() {
-    return this.prisma.gender.findMany({
-      where: { isActive: true },
-      include: {
-        categories: {
-          where: { isActive: true },
-          include: {
-            subCategories: {
-              where: { isActive: true },
-            },
+  async getCategories(pagination?: { page?: number; limit?: number }) {
+    const where = { isActive: true };
+    const include = {
+      categories: {
+        where: { isActive: true },
+        include: {
+          subCategories: {
+            where: { isActive: true },
           },
         },
       },
-    });
+    };
+
+    if (pagination?.page && pagination?.limit) {
+      const page = Number(pagination.page);
+      const limit = Number(pagination.limit);
+      const [data, total] = await Promise.all([
+        this.prisma.gender.findMany({
+          where,
+          include,
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+        this.prisma.gender.count({ where }),
+      ]);
+      return { data, total, page, limit };
+    }
+
+    return this.prisma.gender.findMany({ where, include });
   }
 
   async getSkuCatalog(filters?: {

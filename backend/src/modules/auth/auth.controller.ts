@@ -1,9 +1,10 @@
-import { Controller, Post, Get, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, IsNotEmpty } from 'class-validator';
 import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { PermissionsGuard, RequirePermissions } from '../../common/guards/permissions.guard';
 
 class LoginDto {
   @ApiProperty({ example: 'admin@dafc.com' })
@@ -49,6 +50,17 @@ export class AuthController {
     };
   }
 
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Logout (audit log + client token cleanup)' })
+  async logout(@Request() req: any) {
+    return {
+      success: true,
+      data: await this.authService.logout(req.user.sub),
+    };
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -57,6 +69,29 @@ export class AuthController {
     return {
       success: true,
       data: await this.authService.getProfile(req.user.sub),
+    };
+  }
+
+  @Put('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update current user profile' })
+  async updateProfile(@Request() req: any, @Body() body: { name?: string; phone?: string; department?: string }) {
+    return {
+      success: true,
+      data: await this.authService.updateProfile(req.user.sub, body),
+    };
+  }
+
+  @Delete('users/:id/erase')
+  @UseGuards(JwtAuthGuard, PermissionsGuard)
+  @RequirePermissions('*') // Admin-only (wildcard permission)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'GDPR/PDPA data erasure — anonymize user PII (admin only)' })
+  async eraseUser(@Param('id') id: string, @Request() req: any) {
+    return {
+      success: true,
+      data: await this.authService.eraseUser(id, req.user.sub),
     };
   }
 }

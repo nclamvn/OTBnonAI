@@ -8,6 +8,9 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { authService } from '@/services/authService';
+import toast from 'react-hot-toast';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 
 const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) => {
   const { user: authUser } = useAuth();
@@ -23,13 +26,21 @@ const ProfileScreen = ({ user: propUser, darkMode = true, onUpdateUser }: any) =
     department: user?.department || '',
   });
   const [saving, setSaving] = useState(false);
+  useUnsavedChanges(isEditing);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      onUpdateUser && await onUpdateUser(formData);
-    } catch (err) {
+      if (onUpdateUser) {
+        await onUpdateUser(formData);
+      } else {
+        // Default: call API directly
+        await authService.updateProfile(formData);
+      }
+      toast.success(t('profile.savedSuccessfully'));
+    } catch (err: any) {
       console.error('Failed to update profile:', err);
+      toast.error(err?.response?.data?.message || t('profile.saveFailed'));
     } finally {
       setSaving(false);
       setIsEditing(false);

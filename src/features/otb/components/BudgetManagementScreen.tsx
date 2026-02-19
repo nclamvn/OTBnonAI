@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   ChevronDown, Plus, Search, Table, X, Filter, Eye, Split,
-  Wallet, CircleCheckBig, Hourglass, Trash2
+  Wallet, CircleCheckBig, Hourglass, Trash2, Send, Copy, Clock, Archive
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils/formatters';
@@ -38,6 +38,11 @@ const BudgetManagementScreen = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
   const [creating, setCreating] = useState(false);
+  const [deleting, setDeleting] = useState(false); // SEC-14: debounce delete
+  const [duplicating, setDuplicating] = useState(false); // UX-06: clone/copy budget
+  const [submittingId, setSubmittingId] = useState<string | null>(null); // UX-12: quick submit
+  const [archiving, setArchiving] = useState(false); // UX-26: archive budget
+  const [showArchiveConfirm, setShowArchiveConfirm] = useState(false); // UX-26: archive confirm
 
   // Master data for create form
   const [apiStores, setApiStores] = useState<any[]>([]);
@@ -71,9 +76,10 @@ const BudgetManagementScreen = ({
     }
   }, [selectedYear]);
 
-  // Delete budget (DRAFT only)
+  // Delete budget (DRAFT only) — SEC-14: debounced with deleting state
   const handleDeleteBudget = async () => {
-    if (!selectedBudget?.id) return;
+    if (!selectedBudget?.id || deleting) return;
+    setDeleting(true);
     try {
       await budgetService.delete(selectedBudget.id);
       invalidateCache('/budgets');
@@ -85,6 +91,76 @@ const BudgetManagementScreen = ({
     } catch (err: any) {
       console.error('Failed to delete budget:', err);
       toast.error(t('budget.deleteFailed') || 'Failed to delete budget');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // UX-06: Duplicate/clone budget
+  const handleDuplicateBudget = async () => {
+    if (!selectedBudget || duplicating || apiStores.length === 0) return;
+    setDuplicating(true);
+    try {
+      const totalAmount = Number(selectedBudget.totalBudget) || 0;
+      const stores = apiStores;
+      const perStore = Math.floor(totalAmount / stores.length);
+      const details = stores.map((store: any, idx: number) => ({
+        storeId: store.id,
+        budgetAmount: idx === 0 ? totalAmount - perStore * (stores.length - 1) : perStore,
+      }));
+
+      await budgetService.create({
+        budgetCode: `${selectedBudget.budgetName} (Copy)`,
+        fiscalYear: selectedBudget.fiscalYear,
+        details,
+      });
+      invalidateCache('/budgets');
+      toast.success(t('budget.duplicateSuccess') || 'Budget duplicated successfully');
+      setShowViewModal(false);
+      setSelectedBudget(null);
+      await fetchBudgets();
+    } catch (err: any) {
+      console.error('Failed to duplicate budget:', err);
+      toast.error(err?.response?.data?.message || t('budget.duplicateFailed') || 'Failed to duplicate budget');
+    } finally {
+      setDuplicating(false);
+    }
+  };
+
+  // UX-12: Quick submit for DRAFT budgets
+  const handleQuickSubmit = async (budgetId: string) => {
+    if (submittingId) return;
+    setSubmittingId(budgetId);
+    try {
+      await budgetService.submit(budgetId);
+      invalidateCache('/budgets');
+      toast.success(t('budget.submitSuccess') || 'Budget submitted for approval');
+      await fetchBudgets();
+    } catch (err: any) {
+      console.error('Failed to submit budget:', err);
+      toast.error(err?.response?.data?.message || t('budget.submitFailed') || 'Failed to submit budget');
+    } finally {
+      setSubmittingId(null);
+    }
+  };
+
+  // UX-26: Archive approved budget
+  const handleArchiveBudget = async () => {
+    if (!selectedBudget?.id || archiving) return;
+    setArchiving(true);
+    try {
+      await budgetService.archive(selectedBudget.id);
+      invalidateCache('/budgets');
+      toast.success(t('budget.archiveSuccess') || 'Budget archived successfully');
+      setShowArchiveConfirm(false);
+      setShowViewModal(false);
+      setSelectedBudget(null);
+      await fetchBudgets();
+    } catch (err: any) {
+      console.error('Failed to archive budget:', err);
+      toast.error(err?.response?.data?.message || t('budget.archiveFailed') || 'Failed to archive budget');
+    } finally {
+      setArchiving(false);
     }
   };
 
@@ -115,6 +191,8 @@ const BudgetManagementScreen = ({
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<any>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [approvalHistory, setApprovalHistory] = useState<any[]>([]); // UX-16: approval timeline
+  const [loadingApprovals, setLoadingApprovals] = useState(false);
 
   // Form state for create budget
   const [newBudgetForm, setNewBudgetForm] = useState({
@@ -125,6 +203,21 @@ const BudgetManagementScreen = ({
     totalBudget: '',
     description: ''
   });
+
+  // UX-16: Fetch approval history when view modal opens
+  useEffect(() => {
+    if (showViewModal && selectedBudget?.id) {
+      setLoadingApprovals(true);
+      setApprovalHistory([]);
+      budgetService.getOne(selectedBudget.id).then((detail: any) => {
+        setApprovalHistory(Array.isArray(detail?.approvals) ? detail.approvals : []);
+      }).catch(() => {
+        setApprovalHistory([]);
+      }).finally(() => {
+        setLoadingApprovals(false);
+      });
+    }
+  }, [showViewModal, selectedBudget?.id]);
 
   // Filter budgets
   const filteredBudgets = useMemo(() => {
@@ -516,6 +609,38 @@ const BudgetManagementScreen = ({
                         <Eye size={14} />
                       </button>
 
+                      {/* UX-12: Quick Submit for DRAFT budgets */}
+                      {budget.status === 'draft' && (
+                        <button
+                          onClick={() => handleQuickSubmit(budget.id)}
+                          disabled={submittingId === budget.id}
+                          className={`p-1.5 rounded-md transition ${submittingId === budget.id ? 'opacity-50 cursor-not-allowed' : ''} ${darkMode
+                              ? 'text-blue-400 hover:bg-blue-500/10'
+                              : 'text-blue-600 hover:bg-blue-50'
+                            }`}
+                          title={t('budget.submit') || 'Submit for Approval'}
+                        >
+                          <Send size={14} />
+                        </button>
+                      )}
+
+                      {/* UX-26: Archive for APPROVED budgets */}
+                      {budget.status === 'approved' && (
+                        <button
+                          onClick={() => {
+                            setSelectedBudget(budget);
+                            setShowArchiveConfirm(true);
+                          }}
+                          className={`p-1.5 rounded-md transition ${darkMode
+                              ? 'text-[#E3B341] hover:bg-[rgba(227,179,65,0.1)]'
+                              : 'text-[#9A7B2E] hover:bg-[rgba(227,179,65,0.1)]'
+                            }`}
+                          title={t('budget.archive') || 'Archive'}
+                        >
+                          <Archive size={14} />
+                        </button>
+                      )}
+
                       {/* Allocate */}
                       <button
                         onClick={() =>
@@ -628,7 +753,7 @@ const BudgetManagementScreen = ({
               </div>
 
               {/* Content */}
-              <div className="px-6 py-5 space-y-4 text-sm">
+              <div className="px-6 py-5 space-y-4 text-sm max-h-[60vh] overflow-y-auto">
                 <DetailRow label={t('budget.fiscalYear')} value={`FY${selectedBudget.fiscalYear}`} />
                 <DetailRow label={t('budget.budgetName')} value={selectedBudget.budgetName} />
                 <DetailRow label={t('budget.createdBy')} value={selectedBudget.createdBy || t('common.unknown')} />
@@ -639,6 +764,72 @@ const BudgetManagementScreen = ({
                   value={formatCurrency(selectedBudget.totalBudget, { currency })}
                   strong
                 />
+
+                {/* UX-16: Approval History Timeline */}
+                <div className={`pt-3 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]/40'}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Clock size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                    <span className={`text-xs font-semibold uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                      {t('budget.approvalHistory') || 'Approval History'}
+                    </span>
+                  </div>
+                  {loadingApprovals ? (
+                    <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                      {t('common.loading') || 'Loading...'}
+                    </div>
+                  ) : approvalHistory.length === 0 ? (
+                    <div className={`text-xs italic ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                      {t('budget.noApprovalRecords') || 'No approval records yet'}
+                    </div>
+                  ) : (
+                    <div className="relative pl-4 space-y-3">
+                      {/* Timeline line */}
+                      <div className={`absolute left-[5px] top-1 bottom-1 w-px ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#C4B5A5]/40'}`} />
+                      {approvalHistory.map((approval: any, idx: number) => {
+                        const isApprove = (approval.action || '').toLowerCase().includes('approve');
+                        const isReject = (approval.action || '').toLowerCase().includes('reject');
+                        const dotColor = isApprove ? 'bg-[#2A9E6A]' : isReject ? 'bg-[#F85149]' : 'bg-[#D29922]';
+                        return (
+                          <div key={idx} className="relative flex items-start gap-3">
+                            {/* Timeline dot */}
+                            <div className={`absolute left-[-12px] top-1 w-2.5 h-2.5 rounded-full ring-2 ${dotColor} ${darkMode ? 'ring-[#121212]' : 'ring-white'}`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`text-xs font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+                                  {approval.deciderName || approval.decidedBy || t('common.unknown')}
+                                </span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                  isApprove
+                                    ? 'bg-[rgba(42,158,106,0.15)] text-[#2A9E6A]'
+                                    : isReject
+                                      ? 'bg-[rgba(248,81,73,0.15)] text-[#F85149]'
+                                      : 'bg-[rgba(210,153,34,0.15)] text-[#D29922]'
+                                }`}>
+                                  {(approval.action || 'submitted').toUpperCase()}
+                                </span>
+                                {approval.level && (
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${darkMode ? 'bg-[#2E2E2E] text-[#999999]' : 'bg-[#F2F2F2] text-[#666666]'}`}>
+                                    L{approval.level}
+                                  </span>
+                                )}
+                              </div>
+                              {approval.comment && (
+                                <p className={`text-xs mt-0.5 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                                  {approval.comment}
+                                </p>
+                              )}
+                              <span className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                                {approval.decidedAt || approval.createdAt
+                                  ? new Date(approval.decidedAt || approval.createdAt).toLocaleString('vi-VN')
+                                  : ''}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Footer */}
@@ -646,15 +837,44 @@ const BudgetManagementScreen = ({
                 className={`flex items-center justify-between px-6 py-4 border-t
             ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}
               >
-                {selectedBudget.status === 'draft' ? (
+                <div className="flex items-center gap-2">
+                  {selectedBudget.status === 'draft' && (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-red-500 hover:bg-red-500/10"
+                    >
+                      <Trash2 size={14} />
+                      {t('common.delete') || 'Delete'}
+                    </button>
+                  )}
+                  {/* UX-06: Duplicate budget */}
                   <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors text-red-500 hover:bg-red-500/10"
+                    onClick={handleDuplicateBudget}
+                    disabled={duplicating}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${duplicating ? 'opacity-50 cursor-not-allowed' : ''} ${
+                      darkMode
+                        ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]'
+                        : 'text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
+                    }`}
                   >
-                    <Trash2 size={14} />
-                    {t('common.delete') || 'Delete'}
+                    <Copy size={14} />
+                    {duplicating ? (t('budget.duplicating') || 'Duplicating...') : (t('budget.duplicate') || 'Duplicate')}
                   </button>
-                ) : <div />}
+                  {/* UX-26: Archive approved budget */}
+                  {selectedBudget.status === 'approved' && (
+                    <button
+                      onClick={() => setShowArchiveConfirm(true)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                        darkMode
+                          ? 'text-[#E3B341] hover:bg-[rgba(227,179,65,0.1)]'
+                          : 'text-[#9A7B2E] hover:bg-[rgba(227,179,65,0.12)]'
+                      }`}
+                    >
+                      <Archive size={14} />
+                      {t('budget.archive') || 'Archive'}
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={() => setShowViewModal(false)}
                   className={`px-4 py-0.5 text-sm font-medium rounded-lg transition-colors
@@ -692,9 +912,51 @@ const BudgetManagementScreen = ({
                 </button>
                 <button
                   onClick={handleDeleteBudget}
-                  className="px-4 py-1.5 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white"
+                  disabled={deleting}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors bg-red-600 hover:bg-red-700 text-white ${deleting ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  {t('common.delete') || 'Delete'}
+                  {deleting ? (t('common.deleting') || 'Deleting...') : (t('common.delete') || 'Delete')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* UX-26: Archive Confirmation Dialog */}
+      {showArchiveConfirm && selectedBudget && (
+        <div className="fixed inset-0 z-[10000]">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowArchiveConfirm(false)} />
+          <div className="relative flex min-h-screen items-center justify-center p-4">
+            <div className={`w-full max-w-sm rounded-2xl shadow-xl overflow-hidden ${darkMode ? 'bg-[#121212] text-[#F2F2F2]' : 'bg-white text-[#0A0A0A]'}`}>
+              <div className="px-6 py-5 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Archive size={18} className={darkMode ? 'text-[#E3B341]' : 'text-[#9A7B2E]'} />
+                  <h3 className="text-lg font-semibold font-['Montserrat']">{t('budget.confirmArchive') || 'Confirm Archive'}</h3>
+                </div>
+                <p className={`text-sm ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+                  {t('budget.archiveWarning') || 'Are you sure you want to archive this budget? Archived budgets will no longer appear in active views.'}
+                </p>
+                <p className="text-sm font-medium">{selectedBudget.budgetName}</p>
+              </div>
+              <div className={`flex justify-end gap-3 px-6 py-4 border-t ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+                <button
+                  onClick={() => setShowArchiveConfirm(false)}
+                  className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${darkMode ? 'bg-[#2E2E2E] hover:bg-[#1A1A1A] text-[#F2F2F2]' : 'bg-[#F2F2F2] hover:bg-[#E5E5E5] text-[#0A0A0A]'}`}
+                >
+                  {t('common.cancel') || 'Cancel'}
+                </button>
+                <button
+                  onClick={handleArchiveBudget}
+                  disabled={archiving}
+                  className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-lg transition-colors ${archiving ? 'opacity-50 cursor-not-allowed' : ''} ${
+                    darkMode
+                      ? 'bg-[#E3B341] hover:bg-[#D29922] text-[#0A0A0A]'
+                      : 'bg-[#E3B341] hover:bg-[#D29922] text-[#0A0A0A]'
+                  }`}
+                >
+                  <Archive size={14} />
+                  {archiving ? (t('budget.archiving') || 'Archiving...') : (t('budget.archive') || 'Archive')}
                 </button>
               </div>
             </div>

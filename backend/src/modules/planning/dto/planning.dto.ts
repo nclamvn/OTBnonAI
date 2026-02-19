@@ -40,11 +40,11 @@ export class PlanningDetailDto {
   @Max(1)
   lastSeasonPct: number;
 
-  @ApiProperty({ example: 0.30, description: 'System suggested buy percentage' })
+  @ApiProperty({ example: 0.30, description: 'Reference buy percentage (historical/benchmark, user-provided as baseline for comparison)' })
   @IsNumber()
   @Min(0)
   @Max(1)
-  systemBuyPct: number;
+  systemBuyPct: number; // BIZ-13: Named "system" but actually user-provided reference baseline. Kept for backward compatibility.
 
   @ApiProperty({ example: 0.28, description: 'User adjusted buy percentage' })
   @IsNumber()

@@ -25,7 +25,10 @@ model User {
   roleId       String   @map("role_id")
   storeAccess  String[] @map("store_access") // store IDs user can access
   brandAccess  String[] @map("brand_access") // brand IDs user can access
+  phone        String?  @map("phone")
+  department   String?  @map("department")
   isActive     Boolean  @default(true) @map("is_active")
+  erasedAt     DateTime? @map("erased_at") // GDPR/PDPA: timestamp when user data was anonymized
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -140,6 +143,7 @@ model SkuCatalog {
   color         String?
   composition   String?
   srp           Decimal @db.Decimal(18, 2) // Suggested Retail Price (VND)
+  costPrice     Decimal? @db.Decimal(18, 2) @map("cost_price") // Actual cost price for OTB calculations
   brandId       String? @map("brand_id")
   seasonGroupId String? @map("season_group_id")
   imageUrl      String? @map("image_url")
@@ -161,6 +165,7 @@ enum BudgetStatus {
   LEVEL1_APPROVED
   APPROVED
   REJECTED
+  ARCHIVED
 }
 
 model Budget {
@@ -173,6 +178,8 @@ model Budget {
   totalBudget   Decimal      @default(0) @map("total_budget") @db.Decimal(18, 2)
   status        BudgetStatus @default(DRAFT)
   comment       String?
+  version       Int          @default(1) // SEC-13: Optimistic locking
+  deletedAt     DateTime?    @map("deleted_at") // SEC-16: Soft delete
   createdById   String       @map("created_by_id")
   createdAt     DateTime     @default(now()) @map("created_at")
   updatedAt     DateTime     @updatedAt @map("updated_at")
@@ -187,6 +194,7 @@ model Budget {
   @@unique([groupBrandId, seasonGroupId, seasonType, fiscalYear])
   @@index([fiscalYear])
   @@index([status])
+  @@index([deletedAt])
   @@map("budgets")
 }
 
@@ -226,6 +234,7 @@ model PlanningVersion {
   status         PlanningStatus @default(DRAFT)
   isFinal        Boolean        @default(false) @map("is_final")
   snapshotData   Json?          @map("snapshot_data") // frozen data on submit
+  version        Int            @default(1) // SEC-13: Optimistic locking
   createdById    String         @map("created_by_id")
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
@@ -289,6 +298,7 @@ model Proposal {
   totalSkuCount     Int            @default(0) @map("total_sku_count")
   totalOrderQty     Int            @default(0) @map("total_order_qty")
   totalValue        Decimal        @default(0) @map("total_value") @db.Decimal(18, 2)
+  version           Int            @default(1) // SEC-13: Optimistic locking
   createdById       String         @map("created_by_id")
   createdAt         DateTime       @default(now()) @map("created_at")
   updatedAt         DateTime       @updatedAt @map("updated_at")

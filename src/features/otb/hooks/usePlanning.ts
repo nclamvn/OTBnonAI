@@ -24,6 +24,7 @@ export const usePlanning = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    const controller = new AbortController();
     const fetchMasterData = async () => {
       try {
         const [collectionsRes, gendersRes, categoriesRes] = await Promise.all([
@@ -31,15 +32,18 @@ export const usePlanning = () => {
           masterDataService.getGenders(),
           masterDataService.getCategories(),
         ]);
+        if (controller.signal.aborted) return;
         setCollections(collectionsRes || []);
         setGenders(gendersRes || []);
         setCategories(categoriesRes || []);
       } catch (err: any) {
+        if (err?.name === 'AbortError' || controller.signal.aborted) return;
         console.error('Failed to fetch master data:', err);
         toast.error('Không thể tải dữ liệu. Vui lòng thử lại.');
       }
     };
     fetchMasterData();
+    return () => controller.abort();
   }, [isAuthenticated]);
 
   // Fetch plannings

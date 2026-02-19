@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNumber, IsArray, IsOptional, ValidateNested, Min, IsNotEmpty } from 'class-validator';
+import { IsString, IsNumber, IsArray, IsOptional, ValidateNested, Min, Max, IsNotEmpty, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 // ─── Store Detail DTO ─────────────────────────────────────────────────────────
@@ -12,7 +12,8 @@ export class BudgetDetailDto {
 
   @ApiProperty({ example: 5000000000, description: 'Budget amount in VND' })
   @IsNumber()
-  @Min(0)
+  @Min(1, { message: 'Budget amount must be greater than 0' })
+  @Max(100_000_000_000, { message: 'Budget amount cannot exceed 100 billion VND' })
   budgetAmount: number;
 }
 
@@ -27,15 +28,19 @@ export class CreateBudgetDto {
   @ApiProperty({ example: 'SS', enum: ['SS', 'FW'], description: 'Season Group' })
   @IsString()
   @IsNotEmpty()
+  @IsIn(['SS', 'FW'], { message: 'seasonGroupId must be SS or FW' })
   seasonGroupId: string;
 
   @ApiProperty({ example: 'pre', enum: ['pre', 'main'], description: 'Season Type' })
   @IsString()
   @IsNotEmpty()
+  @IsIn(['pre', 'main'], { message: 'seasonType must be pre or main' })
   seasonType: string;
 
   @ApiProperty({ example: 2025 })
   @IsNumber()
+  @Min(2020, { message: 'Fiscal year must be 2020 or later' })
+  @Max(2099, { message: 'Fiscal year must be before 2100' })
   fiscalYear: number;
 
   @ApiPropertyOptional({ example: 'Q1 budget for Ferragamo' })

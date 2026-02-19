@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
 import { ProposalStatus, ApprovalAction, Prisma } from '@prisma/client';
 import { CreateProposalDto, UpdateProposalDto, AddProductDto, BulkAddProductsDto, UpdateProductDto, ApprovalDecisionDto } from './dto/proposal.dto';
 
@@ -13,7 +14,7 @@ interface ProposalFilters {
 
 @Injectable()
 export class ProposalService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private auditLog: AuditLogService) {}
 
   // ─── LIST ────────────────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ export class ProposalService {
         include: {
           budget: { include: { groupBrand: true } },
           planningVersion: { select: { id: true, planningCode: true, versionNumber: true } },
-          createdBy: { select: { id: true, name: true, email: true } },
+          createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
           products: {
             orderBy: { sortOrder: 'asc' },
             include: { allocations: true },
@@ -70,7 +71,7 @@ export class ProposalService {
             budgetDetail: { include: { store: true } },
           },
         },
-        createdBy: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
         products: {
           orderBy: { sortOrder: 'asc' },
         },
@@ -122,7 +123,7 @@ export class ProposalService {
       }
     }
 
-    return this.prisma.proposal.create({
+    const result = await this.prisma.proposal.create({
       data: {
         ticketName: dto.ticketName,
         budgetId: dto.budgetId,
@@ -134,6 +135,10 @@ export class ProposalService {
         planningVersion: true,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: result.id, action: 'create', changes: { ticketName: dto.ticketName, budgetId: dto.budgetId, planningVersionId: dto.planningVersionId } });
+
+    return result;
   }
 
   // ─── UPDATE ──────────────────────────────────────────────────────────────
@@ -161,7 +166,7 @@ export class ProposalService {
       }
     }
 
-    return this.prisma.proposal.update({
+    const result = await this.prisma.proposal.update({
       where: { id },
       data: {
         ticketName: dto.ticketName,
@@ -172,6 +177,10 @@ export class ProposalService {
         planningVersion: true,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'update', changes: { ticketName: dto.ticketName, planningVersionId: dto.planningVersionId } });
+
+    return result;
   }
 
   // ─── ADD PRODUCT ─────────────────────────────────────────────────────────
@@ -182,6 +191,12 @@ export class ProposalService {
 
     if (proposal.status !== ProposalStatus.DRAFT) {
       throw new ForbiddenException('Can only add products to draft proposals');
+    }
+
+    // VAL-07: Max product count per proposal
+    const productCount = await this.prisma.proposalProduct.count({ where: { proposalId } });
+    if (productCount >= 200) {
+      throw new BadRequestException('Maximum 200 products allowed per proposal');
     }
 
     // Check if SKU already in proposal
@@ -206,9 +221,24 @@ export class ProposalService {
     const gender = genderCode === 'W' ? 'Women' : genderCode === 'M' ? 'Men' : genderCode;
     const category = categoryParts.join(' ');
 
-    // Use SRP as unit cost since unitCost doesn't exist
-    const unitCost = Number(sku.srp);
+    // BIZ-03: Use costPrice for OTB calculations (fall back to SRP if not set)
+    const unitCost = Number(sku.costPrice || sku.srp);
     const totalValue = unitCost * dto.orderQty;
+
+    // BIZ-02: Budget ceiling check — warn if proposal exceeds budget
+    const budget = await this.prisma.budget.findUnique({ where: { id: proposal.budgetId } });
+    if (budget) {
+      const currentTotal = Number(proposal.totalValue || 0);
+      const newTotal = currentTotal + totalValue;
+      if (newTotal > Number(budget.totalBudget)) {
+        throw new BadRequestException(
+          `Adding this item would exceed the budget ceiling. ` +
+          `Current proposal: ${currentTotal.toLocaleString()}, ` +
+          `This item: ${totalValue.toLocaleString()}, ` +
+          `Budget limit: ${Number(budget.totalBudget).toLocaleString()}`
+        );
+      }
+    }
 
     // Get max sort order
     const lastProduct = await this.prisma.proposalProduct.findFirst({
@@ -241,6 +271,8 @@ export class ProposalService {
 
     // Update proposal totals
     await this.updateProposalTotals(proposalId);
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'add_product', changes: { productId: product.id, skuId: dto.skuId, skuCode: sku.skuCode, orderQty: dto.orderQty, totalValue } });
 
     return product;
   }
@@ -300,6 +332,8 @@ export class ProposalService {
     // Update proposal totals
     await this.updateProposalTotals(proposalId);
 
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'update_product', changes: { productId, ...updateData } });
+
     return updated;
   }
 
@@ -324,6 +358,8 @@ export class ProposalService {
     // Update proposal totals
     await this.updateProposalTotals(proposalId);
 
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'remove_product', changes: { productId, skuCode: product.skuCode, productName: product.productName } });
+
     return { message: 'Product removed from proposal' };
   }
 
@@ -346,7 +382,7 @@ export class ProposalService {
       throw new BadRequestException('Proposal must have at least one product');
     }
 
-    return this.prisma.proposal.update({
+    const result = await this.prisma.proposal.update({
       where: { id },
       data: { status: ProposalStatus.SUBMITTED },
       include: {
@@ -354,6 +390,10 @@ export class ProposalService {
         _count: { select: { products: true } },
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'submit', changes: { previousStatus: 'DRAFT', newStatus: 'SUBMITTED', productCount: proposal.products.length } });
+
+    return result;
   }
 
   // ─── APPROVE LEVEL 1 ─────────────────────────────────────────────────────
@@ -376,7 +416,7 @@ export class ProposalService {
       : ProposalStatus.REJECTED;
 
     // BIZ-06: Atomic approval
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const current = await tx.proposal.findUnique({ where: { id } });
       if (current?.status !== ProposalStatus.SUBMITTED) {
         throw new BadRequestException('Proposal already processed by another approver');
@@ -402,6 +442,10 @@ export class ProposalService {
         },
       });
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l1' : 'reject_l1', changes: { previousStatus: 'SUBMITTED', newStatus, comment: dto.comment } });
+
+    return result;
   }
 
   // ─── APPROVE LEVEL 2 ─────────────────────────────────────────────────────
@@ -424,7 +468,7 @@ export class ProposalService {
       : ProposalStatus.REJECTED;
 
     // BIZ-06: Atomic approval
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const current = await tx.proposal.findUnique({ where: { id } });
       if (current?.status !== ProposalStatus.LEVEL1_APPROVED) {
         throw new BadRequestException('Proposal already processed by another approver');
@@ -450,6 +494,10 @@ export class ProposalService {
         },
       });
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l2' : 'reject_l2', changes: { previousStatus: 'LEVEL1_APPROVED', newStatus, comment: dto.comment } });
+
+    return result;
   }
 
   // ─── RESET TO DRAFT ────────────────────────────────────────────────────
@@ -473,7 +521,7 @@ export class ProposalService {
       },
     });
 
-    return this.prisma.proposal.update({
+    const result = await this.prisma.proposal.update({
       where: { id },
       data: { status: ProposalStatus.DRAFT },
       include: {
@@ -481,11 +529,15 @@ export class ProposalService {
         _count: { select: { products: true } },
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'reset_to_draft', changes: { previousStatus: 'REJECTED', newStatus: 'DRAFT' } });
+
+    return result;
   }
 
   // ─── DELETE ──────────────────────────────────────────────────────────────
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const proposal = await this.prisma.proposal.findUnique({ where: { id } });
     if (!proposal) throw new NotFoundException('Proposal not found');
 
@@ -493,7 +545,11 @@ export class ProposalService {
       throw new ForbiddenException('Only draft proposals can be deleted');
     }
 
-    return this.prisma.proposal.delete({ where: { id } });
+    const result = await this.prisma.proposal.delete({ where: { id } });
+
+    this.auditLog.log({ userId: userId || 'system', entityType: 'proposal', entityId: id, action: 'delete', changes: { ticketName: proposal.ticketName, budgetId: proposal.budgetId } });
+
+    return result;
   }
 
   // ─── STATISTICS ──────────────────────────────────────────────────────────

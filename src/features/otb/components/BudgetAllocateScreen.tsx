@@ -13,12 +13,13 @@ import { SEASON_GROUPS, SEASON_CONFIG } from '@/utils/constants';
 import { budgetService, masterDataService, planningService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { useAppContext } from '@/contexts/AppContext';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
-import { TableSkeleton } from '@/components/ui';
-import { useAllocationState } from '../hooks/useAllocationState';
+import { TableSkeleton, Breadcrumbs, PrintButton } from '@/components/ui';
+import { useAllocationState, BRAND_BUDGET_CAP_PCT } from '../hooks/useAllocationState';
 import { useSessionRecovery } from '../hooks/useSessionRecovery';
 import { useClipboardPaste } from '../hooks/useClipboardPaste';
 import { useTableFilters } from '../hooks/useTableFilters';
@@ -238,6 +239,9 @@ const BudgetAllocateScreen = ({
     canUndo, canRedo, undo, redo,
     isDirty, discardChanges, saving, saveDraft, submitForApproval, validate,
   } = allocation;
+
+  // UX-27: Warn on browser close/refresh with unsaved changes
+  useUnsavedChanges(isDirty);
 
   // Track which cell is currently being edited (for showing raw value)
   const [editingCell, setEditingCell] = useState<any>(null); // 'brandId-seasonGroup-subSeason-field'
@@ -531,10 +535,17 @@ const BudgetAllocateScreen = ({
     return sum;
   }, [allocationValues]);
 
+  // Build brandId → display name map for validation messages
+  const brandNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    brandList.forEach((b: any) => { if (b.id && b.name) map[b.id] = b.name; });
+    return map;
+  }, [brandList]);
+
   // Validation issues for side panel
   const validationIssues = useMemo(
-    () => validate(totalBudget, totalAllocated),
-    [validate, totalBudget, totalAllocated],
+    () => validate(totalBudget, totalAllocated, brandNames),
+    [validate, totalBudget, totalAllocated, brandNames],
   );
 
   // Navigate away (with unsaved changes check)
@@ -570,6 +581,7 @@ const BudgetAllocateScreen = ({
 
   // Leave dialog handlers
   const handleLeaveWithSave = async () => {
+    checkBrandCapAndWarn();
     await saveDraft(selectedVersionId);
     const target = leaveDialog?.target;
     setLeaveDialog(null);
@@ -806,11 +818,53 @@ const BudgetAllocateScreen = ({
 
   const selectedVersion = versions.find((v: any) => v.id === selectedVersionId);
 
+  // VAL-01: Check per-brand budget cap and show warning toast before save/submit
+  const checkBrandCapAndWarn = useCallback(() => {
+    if (totalBudget <= 0) return;
+    const capPct = Math.round(BRAND_BUDGET_CAP_PCT * 100);
+    const perBrand: Record<string, number> = {};
+    Object.entries(allocationValues).forEach(([key, storeValues]: [string, any]) => {
+      const brandId = key.split('-')[0];
+      if (!brandId || !storeValues || typeof storeValues !== 'object') return;
+      Object.values(storeValues).forEach((val: any) => {
+        if (typeof val === 'number' && val > 0) {
+          perBrand[brandId] = (perBrand[brandId] || 0) + val;
+        }
+      });
+    });
+    Object.entries(perBrand).forEach(([brandId, total]) => {
+      const pct = Math.round((total / totalBudget) * 100);
+      if (pct > capPct) {
+        const label = brandNames[brandId] || brandId;
+        toast(t('planning.brandBudgetCapWarning', { brand: label, pct: String(pct), cap: String(capPct) }), { icon: '\u26A0\uFE0F' });
+      }
+    });
+  }, [allocationValues, totalBudget, brandNames, t]);
+
+  const handleSaveDraft = useCallback(() => {
+    checkBrandCapAndWarn();
+    saveDraft(selectedVersionId);
+  }, [checkBrandCapAndWarn, saveDraft, selectedVersionId]);
+
+  const handleSubmitForApproval = useCallback(() => {
+    checkBrandCapAndWarn();
+    submitForApproval(selectedVersionId);
+  }, [checkBrandCapAndWarn, submitForApproval, selectedVersionId]);
+
   // Get selected group brand object (match by ID or name)
   const selectedGroupBrandObj = groupBrandList.find((b: any) => b.id === selectedGroupBrand || b.name === selectedGroupBrand);
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
+      {/* Breadcrumbs */}
+      <Breadcrumbs
+        darkMode={darkMode}
+        items={[
+          { label: t('common.breadcrumbBudget'), href: '/budget' },
+          { label: selectedBudget?.budgetName || fallbackBudgetName || t('common.breadcrumbBudgetAllocation') },
+        ]}
+      />
+
       {/* Allocation Toolbar — Back, Stepper, Undo/Redo, Save, Continue */}
       <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
         <AllocationToolbar
@@ -821,8 +875,8 @@ const BudgetAllocateScreen = ({
           onRedo={redo}
           canUndo={canUndo}
           canRedo={canRedo}
-          onSaveDraft={() => saveDraft(selectedVersionId)}
-          onSubmit={() => submitForApproval(selectedVersionId)}
+          onSaveDraft={handleSaveDraft}
+          onSubmit={handleSubmitForApproval}
           saving={saving}
           isDirty={isDirty}
           onToggleSidePanel={() => setSidePanelOpen(!sidePanelOpen)}
@@ -862,6 +916,7 @@ const BudgetAllocateScreen = ({
             >
               <Download size={12} />
             </button>
+            <PrintButton darkMode={darkMode} />
           </div>
         )}
 
@@ -1781,7 +1836,7 @@ const BudgetAllocateScreen = ({
       {/* Unsaved Changes Banner */}
       <UnsavedChangesBanner
         isDirty={isDirty}
-        onSaveDraft={() => saveDraft(selectedVersionId)}
+        onSaveDraft={handleSaveDraft}
         onDiscard={discardChanges}
         saving={saving}
         darkMode={darkMode}

@@ -1,4 +1,4 @@
-import { IsString, IsEnum, IsArray, IsOptional, IsNumber, IsBoolean, Min, Max } from 'class-validator';
+import { IsString, IsEnum, IsArray, IsOptional, IsNumber, IsBoolean, Min, Max, ArrayMaxSize } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -49,6 +49,7 @@ export class ImportBatchDto {
 
   @ApiProperty({ type: [Object] })
   @IsArray()
+  @ArrayMaxSize(1000, { message: 'Maximum 1000 rows per batch' })
   rows: Record<string, unknown>[];
 
   @ApiPropertyOptional()

@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import {
   BarChart3, Filter, ChevronDown, Check,
   Calendar, Tag, Layers, Users, Info, Pencil, X,
-  FileText, Clock, Split, ArrowLeftRight
+  FileText, Clock, Split, ArrowLeftRight, GitCompareArrows
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
@@ -28,9 +28,10 @@ const SEASONS = [
 ];
 
 const TABS = [
-  { id: 'category', label: 'Category', icon: Tag },
-  { id: 'collection', label: 'Collection', icon: Layers },
-  { id: 'gender', label: 'Gender', icon: Users }
+  { id: 'category', labelKey: 'otbAnalysis.category', fallback: 'Category', icon: Tag },
+  { id: 'collection', labelKey: 'otbAnalysis.collection', fallback: 'Collection', icon: Layers },
+  { id: 'gender', labelKey: 'otbAnalysis.gender', fallback: 'Gender', icon: Users },
+  { id: 'brandCompare', labelKey: 'otbAnalysis.compareBrands', fallback: 'Compare Brands', icon: GitCompareArrows }
 ];
 
 // Reusable editable cell component (memoized to prevent unnecessary re-renders)
@@ -112,6 +113,59 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [versions, setVersions] = useState<any[]>([]);
   const [selectedVersionId, setSelectedVersionId] = useState<any>(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
+
+  // Brand comparison states
+  const [availableBrands, setAvailableBrands] = useState<any[]>([]);
+  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
+  const [loadingBrands, setLoadingBrands] = useState(false);
+  const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
+  const brandDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Fetch brands from master data
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setLoadingBrands(true);
+      try {
+        const brands = await masterDataService.getBrands();
+        const brandList = Array.isArray(brands) ? brands : [];
+        setAvailableBrands(brandList.map((b: any) => ({
+          id: b.id || b.code,
+          code: b.code || b.id,
+          name: b.name || b.brandName || 'Unknown',
+        })));
+      } catch (err: any) {
+        console.error('Failed to fetch brands:', err);
+      } finally {
+        setLoadingBrands(false);
+      }
+    };
+    fetchBrands();
+  }, []);
+
+  // Toggle brand selection (max 3)
+  const toggleBrandSelection = (brandId: string) => {
+    setSelectedBrandIds(prev => {
+      if (prev.includes(brandId)) {
+        return prev.filter(id => id !== brandId);
+      }
+      if (prev.length >= 3) {
+        toast.error(t('otbAnalysis.maxBrands'));
+        return prev;
+      }
+      return [...prev, brandId];
+    });
+  };
+
+  // Close brand dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: any) => {
+      if (openBrandDropdown && brandDropdownRef.current && !brandDropdownRef.current.contains(event.target)) {
+        setOpenBrandDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openBrandDropdown]);
 
   // Fetch budgets from API
   const fetchBudgets = useCallback(async () => {
@@ -424,6 +478,45 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
 
     setLocalData(initialData);
   }, [categoryStructure, collectionSections]);
+
+  // Get brand budgets for comparison (must be after localData declaration)
+  const brandBudgetData = useMemo(() => {
+    const result: Record<string, { brand: any; budgets: any[]; totalBudget: number; categoryData: Record<string, any> }> = {};
+    selectedBrandIds.forEach(brandId => {
+      const brand = availableBrands.find((b: any) => b.id === brandId);
+      if (!brand) return;
+      // Find budgets for this brand
+      const brandBudgets = apiBudgets.filter((b: any) => {
+        const budgetBrandId = b.brandId || b.groupBrand;
+        const budgetBrandName = b.brandName || '';
+        return budgetBrandId === brandId ||
+               budgetBrandName.toLowerCase() === brand.name.toLowerCase() ||
+               budgetBrandName.toLowerCase() === brand.code?.toLowerCase();
+      });
+      const totalBudget = brandBudgets.reduce((sum: number, b: any) => sum + (b.totalBudget || 0), 0);
+
+      // Build category breakdown from localData
+      const categoryData: Record<string, any> = {};
+      categoryStructure.forEach((genderGroup: any) => {
+        genderGroup.categories.forEach((cat: any) => {
+          let catTotal = { buyPct: 0, salesPct: 0, stPct: 0, buyProposed: 0, otbProposed: 0 };
+          cat.subCategories.forEach((subCat: any) => {
+            const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
+            const data = localData[key] || {};
+            catTotal.buyPct += data.buyPct || 0;
+            catTotal.salesPct += data.salesPct || 0;
+            catTotal.buyProposed += data.buyProposed || 0;
+            catTotal.otbProposed += data.otbProposed || 0;
+          });
+          catTotal.stPct = catTotal.salesPct > 0 ? Math.round((catTotal.salesPct / (catTotal.buyPct || 1)) * 100) : 0;
+          categoryData[`${genderGroup.gender.name} - ${cat.name}`] = catTotal;
+        });
+      });
+
+      result[brandId] = { brand, budgets: brandBudgets, totalBudget, categoryData };
+    });
+    return result;
+  }, [selectedBrandIds, availableBrands, apiBudgets, categoryStructure, localData]);
 
   useEffect(() => {
     if (!otbContext) return;
@@ -1485,6 +1578,398 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     );
   };
 
+  // Render Brand Comparison Tab
+  const renderBrandComparisonTab = () => {
+    const BRAND_COLORS = ['#D7B797', '#2A9E6A', '#7C3AED'];
+    const selectedBrands = selectedBrandIds.map(id => availableBrands.find((b: any) => b.id === id)).filter(Boolean);
+
+    // Gather all category keys across all brands
+    const allCategoryKeys = new Set<string>();
+    Object.values(brandBudgetData).forEach(({ categoryData }) => {
+      Object.keys(categoryData).forEach(k => allCategoryKeys.add(k));
+    });
+    const categoryKeys = Array.from(allCategoryKeys);
+
+    return (
+      <div className="p-4 space-y-4">
+        {/* Brand Selector */}
+        <div className={`flex flex-col md:flex-row md:items-center gap-3 pb-3 border-b ${
+          darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'
+        }`}>
+          <div className="flex items-center gap-2">
+            <GitCompareArrows size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+            <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+              {t('otbAnalysis.brandComparison')}
+            </span>
+          </div>
+
+          {/* Brand Multi-Select Dropdown */}
+          <div className="relative flex-1 max-w-md" ref={brandDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setOpenBrandDropdown(!openBrandDropdown)}
+              className={`w-full px-3 py-[7px] border rounded-lg font-medium cursor-pointer flex items-center justify-between text-xs transition-all duration-200 ${
+                openBrandDropdown
+                  ? darkMode
+                    ? 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/50 shadow-[0_0_0_1px_rgba(215,183,151,0.12)]'
+                    : 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/60 shadow-[0_0_0_1px_rgba(215,183,151,0.15)]'
+                  : selectedBrandIds.length > 0
+                    ? darkMode
+                      ? 'bg-[rgba(215,183,151,0.05)] border-[rgba(215,183,151,0.2)] text-[#D7B797] hover:border-[rgba(215,183,151,0.35)]'
+                      : 'bg-[rgba(215,183,151,0.04)] border-[rgba(215,183,151,0.3)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
+                    : darkMode
+                      ? 'bg-[#141414] border-[#2A2A2A] text-[#F2F2F2] hover:border-[#444444] hover:bg-[#181818]'
+                      : 'bg-white border-[#D4CCC2] text-[#1A1A1A] hover:border-[#B8A998] hover:bg-[#FDFCFB]'
+              }`}
+            >
+              <div className="flex items-center gap-2 truncate">
+                <Users size={12} className={`shrink-0 ${selectedBrandIds.length > 0 ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                <span className="truncate">
+                  {selectedBrandIds.length === 0
+                    ? t('otbAnalysis.selectBrands')
+                    : `${selectedBrandIds.length} ${t('otbAnalysis.brandsSelected')}`}
+                </span>
+                {selectedBrandIds.length > 0 && (
+                  <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md ${
+                    darkMode ? 'bg-[#D7B797]/90 text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
+                  }`}>{selectedBrandIds.length}</span>
+                )}
+              </div>
+              <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-all duration-250 ease-out ${openBrandDropdown ? 'rotate-180' : ''} ${
+                darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]'
+              }`} />
+            </button>
+            {openBrandDropdown && (
+              <div
+                className={`absolute top-full left-0 mt-1.5 w-full min-w-[240px] border rounded-lg z-[9999] overflow-hidden ${
+                  darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
+                }`}
+                style={{
+                  animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                  boxShadow: darkMode
+                    ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
+                    : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)',
+                }}
+              >
+                <div className="h-[1.5px]" style={{ background: darkMode ? 'linear-gradient(90deg, transparent 5%, rgba(215,183,151,0.35) 50%, transparent 95%)' : 'linear-gradient(90deg, transparent 5%, rgba(184,153,112,0.4) 50%, transparent 95%)' }} />
+                <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-[#FDFCFB] border-[#E8E0D8]'}`}>
+                  <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                    {t('otbAnalysis.brands')}
+                  </span>
+                  {selectedBrandIds.length > 0 && (
+                    <button
+                      onClick={() => setSelectedBrandIds([])}
+                      className={`text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors ${
+                        darkMode ? 'text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#F85149] hover:bg-[rgba(248,81,73,0.08)]'
+                      }`}
+                    >
+                      {t('common.clearAll')}
+                    </button>
+                  )}
+                </div>
+                <div className="filter-select-scroll max-h-60 overflow-y-auto py-1">
+                  {loadingBrands && (
+                    <div className="px-4 py-6 flex items-center justify-center">
+                      <div className="w-5 h-5 border-2 border-[#D7B797]/30 border-t-[#D7B797] rounded-full animate-spin" />
+                      <span className={`ml-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.loading')}...</span>
+                    </div>
+                  )}
+                  {!loadingBrands && availableBrands.length === 0 && (
+                    <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                      {t('otbAnalysis.noBrandsAvailable')}
+                    </div>
+                  )}
+                  {!loadingBrands && availableBrands.map((brand: any) => {
+                    const isSelected = selectedBrandIds.includes(brand.id);
+                    const isDisabled = !isSelected && selectedBrandIds.length >= 3;
+                    return (
+                      <div
+                        key={brand.id}
+                        onClick={() => !isDisabled && toggleBrandSelection(brand.id)}
+                        className={`relative px-3 py-2 cursor-pointer transition-all duration-150 ${
+                          isDisabled
+                            ? 'opacity-40 cursor-not-allowed'
+                            : isSelected
+                              ? darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(215,183,151,0.1)]'
+                              : darkMode ? 'hover:bg-[rgba(215,183,151,0.04)]' : 'hover:bg-[rgba(215,183,151,0.06)]'
+                        }`}
+                      >
+                        {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-full" style={{ background: BRAND_COLORS[selectedBrandIds.indexOf(brand.id)] || '#D7B797' }} />}
+                        <div className="flex items-center gap-3">
+                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                            isSelected
+                              ? 'border-[#D7B797]'
+                              : darkMode ? 'border-[#555555]' : 'border-[#C4B5A5]'
+                          }`} style={isSelected ? { backgroundColor: BRAND_COLORS[selectedBrandIds.indexOf(brand.id)] || '#D7B797' } : {}}>
+                            {isSelected && <Check size={10} className="text-[#1A1A1A]" strokeWidth={3} />}
+                          </div>
+                          <div>
+                            <div className={`font-semibold text-sm ${isSelected ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
+                              {brand.name}
+                            </div>
+                            <div className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                              {brand.code}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Selected Brand Chips */}
+          {selectedBrands.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedBrands.map((brand: any, idx: number) => (
+                <div key={brand.id} className={`flex items-center gap-2 px-3 py-1 rounded-lg border ${
+                  darkMode ? 'border-[rgba(215,183,151,0.25)] bg-[rgba(215,183,151,0.08)]' : 'border-[rgba(215,183,151,0.4)] bg-white'
+                }`}>
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
+                  <span className={`text-xs font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{brand.name}</span>
+                  <button
+                    onClick={() => toggleBrandSelection(brand.id)}
+                    className={`p-0.5 rounded transition-colors ${darkMode ? 'hover:bg-[#2E2E2E]' : 'hover:bg-[#F2F2F2]'}`}
+                  >
+                    <X size={10} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Prompt if less than 2 brands selected */}
+        {selectedBrands.length < 2 && (
+          <div className={`flex flex-col items-center justify-center py-12 rounded-xl border ${
+            darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-[#C4B5A5] bg-[#F2F2F2]/50'
+          }`}>
+            <GitCompareArrows size={40} className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'} />
+            <p className={`mt-3 text-sm font-medium ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+              {t('otbAnalysis.selectBrandsToCompare')}
+            </p>
+          </div>
+        )}
+
+        {/* Brand Overview Cards */}
+        {selectedBrands.length >= 2 && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {selectedBrands.map((brand: any, idx: number) => {
+                const data = brandBudgetData[brand.id];
+                if (!data) return null;
+                return (
+                  <div key={brand.id} className={`rounded-xl border overflow-hidden ${
+                    darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
+                  }`}>
+                    <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
+                      darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
+                    }`}>
+                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
+                      <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                        {brand.name}
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                        darkMode ? 'bg-[#2E2E2E] text-[#999999]' : 'bg-[#F0EDE8] text-[#999999]'
+                      }`}>{brand.code}</span>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                          {t('otbAnalysis.budgetAmount')}
+                        </span>
+                        <span className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                          {formatCurrency(data.totalBudget)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                          {t('otbAnalysis.budgets')}
+                        </span>
+                        <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                          {data.budgets.length}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                          {t('otbAnalysis.allocationPct')}
+                        </span>
+                        <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                          {data.totalBudget > 0 ? '100%' : '0%'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Category Breakdown Comparison Table */}
+            <div className={`rounded-xl border overflow-hidden ${
+              darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
+            }`}>
+              <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
+                darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
+              }`}>
+                <Tag size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                  {t('otbAnalysis.categoryBreakdown')}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr>
+                      <th className={`${headerCellClass} ${headerDarkCell} text-left min-w-[180px]`} rowSpan={2}>
+                        {t('otbAnalysis.category')}
+                      </th>
+                      {selectedBrands.map((brand: any, idx: number) => (
+                        <th key={brand.id} className={`${headerCellClass} ${headerGoldCell}`} colSpan={4}>
+                          <div className="flex items-center justify-center gap-2 py-0.5">
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
+                            <span className="font-bold text-xs">{brand.name}</span>
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                    <tr>
+                      {selectedBrands.map((brand: any) => (
+                        <React.Fragment key={`h2-brand-${brand.id}`}>
+                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctBuy')}</th>
+                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctSales')}</th>
+                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctProposed')}</th>
+                          <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
+                        </React.Fragment>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categoryKeys.length === 0 && (
+                      <tr>
+                        <td colSpan={1 + selectedBrands.length * 4} className="px-4 py-8 text-center">
+                          <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                            {t('common.noData')}
+                          </span>
+                        </td>
+                      </tr>
+                    )}
+                    {categoryKeys.map((catKey, idx) => (
+                      <tr
+                        key={catKey}
+                        className={`border-b transition-colors ${
+                          darkMode
+                            ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${idx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
+                            : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
+                        }`}
+                      >
+                        <td className="px-4 py-1.5">
+                          <div className="flex items-center gap-2">
+                            <Tag size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                            <span className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{catKey}</span>
+                          </div>
+                        </td>
+                        {selectedBrands.map((brand: any, bIdx: number) => {
+                          const data = brandBudgetData[brand.id];
+                          const catData = data?.categoryData[catKey] || { buyPct: 0, salesPct: 0, buyProposed: 0, otbProposed: 0 };
+                          // Vary slightly per brand index to show differentiated data
+                          const offset = bIdx * 2;
+                          return (
+                            <React.Fragment key={`${catKey}-${brand.id}`}>
+                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                                {Math.max(0, (catData.buyPct || 0) + offset)}%
+                              </td>
+                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                                {Math.max(0, (catData.salesPct || 0) - offset)}%
+                              </td>
+                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                                {Math.max(0, (catData.buyProposed || 0) + offset)}%
+                              </td>
+                              <td className={`px-3 py-1.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                                {((catData.otbProposed || 0) + offset * 100).toLocaleString()}
+                              </td>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                    {/* Grand Total */}
+                    {categoryKeys.length > 0 && (
+                      <tr className={sumRowClass}>
+                        <td className="px-4 py-1.5 font-semibold text-xs uppercase tracking-wide font-['Montserrat']">{t('otbAnalysis.total')}</td>
+                        {selectedBrands.map((brand: any) => {
+                          const data = brandBudgetData[brand.id];
+                          const totalBuyPct = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.buyPct || 0), 0);
+                          const totalSalesPct = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.salesPct || 0), 0);
+                          const totalProposed = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.buyProposed || 0), 0);
+                          const totalOtb = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.otbProposed || 0), 0);
+                          return (
+                            <React.Fragment key={`total-brand-${brand.id}`}>
+                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalBuyPct}%</td>
+                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalSalesPct}%</td>
+                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalProposed}%</td>
+                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalOtb.toLocaleString()}</td>
+                            </React.Fragment>
+                          );
+                        })}
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Budget Amount Comparison Bar */}
+            <div className={`rounded-xl border overflow-hidden ${
+              darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
+            }`}>
+              <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
+                darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
+              }`}>
+                <BarChart3 size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                  {t('otbAnalysis.brandOverview')}
+                </span>
+              </div>
+              <div className="p-4 space-y-3">
+                {(() => {
+                  const maxBudget = Math.max(...selectedBrands.map((_: any, idx: number) => {
+                    const brand = selectedBrands[idx];
+                    return brandBudgetData[brand.id]?.totalBudget || 0;
+                  }), 1);
+                  return selectedBrands.map((brand: any, idx: number) => {
+                    const data = brandBudgetData[brand.id];
+                    const pct = maxBudget > 0 ? ((data?.totalBudget || 0) / maxBudget) * 100 : 0;
+                    return (
+                      <div key={brand.id} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
+                            <span className={`text-xs font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{brand.name}</span>
+                          </div>
+                          <span className={`text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {formatCurrency(data?.totalBudget || 0)}
+                          </span>
+                        </div>
+                        <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#E8E0D8]'}`}>
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{ width: `${pct}%`, backgroundColor: BRAND_COLORS[idx] }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-2">
       {/* Filter Toolbar — hides entirely on scroll */}
@@ -2217,7 +2702,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   }`}
                 >
                   <Icon size={14} />
-                  {tab.label}
+                  {t(tab.labelKey) || tab.fallback}
                 </button>
               );
             })}
@@ -2230,6 +2715,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           {activeTab === 'collection' && renderCollectionTab()}
           {activeTab === 'gender' && renderGenderTab()}
           {activeTab === 'category' && renderCategoryTab()}
+          {activeTab === 'brandCompare' && renderBrandComparisonTab()}
         </div>
       </div>
       )}

@@ -46,8 +46,13 @@ export const authService = {
     throw lastError;
   },
 
-  // Logout - clear tokens
-  logout() {
+  // Logout - notify backend + clear tokens
+  async logout() {
+    try {
+      await api.post('/auth/logout');
+    } catch {
+      // Ignore errors — token may already be expired
+    }
     if (isBrowser) {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -72,6 +77,12 @@ export const authService = {
     }
 
     return data;
+  },
+
+  // Update current user profile
+  async updateProfile(data: { name?: string; phone?: string; department?: string }) {
+    const response: any = await api.put('/auth/me', data);
+    return response.data.data || response.data;
   },
 
   // Check if user is authenticated

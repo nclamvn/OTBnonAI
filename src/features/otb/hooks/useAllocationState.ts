@@ -14,6 +14,9 @@ const MAX_UNDO_STACK = 50;
 const DEBOUNCE_MS = 300;
 const AUTO_SAVE_INTERVAL_MS = 30_000; // 30 seconds
 
+/** VAL-01: Maximum percentage of total budget any single brand can consume */
+export const BRAND_BUDGET_CAP_PCT = 0.8;
+
 export interface ValidationIssue {
   type: 'error' | 'warning';
   key: string;
@@ -234,7 +237,7 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
 
   // ── Validation ────────────────────────────────────────────────────────
   const validate = useCallback(
-    (totalBudget: number, totalAllocated: number): ValidationIssue[] => {
+    (totalBudget: number, totalAllocated: number, brandNames?: Record<string, string>): ValidationIssue[] => {
       const issues: ValidationIssue[] = [];
 
       // Check over-budget
@@ -263,6 +266,37 @@ export function useAllocationState(t: (key: string, params?: any) => string) {
           });
         }
       });
+
+      // VAL-01: Per-brand budget cap — warn if any single brand exceeds BRAND_BUDGET_CAP_PCT
+      if (totalBudget > 0) {
+        const brandTotals: Record<string, number> = {};
+        Object.entries(allocationValues).forEach(([key, storeValues]) => {
+          // key format: brandId-seasonGroup-subSeason
+          const brandId = key.split('-')[0];
+          if (!brandId) return;
+          if (storeValues && typeof storeValues === 'object') {
+            Object.values(storeValues).forEach((val) => {
+              if (typeof val === 'number' && val > 0) {
+                brandTotals[brandId] = (brandTotals[brandId] || 0) + val;
+              }
+            });
+          }
+        });
+
+        const capPct = Math.round(BRAND_BUDGET_CAP_PCT * 100);
+        Object.entries(brandTotals).forEach(([brandId, total]) => {
+          const pct = Math.round((total / totalBudget) * 100);
+          if (pct > capPct) {
+            const brandLabel = brandNames?.[brandId] || brandId;
+            issues.push({
+              type: 'warning',
+              key: `brandCap-${brandId}`,
+              message: 'planning.brandBudgetCapWarning',
+              params: { brand: brandLabel, pct: String(pct), cap: String(capPct) },
+            });
+          }
+        });
+      }
 
       // Check under-allocation warning
       if (totalBudget > 0 && totalAllocated > 0) {

@@ -46,6 +46,8 @@ const en = {
     irreversible: 'This action is irreversible',
     confirmDelete: 'Are you sure you want to delete this item?',
     required: '*',
+    selected: 'selected',
+    print: 'Print',
     viewDetails: 'View Details',
     chartsComingSoon: 'Charts coming soon',
     entryPointSidebar: 'Entry point: Sidebar',
@@ -53,6 +55,12 @@ const en = {
     gender: 'Gender',
     category: 'Category',
     subCategories: 'Sub-Categories',
+    // Breadcrumb labels
+    breadcrumbBudget: 'Budget Management',
+    breadcrumbBudgetAllocation: 'Budget Allocation',
+    breadcrumbPlanning: 'Planning',
+    breadcrumbProposals: 'Proposals',
+    breadcrumbTickets: 'Tickets',
   },
 
   // ──────────────────────────────────────────────
@@ -123,6 +131,11 @@ const en = {
     kpiSettings: 'Settings',
     kpiAppSettings: 'App settings',
     notifications: 'Notifications',
+    searchCategoryScreens: 'Screens',
+    searchCategoryBudgets: 'Budgets',
+    searchCategoryProposals: 'Proposals',
+    searchNoResults: 'No results found',
+    searchTyping: 'Type 3+ characters to search data...',
   },
 
   // ──────────────────────────────────────────────
@@ -211,10 +224,11 @@ const en = {
     itemsAwaitingReview: 'Items Awaiting Review',
     activePlans: 'Active Plans',
     otbPlansInProgress: 'OTB Plans in Progress',
-    salesPerformance: 'Sales Performance',
-    monthlyComparison: 'Monthly sales vs target comparison',
-    actualSales: 'Actual Sales',
-    targetSales: 'Target',
+    salesPerformance: 'Budget Performance',
+    monthlyComparison: 'Cumulative budget allocation vs approved',
+    noChartData: 'No budget data available for chart',
+    actualSales: 'Total Budget',
+    targetSales: 'Approved',
     totalRevenue: 'Total Revenue',
     monthlyGrowth: 'Monthly Growth',
     bestMonth: 'Best Month',
@@ -330,6 +344,12 @@ const en = {
     failedToLoadBudgets: 'Failed to load budgets. Please check your connection and try again.',
     selectBrand: 'Select Brand',
     categoryBreakdown: 'Category Breakdown',
+    archive: 'Archive',
+    archiving: 'Archiving...',
+    archiveSuccess: 'Budget archived successfully',
+    archiveFailed: 'Failed to archive budget',
+    confirmArchive: 'Confirm Archive',
+    archiveWarning: 'Are you sure you want to archive this budget? Archived budgets will no longer appear in active views.',
   },
 
   // ──────────────────────────────────────────────
@@ -459,6 +479,9 @@ const en = {
     exportExcel: 'Export Excel',
     exportSuccess: 'Exported successfully',
     pastedValues: 'Pasted {{count}} values',
+    // VAL-01 — Per-brand budget cap
+    brandBudgetCapWarning: 'Warning: {{brand}} allocation is {{pct}}% of total budget, exceeding the {{cap}}% recommended cap',
+    brandBudgetCapError: 'Store allocation exceeds budget cap: {{brand}} is allocated {{pct}}% of total budget (max {{cap}}%)',
     // Phase 3 — Connection
     connected: 'Connected',
     connecting: 'Connecting...',
@@ -502,6 +525,24 @@ const en = {
     clearAll: 'Clear All',
     same: 'Same',
     different: 'Different',
+    // Brand comparison
+    compareBrands: 'Compare Brands',
+    brandComparison: 'Brand Comparison',
+    selectBrandsToCompare: 'Select 2-3 brands to compare',
+    brand: 'Brand',
+    brands: 'Brands',
+    selectBrands: 'Select brands',
+    brandsSelected: 'brand(s) selected',
+    maxBrands: 'Maximum 3 brands can be compared',
+    budgetAmount: 'Budget Amount',
+    allocationPct: 'Allocation %',
+    categoryBreakdown: 'Category Breakdown',
+    noDataForBrand: 'No data available for this brand',
+    noBrandsAvailable: 'No brands available',
+    comparisonMetrics: 'Comparison Metrics',
+    totalAllocated: 'Total Allocated',
+    avgAllocation: 'Avg Allocation',
+    brandOverview: 'Brand Overview',
   },
 
   // ──────────────────────────────────────────────
@@ -537,6 +578,8 @@ const en = {
     remainingBudget: 'Remaining Budget',
     totalBudgetLabel: 'Total Budget',
     saveProposal: 'Save Proposal',
+    confirmBulkDelete: 'Remove {{count}} selected SKUs from this proposal?',
+    skusRemoved: 'SKUs removed',
   },
 
   // ──────────────────────────────────────────────
@@ -576,6 +619,10 @@ const en = {
     hideSizing: 'Hide sizing',
     planningVersions: 'Planning Versions',
     totalPlanned: 'Total Planned',
+    export: 'Export',
+    exportCSV: 'Export CSV',
+    noDataToExport: 'No data to export',
+    exportedSkus: 'Exported {count} SKUs',
   },
 
   // ──────────────────────────────────────────────
@@ -721,6 +768,8 @@ const en = {
     notificationPreferences: 'Notification Preferences',
     manageNotifications: 'Manage email and push notifications',
     joined: 'Joined {{date}}',
+    savedSuccessfully: 'Profile saved successfully',
+    saveFailed: 'Failed to save profile',
   },
 
   // ──────────────────────────────────────────────
@@ -908,6 +957,14 @@ const en = {
     confirmReject: 'Confirm Rejection',
     commentOptional: 'Comment (Optional)',
     commentPlaceholder: 'Add a comment about your decision...',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    itemsSelected: 'item(s) selected',
+    approveSelected: 'Approve Selected',
+    rejectSelected: 'Reject Selected',
+    itemsProcessed: 'item(s) processed successfully',
+    itemsFailed: 'item(s) failed to process',
+    allFailed: 'All items failed to process',
   },
 
   // ──────────────────────────────────────────────
@@ -944,6 +1001,15 @@ const en = {
     confirmOrder: 'Confirm Order',
     cancelOrder: 'Cancel Order',
     cancelWarning: 'This action cannot be undone. The order will be permanently cancelled.',
+    orderConfirmed: 'Order confirmed successfully',
+    orderCancelled: 'Order cancelled',
+    confirmFailed: 'Failed to confirm',
+    cancelFailed: 'Failed to cancel',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    itemsSelected: 'order(s) selected',
+    confirmSelected: 'Confirm Selected',
+    itemsConfirmed: 'order(s) confirmed successfully',
   },
 
   // ──────────────────────────────────────────────

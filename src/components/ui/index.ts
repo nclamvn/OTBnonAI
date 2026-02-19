@@ -17,3 +17,5 @@ export { default as CurrencyInput } from './CurrencyInput';
 export { default as TableSkeleton } from './TableSkeleton';
 export { default as FilterSelect } from './FilterSelect';
 export { default as ErrorBoundary } from './ErrorBoundary';
+export { default as Breadcrumbs } from './Breadcrumbs';
+export { default as PrintButton } from './PrintButton';

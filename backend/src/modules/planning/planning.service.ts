@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditLogService } from '../../common/services/audit-log.service';
 import { PlanningStatus, ApprovalAction, Prisma } from '@prisma/client';
 import { CreatePlanningDto, UpdatePlanningDto, UpdateDetailDto, ApprovalDecisionDto } from './dto/planning.dto';
 
@@ -13,7 +14,7 @@ interface PlanningFilters {
 
 @Injectable()
 export class PlanningService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private auditLog: AuditLogService) {}
 
   // ─── LIST ────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ export class PlanningService {
               budget: { include: { groupBrand: true } },
             },
           },
-          createdBy: { select: { id: true, name: true, email: true } },
+          createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
           _count: { select: { details: true } },
         },
         skip: (page - 1) * pageSize,
@@ -77,7 +78,7 @@ export class PlanningService {
             budget: { include: { groupBrand: true } },
           },
         },
-        createdBy: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
         details: {
           include: {
             collection: true,
@@ -137,11 +138,26 @@ export class PlanningService {
 
     // R-PLN-02: Calculate OTB values based on budget and percentages
     const budgetAmount = Number(budgetDetail.budgetAmount);
+    // VAL-04: variancePct = absolute difference between user buy % and reference buy %
+    // Positive = user allocated more than reference; Negative = less than reference
     const detailsWithOtb = dto.details.map(d => ({
       ...d,
       otbValue: budgetAmount * d.userBuyPct,
       variancePct: d.userBuyPct - d.systemBuyPct,
     }));
+
+    // VAL-02: Service-level percentage range validation (supplements DTO @Min/@Max)
+    for (const d of dto.details) {
+      if (d.userBuyPct < 0 || d.userBuyPct > 1) {
+        throw new BadRequestException(`userBuyPct must be between 0 and 1. Got: ${d.userBuyPct}`);
+      }
+      if (d.systemBuyPct < 0 || d.systemBuyPct > 1) {
+        throw new BadRequestException(`systemBuyPct must be between 0 and 1. Got: ${d.systemBuyPct}`);
+      }
+      if (d.lastSeasonPct < 0 || d.lastSeasonPct > 1) {
+        throw new BadRequestException(`lastSeasonPct must be between 0 and 1. Got: ${d.lastSeasonPct}`);
+      }
+    }
 
     // R-PLN-03: Total userBuyPct should equal 1 (100%)
     const totalPct = dto.details.reduce((sum, d) => sum + d.userBuyPct, 0);
@@ -149,7 +165,7 @@ export class PlanningService {
       throw new BadRequestException(`Total allocation percentage must equal 100%. Current: ${(totalPct * 100).toFixed(2)}%`);
     }
 
-    return this.prisma.planningVersion.create({
+    const result = await this.prisma.planningVersion.create({
       data: {
         planningCode,
         budgetDetailId: dto.budgetDetailId,
@@ -178,6 +194,10 @@ export class PlanningService {
         details: true,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: result.id, action: 'create', changes: { planningCode, budgetDetailId: dto.budgetDetailId, versionNumber, versionName: dto.versionName || `Version ${versionNumber}`, detailCount: detailsWithOtb.length } });
+
+    return result;
   }
 
   // ─── UPDATE ──────────────────────────────────────────────────────────────
@@ -228,7 +248,7 @@ export class PlanningService {
       });
     }
 
-    return this.prisma.planningVersion.update({
+    const result = await this.prisma.planningVersion.update({
       where: { id },
       data: updateData,
       include: {
@@ -236,6 +256,10 @@ export class PlanningService {
         details: true,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: 'update', changes: { versionName: dto.versionName, detailCount: dto.details?.length } });
+
+    return result;
   }
 
   // ─── UPDATE SINGLE DETAIL ────────────────────────────────────────────────
@@ -268,15 +292,26 @@ export class PlanningService {
 
     const budgetAmount = Number(planning.budgetDetail.budgetAmount);
 
-    return this.prisma.planningDetail.update({
-      where: { id: detailId },
-      data: {
-        userBuyPct: dto.userBuyPct,
-        otbValue: budgetAmount * dto.userBuyPct,
-        variancePct: dto.userBuyPct - Number(detail.systemBuyPct),
-        userComment: dto.userComment,
-      },
+    // BIZ-09: Wrap in transaction to prevent concurrent allocation race condition
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Re-read detail inside transaction for consistency
+      const currentDetail = await tx.planningDetail.findUnique({ where: { id: detailId } });
+      if (!currentDetail) throw new NotFoundException('Planning detail not found');
+
+      return tx.planningDetail.update({
+        where: { id: detailId },
+        data: {
+          userBuyPct: dto.userBuyPct,
+          otbValue: budgetAmount * dto.userBuyPct,
+          variancePct: dto.userBuyPct - Number(currentDetail.systemBuyPct),
+          userComment: dto.userComment,
+        },
+      });
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: planningId, action: 'update_detail', changes: { detailId, userBuyPct: dto.userBuyPct, userComment: dto.userComment } });
+
+    return result;
   }
 
   // ─── SUBMIT ──────────────────────────────────────────────────────────────
@@ -304,13 +339,17 @@ export class PlanningService {
       details: planning.details,
     };
 
-    return this.prisma.planningVersion.update({
+    const result = await this.prisma.planningVersion.update({
       where: { id },
       data: {
         status: PlanningStatus.SUBMITTED,
         snapshotData,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: 'submit', changes: { previousStatus: planning.status, newStatus: PlanningStatus.SUBMITTED } });
+
+    return result;
   }
 
   // ─── APPROVE LEVEL 1 ─────────────────────────────────────────────────────
@@ -333,7 +372,7 @@ export class PlanningService {
       : PlanningStatus.REJECTED;
 
     // BIZ-06: Atomic approval
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const current = await tx.planningVersion.findUnique({ where: { id } });
       if (current?.status !== PlanningStatus.SUBMITTED) {
         throw new BadRequestException('Planning already processed by another approver');
@@ -356,6 +395,10 @@ export class PlanningService {
         include: { budgetDetail: { include: { store: true } } },
       });
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l1' : 'reject_l1', changes: { previousStatus: PlanningStatus.SUBMITTED, newStatus, comment: dto.comment } });
+
+    return result;
   }
 
   // ─── APPROVE LEVEL 2 ─────────────────────────────────────────────────────
@@ -378,7 +421,7 @@ export class PlanningService {
       : PlanningStatus.REJECTED;
 
     // BIZ-06: Atomic approval
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const current = await tx.planningVersion.findUnique({ where: { id } });
       if (current?.status !== PlanningStatus.LEVEL1_APPROVED) {
         throw new BadRequestException('Planning already processed by another approver');
@@ -401,6 +444,10 @@ export class PlanningService {
         include: { budgetDetail: { include: { store: true } } },
       });
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l2' : 'reject_l2', changes: { previousStatus: PlanningStatus.LEVEL1_APPROVED, newStatus, comment: dto.comment } });
+
+    return result;
   }
 
   // ─── RESET TO DRAFT ────────────────────────────────────────────────────
@@ -424,11 +471,15 @@ export class PlanningService {
       },
     });
 
-    return this.prisma.planningVersion.update({
+    const result = await this.prisma.planningVersion.update({
       where: { id },
       data: { status: PlanningStatus.DRAFT },
       include: { budgetDetail: { include: { store: true } } },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: 'reset_to_draft', changes: { previousStatus: PlanningStatus.REJECTED, newStatus: PlanningStatus.DRAFT } });
+
+    return result;
   }
 
   // ─── MARK AS FINAL ───────────────────────────────────────────────────────
@@ -455,11 +506,15 @@ export class PlanningService {
       data: { isFinal: false },
     });
 
-    return this.prisma.planningVersion.update({
+    const result = await this.prisma.planningVersion.update({
       where: { id },
       data: { isFinal: true },
       include: { budgetDetail: { include: { store: true } } },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: 'mark_final', changes: { budgetDetailId: planning.budgetDetailId } });
+
+    return result;
   }
 
   // ─── CREATE NEW VERSION FROM EXISTING ────────────────────────────────────
@@ -481,7 +536,7 @@ export class PlanningService {
 
     const planningCode = `PLN-${source.budgetDetail.budget.budgetCode}-${source.budgetDetail.store.code}-V${versionNumber}`;
 
-    return this.prisma.planningVersion.create({
+    const result = await this.prisma.planningVersion.create({
       data: {
         planningCode,
         budgetDetailId: source.budgetDetailId,
@@ -510,11 +565,15 @@ export class PlanningService {
         details: true,
       },
     });
+
+    this.auditLog.log({ userId, entityType: 'planning', entityId: result.id, action: 'copy', changes: { sourceId, sourceVersion: source.versionNumber, newVersion: versionNumber, planningCode } });
+
+    return result;
   }
 
   // ─── DELETE ──────────────────────────────────────────────────────────────
 
-  async remove(id: string) {
+  async remove(id: string, userId?: string) {
     const planning = await this.prisma.planningVersion.findUnique({
       where: { id },
       include: { proposals: true },
@@ -530,6 +589,10 @@ export class PlanningService {
       throw new ForbiddenException('Cannot delete planning with linked proposals');
     }
 
-    return this.prisma.planningVersion.delete({ where: { id } });
+    const result = await this.prisma.planningVersion.delete({ where: { id } });
+
+    if (userId) this.auditLog.log({ userId, entityType: 'planning', entityId: id, action: 'delete', changes: { planningCode: planning.planningCode, versionNumber: planning.versionNumber } });
+
+    return result;
   }
 }

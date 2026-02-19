@@ -46,6 +46,8 @@ const vi = {
     irreversible: 'Hành động này không thể hoàn tác',
     confirmDelete: 'Bạn có chắc chắn muốn xóa mục này?',
     required: '*',
+    selected: 'đã chọn',
+    print: 'In',
     viewDetails: 'Xem chi tiết',
     chartsComingSoon: 'Biểu đồ sắp ra mắt',
     entryPointSidebar: 'Điểm vào: Thanh bên',
@@ -53,6 +55,12 @@ const vi = {
     gender: 'Giới tính',
     category: 'Danh mục',
     subCategories: 'Danh mục phụ',
+    // Breadcrumb labels
+    breadcrumbBudget: 'Quản lý ngân sách',
+    breadcrumbBudgetAllocation: 'Phân bổ ngân sách',
+    breadcrumbPlanning: 'Kế hoạch',
+    breadcrumbProposals: 'Đề xuất',
+    breadcrumbTickets: 'Phiếu yêu cầu',
   },
 
   // ──────────────────────────────────────────────
@@ -123,6 +131,11 @@ const vi = {
     kpiSettings: 'Cài đặt',
     kpiAppSettings: 'Cài đặt ứng dụng',
     notifications: 'Thông báo',
+    searchCategoryScreens: 'Màn hình',
+    searchCategoryBudgets: 'Ngân sách',
+    searchCategoryProposals: 'Đề xuất',
+    searchNoResults: 'Không tìm thấy kết quả',
+    searchTyping: 'Nhập 3+ ký tự để tìm kiếm dữ liệu...',
   },
 
   // ──────────────────────────────────────────────
@@ -211,10 +224,11 @@ const vi = {
     itemsAwaitingReview: 'Mục chờ xem xét',
     activePlans: 'Kế hoạch đang hoạt động',
     otbPlansInProgress: 'Kế hoạch OTB đang thực hiện',
-    salesPerformance: 'Hiệu suất bán hàng',
-    monthlyComparison: 'So sánh doanh số hàng tháng với mục tiêu',
-    actualSales: 'Doanh số thực tế',
-    targetSales: 'Mục tiêu',
+    salesPerformance: 'Hiệu suất ngân sách',
+    monthlyComparison: 'Phân bổ ngân sách lũy kế so với phê duyệt',
+    noChartData: 'Không có dữ liệu ngân sách để hiển thị biểu đồ',
+    actualSales: 'Tổng ngân sách',
+    targetSales: 'Đã phê duyệt',
     totalRevenue: 'Tổng doanh thu',
     monthlyGrowth: 'Tăng trưởng tháng',
     bestMonth: 'Tháng tốt nhất',
@@ -330,6 +344,12 @@ const vi = {
     failedToLoadBudgets: 'Tải ngân sách thất bại. Vui lòng kiểm tra kết nối và thử lại.',
     selectBrand: 'Chọn thương hiệu',
     categoryBreakdown: 'Phân tích theo danh mục',
+    archive: 'Lưu trữ',
+    archiving: 'Đang lưu trữ...',
+    archiveSuccess: 'Đã lưu trữ ngân sách thành công',
+    archiveFailed: 'Lưu trữ ngân sách thất bại',
+    confirmArchive: 'Xác nhận lưu trữ',
+    archiveWarning: 'Bạn có chắc chắn muốn lưu trữ ngân sách này? Ngân sách đã lưu trữ sẽ không còn hiển thị trong danh sách hoạt động.',
   },
 
   // ──────────────────────────────────────────────
@@ -459,6 +479,9 @@ const vi = {
     exportExcel: 'Xuất Excel',
     exportSuccess: 'Xuất thành công',
     pastedValues: 'Đã dán {{count}} giá trị',
+    // VAL-01 — Per-brand budget cap
+    brandBudgetCapWarning: 'Cảnh báo: Phân bổ {{brand}} chiếm {{pct}}% tổng ngân sách, vượt quá giới hạn khuyến nghị {{cap}}%',
+    brandBudgetCapError: 'Phân bổ cửa hàng vượt giới hạn: {{brand}} chiếm {{pct}}% tổng ngân sách (tối đa {{cap}}%)',
     // Phase 3 — Connection
     connected: 'Đã kết nối',
     connecting: 'Đang kết nối...',
@@ -502,6 +525,24 @@ const vi = {
     clearAll: 'Xóa tất cả',
     same: 'Cùng loại',
     different: 'Khác loại',
+    // Brand comparison
+    compareBrands: 'So sánh thương hiệu',
+    brandComparison: 'So sánh thương hiệu',
+    selectBrandsToCompare: 'Chọn 2-3 thương hiệu để so sánh',
+    brand: 'Thương hiệu',
+    brands: 'Thương hiệu',
+    selectBrands: 'Chọn thương hiệu',
+    brandsSelected: 'thương hiệu đã chọn',
+    maxBrands: 'Tối đa 3 thương hiệu có thể so sánh',
+    budgetAmount: 'Số tiền ngân sách',
+    allocationPct: '% Phân bổ',
+    categoryBreakdown: 'Phân tích theo danh mục',
+    noDataForBrand: 'Không có dữ liệu cho thương hiệu này',
+    noBrandsAvailable: 'Không có thương hiệu',
+    comparisonMetrics: 'Chỉ số so sánh',
+    totalAllocated: 'Tổng phân bổ',
+    avgAllocation: 'Phân bổ trung bình',
+    brandOverview: 'Tổng quan thương hiệu',
   },
 
   // ──────────────────────────────────────────────
@@ -537,6 +578,8 @@ const vi = {
     remainingBudget: 'Ngân sách còn lại',
     totalBudgetLabel: 'Tổng ngân sách',
     saveProposal: 'Lưu đề xuất',
+    confirmBulkDelete: 'Xóa {{count}} SKU đã chọn khỏi đề xuất này?',
+    skusRemoved: 'SKU đã xóa',
   },
 
   // ──────────────────────────────────────────────
@@ -576,6 +619,10 @@ const vi = {
     hideSizing: 'Ẩn kích cỡ',
     planningVersions: 'Phiên bản kế hoạch',
     totalPlanned: 'Tổng kế hoạch',
+    export: 'Xuất',
+    exportCSV: 'Xuất CSV',
+    noDataToExport: 'Không có dữ liệu để xuất',
+    exportedSkus: 'Đã xuất {count} SKU',
   },
 
   // ──────────────────────────────────────────────
@@ -721,6 +768,8 @@ const vi = {
     notificationPreferences: 'Tùy chọn thông báo',
     manageNotifications: 'Quản lý thông báo email và đẩy',
     joined: 'Tham gia {{date}}',
+    savedSuccessfully: 'Đã lưu hồ sơ thành công',
+    saveFailed: 'Lưu hồ sơ thất bại',
   },
 
   // ──────────────────────────────────────────────
@@ -908,6 +957,14 @@ const vi = {
     confirmReject: 'Xác nhận từ chối',
     commentOptional: 'Nhận xét (Tùy chọn)',
     commentPlaceholder: 'Thêm nhận xét về quyết định của bạn...',
+    selectAll: 'Chọn tất cả',
+    deselectAll: 'Bỏ chọn tất cả',
+    itemsSelected: 'mục đã chọn',
+    approveSelected: 'Duyệt đã chọn',
+    rejectSelected: 'Từ chối đã chọn',
+    itemsProcessed: 'mục đã xử lý thành công',
+    itemsFailed: 'mục xử lý thất bại',
+    allFailed: 'Tất cả mục xử lý thất bại',
   },
 
   // ──────────────────────────────────────────────
@@ -944,6 +1001,15 @@ const vi = {
     confirmOrder: 'Xác nhận đơn hàng',
     cancelOrder: 'Hủy đơn hàng',
     cancelWarning: 'Hành động này không thể hoàn tác. Đơn hàng sẽ bị hủy vĩnh viễn.',
+    orderConfirmed: 'Xác nhận đơn hàng thành công',
+    orderCancelled: 'Đã hủy đơn hàng',
+    confirmFailed: 'Xác nhận thất bại',
+    cancelFailed: 'Hủy thất bại',
+    selectAll: 'Chọn tất cả',
+    deselectAll: 'Bỏ chọn tất cả',
+    itemsSelected: 'đơn hàng đã chọn',
+    confirmSelected: 'Xác nhận đã chọn',
+    itemsConfirmed: 'đơn hàng xác nhận thành công',
   },
 
   // ──────────────────────────────────────────────

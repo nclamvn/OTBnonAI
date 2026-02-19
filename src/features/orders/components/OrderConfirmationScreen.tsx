@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Fragment } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
 import {
   ShoppingCart, CheckCircle, Clock, Loader2, Package,
   Search, ChevronDown, ChevronRight, X, AlertTriangle, FileText,
   DollarSign, Truck, XCircle, Eye, Ruler, Store, Image as ImageIcon,
-  ArrowRight, RefreshCw, Filter, BarChart3
+  ArrowRight, RefreshCw, Filter, BarChart3, Square, CheckSquare, MinusSquare
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { proposalService, orderService } from '@/services';
@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/utils';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { PullToRefresh } from '@/components/mobile';
 
 /* ═══════════════════════════════════════════════
    STATUS CONFIG
@@ -309,6 +310,9 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
   const [confirmModal, setConfirmModal] = useState<any>(null);
   const [processing, setProcessing] = useState<boolean>(false);
   const [expandedOrderId, setExpandedOrderId] = useState<any>(null);
+  // UX-25: Bulk confirm state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState(false);
 
   // Remove parent scroll container padding so sticky toolbar is flush with header
   useEffect(() => {
@@ -421,6 +425,42 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     return { total, pending, confirmed, shipped, cancelled, totalValue, confirmedValue, pendingValue };
   }, [orders]);
 
+  // UX-25: Bulk confirm helpers
+  const pendingFiltered = useMemo(() => filtered.filter((o: any) => o.status === 'PENDING'), [filtered]);
+
+  useEffect(() => { setSelectedIds(new Set()); }, [statusFilter, searchTerm, orders]);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === pendingFiltered.length && pendingFiltered.length > 0) return new Set();
+      return new Set(pendingFiltered.map((o: any) => o.id));
+    });
+  }, [pendingFiltered]);
+
+  const handleBulkConfirm = useCallback(async () => {
+    if (selectedIds.size === 0) return;
+    setBulkProcessing(true);
+    let ok = 0, fail = 0;
+    for (const id of selectedIds) {
+      try { await orderService.confirmOrder(id); ok++; } catch { fail++; }
+    }
+    setBulkProcessing(false);
+    setSelectedIds(new Set());
+    invalidateCache('/orders');
+    invalidateCache('/proposals');
+    if (ok > 0) toast.success(`${ok} ${t('orderConfirm.itemsConfirmed')}`);
+    if (fail > 0) toast.error(`${fail} ${t('orderConfirm.confirmFailed')}`);
+    fetchOrders();
+  }, [selectedIds, t]);
+
   const border = darkMode ? 'border-[#2E2E2E]' : 'border-gray-200';
   const textPrimary = darkMode ? 'text-[#F2F2F2]' : 'text-gray-900';
   const textSecondary = darkMode ? 'text-[#999999]' : 'text-gray-600';
@@ -526,6 +566,33 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
             )}
           </div>
 
+          {/* UX-25: Bulk action toolbar */}
+          {selectedIds.size > 0 && (
+            <div className={`px-4 py-2 flex items-center gap-2 border-b ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'}`}>
+              <span className={`text-xs font-semibold font-['Montserrat'] ${textPrimary}`}>
+                {selectedIds.size} {t('orderConfirm.itemsSelected')}
+              </span>
+              <div className="flex items-center gap-2 ml-auto">
+                <button
+                  disabled={bulkProcessing}
+                  onClick={handleBulkConfirm}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] text-white bg-[#2A9E6A] hover:bg-[#238c5c] transition-colors disabled:opacity-50"
+                >
+                  {bulkProcessing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
+                  {t('orderConfirm.confirmSelected')}
+                </button>
+                <button
+                  disabled={bulkProcessing}
+                  onClick={() => setSelectedIds(new Set())}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] ${darkMode ? 'text-[#999999] hover:bg-[#2E2E2E]' : 'text-gray-600 hover:bg-gray-100'} disabled:opacity-50`}
+                >
+                  <X size={13} />
+                  {t('orderConfirm.deselectAll')}
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20">
               <Loader2 size={28} className={`animate-spin ${darkMode ? 'text-[#D7B797]' : 'text-[#8B6914]'}`} />
@@ -551,7 +618,18 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
             </div>
           ) : isMobile ? (
             /* ── Mobile Cards ── */
+            <PullToRefresh onRefresh={fetchOrders}>
             <div className="p-3 space-y-2">
+              {pendingFiltered.length > 0 && (
+                <button onClick={toggleSelectAll} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                  {selectedIds.size === pendingFiltered.length && pendingFiltered.length > 0
+                    ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                    : selectedIds.size > 0
+                      ? <MinusSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                      : <Square size={16} />}
+                  {t('orderConfirm.selectAll')}
+                </button>
+              )}
               {filtered.map((order: any, idx: any) => {
                 const sc = ORDER_STATUS[order.status] || ORDER_STATUS.PENDING;
                 const StatusIcon = sc.icon;
@@ -621,6 +699,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
                 );
               })}
             </div>
+            </PullToRefresh>
           ) : (
             /* ── Desktop Table ── */
             <div className="overflow-x-auto">

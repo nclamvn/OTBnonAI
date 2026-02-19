@@ -34,9 +34,11 @@ export const budgetService = {
   },
 
   // Get budget statistics
-  async getStatistics() {
+  async getStatistics(filters?: { fiscalYear?: number }) {
     try {
-      const response = await api.get('/budgets/statistics');
+      const params: Record<string, any> = {};
+      if (filters?.fiscalYear) params.fiscalYear = filters.fiscalYear;
+      const response = await api.get('/budgets/statistics', { params });
       return extract(response);
     } catch (err: any) {
       console.error('[budgetService.getStatistics]', err?.response?.status, err?.message);
@@ -90,6 +92,17 @@ export const budgetService = {
       return response.data;
     } catch (err: any) {
       console.error('[budgetService.delete]', id, err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Archive budget (APPROVED only)
+  async archive(id: string) {
+    try {
+      const response = await api.patch(`/budgets/${id}/archive`);
+      return extract(response);
+    } catch (err: any) {
+      console.error('[budgetService.archive]', id, err?.response?.status, err?.message);
       throw err;
     }
   }

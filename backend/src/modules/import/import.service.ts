@@ -227,6 +227,181 @@ export class ImportService {
     return result.count;
   }
 
+  // ─── BIZ-05: ETL APPLY — Transform imported_records into transactional tables ──
+
+  async applyImportedData(target: ImportTargetEnum, sessionId?: string) {
+    const where: any = { target: target as any };
+    if (sessionId) where.sessionId = sessionId;
+
+    const records = await this.prisma.importedRecord.findMany({ where });
+    if (records.length === 0) {
+      return { applied: 0, skipped: 0, errors: 0, errorDetails: [], message: 'No records to apply' };
+    }
+
+    const result = { applied: 0, skipped: 0, errors: 0, errorDetails: [] as Array<{ id: string; error: string }> };
+
+    switch (target) {
+      case ImportTargetEnum.PRODUCTS:
+        for (const record of records) {
+          try {
+            const data = record.data as Record<string, any>;
+            const skuCode = data.skuCode || data.sku_code || data.SKU || data.sku;
+            if (!skuCode) { result.skipped++; continue; }
+
+            const productName = data.productName || data.product_name || data.name || data.NAME || skuCode;
+            const productType = data.productType || data.product_type || data.type || '';
+            const srp = Number(data.srp || data.SRP || data.price || data.retail_price || 0);
+            const costPrice = Number(data.costPrice || data.cost_price || data.cost || 0) || (srp > 0 ? Math.round(srp * 0.4) : null);
+
+            await this.prisma.skuCatalog.upsert({
+              where: { skuCode: String(skuCode) },
+              update: {
+                productName,
+                productType,
+                theme: data.theme || data.THEME || undefined,
+                color: data.color || data.COLOR || undefined,
+                composition: data.composition || data.COMPOSITION || undefined,
+                srp: srp > 0 ? srp : undefined,
+                costPrice: costPrice && costPrice > 0 ? costPrice : undefined,
+                seasonGroupId: data.seasonGroupId || data.season || undefined,
+                imageUrl: data.imageUrl || data.image_url || undefined,
+              },
+              create: {
+                skuCode: String(skuCode),
+                productName,
+                productType,
+                theme: data.theme || data.THEME || null,
+                color: data.color || data.COLOR || null,
+                composition: data.composition || data.COMPOSITION || null,
+                srp: srp > 0 ? srp : 0,
+                costPrice: costPrice && costPrice > 0 ? costPrice : null,
+                seasonGroupId: data.seasonGroupId || data.season || null,
+                imageUrl: data.imageUrl || data.image_url || null,
+              },
+            });
+            result.applied++;
+          } catch (err) {
+            result.errors++;
+            result.errorDetails.push({ id: record.id, error: err instanceof Error ? err.message : String(err) });
+          }
+        }
+        break;
+
+      default:
+        return { applied: 0, skipped: 0, errors: 0, errorDetails: [], message: `ETL apply not yet implemented for target: ${target}` };
+    }
+
+    const msg = `Applied ${result.applied} records, skipped ${result.skipped}, errors ${result.errors}`;
+    this.logger.log(`ETL apply [${target}]: ${msg}`);
+    return { ...result, message: msg };
+  }
+
+  // ─── BIZ-14: WSSI SELL-THROUGH ANALYTICS ────────────────────────────────────
+
+  async getWssiAnalytics() {
+    const records = await this.prisma.importedRecord.findMany({
+      where: { target: 'wssi' as any },
+    });
+
+    if (records.length === 0) {
+      return {
+        totalRecords: 0,
+        totalReceivedQty: 0,
+        totalSoldQty: 0,
+        sellThroughRate: 0,
+        byCategory: [],
+        computedAt: new Date().toISOString(),
+      };
+    }
+
+    // Accumulate totals and group by category/subcategory
+    let totalReceivedQty = 0;
+    let totalSoldQty = 0;
+
+    const categoryMap = new Map<
+      string,
+      { category: string; subcategory: string; receivedQty: number; soldQty: number; recordCount: number }
+    >();
+
+    for (const record of records) {
+      const data = record.data as Record<string, any>;
+
+      // Extract received qty — handle multiple possible field names
+      const received = Number(
+        data.received_qty ?? data.receivedQty ?? data.received ?? data.RECEIVED_QTY ?? data.ReceivedQty ?? 0,
+      );
+
+      // Extract sold qty — handle multiple possible field names
+      const sold = Number(
+        data.sold_qty ?? data.soldQty ?? data.sold ?? data.SOLD_QTY ?? data.SoldQty ?? 0,
+      );
+
+      // Skip rows with no useful numeric data
+      if (isNaN(received) && isNaN(sold)) continue;
+
+      const safeReceived = isNaN(received) ? 0 : received;
+      const safeSold = isNaN(sold) ? 0 : sold;
+
+      totalReceivedQty += safeReceived;
+      totalSoldQty += safeSold;
+
+      // Group by category and subcategory
+      const category = String(
+        data.category ?? data.Category ?? data.CATEGORY ?? data.product_category ?? 'Uncategorized',
+      );
+      const subcategory = String(
+        data.subcategory ?? data.subCategory ?? data.sub_category ?? data.SubCategory ?? data.SUB_CATEGORY ?? '',
+      );
+
+      const groupKey = `${category}||${subcategory}`;
+
+      const existing = categoryMap.get(groupKey);
+      if (existing) {
+        existing.receivedQty += safeReceived;
+        existing.soldQty += safeSold;
+        existing.recordCount += 1;
+      } else {
+        categoryMap.set(groupKey, {
+          category,
+          subcategory: subcategory || 'N/A',
+          receivedQty: safeReceived,
+          soldQty: safeSold,
+          recordCount: 1,
+        });
+      }
+    }
+
+    // Compute sell-through rate per category group
+    const byCategory = Array.from(categoryMap.values()).map((group) => ({
+      category: group.category,
+      subcategory: group.subcategory,
+      receivedQty: group.receivedQty,
+      soldQty: group.soldQty,
+      sellThroughRate:
+        group.receivedQty > 0
+          ? Math.round((group.soldQty / group.receivedQty) * 10000) / 100
+          : 0,
+      recordCount: group.recordCount,
+    }));
+
+    // Sort by sell-through rate descending
+    byCategory.sort((a, b) => b.sellThroughRate - a.sellThroughRate);
+
+    const overallSellThroughRate =
+      totalReceivedQty > 0
+        ? Math.round((totalSoldQty / totalReceivedQty) * 10000) / 100
+        : 0;
+
+    return {
+      totalRecords: records.length,
+      totalReceivedQty,
+      totalSoldQty,
+      sellThroughRate: overallSellThroughRate,
+      byCategory,
+      computedAt: new Date().toISOString(),
+    };
+  }
+
   async getAllTargetStats() {
     const targets = Object.values(ImportTargetEnum);
     const stats: Array<{ target: string; totalRecords: number; lastImportAt: string | null; sessionCount: number; fieldCounts: Record<string, number> }> = [];

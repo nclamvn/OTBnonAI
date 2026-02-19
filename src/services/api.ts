@@ -99,6 +99,30 @@ api.interceptors.response.use(
       }
     }
 
+    // VAL-14: Auto-retry on network errors (GET only, max 2 retries)
+    if (
+      !error.response &&
+      (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') &&
+      originalRequest.method === 'get' &&
+      (originalRequest._retryCount || 0) < 2
+    ) {
+      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
+      // Wait 1s before retry (2s on 2nd retry)
+      await new Promise(r => setTimeout(r, originalRequest._retryCount * 1000));
+      return api(originalRequest);
+    }
+
+    // VAL-13: Extract user-friendly error message with fallback
+    if (error.response?.data?.message) {
+      error.userMessage = error.response.data.message;
+    } else if (error.code === 'ECONNABORTED') {
+      error.userMessage = 'Request timed out. Please try again.';
+    } else if (error.code === 'ERR_NETWORK') {
+      error.userMessage = 'Network error. Please check your connection.';
+    } else {
+      error.userMessage = 'An unexpected error occurred.';
+    }
+
     return Promise.reject(error);
   }
 );

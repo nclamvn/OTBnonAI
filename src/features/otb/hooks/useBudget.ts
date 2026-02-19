@@ -34,6 +34,7 @@ export const useBudget = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
+    const controller = new AbortController();
     const fetchMasterData = async () => {
       try {
         const [brandsRes, storesRes, seasonsRes] = await Promise.all([
@@ -41,6 +42,7 @@ export const useBudget = () => {
           masterDataService.getStores(),
           masterDataService.getSeasons(),
         ]);
+        if (controller.signal.aborted) return;
         setBrands(brandsRes || []);
         // Only show REX and TTP stores
         const allStores = storesRes || [];
@@ -51,11 +53,13 @@ export const useBudget = () => {
         setStores(filtered.length > 0 ? filtered : allStores.slice(0, 2));
         setSeasons(seasonsRes || []);
       } catch (err: any) {
+        if (err?.name === 'AbortError' || controller.signal.aborted) return;
         console.error('Failed to fetch master data:', err);
         toast.error('Không thể tải dữ liệu. Vui lòng thử lại.');
       }
     };
     fetchMasterData();
+    return () => controller.abort();
   }, [isAuthenticated]);
 
   // Fetch budgets when year changes
@@ -101,7 +105,17 @@ export const useBudget = () => {
   }, [selectedYear, isAuthenticated]);
 
   useEffect(() => {
-    fetchBudgets();
+    const controller = new AbortController();
+    const fetch = async () => {
+      try {
+        await fetchBudgets();
+      } catch (err: any) {
+        if (err?.name === 'AbortError' || controller.signal.aborted) return;
+        // Error already handled inside fetchBudgets
+      }
+    };
+    fetch();
+    return () => controller.abort();
   }, [fetchBudgets]);
 
   const getBudgetStatus = (brandId: string, seasonId: string) => {

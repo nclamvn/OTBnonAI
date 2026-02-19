@@ -889,6 +889,58 @@ button:active {
 .filter-select-scroll::-webkit-scrollbar-thumb { background: rgba(215,183,151,0.25); border-radius: 3px; }
 .filter-select-scroll::-webkit-scrollbar-thumb:hover { background: rgba(215,183,151,0.45); }
 
+/* ===== PRINT STYLES (UX-20) ===== */
+@media print {
+  /* Hide non-printable elements */
+  nav, aside, header, footer,
+  .no-print,
+  [data-no-print],
+  button:not(.print-include),
+  .mobile-bottom-nav,
+  .sidebar {
+    display: none !important;
+  }
+
+  /* Reset backgrounds for ink-saving */
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12px !important;
+  }
+
+  /* Make main content full-width */
+  main, .main-content, [role="main"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Tables print-friendly */
+  table { page-break-inside: auto; }
+  tr { page-break-inside: avoid; page-break-after: auto; }
+  thead { display: table-header-group; }
+
+  /* Cards/panels with border for readability */
+  .ind-card, .dafc-card, [class*="rounded-xl"] {
+    border: 1px solid #ccc !important;
+    background: white !important;
+    box-shadow: none !important;
+  }
+
+  /* Show URLs for links */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 10px;
+    color: #666;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 1.5cm;
+  }
+}
+
 /* ===== MOBILE-SPECIFIC STYLES ===== */
 @media (max-width: 767px) {
   button, a, input, select, textarea, [role="button"] { touch-action: manipulation; }

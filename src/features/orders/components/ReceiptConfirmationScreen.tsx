@@ -14,6 +14,7 @@ import { proposalService, orderService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { MobileDataCard } from '@/components/ui';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { PullToRefresh } from '@/components/mobile';
 
 /* ═══════════════════════════════════════════════
    STATUS CONFIG
@@ -469,6 +470,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
             <p className={`text-sm mt-1 ${textSecondary}`}>{t('receiptConfirm.noReceiptsDesc')}</p>
           </div>
         ) : isMobile ? (
+          <PullToRefresh onRefresh={fetchReceipts}>
           <div className="p-3 space-y-2">
             {filtered.map((receipt: any, idx: any) => {
               const sc = RECEIPT_STATUS[receipt.status] || RECEIPT_STATUS.PENDING;
@@ -499,6 +501,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
               );
             })}
           </div>
+          </PullToRefresh>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">

@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
-  Star, Layers, Check, LayoutGrid, List, SlidersHorizontal
+  Star, Layers, Check, LayoutGrid, List, SlidersHorizontal, Download
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
@@ -583,6 +583,64 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   // Card view available when there's data to show
   const canShowCardView = filteredSkuBlocks.length > 0 && filteredSkuBlocks.some((b: any) => b.items.length > 0);
 
+  // Export filtered SKU data to CSV
+  const handleExportCSV = useCallback(() => {
+    const rows = filteredSkuBlocks.flatMap((block: any) =>
+      block.items.map((item: any) => ({
+        skuCode: item.sku || '',
+        productName: item.name || '',
+        gender: block.gender || '',
+        category: block.category || '',
+        subCategory: block.subCategory || '',
+        size: item.size || '',
+        color: item.color || '',
+        srp: item.srp || 0,
+        orderQty: item.order || 0,
+        totalValue: item.ttlValue || 0,
+      }))
+    );
+
+    if (rows.length === 0) {
+      toast.error(t('skuProposal.noDataToExport') || 'No data to export');
+      return;
+    }
+
+    const headers = ['SKU Code', 'Product Name', 'Gender', 'Category', 'Sub-Category', 'Size', 'Color', 'SRP', 'Order Qty', 'Total Value'];
+
+    const escapeCSV = (val: any) => {
+      const str = String(val ?? '');
+      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+      }
+      return str;
+    };
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row: any) =>
+        [row.skuCode, row.productName, row.gender, row.category, row.subCategory, row.size, row.color, row.srp, row.orderQty, row.totalValue]
+          .map(escapeCSV)
+          .join(',')
+      )
+    ].join('\n');
+
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const filename = `DAFC_SKU_Proposal_${dateStr}.csv`;
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast.success(t('skuProposal.exportSuccess') || `Exported ${rows.length} SKUs to ${filename}`);
+  }, [filteredSkuBlocks, t]);
+
   const handleStartEdit = (cellKey: any, currentValue: any) => {
     setEditingCell(cellKey);
     setEditValue(currentValue?.toString() ?? '');
@@ -937,7 +995,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   {selectedSkuVersion?.isFinal && <Star size={14} className={darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'} />}
                   <span>{selectedSkuVersion?.name || t('common.version')}</span>
                   {selectedSkuVersion?.isFinal && (
-                    <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#D7B797] text-white'}`}>FINAL</span>
+                    <>
+                      <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#D7B797] text-white'}`}>FINAL</span>
+                      {/* UX-13: isFinal is local-only state, not persisted to backend */}
+                      <span className={`text-[9px] italic ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>(Local Only)</span>
+                    </>
                   )}
                   <ChevronDown size={14} className={`transition-transform ${isSkuVersionOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -1010,7 +1072,11 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                   {selectedSizingChoice?.isFinal && <Star size={14} className={darkMode ? 'text-[#D7B797] fill-[#D7B797]' : 'text-[#6B4D30] fill-[#6B4D30]'} />}
                   <span>{selectedSizingChoice?.name || t('skuProposal.sizing')}</span>
                   {selectedSizingChoice?.isFinal && (
-                    <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#D7B797] text-white'}`}>FINAL</span>
+                    <>
+                      <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#D7B797] text-white'}`}>FINAL</span>
+                      {/* UX-13: isFinal is local-only state, not persisted to backend */}
+                      <span className={`text-[9px] italic ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>(Local Only)</span>
+                    </>
                   )}
                   <ChevronDown size={14} className={`transition-transform ${isSizingVersionOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -1092,11 +1158,25 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             {/* Spacer */}
             <div className="flex-1" />
 
-            {/* SKU Count + View Mode Toggle */}
+            {/* SKU Count + Export + View Mode Toggle */}
             <div className="flex items-center gap-3">
               <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
                 {filteredSkuItems.length} SKUs
               </span>
+              {/* Export CSV Button */}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                title={t('skuProposal.exportCSV') || 'Export CSV'}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors border ${
+                  darkMode
+                    ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]'
+                    : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
+                }`}
+              >
+                <Download size={14} />
+                <span className="hidden sm:inline">{t('skuProposal.export') || 'Export'}</span>
+              </button>
               <div className={`flex items-center gap-1 rounded-lg p-0.5 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
                 <button
                   type="button"

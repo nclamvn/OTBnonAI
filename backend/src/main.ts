@@ -3,6 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { AppModule } from './app.module';
+import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,6 +32,9 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api/v1');
+
+  // Global exception filter for Prisma errors
+  app.useGlobalFilters(new PrismaExceptionFilter());
 
   // Validation pipe
   app.useGlobalPipes(

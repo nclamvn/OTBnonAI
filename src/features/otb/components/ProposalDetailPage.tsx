@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   ArrowLeft, Save, Plus, Trash2, Search,
   Package, DollarSign, ShoppingCart, Store, ChevronDown, ChevronRight,
-  Check, X, AlertCircle, Send, Hash, CheckCircle, XCircle
+  Check, X, AlertCircle, Send, Hash, CheckCircle, XCircle,
+  CheckSquare, Square, MinusSquare, History
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
 import { masterDataService, proposalService, budgetService, approvalService } from '@/services';
 import { invalidateCache } from '@/services/api';
@@ -13,13 +15,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
-import { ConfirmDialog } from '@/components/ui';
+import { useSessionRecoveryGeneric } from '../hooks/useSessionRecovery';
+import { ConfirmDialog, Breadcrumbs, PrintButton } from '@/components/ui';
 
 const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
   const { user } = useAuth();
   const { dialogProps, confirm } = useConfirmDialog();
+
+  // UX-21: Session recovery for SKU list state
+  const proposalRecovery = useSessionRecoveryGeneric<any[]>(
+    (entityId || proposal?.id) ? `proposal_${entityId || proposal?.id}` : null,
+    { countFields: (data) => (data || []).length },
+  );
 
   // Theme helpers
   const bg = darkMode ? 'bg-[#0A0A0A]' : 'bg-slate-100';
@@ -186,6 +195,29 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
 
+  // UX-18: Multi-select delete for SKUs
+  const [selectedSkuIds, setSelectedSkuIds] = useState<Set<string>>(new Set());
+
+  // UX-21: Auto-save skuList to session storage on changes
+  const skuListInitialised = React.useRef(false);
+  useEffect(() => {
+    // Skip the initial render (data from props)
+    if (!skuListInitialised.current) {
+      if (skuList.length > 0) skuListInitialised.current = true;
+      return;
+    }
+    proposalRecovery.saveDraft(skuList);
+  }, [skuList]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // UX-21: Recover draft SKU list
+  const handleRecoverProposalDraft = useCallback(() => {
+    const draft = proposalRecovery.recoverDraft();
+    if (draft && draft.length > 0) {
+      setSkuList(draft);
+      toast.success(t('planning.recoverData'));
+    }
+  }, [proposalRecovery, t]);
+
   // Calculate totals
   const calculateSkuTotals = (sku: any) => {
     const order = sku.stores.reduce((sum: any, s: any) => sum + s.quantity, 0);
@@ -228,10 +260,45 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
       message: t('common.confirmDelete'),
       confirmLabel: t('common.delete'),
       variant: 'danger',
-      onConfirm: () => setSkuList((prev: any) => prev.filter((s: any) => s.id !== skuId)),
+      onConfirm: () => {
+        setSkuList((prev: any) => prev.filter((s: any) => s.id !== skuId));
+        setSelectedSkuIds(prev => { const next = new Set(prev); next.delete(skuId); return next; });
+      },
     });
   };
-  
+
+  // UX-18: Multi-select delete handlers
+  const toggleSkuSelect = useCallback((id: string) => {
+    setSelectedSkuIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAllSkus = useCallback(() => {
+    if (selectedSkuIds.size === skuList.length) {
+      setSelectedSkuIds(new Set());
+    } else {
+      setSelectedSkuIds(new Set(skuList.map((s: any) => s.id)));
+    }
+  }, [selectedSkuIds.size, skuList]);
+
+  const handleBulkDeleteSkus = useCallback(() => {
+    if (selectedSkuIds.size === 0) return;
+    confirm({
+      title: t('common.delete'),
+      message: t('proposal.confirmBulkDelete', { count: selectedSkuIds.size }),
+      confirmLabel: t('common.delete'),
+      variant: 'danger',
+      onConfirm: () => {
+        setSkuList((prev: any) => prev.filter((s: any) => !selectedSkuIds.has(s.id)));
+        toast.success(`${selectedSkuIds.size} ${t('proposal.skusRemoved')}`);
+        setSelectedSkuIds(new Set());
+      },
+    });
+  }, [selectedSkuIds, t, confirm]);
+
 
   const handleAddStore = (skuId: any, storeId: any) => {
     setSkuList((prev: any) => prev.map((sku: any) => {
@@ -301,6 +368,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
         }
       }
       invalidateCache('/proposals');
+      proposalRecovery.clearDraft(); // UX-21: clear draft on successful save
       onSave && onSave({ ticketName, skuList, totals: grandTotals, savedProposal });
     } catch (err: any) {
       console.error('Failed to save proposal:', err);
@@ -314,6 +382,46 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
 
   return (
     <div className={`min-h-screen ${bg}`}>
+      {/* Breadcrumbs */}
+      <div className="px-3 md:px-6 pt-2">
+        <Breadcrumbs
+          darkMode={darkMode}
+          items={[
+            { label: t('common.breadcrumbProposals'), href: '/proposals' },
+            { label: ticketName || t('proposal.newProposal') },
+          ]}
+        />
+      </div>
+
+      {/* UX-21: Session recovery banner */}
+      {proposalRecovery.hasDraft && (
+        <div className={`mx-3 md:mx-6 mt-2 px-4 py-2.5 rounded-lg border flex items-center justify-between gap-3 ${darkMode ? 'bg-[rgba(215,183,151,0.12)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2]' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
+          <div className="flex items-center gap-2 text-sm">
+            <History size={16} className={darkMode ? 'text-[#D7B797]' : 'text-amber-600'} />
+            <span className="font-medium">{t('planning.recoveryTitle')}</span>
+            {proposalRecovery.draftInfo && (
+              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-amber-600'}`}>
+                {new Date(proposalRecovery.draftInfo.savedAt).toLocaleString('vi-VN')} — {proposalRecovery.draftInfo.changeCount} SKUs
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRecoverProposalDraft}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682]' : 'bg-amber-600 text-white hover:bg-amber-700'}`}
+            >
+              {t('planning.recoverData')}
+            </button>
+            <button
+              onClick={() => proposalRecovery.dismissDraft()}
+              className={`p-1 rounded transition-colors ${darkMode ? 'hover:bg-[#2E2E2E] text-[#999999]' : 'hover:bg-amber-100 text-amber-500'}`}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Compact Header */}
       <div className={`${cardBg} border-b ${borderColor} px-3 md:px-6 py-0.5 md:py-4 sticky top-0 z-50`}>
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -409,6 +517,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
               </>
             ) : (
               <>
+                <PrintButton darkMode={darkMode} />
                 <button onClick={handleSave} className={`flex items-center justify-center gap-2 px-4 py-0.5 rounded-lg text-sm font-medium transition-colors ${btnSecondary}`}>
                   <Save size={16} />
                   {t('common.save')}
@@ -435,14 +544,34 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
       <div className="p-3 md:p-6">
         {/* Toolbar */}
         <div className="flex flex-wrap items-center justify-between mb-4 gap-3">
-          <h2 className={`text-lg font-semibold ${textPrimary}`}>{t('proposal.skuCode')}</h2>
-          <button
-            onClick={() => setShowAddSkuModal(true)}
-            className={`flex items-center gap-2 px-4 py-0.5 rounded-lg text-sm font-medium transition-colors ${btnPrimary}`}
-          >
-            <Plus size={16} />
-            {t('proposal.addSku')}
-          </button>
+          <div className="flex items-center gap-3">
+            {skuList.length > 0 && (
+              <button onClick={toggleSelectAllSkus} className={`p-1 rounded transition-colors ${hoverBg}`}>
+                {selectedSkuIds.size === skuList.length ? <CheckSquare size={18} className={accentText} /> : selectedSkuIds.size > 0 ? <MinusSquare size={18} className={accentText} /> : <Square size={18} className={textMuted} />}
+              </button>
+            )}
+            <h2 className={`text-lg font-semibold ${textPrimary}`}>{t('proposal.skuCode')}</h2>
+            {selectedSkuIds.size > 0 && (
+              <span className={`text-xs px-2 py-0.5 rounded-full ${accentBg} ${accentText} font-semibold`}>
+                {selectedSkuIds.size} {t('common.selected')}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {selectedSkuIds.size > 0 && (
+              <button onClick={handleBulkDeleteSkus} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors">
+                <Trash2 size={14} />
+                {t('common.delete')} ({selectedSkuIds.size})
+              </button>
+            )}
+            <button
+              onClick={() => setShowAddSkuModal(true)}
+              className={`flex items-center gap-2 px-4 py-0.5 rounded-lg text-sm font-medium transition-colors ${btnPrimary}`}
+            >
+              <Plus size={16} />
+              {t('proposal.addSku')}
+            </button>
+          </div>
         </div>
 
         {/* SKU Table */}
@@ -464,6 +593,9 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
                 return (
                   <div key={sku.id} className="p-3">
                     <div className="flex items-start gap-3">
+                      <button onClick={() => toggleSkuSelect(sku.id)} className="mt-1 shrink-0">
+                        {selectedSkuIds.has(sku.id) ? <CheckSquare size={18} className={accentText} /> : <Square size={18} className={textMuted} />}
+                      </button>
                       <img
                         src={sku.imageUrl}
                         alt={sku.name}
@@ -602,6 +734,11 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
             <table className="w-full">
               <thead>
                 <tr className={`${headerGradient} border-b ${darkMode ? 'border-[rgba(215,183,151,0.2)]' : 'border-[rgba(160,120,75,0.25)]'}`}>
+                  <th className="w-8 px-2 py-0.5">
+                    <button onClick={toggleSelectAllSkus} className="p-0.5">
+                      {selectedSkuIds.size === skuList.length ? <CheckSquare size={16} className={accentText} /> : selectedSkuIds.size > 0 ? <MinusSquare size={16} className={accentText} /> : <Square size={16} className={textMuted} />}
+                    </button>
+                  </th>
                   <th className="w-10 px-3 py-0.5"></th>
                   <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.skuCode')}</th>
                   <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.productName')}</th>
@@ -623,6 +760,11 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
                   return (
                     <React.Fragment key={sku.id}>
                       <tr className={`border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-slate-100'} ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-slate-50'} ${isExpanded ? (darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-purple-50/50') : ''}`}>
+                        <td className="px-2 py-0.5">
+                          <button onClick={() => toggleSkuSelect(sku.id)} className="p-0.5">
+                            {selectedSkuIds.has(sku.id) ? <CheckSquare size={16} className={accentText} /> : <Square size={16} className={textMuted} />}
+                          </button>
+                        </td>
                         <td className="px-3 py-0.5">
                           <button
                             onClick={() => setExpandedSku(isExpanded ? null : sku.id)}

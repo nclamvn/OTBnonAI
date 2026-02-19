@@ -12,14 +12,36 @@ export class MasterDataController {
 
   @Get('brands')
   @ApiOperation({ summary: 'Get all active brands (replaces GROUP_BRANDS constant)' })
-  async getBrands() {
-    return { success: true, data: await this.masterDataService.getBrands() };
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
+  async getBrands(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const result = await this.masterDataService.getBrands(
+      page && limit ? { page, limit } : undefined,
+    );
+    if (page && limit) {
+      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
+    }
+    return { success: true, data: result };
   }
 
   @Get('stores')
   @ApiOperation({ summary: 'Get all active stores (replaces STORES constant)' })
-  async getStores() {
-    return { success: true, data: await this.masterDataService.getStores() };
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
+  async getStores(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const result = await this.masterDataService.getStores(
+      page && limit ? { page, limit } : undefined,
+    );
+    if (page && limit) {
+      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
+    }
+    return { success: true, data: result };
   }
 
   @Get('collections')
@@ -36,8 +58,19 @@ export class MasterDataController {
 
   @Get('categories')
   @ApiOperation({ summary: 'Get full category hierarchy: Gender → Category → SubCategory' })
-  async getCategories() {
-    return { success: true, data: await this.masterDataService.getCategories() };
+  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
+  async getCategories(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    const result = await this.masterDataService.getCategories(
+      page && limit ? { page, limit } : undefined,
+    );
+    if (page && limit) {
+      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
+    }
+    return { success: true, data: result };
   }
 
   @Get('seasons')

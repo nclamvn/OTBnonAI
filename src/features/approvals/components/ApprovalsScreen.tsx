@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   FileCheck, CheckCircle, XCircle, Clock, Loader2,
   Filter, Search, ChevronDown, Eye,
   X, AlertTriangle, Shield, ArrowUpRight,
-  Wallet, BarChart3, Package, ClipboardList
+  Wallet, BarChart3, Package, ClipboardList,
+  CheckSquare, Square, MinusSquare
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { approvalService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -65,6 +67,8 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const { isOpen: filterOpen, open: openFilterSheet, close: closeFilterSheet } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkProcessing, setBulkProcessing] = useState<boolean>(false);
 
   // Fetch pending approvals
   useEffect(() => {
@@ -85,6 +89,20 @@ const ApprovalsScreen = ({ darkMode }: any) => {
       setLoading(false);
     }
   };
+
+  // --- Bulk selection helpers ---
+  const getItemKey = (item: any) => `${item.entityType}:${item.entityId}`;
+
+  const toggleSelect = useCallback((key: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  const deselectAll = useCallback(() => setSelectedIds(new Set()), []);
 
   // Navigate to entity detail page
   const navigateToEntity = (item: any) => {
@@ -110,6 +128,62 @@ const ApprovalsScreen = ({ darkMode }: any) => {
       return true;
     });
   }, [items, entityFilter, levelFilter, searchTerm]);
+
+  // Clear selection when filters/data change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [entityFilter, levelFilter, searchTerm, items]);
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => {
+      if (prev.size === filtered.length && filtered.length > 0) {
+        return new Set();
+      }
+      return new Set(filtered.map(getItemKey));
+    });
+  }, [filtered]);
+
+  // Bulk approve/reject handler
+  const handleBulkAction = useCallback(async (action: 'approve' | 'reject') => {
+    if (selectedIds.size === 0) return;
+
+    const selectedItems = filtered.filter((item: any) => selectedIds.has(getItemKey(item)));
+    if (selectedItems.length === 0) return;
+
+    const actionLabel = action === 'approve' ? t('approvals.approve') : t('approvals.reject');
+    setBulkProcessing(true);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const item of selectedItems) {
+      try {
+        if (action === 'approve') {
+          await approvalService.approve(item.entityType, item.entityId, item.level);
+        } else {
+          await approvalService.reject(item.entityType, item.entityId, item.level);
+        }
+        successCount++;
+      } catch (err: any) {
+        failCount++;
+        console.error(`Failed to ${action} ${item.entityType} ${item.entityId}:`, err);
+      }
+    }
+
+    setBulkProcessing(false);
+    setSelectedIds(new Set());
+
+    if (successCount > 0 && failCount === 0) {
+      toast.success(`${actionLabel}: ${successCount} ${t('approvals.itemsProcessed')}`);
+    } else if (successCount > 0 && failCount > 0) {
+      toast.success(`${actionLabel}: ${successCount} ${t('approvals.itemsProcessed')}`);
+      toast.error(`${failCount} ${t('approvals.itemsFailed')}`);
+    } else {
+      toast.error(`${actionLabel}: ${t('approvals.allFailed')}`);
+    }
+
+    await fetchPendingApprovals();
+  }, [selectedIds, filtered, t]);
 
   // Stats
   const stats = useMemo(() => {
@@ -288,6 +362,41 @@ const ApprovalsScreen = ({ darkMode }: any) => {
         />
       </div>
 
+      {/* Bulk Action Toolbar */}
+      {selectedIds.size > 0 && (
+        <div className={`border ${border} rounded-xl px-3 py-2 mb-3 flex flex-wrap items-center gap-2 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-white'}`}>
+          <span className={`text-xs font-semibold font-['Montserrat'] ${textPrimary}`}>
+            {selectedIds.size} {t('approvals.itemsSelected')}
+          </span>
+          <div className="flex items-center gap-2 ml-auto">
+            <button
+              disabled={bulkProcessing}
+              onClick={() => handleBulkAction('approve')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] text-white bg-[#2A9E6A] hover:bg-[#238c5c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {bulkProcessing ? <Loader2 size={13} className="animate-spin" /> : <CheckCircle size={13} />}
+              {t('approvals.approveSelected')}
+            </button>
+            <button
+              disabled={bulkProcessing}
+              onClick={() => handleBulkAction('reject')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] text-white bg-[#F85149] hover:bg-[#e0443d] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {bulkProcessing ? <Loader2 size={13} className="animate-spin" /> : <XCircle size={13} />}
+              {t('approvals.rejectSelected')}
+            </button>
+            <button
+              disabled={bulkProcessing}
+              onClick={deselectAll}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${border} text-xs font-medium font-['Montserrat'] transition-colors ${darkMode ? 'text-[#999999] hover:bg-[#2E2E2E]' : 'text-gray-600 hover:bg-gray-100'} disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <X size={13} />
+              {t('approvals.deselectAll')}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className={`border ${border} rounded-xl overflow-hidden`} style={{
         background: darkMode
@@ -314,38 +423,74 @@ const ApprovalsScreen = ({ darkMode }: any) => {
             <p className={`text-sm mt-1 ${textSecondary}`}>{t('approvals.noPendingItems')}</p>
           </div>
         ) : isMobile ? (
-          /* Mobile List View with Swipe Actions */
+          /* Mobile Card View with Checkboxes */
           <PullToRefresh onRefresh={fetchPendingApprovals}>
-            <div className="p-2">
-              <MobileList
-                items={filtered.map((item: any, idx: any) => {
-                  const status = item.data?.status || 'SUBMITTED';
-                  const sc = STATUS_CONFIG[status] || STATUS_CONFIG.SUBMITTED;
-                  const { name, brand } = getItemDisplayInfo(item);
+            <div className="p-2 space-y-2">
+              {/* Mobile Select All */}
+              <button
+                onClick={toggleSelectAll}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}
+              >
+                {selectedIds.size === filtered.length && filtered.length > 0
+                  ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                  : selectedIds.size > 0
+                    ? <MinusSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                    : <Square size={16} />
+                }
+                {t('approvals.selectAll')}
+              </button>
 
-                  return {
-                    id: `${item.entityType}-${item.entityId}-${idx}`,
-                    avatar: item.entityType === 'budget' ? '💰' : item.entityType === 'planning' ? '📊' : '📦',
-                    title: name,
-                    subtitle: `${item.entityType.charAt(0).toUpperCase() + item.entityType.slice(1)} • ${brand}`,
-                    value: `L${item.level}`,
-                    status: {
-                      text: sc.label,
-                      variant: (sc.color === '#2A9E6A' ? 'success' : sc.color === '#F85149' ? 'error' : 'warning') as any,
-                    },
-                    details: [
-                      { label: t('approvals.colLevel'), value: `Level ${item.level}` },
-                      { label: t('approvals.colSubmitted'), value: item.submittedAt ? new Date(item.submittedAt).toLocaleDateString('vi-VN') : '-' },
-                    ],
-                  };
-                })}
-                onItemPress={(listItem) => {
-                  const idx = filtered.findIndex((_: any, i: any) => listItem.id.endsWith(`-${i}`));
-                  if (idx >= 0) navigateToEntity(filtered[idx]);
-                }}
-                expandable
-                emptyMessage={t('approvals.noPendingItems')}
-              />
+              {filtered.map((item: any, idx: any) => {
+                const status = item.data?.status || 'SUBMITTED';
+                const sc = STATUS_CONFIG[status] || STATUS_CONFIG.SUBMITTED;
+                const { name, brand } = getItemDisplayInfo(item);
+                const itemKey = getItemKey(item);
+                const isSelected = selectedIds.has(itemKey);
+
+                return (
+                  <div
+                    key={`${item.entityType}-${item.entityId}-${idx}`}
+                    className={`flex items-start gap-2 p-3 rounded-xl border ${border} transition-colors ${isSelected ? (darkMode ? 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]' : 'bg-[rgba(215,183,151,0.08)] border-[#6B4D30]') : (darkMode ? 'bg-[#1A1A1A]' : 'bg-white')}`}
+                  >
+                    {/* Checkbox */}
+                    <button onClick={() => toggleSelect(itemKey)} className="flex-shrink-0 mt-0.5">
+                      {isSelected
+                        ? <CheckSquare size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                        : <Square size={18} className={textMuted} />
+                      }
+                    </button>
+
+                    {/* Card Content */}
+                    <div className="flex-1 min-w-0" onClick={() => navigateToEntity(item)}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-sm font-semibold font-['Montserrat'] ${textPrimary} truncate`}>{name}</span>
+                        <span
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold font-['JetBrains_Mono'] flex-shrink-0"
+                          style={{ color: sc.color, backgroundColor: sc.bg }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: sc.color }} />
+                          {sc.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs font-['Montserrat'] capitalize ${textSecondary}`}>{item.entityType}</span>
+                        <span className={textMuted}>&#183;</span>
+                        <span className={`text-xs font-['Montserrat'] ${textSecondary}`}>{brand}</span>
+                        <span className={textMuted}>&#183;</span>
+                        <span
+                          className="text-xs font-semibold font-['JetBrains_Mono']"
+                          style={{ color: item.level === 1 ? '#58A6FF' : '#A371F7' }}
+                        >
+                          L{item.level}
+                        </span>
+                      </div>
+                      <p className={`text-[10px] mt-1 font-['JetBrains_Mono'] ${textMuted}`}>
+                        {item.submittedAt ? new Date(item.submittedAt).toLocaleDateString('vi-VN') : '-'}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </PullToRefresh>
         ) : (
@@ -354,6 +499,16 @@ const ApprovalsScreen = ({ darkMode }: any) => {
             <table className="w-full">
               <thead>
                 <tr className={`${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} border-b ${border}`}>
+                  <th className="px-3 py-2 w-8">
+                    <button onClick={toggleSelectAll} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`}>
+                      {selectedIds.size === filtered.length && filtered.length > 0
+                        ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                        : selectedIds.size > 0
+                          ? <MinusSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                          : <Square size={16} />
+                      }
+                    </button>
+                  </th>
                   {[t('approvals.colType'), t('approvals.colName'), t('approvals.colBrand'), t('approvals.colLevel'), t('approvals.colStatus'), t('approvals.colSubmitted'), t('common.actions')].map((h: any) => (
                     <th key={h} className={`px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted}`}>
                       {h}
@@ -367,11 +522,24 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                   const sc = STATUS_CONFIG[status] || STATUS_CONFIG.SUBMITTED;
                   const { name, brand } = getItemDisplayInfo(item);
 
+                  const itemKey = getItemKey(item);
+                  const isSelected = selectedIds.has(itemKey);
+
                   return (
                     <tr
                       key={`${item.entityType}-${item.entityId}-${idx}`}
-                      className={`border-b ${border} transition-colors ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50'}`}
+                      className={`border-b ${border} transition-colors ${isSelected ? (darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(215,183,151,0.08)]') : (darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50')}`}
                     >
+                      {/* Checkbox */}
+                      <td className="px-3 py-1.5 w-8">
+                        <button onClick={() => toggleSelect(itemKey)} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`}>
+                          {isSelected
+                            ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                            : <Square size={16} />
+                          }
+                        </button>
+                      </td>
+
                       {/* Type */}
                       <td className="px-3 py-1.5">
                         <div className="flex items-center gap-2">

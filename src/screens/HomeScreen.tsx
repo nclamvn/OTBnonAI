@@ -186,6 +186,9 @@ const HomeScreen = ({ darkMode = true }) => {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  // UX-23: Real chart data from budget list
+  const [chartData, setChartData] = useState<{ month: string; actual: number; target: number }[]>([]);
+
   // Dashboard filter state
   const SEASON_OPTIONS = ['SS25', 'FW25', 'SS26', 'FW26'];
   const REGION_OPTIONS = ['Vietnam', 'Global'];
@@ -236,7 +239,16 @@ const HomeScreen = ({ darkMode = true }) => {
   const fetchStats = async () => {
     setStatsLoading(true);
     try {
-      const data = await budgetService.getStatistics();
+      // UX-04: Pass dashboard filters to API
+      const filters: { fiscalYear?: number } = {};
+      if (selectedSeason) {
+        const yearMatch = selectedSeason.match(/\d{2,4}$/);
+        if (yearMatch) {
+          const yr = Number(yearMatch[0]);
+          filters.fiscalYear = yr < 100 ? 2000 + yr : yr;
+        }
+      }
+      const data = await budgetService.getStatistics(filters);
       if (data) {
         const totalAmt = Number(data.totalAmount || data.totalBudget || 0);
         const utilPct = Number(data.utilization || data.budgetUtilization || 0);
@@ -263,9 +275,55 @@ const HomeScreen = ({ darkMode = true }) => {
     }
   };
 
+  // UX-23: Fetch budgets and compute monthly chart data
+  const fetchChartData = useCallback(async () => {
+    try {
+      const budgets = await budgetService.getAll();
+      const list = Array.isArray(budgets) ? budgets : [];
+      if (list.length === 0) { setChartData([]); return; }
+
+      // Group budgets by creation month → sum totalBudget (actual) and approved budgets (target)
+      const monthMap = new Map<string, { actual: number; target: number }>();
+      const MONTH_KEYS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+      for (const b of list) {
+        const d = new Date(b.createdAt || b.created_at);
+        if (isNaN(d.getTime())) continue;
+        const key = MONTH_KEYS[d.getMonth()];
+        const entry = monthMap.get(key) || { actual: 0, target: 0 };
+        const amt = Number(b.totalBudget || b.budgetAmount || 0);
+        entry.actual += amt;
+        if (b.status === 'approved' || b.status === 'APPROVED') {
+          entry.target += amt;
+        }
+        monthMap.set(key, entry);
+      }
+
+      // Build sorted array for months that have data
+      const sorted = MONTH_KEYS
+        .filter(k => monthMap.has(k))
+        .map(k => ({ month: k, ...monthMap.get(k)! }));
+
+      // Compute cumulative values for trend line
+      let cumActual = 0, cumTarget = 0;
+      const cumulative = sorted.map(d => {
+        cumActual += d.actual;
+        cumTarget += d.target;
+        return { month: d.month, actual: cumActual, target: cumTarget };
+      });
+
+      setChartData(cumulative);
+    } catch (err) {
+      console.error('Failed to fetch chart data:', err);
+      setChartData([]);
+    }
+  }, []);
+
+  // Re-fetch stats + chart when dashboard filters change
   useEffect(() => {
     fetchStats();
-  }, []);
+    fetchChartData();
+  }, [selectedSeason, selectedBrand]);
 
   const userName = user?.name || user?.email?.split('@')[0] || 'User';
 
@@ -562,151 +620,149 @@ const HomeScreen = ({ darkMode = true }) => {
           ))}
         </div>
 
-        {/* Chart - Full Width */}
+        {/* UX-23: Data-driven chart from real budget data */}
         <div className="px-2 sm:px-4 mt-4 pb-5">
-          <svg viewBox="0 0 960 300" className="w-full" preserveAspectRatio="xMidYMid meet" style={{ height: 'clamp(220px, 30vw, 340px)' }}>
-            <defs>
-              <linearGradient id="salesFillPremium" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#D7B797" stopOpacity="0.30" />
-                <stop offset="40%" stopColor="#D7B797" stopOpacity="0.12" />
-                <stop offset="100%" stopColor="#D7B797" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="targetFillPremium" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2A9E6A" stopOpacity="0.12" />
-                <stop offset="60%" stopColor="#2A9E6A" stopOpacity="0.04" />
-                <stop offset="100%" stopColor="#2A9E6A" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="salesLineGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#C4A07A" />
-                <stop offset="50%" stopColor="#D7B797" />
-                <stop offset="100%" stopColor="#E8CDB0" />
-              </linearGradient>
-              <filter id="glowSales" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="3" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="glowTarget" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-              <filter id="labelShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3" />
-              </filter>
-            </defs>
+          {chartData.length === 0 ? (
+            <div className={`flex items-center justify-center py-12 text-sm ${textMuted}`}>
+              {statsLoading ? t('common.loading') || 'Loading...' : t('home.noChartData') || 'No budget data available for chart'}
+            </div>
+          ) : (
+            (() => {
+              // Compute SVG coordinates from real data
+              const CHART_LEFT = 92, CHART_RIGHT = 920, CHART_TOP = 30, CHART_BOTTOM = 255;
+              const n = chartData.length;
+              const maxVal = Math.max(...chartData.map(d => Math.max(d.actual, d.target)), 1);
+              // Round up maxVal to a nice ceiling for Y-axis
+              const magnitude = Math.pow(10, Math.floor(Math.log10(maxVal)));
+              const niceMax = Math.ceil(maxVal / magnitude) * magnitude;
+              const xStep = n > 1 ? (CHART_RIGHT - CHART_LEFT) / (n - 1) : 0;
 
-            {/* Y-axis labels + grid lines */}
-            {[
-              { y: 30, label: '2,5T' },
-              { y: 80, label: '2,0T' },
-              { y: 130, label: '1,5T' },
-              { y: 180, label: '1,0T' },
-              { y: 230, label: '0,5T' },
-            ].map((tick) => (
-              <g key={tick.y}>
-                <text x="52" y={tick.y + 4} textAnchor="end" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="JetBrains Mono" fontWeight="500">{tick.label}</text>
-                <line x1="64" y1={tick.y} x2="920" y2={tick.y} stroke={darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'} strokeWidth="1" />
-              </g>
-            ))}
+              const toX = (i: number) => CHART_LEFT + i * xStep;
+              const toY = (val: number) => CHART_BOTTOM - ((val / niceMax) * (CHART_BOTTOM - CHART_TOP));
 
-            {/* Area fill - target (behind) */}
-            <path
-              d="M92,238 L195,218 L299,202 L402,183 L506,170 L609,153 L713,140 L816,127 L920,112 L920,255 L92,255 Z"
-              fill="url(#targetFillPremium)"
-            />
-            {/* Area fill - actual */}
-            <path
-              d="M92,225 L195,200 L299,175 L402,160 L506,135 L609,115 L713,90 L816,65 L920,42 L920,255 L92,255 Z"
-              fill="url(#salesFillPremium)"
-            />
+              const actualPoints = chartData.map((d, i) => `${toX(i)},${toY(d.actual)}`).join(' ');
+              const targetPoints = chartData.map((d, i) => `${toX(i)},${toY(d.target)}`).join(' ');
 
-            {/* Target line */}
-            <polyline
-              fill="none"
-              stroke="#2A9E6A"
-              strokeDasharray="8 5"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points="92,238 195,218 299,202 402,183 506,170 609,153 713,140 816,127 920,112"
-              opacity="0.7"
-            />
-            {/* Actual line - with gradient */}
-            <polyline
-              fill="none"
-              stroke="url(#salesLineGrad)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              points="92,225 195,200 299,175 402,160 506,135 609,115 713,90 816,65 920,42"
-              filter="url(#glowSales)"
-            />
+              const actualAreaPath = `M${chartData.map((d, i) => `${toX(i)},${toY(d.actual)}`).join(' L')} L${CHART_RIGHT},${CHART_BOTTOM} L${CHART_LEFT},${CHART_BOTTOM} Z`;
+              const targetAreaPath = `M${chartData.map((d, i) => `${toX(i)},${toY(d.target)}`).join(' L')} L${CHART_RIGHT},${CHART_BOTTOM} L${CHART_LEFT},${CHART_BOTTOM} Z`;
 
-            {/* Target dots */}
-            {[
-              [92,238], [195,218], [299,202], [402,183], [506,170], [609,153], [713,140], [816,127], [920,112]
-            ].map(([cx, cy], i) => (
-              <circle key={`dot-t-${i}`} cx={cx} cy={cy} r="3" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#2A9E6A" strokeWidth="1.5" opacity="0.7" />
-            ))}
+              // Y-axis tick labels
+              const yTicks = Array.from({ length: 5 }, (_, i) => {
+                const val = niceMax * (1 - i / 4);
+                const y = CHART_TOP + i * ((CHART_BOTTOM - CHART_TOP) / 4);
+                const trillion = 1_000_000_000_000;
+                const billion = 1_000_000_000;
+                const million = 1_000_000;
+                let label: string;
+                if (niceMax >= trillion) label = `${(val / trillion).toFixed(1).replace('.', ',')}T`;
+                else if (niceMax >= billion) label = `${(val / billion).toFixed(1).replace('.', ',')}tỷ`;
+                else if (niceMax >= million) label = `${(val / million).toFixed(0)}tr`;
+                else label = val.toLocaleString('vi-VN');
+                return { y, label };
+              });
 
-            {/* Actual dots */}
-            {[
-              [92,225], [195,200], [299,175], [402,160], [506,135], [609,115], [713,90], [816,65], [920,42]
-            ].map(([cx, cy], i) => (
-              <g key={`dot-a-${i}`}>
-                <circle cx={cx} cy={cy} r="6" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#D7B797" strokeWidth="2.5" />
-                {i === 8 && (
-                  <>
-                    <circle cx={cx} cy={cy} r="10" fill="none" stroke="#D7B797" strokeWidth="1" opacity="0.3">
-                      <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
-                      <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                  </>
-                )}
-              </g>
-            ))}
+              // Best month (highest actual)
+              let bestIdx = 0;
+              chartData.forEach((d, i) => { if (d.actual > chartData[bestIdx].actual) bestIdx = i; });
 
-            {/* Value labels on actual line */}
-            {[
-              { x: 92, y: 225, label: '0,8T' },
-              { x: 195, y: 200, label: '0,9T' },
-              { x: 299, y: 175, label: '1,2T' },
-              { x: 402, y: 160, label: '1,3T' },
-              { x: 506, y: 135, label: '1,5T' },
-              { x: 609, y: 115, label: '1,7T' },
-              { x: 713, y: 90, label: '1,9T' },
-              { x: 816, y: 65, label: '2,1T' },
-              { x: 920, y: 42, label: '2,3T' },
-            ].map((p, i) => (
-              <g key={`val-${i}`} filter="url(#labelShadow)">
-                <rect x={p.x - 20} y={p.y - 24} width="40" height="17" rx="5"
-                  fill={darkMode ? 'rgba(215,183,151,0.12)' : 'rgba(215,183,151,0.18)'}
-                  stroke={darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}
-                  strokeWidth="0.5"
-                />
-                <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize="9.5" fill="#D7B797" fontFamily="JetBrains Mono" fontWeight="700">{p.label}</text>
-              </g>
-            ))}
+              return (
+                <svg viewBox="0 0 960 300" className="w-full" preserveAspectRatio="xMidYMid meet" style={{ height: 'clamp(220px, 30vw, 340px)' }}>
+                  <defs>
+                    <linearGradient id="salesFillPremium" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#D7B797" stopOpacity="0.30" />
+                      <stop offset="40%" stopColor="#D7B797" stopOpacity="0.12" />
+                      <stop offset="100%" stopColor="#D7B797" stopOpacity="0" />
+                    </linearGradient>
+                    <linearGradient id="targetFillPremium" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2A9E6A" stopOpacity="0.12" />
+                      <stop offset="60%" stopColor="#2A9E6A" stopOpacity="0.04" />
+                      <stop offset="100%" stopColor="#2A9E6A" stopOpacity="0" />
+                    </linearGradient>
+                    <linearGradient id="salesLineGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#C4A07A" />
+                      <stop offset="50%" stopColor="#D7B797" />
+                      <stop offset="100%" stopColor="#E8CDB0" />
+                    </linearGradient>
+                    <filter id="glowSales" x="-50%" y="-50%" width="200%" height="200%">
+                      <feGaussianBlur stdDeviation="3" result="blur" />
+                      <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+                    </filter>
+                    <filter id="labelShadow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#000" floodOpacity="0.3" />
+                    </filter>
+                  </defs>
 
-            {/* X-axis month labels */}
-            {[
-              { x: 92, m: 'jan' }, { x: 195, m: 'feb' }, { x: 299, m: 'mar' },
-              { x: 402, m: 'apr' }, { x: 506, m: 'may' }, { x: 609, m: 'jun' },
-              { x: 713, m: 'jul' }, { x: 816, m: 'aug' }, { x: 920, m: 'sep' },
-            ].map((tick) => (
-              <text key={tick.m} x={tick.x} y={275} textAnchor="middle" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="Montserrat" fontWeight="600" letterSpacing="0.5">
-                {t(`home.${tick.m}`)}
-              </text>
-            ))}
+                  {/* Y-axis labels + grid lines */}
+                  {yTicks.map((tick) => (
+                    <g key={tick.y}>
+                      <text x="52" y={tick.y + 4} textAnchor="end" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="JetBrains Mono" fontWeight="500">{tick.label}</text>
+                      <line x1="64" y1={tick.y} x2="920" y2={tick.y} stroke={darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'} strokeWidth="1" />
+                    </g>
+                  ))}
 
-            {/* Best month highlight */}
-            <line x1="816" y1="65" x2="816" y2="255" stroke="#D7B797" strokeWidth="1" strokeDasharray="4 4" opacity="0.15" />
-          </svg>
+                  {/* Area fills */}
+                  <path d={targetAreaPath} fill="url(#targetFillPremium)" />
+                  <path d={actualAreaPath} fill="url(#salesFillPremium)" />
+
+                  {/* Target line (dashed) */}
+                  <polyline fill="none" stroke="#2A9E6A" strokeDasharray="8 5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" points={targetPoints} opacity="0.7" />
+                  {/* Actual line */}
+                  <polyline fill="none" stroke="url(#salesLineGrad)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={actualPoints} filter="url(#glowSales)" />
+
+                  {/* Target dots */}
+                  {chartData.map((d, i) => (
+                    <circle key={`dot-t-${i}`} cx={toX(i)} cy={toY(d.target)} r="3" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#2A9E6A" strokeWidth="1.5" opacity="0.7" />
+                  ))}
+
+                  {/* Actual dots */}
+                  {chartData.map((d, i) => (
+                    <g key={`dot-a-${i}`}>
+                      <circle cx={toX(i)} cy={toY(d.actual)} r="6" fill={darkMode ? '#0D0D0D' : '#ffffff'} stroke="#D7B797" strokeWidth="2.5" />
+                      {i === n - 1 && (
+                        <circle cx={toX(i)} cy={toY(d.actual)} r="10" fill="none" stroke="#D7B797" strokeWidth="1" opacity="0.3">
+                          <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite" />
+                        </circle>
+                      )}
+                    </g>
+                  ))}
+
+                  {/* Value labels on actual line */}
+                  {chartData.map((d, i) => {
+                    const x = toX(i), y = toY(d.actual);
+                    const trillion = 1_000_000_000_000;
+                    const billion = 1_000_000_000;
+                    const million = 1_000_000;
+                    let label: string;
+                    if (d.actual >= trillion) label = `${(d.actual / trillion).toFixed(1).replace('.', ',')}T`;
+                    else if (d.actual >= billion) label = `${(d.actual / billion).toFixed(1).replace('.', ',')}tỷ`;
+                    else if (d.actual >= million) label = `${(d.actual / million).toFixed(0)}tr`;
+                    else label = d.actual > 0 ? d.actual.toLocaleString('vi-VN') : '0';
+                    return (
+                      <g key={`val-${i}`} filter="url(#labelShadow)">
+                        <rect x={x - 22} y={y - 24} width="44" height="17" rx="5"
+                          fill={darkMode ? 'rgba(215,183,151,0.12)' : 'rgba(215,183,151,0.18)'}
+                          stroke={darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}
+                          strokeWidth="0.5"
+                        />
+                        <text x={x} y={y - 12} textAnchor="middle" fontSize="9.5" fill="#D7B797" fontFamily="JetBrains Mono" fontWeight="700">{label}</text>
+                      </g>
+                    );
+                  })}
+
+                  {/* X-axis month labels */}
+                  {chartData.map((d, i) => (
+                    <text key={d.month} x={toX(i)} y={275} textAnchor="middle" fontSize="10" fill={darkMode ? '#3A3A3A' : '#9CA3AF'} fontFamily="Montserrat" fontWeight="600" letterSpacing="0.5">
+                      {t(`home.${d.month}`)}
+                    </text>
+                  ))}
+
+                  {/* Best month highlight line */}
+                  <line x1={toX(bestIdx)} y1={toY(chartData[bestIdx].actual)} x2={toX(bestIdx)} y2={CHART_BOTTOM} stroke="#D7B797" strokeWidth="1" strokeDasharray="4 4" opacity="0.15" />
+                </svg>
+              );
+            })()
+          )}
         </div>
       </div>
 
@@ -725,79 +781,118 @@ const HomeScreen = ({ darkMode = true }) => {
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-2 py-1 rounded-md bg-[rgba(248,81,73,0.15)] text-[#FF7B72] font-semibold font-['Montserrat']">1 {t('home.critical') || 'Critical'}</span>
-            <span className="px-2 py-1 rounded-md bg-[rgba(210,153,34,0.15)] text-[#E3B341] font-semibold font-['Montserrat']">1 {t('home.warning') || 'Warning'}</span>
-            <span className="px-2 py-1 rounded-md bg-[rgba(88,166,255,0.15)] text-[#79C0FF] font-semibold font-['Montserrat']">1 Info</span>
+            {Number(stats.pendingApprovals) > 0 && (
+              <span className="px-2 py-1 rounded-md bg-[rgba(248,81,73,0.15)] text-[#FF7B72] font-semibold font-['Montserrat']">{stats.pendingApprovals} {t('home.pending') || 'Chờ duyệt'}</span>
+            )}
+            {Number((stats as any)._totalAmount) > 0 && (
+              <span className="px-2 py-1 rounded-md bg-[rgba(210,153,34,0.15)] text-[#E3B341] font-semibold font-['Montserrat']">{stats.budgetUtilization}</span>
+            )}
           </div>
         </div>
 
         <div className="mt-4 space-y-3">
-          {/* Alert items */}
-          {[
-            {
-              id: 'lowStock',
-              icon: Bell,
-              iconColor: 'text-[#F85149]',
-              iconBg: 'bg-[rgba(248,81,73,0.2)]',
-              borderColor: 'border-[rgba(248,81,73,0.3)]',
-              borderHover: 'hover:border-[rgba(248,81,73,0.5)]',
-              bgColor: 'bg-[rgba(248,81,73,0.08)]',
-              accentColor: '#FF7B72',
-              accentHover: '#F85149',
-              title: t('home.lowStockAlert'),
-              time: t('home.timeAgo15m'),
-              message: t('home.lowStockMessage'),
-              route: '/proposal',
-              detailItems: [
-                { label: 'SKU', value: 'Nike Air Max 90' },
-                { label: 'Size', value: '42' },
-                { label: t('home.currentStock') || 'Tồn kho hiện tại', value: '3 ' + (t('home.units') || 'đôi') },
-                { label: t('home.minThreshold') || 'Ngưỡng tối thiểu', value: '10 ' + (t('home.units') || 'đôi') },
-              ],
-            },
-            {
-              id: 'budgetThreshold',
-              icon: TrendingUp,
-              iconColor: 'text-[#D29922]',
-              iconBg: 'bg-[rgba(210,153,34,0.2)]',
-              borderColor: 'border-[rgba(210,153,34,0.3)]',
-              borderHover: 'hover:border-[rgba(210,153,34,0.5)]',
-              bgColor: 'bg-[rgba(210,153,34,0.08)]',
-              accentColor: '#E3B341',
-              accentHover: '#D29922',
-              title: t('home.budgetThresholdWarning'),
-              time: t('home.timeAgo1h'),
-              message: t('home.budgetThresholdMessage'),
-              route: '/budget-management',
-              detailItems: [
-                { label: t('home.budgetName') || 'Ngân sách', value: 'Adidas SS25' },
-                { label: t('home.used') || 'Đã sử dụng', value: '92%' },
-                { label: t('home.remaining') || 'Còn lại', value: '800M đ' },
-                { label: t('home.totalBudget') || 'Tổng ngân sách', value: '10T đ' },
-              ],
-            },
-            {
-              id: 'salesSpike',
-              icon: BarChart3,
-              iconColor: 'text-[#58A6FF]',
-              iconBg: 'bg-[rgba(88,166,255,0.2)]',
-              borderColor: 'border-[rgba(88,166,255,0.3)]',
-              borderHover: 'hover:border-[rgba(88,166,255,0.5)]',
-              bgColor: 'bg-[rgba(88,166,255,0.08)]',
-              accentColor: '#79C0FF',
-              accentHover: '#58A6FF',
-              title: t('home.salesSpike'),
-              time: t('home.timeAgo3h'),
-              message: t('home.salesSpikeMessage'),
-              route: '/otb-analysis',
-              detailItems: [
-                { label: t('home.collection') || 'Dòng sản phẩm', value: 'Gucci Heritage' },
-                { label: t('home.overTarget') || 'Vượt kế hoạch', value: '+18%' },
-                { label: t('home.period') || 'Thời gian', value: t('home.thisWeek') || 'Tuần này' },
-                { label: t('home.action') || 'Hành động', value: t('home.checkInventory') || 'Kiểm tra tồn kho' },
-              ],
-            },
-          ].map((alert) => {
+          {/* UX-08: Alert items — computed from real stats */}
+          {(() => {
+            const s = stats as any;
+            const totalAmt = Number(s._totalAmount || 0);
+            const approvedAmt = Number(s._approvedAmount || 0);
+            const utilPct = totalAmt > 0 ? Math.round((approvedAmt / totalAmt) * 100) : 0;
+            const pendingCount = Number(s.pendingApprovals || 0);
+            const alerts: any[] = [];
+
+            // Alert 1: Pending approvals (always show if > 0)
+            if (pendingCount > 0) {
+              alerts.push({
+                id: 'pendingApprovals',
+                icon: Bell,
+                iconColor: 'text-[#F85149]',
+                iconBg: 'bg-[rgba(248,81,73,0.2)]',
+                borderColor: 'border-[rgba(248,81,73,0.3)]',
+                borderHover: 'hover:border-[rgba(248,81,73,0.5)]',
+                bgColor: 'bg-[rgba(248,81,73,0.08)]',
+                accentColor: '#FF7B72',
+                accentHover: '#F85149',
+                title: t('home.pendingApprovalsAlert') || `${pendingCount} mục chờ duyệt`,
+                time: t('home.now') || 'Hiện tại',
+                message: t('home.pendingApprovalsMessage') || `Có ${pendingCount} ngân sách/kế hoạch đang chờ phê duyệt.`,
+                route: '/approvals',
+                detailItems: [
+                  { label: t('home.pending') || 'Chờ duyệt', value: String(pendingCount) },
+                  { label: t('home.totalBudgets') || 'Tổng ngân sách', value: String(s._totalBudgets || 0) },
+                ],
+              });
+            }
+
+            // Alert 2: Budget utilization > 80%
+            if (utilPct > 80 && totalAmt > 0) {
+              alerts.push({
+                id: 'budgetThreshold',
+                icon: TrendingUp,
+                iconColor: 'text-[#D29922]',
+                iconBg: 'bg-[rgba(210,153,34,0.2)]',
+                borderColor: 'border-[rgba(210,153,34,0.3)]',
+                borderHover: 'hover:border-[rgba(210,153,34,0.5)]',
+                bgColor: 'bg-[rgba(210,153,34,0.08)]',
+                accentColor: '#E3B341',
+                accentHover: '#D29922',
+                title: t('home.budgetThresholdWarning') || 'Ngân sách gần đạt ngưỡng',
+                time: `${utilPct}%`,
+                message: t('home.budgetThresholdMessage') || `Đã sử dụng ${utilPct}% tổng ngân sách. Còn lại: ${formatVND(totalAmt - approvedAmt)}.`,
+                route: '/budget-management',
+                detailItems: [
+                  { label: t('home.used') || 'Đã sử dụng', value: `${utilPct}%` },
+                  { label: t('home.remaining') || 'Còn lại', value: formatVND(totalAmt - approvedAmt) },
+                  { label: t('home.totalBudget') || 'Tổng ngân sách', value: formatVND(totalAmt) },
+                ],
+              });
+            }
+
+            // Alert 3: Active plans info
+            const activePlans = Number(s.activePlans || 0);
+            if (activePlans > 0) {
+              alerts.push({
+                id: 'activePlans',
+                icon: BarChart3,
+                iconColor: 'text-[#58A6FF]',
+                iconBg: 'bg-[rgba(88,166,255,0.2)]',
+                borderColor: 'border-[rgba(88,166,255,0.3)]',
+                borderHover: 'hover:border-[rgba(88,166,255,0.5)]',
+                bgColor: 'bg-[rgba(88,166,255,0.08)]',
+                accentColor: '#79C0FF',
+                accentHover: '#58A6FF',
+                title: t('home.activePlansAlert') || `${activePlans} kế hoạch đang hoạt động`,
+                time: t('home.now') || 'Hiện tại',
+                message: t('home.activePlansMessage') || `Có ${activePlans} kế hoạch/đề xuất đang trong quy trình xử lý.`,
+                route: '/otb-analysis',
+                detailItems: [
+                  { label: t('home.activePlans') || 'Kế hoạch', value: String(activePlans) },
+                  { label: t('home.brands') || 'Thương hiệu', value: String(s.totalBrands || 0) },
+                ],
+              });
+            }
+
+            // If no alerts, show an empty state placeholder
+            if (alerts.length === 0) {
+              alerts.push({
+                id: 'noAlerts',
+                icon: Check,
+                iconColor: 'text-[#2A9E6A]',
+                iconBg: 'bg-[rgba(42,158,106,0.2)]',
+                borderColor: 'border-[rgba(42,158,106,0.3)]',
+                borderHover: 'hover:border-[rgba(42,158,106,0.5)]',
+                bgColor: 'bg-[rgba(42,158,106,0.08)]',
+                accentColor: '#2A9E6A',
+                accentHover: '#1E7A4F',
+                title: t('home.noAlerts') || 'Không có cảnh báo',
+                time: '',
+                message: t('home.noAlertsMessage') || 'Tất cả các chỉ số đều trong giới hạn bình thường.',
+                route: '/budget-management',
+                detailItems: [],
+              });
+            }
+
+            return alerts;
+          })().map((alert) => {
             const AlertIcon = alert.icon;
             const isExpanded = expandedAlert === alert.id;
             return (
@@ -835,7 +930,7 @@ const HomeScreen = ({ darkMode = true }) => {
                 <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'}`}>
                   <div className={`px-4 pb-4 pt-0 border-t ${darkMode ? 'border-[rgba(255,255,255,0.06)]' : 'border-[rgba(0,0,0,0.06)]'}`}>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
-                      {alert.detailItems.map((item, idx) => (
+                      {alert.detailItems.map((item: any, idx: number) => (
                         <div key={idx} className={`rounded-lg px-3 py-2 ${darkMode ? 'bg-[rgba(0,0,0,0.3)]' : 'bg-[rgba(255,255,255,0.6)]'}`}>
                           <p className={`text-[10px] font-medium uppercase tracking-wider ${textMuted} font-['Montserrat']`}>{item.label}</p>
                           <p className={`text-sm font-bold font-['JetBrains_Mono'] tabular-nums mt-0.5 ${textPrimary}`}>{item.value}</p>

@@ -287,11 +287,11 @@ describe('authService', () => {
     await expect(authService.login('admin@dafc.com', 'password')).rejects.toThrow();
   });
 
-  it('logout should clear tokens', () => {
+  it('logout should clear tokens', async () => {
     localStorage.setItem('accessToken', 'token');
     localStorage.setItem('refreshToken', 'refresh');
 
-    authService.logout();
+    await authService.logout();
 
     expect(localStorage.getItem('accessToken')).toBeNull();
     expect(localStorage.getItem('refreshToken')).toBeNull();

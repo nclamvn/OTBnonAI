@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   ArrowLeft, Save, TrendingUp, Layers, Users, Tag, Info, Pencil,
   ChevronDown, Check, CheckCircle2, History, Clock, Sparkles, X,
@@ -13,6 +13,8 @@ import { masterDataService, planningService, approvalService } from '@/services'
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useSessionRecoveryGeneric } from '../hooks/useSessionRecovery';
+import { Breadcrumbs } from '@/components/ui';
 
 const TABS = [
   { id: 'collection', label: 'Collection', icon: Layers },
@@ -96,6 +98,12 @@ const PlanningDetailPage = ({
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
   const [localData, setLocalData] = useState<Record<string, any>>({});
+
+  // UX-21: Session recovery for planning form state
+  const planningRecovery = useSessionRecoveryGeneric<Record<string, any>>(
+    entityId ? `planning_${entityId}` : null,
+    { countFields: (data) => Object.keys(data || {}).length },
+  );
 
   // Fallback: fetch planning data by entityId if not passed via context
   const [fetchedBudgetDetail, setFetchedBudgetDetail] = useState<any>(null);
@@ -376,8 +384,33 @@ const PlanningDetailPage = ({
       });
     });
 
-    setLocalData(initialData);
+    setLocalData((prev: any) => {
+      // If we already have user-edited data, keep it (recovery may have loaded)
+      if (Object.keys(prev).length > 0) return prev;
+      return initialData;
+    });
   }, [categoryStructure]);
+
+  // UX-21: Auto-save localData to session storage on edit
+  const localDataInitialised = useRef(false);
+  useEffect(() => {
+    // Skip the first render (initial data population)
+    if (!localDataInitialised.current) {
+      if (Object.keys(localData).length > 0) localDataInitialised.current = true;
+      return;
+    }
+    if (Object.keys(localData).length > 0) {
+      planningRecovery.saveDraft(localData);
+    }
+  }, [localData]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // UX-21: Recover draft on mount if available
+  const handleRecoverPlanningDraft = useCallback(() => {
+    const draft = planningRecovery.recoverDraft();
+    if (draft && Object.keys(draft).length > 0) {
+      setLocalData(draft);
+    }
+  }, [planningRecovery]);
 
   const handleStartEdit = (cellKey: any, currentValue: any) => {
     setEditingCell(cellKey);
@@ -462,6 +495,7 @@ const PlanningDetailPage = ({
 
     setVersions((prev: any) => [...prev, newVersion]);
     setApproveAnimation(true);
+    planningRecovery.clearDraft(); // UX-21: clear draft on submit
 
     if (animationTimeoutRef.current) {
       clearTimeout(animationTimeoutRef.current);
@@ -1381,6 +1415,46 @@ const PlanningDetailPage = ({
 
   return (
     <div className={`${bgPage} overflow-x-hidden`}>
+      {/* Breadcrumbs */}
+      <div className="px-3 md:px-6 pt-2">
+        <Breadcrumbs
+          darkMode={darkMode}
+          items={[
+            { label: t('common.breadcrumbPlanning'), href: '/planning' },
+            { label: selectedBudgetDetail?.budget?.groupBrandName || t('planningDetail.title') },
+          ]}
+        />
+      </div>
+
+      {/* UX-21: Session recovery banner */}
+      {planningRecovery.hasDraft && (
+        <div className={`mx-3 md:mx-6 mt-2 px-4 py-2.5 rounded-lg border flex items-center justify-between gap-3 ${darkMode ? 'bg-[rgba(215,183,151,0.12)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2]' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
+          <div className="flex items-center gap-2 text-sm">
+            <History size={16} className={darkMode ? 'text-[#D7B797]' : 'text-amber-600'} />
+            <span className="font-medium">{t('planning.recoveryTitle')}</span>
+            {planningRecovery.draftInfo && (
+              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-amber-600'}`}>
+                {new Date(planningRecovery.draftInfo.savedAt).toLocaleString('vi-VN')} — {planningRecovery.draftInfo.changeCount} {t('planning.fieldsChanged', { count: String(planningRecovery.draftInfo.changeCount) })}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRecoverPlanningDraft}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682]' : 'bg-amber-600 text-white hover:bg-amber-700'}`}
+            >
+              {t('planning.recoverData')}
+            </button>
+            <button
+              onClick={() => planningRecovery.dismissDraft()}
+              className={`p-1 rounded transition-colors ${darkMode ? 'hover:bg-[#2E2E2E] text-[#999999]' : 'hover:bg-amber-100 text-amber-500'}`}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Sticky Header + Tabs Block */}
       <div className="sticky top-0 z-40">
       {/* Header */}
@@ -1630,7 +1704,7 @@ const PlanningDetailPage = ({
                 </button>
               )}
               <button
-                onClick={onSave}
+                onClick={() => { planningRecovery.clearDraft(); onSave && onSave(); }}
                 disabled={isReadOnly}
                 className={`px-3 md:px-4 py-1.5 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 text-xs md:text-sm ${
                   isReadOnly

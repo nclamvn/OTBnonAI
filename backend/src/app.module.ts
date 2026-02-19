@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -11,6 +10,7 @@ import { ProposalModule } from './modules/proposal/proposal.module';
 import { ApprovalWorkflowModule } from './modules/approval-workflow/approval-workflow.module';
 import { ImportModule } from './modules/import/import.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { DataRetentionModule } from './modules/data-retention/data-retention.module';
 
 @Module({
   imports: [
@@ -18,8 +18,7 @@ import { NotificationModule } from './modules/notification/notification.module';
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
-    ScheduleModule.forRoot(),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 30 }]),
+ThrottlerModule.forRoot([{ ttl: 60000, limit: 30 }]),
     PrismaModule,
     AuthModule,
     MasterDataModule,
@@ -29,6 +28,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     ApprovalWorkflowModule,
     ImportModule,
     NotificationModule,
+    DataRetentionModule,
   ],
 })
 export class AppModule {}

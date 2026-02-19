@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sun, Moon, Monitor, Globe, Bell, BellOff, Lock, Eye, EyeOff,
   Palette, Type, Zap, Database, HardDrive, Trash2, Download,
@@ -15,22 +15,31 @@ const SettingsScreen = ({ darkMode = true, setDarkMode, user }: any) => {
   const { t, language, setLanguage } = useLanguage();
   const { isMobile } = useIsMobile();
   const { dialogProps, confirm } = useConfirmDialog();
-  const [settings, setSettings] = useState<Record<string, any>>({
-    theme: darkMode ? 'dark' : 'light',
-    notifications: {
-      email: true,
-      push: true,
-      desktop: false,
-    },
-    privacy: {
-      showOnline: true,
-      showActivity: true,
-    },
-    display: {
-      compactMode: false,
-      animationsEnabled: true,
-    }
+  const SETTINGS_STORAGE_KEY = 'otb_user_settings';
+
+  const [settings, setSettings] = useState<Record<string, any>>(() => {
+    // Load persisted settings from localStorage
+    try {
+      const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { ...parsed, theme: darkMode ? 'dark' : 'light' };
+      }
+    } catch { /* ignore parse errors */ }
+    return {
+      theme: darkMode ? 'dark' : 'light',
+      notifications: { email: true, push: true, desktop: false },
+      privacy: { showOnline: true, showActivity: true },
+      display: { compactMode: false, animationsEnabled: true },
+    };
   });
+
+  // Persist settings to localStorage on change
+  useEffect(() => {
+    try {
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    } catch { /* ignore quota errors */ }
+  }, [settings]);
 
   const updateSetting = (category: any, key: any, value: any) => {
     if (category) {

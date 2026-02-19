@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsEnum, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 // ─── Create Proposal ─────────────────────────────────────────────────────────
@@ -8,6 +8,7 @@ export class CreateProposalDto {
   @ApiProperty({ example: 'FER-SS25-REX-Ticket-001' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100, { message: 'Ticket name cannot exceed 100 characters' })
   ticketName: string;
 
   @ApiProperty({ description: 'Budget ID to link this proposal' })
@@ -41,6 +42,7 @@ export class AddProductDto {
   @ApiProperty({ description: 'SKU Catalog ID' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100, { message: 'SKU ID cannot exceed 100 characters' })
   skuId: string;
 
   @ApiProperty({ example: 10, description: 'Order quantity' })
