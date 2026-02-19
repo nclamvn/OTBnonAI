@@ -361,6 +361,10 @@ const vi = {
     archiveFailed: 'Lưu trữ ngân sách thất bại',
     confirmArchive: 'Xác nhận lưu trữ',
     archiveWarning: 'Bạn có chắc chắn muốn lưu trữ ngân sách này? Ngân sách đã lưu trữ sẽ không còn hiển thị trong danh sách hoạt động.',
+    submit: 'Gửi duyệt',
+    duplicate: 'Nhân bản',
+    approvalHistory: 'Lịch sử phê duyệt',
+    noApprovalRecords: 'Chưa có lịch sử phê duyệt',
   },
 
   // ──────────────────────────────────────────────

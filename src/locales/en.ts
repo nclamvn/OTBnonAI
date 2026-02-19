@@ -361,6 +361,10 @@ const en = {
     archiveFailed: 'Failed to archive budget',
     confirmArchive: 'Confirm Archive',
     archiveWarning: 'Are you sure you want to archive this budget? Archived budgets will no longer appear in active views.',
+    submit: 'Submit',
+    duplicate: 'Duplicate',
+    approvalHistory: 'Approval History',
+    noApprovalRecords: 'No approval records',
   },
 
   // ──────────────────────────────────────────────

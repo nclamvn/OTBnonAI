@@ -64,7 +64,7 @@ const BudgetManagementScreen = ({
         budgetName: budget.budgetCode || budget.name || budget.budgetName || 'Untitled',
         status: (budget.status || 'DRAFT').toLowerCase(),
         createdAt: budget.createdAt,
-        createdBy: budget.createdBy
+        createdBy: typeof budget.createdBy === 'object' ? budget.createdBy?.name : budget.createdBy
       }));
       setBudgetData(budgets);
     } catch (err: any) {
