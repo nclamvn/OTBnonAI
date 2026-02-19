@@ -23,6 +23,7 @@ export class PlanningController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
   async findAll(
+    @Request() req: any,
     @Query('budgetDetailId') budgetDetailId?: string,
     @Query('budgetId') budgetId?: string,
     @Query('status') status?: any,
@@ -31,7 +32,7 @@ export class PlanningController {
   ) {
     const result = await this.planningService.findAll({
       budgetDetailId, budgetId, status, page, pageSize,
-    });
+    }, req.user);
     return { success: true, ...result };
   }
 
@@ -123,6 +124,15 @@ export class PlanningController {
     @Request() req: any,
   ) {
     return { success: true, data: await this.planningService.approveLevel2(id, dto, req.user.sub) };
+  }
+
+  // ─── RESET TO DRAFT ──────────────────────────────────────────────────────
+
+  @Post(':id/reset-to-draft')
+  @RequirePermissions('planning:write')
+  @ApiOperation({ summary: 'Reset rejected planning back to draft for revision' })
+  async resetToDraft(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.planningService.resetToDraft(id, req.user.sub) };
   }
 
   // ─── MARK AS FINAL ───────────────────────────────────────────────────────

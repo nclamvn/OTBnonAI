@@ -221,21 +221,39 @@ const HomeScreen = ({ darkMode = true }) => {
     fetchBrands();
   }, []);
 
+  // Format VND amount for display (e.g. 12500000000 → "12,5 T đ")
+  const formatVND = (amount: number): string => {
+    if (!amount || amount === 0) return '0 đ';
+    const trillion = 1_000_000_000_000;
+    const billion = 1_000_000_000;
+    const million = 1_000_000;
+    if (amount >= trillion) return `${(amount / trillion).toFixed(1).replace('.', ',')} T đ`;
+    if (amount >= billion) return `${(amount / billion).toFixed(1).replace('.', ',')} tỷ đ`;
+    if (amount >= million) return `${(amount / million).toFixed(0)} tr đ`;
+    return `${amount.toLocaleString('vi-VN')} đ`;
+  };
+
   const fetchStats = async () => {
     setStatsLoading(true);
     try {
       const data = await budgetService.getStatistics();
       if (data) {
+        const totalAmt = Number(data.totalAmount || data.totalBudget || 0);
+        const utilPct = Number(data.utilization || data.budgetUtilization || 0);
         setStats({
-          totalSales: data.totalSales || data.totalBudget || '0',
-          budgetUtilization: data.budgetUtilization || data.utilization || '0%',
-          avgMargin: data.avgMargin || '0%',
-          sellThrough: data.sellThrough || '0%',
-          totalBrands: String(data.totalBrands || data.brandCount || 0),
-          categories: String(data.categories || data.categoryCount || 0),
+          totalSales: formatVND(totalAmt),
+          budgetUtilization: `${utilPct}%`,
+          avgMargin: data.avgMargin || '--',
+          sellThrough: data.sellThrough || '--',
+          totalBrands: String(data.brandCount || data.totalBrands || 0),
+          categories: String(data.categoryCount || data.categories || 0),
           pendingApprovals: String(data.pendingApprovals || data.pendingCount || 0),
-          activePlans: String(data.activePlans || data.planCount || 0)
-        });
+          activePlans: String(data.activePlans || data.planCount || 0),
+          // Raw values for summary row
+          _totalAmount: totalAmt,
+          _approvedAmount: Number(data.approvedAmount || 0),
+          _totalBudgets: Number(data.totalBudgets || 0),
+        } as any);
       }
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
@@ -353,11 +371,13 @@ const HomeScreen = ({ darkMode = true }) => {
               <span className="w-2 h-2 rounded-full bg-[#127749]"></span>
               {t('common.updatedJustNow')}
             </span>
-            <button className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-150 ${
+            <button
+              onClick={fetchStats}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-150 ${
               darkMode
                 ? 'border-[#2E2E2E] text-[#999999] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)] hover:text-[#D7B797]'
                 : 'border-gray-300 text-gray-700 hover:bg-[rgba(215,183,151,0.15)] hover:text-[#6B4D30]'
-            }`}>
+            } ${statsLoading ? 'animate-spin' : ''}`}>
               <RefreshCcw size={16} />
             </button>
           </div>
@@ -368,15 +388,13 @@ const HomeScreen = ({ darkMode = true }) => {
       <div className="grid grid-cols-1 gap-2 lg:grid-cols-4">
         <StatCard
           title={t('home.totalSales')}
-          value="12,5 T d"
-          trend={12.5}
-          trendLabel="12.5%"
+          value={statsLoading ? '...' : stats.totalSales}
           subtitle={t('home.unitsVsLastSeason')}
           icon={DollarSign}
           darkMode={darkMode}
           accent="gold"
           cardKey="totalSales"
-          onClick={() => setExpandedCard({ key: 'totalSales', title: t('home.totalSales'), value: '12,5 T d', trend: 12.5, trendLabel: '12.5%', subtitle: t('home.unitsVsLastSeason') })}
+          onClick={() => setExpandedCard({ key: 'totalSales', title: t('home.totalSales'), value: stats.totalSales, subtitle: t('home.unitsVsLastSeason') })}
           chart={(
             <svg viewBox="0 0 160 40" className="w-full h-6">
               <polyline
@@ -390,15 +408,13 @@ const HomeScreen = ({ darkMode = true }) => {
         />
         <StatCard
           title={t('home.budgetUtilization')}
-          value="57%"
-          trend={8.2}
-          trendLabel="8.2%"
+          value={statsLoading ? '...' : stats.budgetUtilization}
           subtitle={t('home.thisMonth')}
           icon={Target}
           darkMode={darkMode}
           accent="emerald"
           cardKey="budgetUtilization"
-          onClick={() => setExpandedCard({ key: 'budgetUtilization', title: t('home.budgetUtilization'), value: '57%', trend: 8.2, trendLabel: '8.2%', subtitle: t('home.thisMonth') })}
+          onClick={() => setExpandedCard({ key: 'budgetUtilization', title: t('home.budgetUtilization'), value: stats.budgetUtilization, subtitle: t('home.thisMonth') })}
           chart={(
             <svg viewBox="0 0 160 40" className="w-full h-6">
               <polyline
@@ -412,27 +428,23 @@ const HomeScreen = ({ darkMode = true }) => {
         />
         <StatCard
           title={t('home.avgMargin')}
-          value="42.5%"
-          trend={2.3}
-          trendLabel="2.3%"
+          value={statsLoading ? '...' : stats.avgMargin}
           subtitle={t('home.acrossCategories')}
           icon={Percent}
           darkMode={darkMode}
           accent="blue"
           cardKey="avgMargin"
-          onClick={() => setExpandedCard({ key: 'avgMargin', title: t('home.avgMargin'), value: '42.5%', trend: 2.3, trendLabel: '2.3%', subtitle: t('home.acrossCategories') })}
+          onClick={() => setExpandedCard({ key: 'avgMargin', title: t('home.avgMargin'), value: stats.avgMargin, subtitle: t('home.acrossCategories') })}
         />
         <StatCard
           title={t('home.sellThrough')}
-          value="68.3%"
-          trend={-1.5}
-          trendLabel="1.5%"
+          value={statsLoading ? '...' : stats.sellThrough}
           subtitle={t('home.currentSeasonPerformance')}
           icon={ShoppingCart}
           darkMode={darkMode}
           accent="rose"
           cardKey="sellThrough"
-          onClick={() => setExpandedCard({ key: 'sellThrough', title: t('home.sellThrough'), value: '68.3%', trend: -1.5, trendLabel: '1.5%', subtitle: t('home.currentSeasonPerformance') })}
+          onClick={() => setExpandedCard({ key: 'sellThrough', title: t('home.sellThrough'), value: stats.sellThrough, subtitle: t('home.currentSeasonPerformance') })}
         />
       </div>
 
@@ -525,10 +537,10 @@ const HomeScreen = ({ darkMode = true }) => {
         {/* Summary Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 px-6 mt-4">
           {[
-            { label: t('home.totalRevenue'), value: '12,5T', trend: '+12.5%', up: true, icon: '₫' },
-            { label: t('home.monthlyGrowth'), value: '+8.2%', trend: t('home.aboveTarget'), up: true, icon: '↗' },
-            { label: t('home.bestMonth'), value: t('home.aug'), trend: '2,1T đ', up: true, icon: '★' },
-            { label: t('home.avgMonthly'), value: '1,39T', trend: '+5.4%', up: true, icon: '◎' },
+            { label: t('home.totalRevenue'), value: statsLoading ? '...' : stats.totalSales, trend: stats.budgetUtilization, up: true, icon: '₫' },
+            { label: t('home.budgetUtilization'), value: statsLoading ? '...' : stats.budgetUtilization, trend: t('home.aboveTarget'), up: Number(stats.budgetUtilization?.replace('%','')) > 50, icon: '↗' },
+            { label: t('home.pendingApprovals'), value: statsLoading ? '...' : stats.pendingApprovals, trend: t('home.itemsAwaitingReview'), up: false, icon: '⏳' },
+            { label: t('home.activePlans'), value: statsLoading ? '...' : stats.activePlans, trend: t('home.otbPlansInProgress'), up: true, icon: '◎' },
           ].map((s, i) => (
             <div
               key={i}
@@ -709,7 +721,7 @@ const HomeScreen = ({ darkMode = true }) => {
             </div>
             <div>
               <h3 className={`text-lg font-semibold font-['Montserrat'] ${textPrimary}`}>{t('home.activeAlerts')}</h3>
-              <p className={`text-xs ${textMuted}`}>{t('home.activeAlertsCount', { count: 3 })}</p>
+              <p className={`text-xs ${textMuted}`}>{t('home.activeAlertsCount', { count: Number(stats.pendingApprovals) || 0 })}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-xs">

@@ -1,10 +1,12 @@
 'use client';
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 
 interface KpiItem {
   value: number;
   status: string;
 }
+
+type SaveHandler = () => Promise<void> | void;
 
 interface AppContextType {
   darkMode: boolean;
@@ -19,6 +21,10 @@ interface AppContextType {
   setSkuProposalContext: React.Dispatch<React.SetStateAction<any>>;
   kpiData: Record<string, KpiItem>;
   setKpiData: React.Dispatch<React.SetStateAction<Record<string, KpiItem>>>;
+  registerSave: (handler: SaveHandler) => void;
+  unregisterSave: () => void;
+  triggerSave: () => Promise<void>;
+  hasSaveHandler: boolean;
 }
 
 const AppContext = createContext<AppContextType | null>(null);
@@ -57,6 +63,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     'tickets': { value: 4, status: 'in-progress' },
   });
 
+  // Save handler: screens register their save callback, AppHeader triggers it
+  const saveHandlerRef = useRef<SaveHandler | null>(null);
+  const [hasSaveHandler, setHasSaveHandler] = useState(false);
+
+  const registerSave = useCallback((handler: SaveHandler) => {
+    saveHandlerRef.current = handler;
+    setHasSaveHandler(true);
+  }, []);
+
+  const unregisterSave = useCallback(() => {
+    saveHandlerRef.current = null;
+    setHasSaveHandler(false);
+  }, []);
+
+  const triggerSave = useCallback(async () => {
+    if (saveHandlerRef.current) {
+      await saveHandlerRef.current();
+    }
+  }, []);
+
   const value = {
     darkMode,
     setDarkMode,
@@ -70,6 +96,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setSkuProposalContext,
     kpiData,
     setKpiData,
+    registerSave,
+    unregisterSave,
+    triggerSave,
+    hasSaveHandler,
   };
 
   return (

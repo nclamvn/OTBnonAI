@@ -15,10 +15,11 @@ async function bootstrap() {
     'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3006',
     ...(process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : []),
   ];
+  const isDev = process.env.NODE_ENV !== 'production';
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
+      // Only allow null-origin in development (curl/Postman for testing)
+      if (!origin) return callback(null, isDev);
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

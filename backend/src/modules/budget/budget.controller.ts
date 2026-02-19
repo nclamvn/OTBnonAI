@@ -24,6 +24,7 @@ export class BudgetController {
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'pageSize', required: false, type: Number, example: 20 })
   async findAll(
+    @Request() req: any,
     @Query('fiscalYear') fiscalYear?: number,
     @Query('groupBrandId') groupBrandId?: string,
     @Query('seasonGroupId') seasonGroupId?: string,
@@ -38,7 +39,7 @@ export class BudgetController {
       status,
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 20,
-    });
+    }, req.user);
     return { success: true, ...result };
   }
 
@@ -119,6 +120,15 @@ export class BudgetController {
     @Request() req: any,
   ) {
     return { success: true, data: await this.budgetService.approveLevel2(id, dto, req.user.sub) };
+  }
+
+  // ─── RESET TO DRAFT ──────────────────────────────────────────────────────
+
+  @Post(':id/reset-to-draft')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Reset rejected budget back to draft for revision' })
+  async resetToDraft(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.budgetService.resetToDraft(id, req.user.sub) };
   }
 
   // ─── DELETE ──────────────────────────────────────────────────────────────

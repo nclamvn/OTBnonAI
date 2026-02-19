@@ -20,7 +20,7 @@ export class BudgetService {
 
   // ─── LIST ──────────────────────────────────────────────────────────────
 
-  async findAll(filters: BudgetFilters) {
+  async findAll(filters: BudgetFilters, user?: { brandAccess?: string[]; permissions?: string[] }) {
     const { fiscalYear, groupBrandId, seasonGroupId, status, page = 1, pageSize = 20 } = filters;
 
     const where: Prisma.BudgetWhereInput = {};
@@ -28,6 +28,13 @@ export class BudgetService {
     if (groupBrandId) where.groupBrandId = groupBrandId;
     if (seasonGroupId) where.seasonGroupId = seasonGroupId;
     if (status) where.status = status;
+
+    // SEC-04: Data scoping by brandAccess (skip for admin wildcard)
+    if (user?.brandAccess?.length && !user.permissions?.includes('*')) {
+      where.groupBrandId = groupBrandId
+        ? { equals: groupBrandId, in: user.brandAccess } as any
+        : { in: user.brandAccess };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.budget.findMany({
@@ -233,29 +240,42 @@ export class BudgetService {
       throw new BadRequestException(`Cannot approve budget with status: ${budget.status}. Must be SUBMITTED.`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (budget.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? BudgetStatus.LEVEL1_APPROVED
       : BudgetStatus.REJECTED;
 
-    // Create approval record
-    await this.prisma.approval.create({
-      data: {
-        entityType: 'budget',
-        entityId: id,
-        level: 1,
-        deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
-      },
-    });
+    // BIZ-06: Atomic approval — transaction prevents race condition
+    return this.prisma.$transaction(async (tx) => {
+      // Re-check status inside transaction to prevent concurrent approvals
+      const current = await tx.budget.findUnique({ where: { id } });
+      if (current?.status !== BudgetStatus.SUBMITTED) {
+        throw new BadRequestException('Budget already processed by another approver');
+      }
 
-    return this.prisma.budget.update({
-      where: { id },
-      data: { status: newStatus },
-      include: {
-        groupBrand: true,
-        details: { include: { store: true } },
-      },
+      await tx.approval.create({
+        data: {
+          entityType: 'budget',
+          entityId: id,
+          level: 1,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.budget.update({
+        where: { id },
+        data: { status: newStatus },
+        include: {
+          groupBrand: true,
+          details: { include: { store: true } },
+        },
+      });
     });
   }
 
@@ -270,25 +290,69 @@ export class BudgetService {
       throw new BadRequestException(`Cannot approve budget with status: ${budget.status}. Must be LEVEL1_APPROVED.`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (budget.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? BudgetStatus.APPROVED
       : BudgetStatus.REJECTED;
 
-    // Create approval record
+    // BIZ-06: Atomic approval
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.budget.findUnique({ where: { id } });
+      if (current?.status !== BudgetStatus.LEVEL1_APPROVED) {
+        throw new BadRequestException('Budget already processed by another approver');
+      }
+
+      await tx.approval.create({
+        data: {
+          entityType: 'budget',
+          entityId: id,
+          level: 2,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.budget.update({
+        where: { id },
+        data: { status: newStatus },
+        include: {
+          groupBrand: true,
+          details: { include: { store: true } },
+        },
+      });
+    });
+  }
+
+  // ─── RESET TO DRAFT ────────────────────────────────────────────────────
+
+  async resetToDraft(id: string, userId: string) {
+    const budget = await this.prisma.budget.findUnique({ where: { id } });
+    if (!budget) throw new NotFoundException('Budget not found');
+
+    if (budget.status !== BudgetStatus.REJECTED) {
+      throw new BadRequestException(`Only REJECTED budgets can be reset to draft. Current status: ${budget.status}`);
+    }
+
+    // Create an audit trail approval record for the reset
     await this.prisma.approval.create({
       data: {
         entityType: 'budget',
         entityId: id,
-        level: 2,
+        level: 0,
         deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
+        action: 'APPROVED' as ApprovalAction,
+        comment: 'Reset to DRAFT for revision',
       },
     });
 
     return this.prisma.budget.update({
       where: { id },
-      data: { status: newStatus },
+      data: { status: BudgetStatus.DRAFT },
       include: {
         groupBrand: true,
         details: { include: { store: true } },
@@ -302,7 +366,7 @@ export class BudgetService {
     const where: Prisma.BudgetWhereInput = {};
     if (fiscalYear) where.fiscalYear = fiscalYear;
 
-    const [total, byStatus, totalAmount] = await Promise.all([
+    const [total, byStatus, totalAmount, brandCount, categoryCount, planCount, proposalCount] = await Promise.all([
       this.prisma.budget.count({ where }),
       this.prisma.budget.groupBy({
         by: ['status'],
@@ -313,6 +377,14 @@ export class BudgetService {
         where,
         _sum: { totalBudget: true },
       }),
+      this.prisma.groupBrand.count({ where: { isActive: true } }),
+      this.prisma.category.count({ where: { isActive: true } }),
+      this.prisma.planningVersion.count({
+        where: { status: { in: ['DRAFT', 'SUBMITTED', 'LEVEL1_APPROVED'] } },
+      }),
+      this.prisma.proposal.count({
+        where: { status: { in: ['DRAFT', 'SUBMITTED', 'LEVEL1_APPROVED'] } },
+      }),
     ]);
 
     const approvedBudgets = await this.prisma.budget.aggregate({
@@ -320,14 +392,26 @@ export class BudgetService {
       _sum: { totalBudget: true },
     });
 
+    const statusMap = byStatus.reduce((acc, item) => {
+      acc[item.status] = item._count;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const totalAmt = Number(totalAmount._sum.totalBudget || 0);
+    const approvedAmt = Number(approvedBudgets._sum.totalBudget || 0);
+    const pendingApprovals = (statusMap['SUBMITTED'] || 0) + (statusMap['LEVEL1_APPROVED'] || 0);
+    const utilization = totalAmt > 0 ? Math.round((approvedAmt / totalAmt) * 100) : 0;
+
     return {
       totalBudgets: total,
-      totalAmount: totalAmount._sum.totalBudget || 0,
-      approvedAmount: approvedBudgets._sum.totalBudget || 0,
-      byStatus: byStatus.reduce((acc, item) => {
-        acc[item.status] = item._count;
-        return acc;
-      }, {} as Record<string, number>),
+      totalAmount: totalAmt,
+      approvedAmount: approvedAmt,
+      utilization,
+      brandCount,
+      categoryCount,
+      pendingApprovals,
+      activePlans: planCount + proposalCount,
+      byStatus: statusMap,
     };
   }
 }

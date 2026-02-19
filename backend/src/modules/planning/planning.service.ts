@@ -17,7 +17,7 @@ export class PlanningService {
 
   // ─── LIST ────────────────────────────────────────────────────────────────
 
-  async findAll(filters: PlanningFilters) {
+  async findAll(filters: PlanningFilters, user?: { brandAccess?: string[]; permissions?: string[] }) {
     const { budgetDetailId, budgetId, status } = filters;
 
     // Ensure proper number conversion with defaults
@@ -30,6 +30,14 @@ export class PlanningService {
       where.budgetDetail = { budgetId };
     }
     if (status) where.status = status;
+
+    // SEC-04: Data scoping by brandAccess
+    if (user?.brandAccess?.length && !user.permissions?.includes('*')) {
+      where.budgetDetail = {
+        ...where.budgetDetail as any,
+        budget: { groupBrandId: { in: user.brandAccess } },
+      };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.planningVersion.findMany({
@@ -315,25 +323,38 @@ export class PlanningService {
       throw new BadRequestException(`Cannot approve planning with status: ${planning.status}`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (planning.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? PlanningStatus.LEVEL1_APPROVED
       : PlanningStatus.REJECTED;
 
-    await this.prisma.approval.create({
-      data: {
-        entityType: 'planning',
-        entityId: id,
-        level: 1,
-        deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
-      },
-    });
+    // BIZ-06: Atomic approval
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.planningVersion.findUnique({ where: { id } });
+      if (current?.status !== PlanningStatus.SUBMITTED) {
+        throw new BadRequestException('Planning already processed by another approver');
+      }
 
-    return this.prisma.planningVersion.update({
-      where: { id },
-      data: { status: newStatus },
-      include: { budgetDetail: { include: { store: true } } },
+      await tx.approval.create({
+        data: {
+          entityType: 'planning',
+          entityId: id,
+          level: 1,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.planningVersion.update({
+        where: { id },
+        data: { status: newStatus },
+        include: { budgetDetail: { include: { store: true } } },
+      });
     });
   }
 
@@ -347,24 +368,65 @@ export class PlanningService {
       throw new BadRequestException(`Cannot approve planning with status: ${planning.status}`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (planning.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? PlanningStatus.APPROVED
       : PlanningStatus.REJECTED;
+
+    // BIZ-06: Atomic approval
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.planningVersion.findUnique({ where: { id } });
+      if (current?.status !== PlanningStatus.LEVEL1_APPROVED) {
+        throw new BadRequestException('Planning already processed by another approver');
+      }
+
+      await tx.approval.create({
+        data: {
+          entityType: 'planning',
+          entityId: id,
+          level: 2,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.planningVersion.update({
+        where: { id },
+        data: { status: newStatus },
+        include: { budgetDetail: { include: { store: true } } },
+      });
+    });
+  }
+
+  // ─── RESET TO DRAFT ────────────────────────────────────────────────────
+
+  async resetToDraft(id: string, userId: string) {
+    const planning = await this.prisma.planningVersion.findUnique({ where: { id } });
+    if (!planning) throw new NotFoundException('Planning version not found');
+
+    if (planning.status !== PlanningStatus.REJECTED) {
+      throw new BadRequestException(`Only REJECTED planning can be reset. Current status: ${planning.status}`);
+    }
 
     await this.prisma.approval.create({
       data: {
         entityType: 'planning',
         entityId: id,
-        level: 2,
+        level: 0,
         deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
+        action: 'APPROVED' as ApprovalAction,
+        comment: 'Reset to DRAFT for revision',
       },
     });
 
     return this.prisma.planningVersion.update({
       where: { id },
-      data: { status: newStatus },
+      data: { status: PlanningStatus.DRAFT },
       include: { budgetDetail: { include: { store: true } } },
     });
   }

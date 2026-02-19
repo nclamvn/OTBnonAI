@@ -30,6 +30,7 @@ export class ProposalController {
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
   async findAll(
+    @Request() req: any,
     @Query('budgetId') budgetId?: string,
     @Query('planningVersionId') planningVersionId?: string,
     @Query('status') status?: any,
@@ -38,7 +39,7 @@ export class ProposalController {
   ) {
     const result = await this.proposalService.findAll({
       budgetId, planningVersionId, status, page, pageSize,
-    });
+    }, req.user);
     return { success: true, ...result };
   }
 
@@ -172,6 +173,15 @@ export class ProposalController {
     @Request() req: any,
   ) {
     return { success: true, data: await this.proposalService.approveLevel2(id, dto, req.user.sub) };
+  }
+
+  // ─── RESET TO DRAFT ──────────────────────────────────────────────────────
+
+  @Post(':id/reset-to-draft')
+  @RequirePermissions('proposal:write')
+  @ApiOperation({ summary: 'Reset rejected proposal back to draft for revision' })
+  async resetToDraft(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.proposalService.resetToDraft(id, req.user.sub) };
   }
 
   // ─── DELETE ──────────────────────────────────────────────────────────────

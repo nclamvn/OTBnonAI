@@ -13,3 +13,4 @@ export { importService } from './importService';
 export { orderService } from './orderService';
 export { approvalHelper } from './approvalHelper';
 export { withErrorHandling } from './withErrorHandling';
+export { notificationService } from './notificationService';

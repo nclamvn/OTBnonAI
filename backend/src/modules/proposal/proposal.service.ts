@@ -17,7 +17,7 @@ export class ProposalService {
 
   // ─── LIST ────────────────────────────────────────────────────────────────
 
-  async findAll(filters: ProposalFilters) {
+  async findAll(filters: ProposalFilters, user?: { brandAccess?: string[]; permissions?: string[] }) {
     const { budgetId, planningVersionId, status } = filters;
     const page = Number(filters.page) || 1;
     const pageSize = Number(filters.pageSize) || 20;
@@ -26,6 +26,11 @@ export class ProposalService {
     if (budgetId) where.budgetId = budgetId;
     if (planningVersionId) where.planningVersionId = planningVersionId;
     if (status) where.status = status;
+
+    // SEC-04: Data scoping by brandAccess
+    if (user?.brandAccess?.length && !user.permissions?.includes('*')) {
+      where.budget = { groupBrandId: { in: user.brandAccess } };
+    }
 
     const [data, total] = await Promise.all([
       this.prisma.proposal.findMany({
@@ -361,28 +366,41 @@ export class ProposalService {
       throw new BadRequestException(`Cannot approve proposal with status: ${proposal.status}`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (proposal.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? ProposalStatus.LEVEL1_APPROVED
       : ProposalStatus.REJECTED;
 
-    await this.prisma.approval.create({
-      data: {
-        entityType: 'proposal',
-        entityId: id,
-        level: 1,
-        deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
-      },
-    });
+    // BIZ-06: Atomic approval
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.proposal.findUnique({ where: { id } });
+      if (current?.status !== ProposalStatus.SUBMITTED) {
+        throw new BadRequestException('Proposal already processed by another approver');
+      }
 
-    return this.prisma.proposal.update({
-      where: { id },
-      data: { status: newStatus },
-      include: {
-        budget: { include: { groupBrand: true } },
-        _count: { select: { products: true } },
-      },
+      await tx.approval.create({
+        data: {
+          entityType: 'proposal',
+          entityId: id,
+          level: 1,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.proposal.update({
+        where: { id },
+        data: { status: newStatus },
+        include: {
+          budget: { include: { groupBrand: true } },
+          _count: { select: { products: true } },
+        },
+      });
     });
   }
 
@@ -396,24 +414,68 @@ export class ProposalService {
       throw new BadRequestException(`Cannot approve proposal with status: ${proposal.status}`);
     }
 
+    // BIZ-01: Prevent self-approval
+    if (proposal.createdById === userId) {
+      throw new ForbiddenException('Cannot approve your own submission');
+    }
+
     const newStatus = dto.action === 'APPROVED'
       ? ProposalStatus.APPROVED
       : ProposalStatus.REJECTED;
+
+    // BIZ-06: Atomic approval
+    return this.prisma.$transaction(async (tx) => {
+      const current = await tx.proposal.findUnique({ where: { id } });
+      if (current?.status !== ProposalStatus.LEVEL1_APPROVED) {
+        throw new BadRequestException('Proposal already processed by another approver');
+      }
+
+      await tx.approval.create({
+        data: {
+          entityType: 'proposal',
+          entityId: id,
+          level: 2,
+          deciderId: userId,
+          action: dto.action as ApprovalAction,
+          comment: dto.comment,
+        },
+      });
+
+      return tx.proposal.update({
+        where: { id },
+        data: { status: newStatus },
+        include: {
+          budget: { include: { groupBrand: true } },
+          _count: { select: { products: true } },
+        },
+      });
+    });
+  }
+
+  // ─── RESET TO DRAFT ────────────────────────────────────────────────────
+
+  async resetToDraft(id: string, userId: string) {
+    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
+    if (!proposal) throw new NotFoundException('Proposal not found');
+
+    if (proposal.status !== ProposalStatus.REJECTED) {
+      throw new BadRequestException(`Only REJECTED proposals can be reset. Current status: ${proposal.status}`);
+    }
 
     await this.prisma.approval.create({
       data: {
         entityType: 'proposal',
         entityId: id,
-        level: 2,
+        level: 0,
         deciderId: userId,
-        action: dto.action as ApprovalAction,
-        comment: dto.comment,
+        action: 'APPROVED' as ApprovalAction,
+        comment: 'Reset to DRAFT for revision',
       },
     });
 
     return this.prisma.proposal.update({
       where: { id },
-      data: { status: newStatus },
+      data: { status: ProposalStatus.DRAFT },
       include: {
         budget: { include: { groupBrand: true } },
         _count: { select: { products: true } },

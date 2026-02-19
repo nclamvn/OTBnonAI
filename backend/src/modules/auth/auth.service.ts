@@ -30,6 +30,8 @@ export class AuthService {
       email: user.email,
       role: user.role.name,
       permissions: user.role.permissions,
+      brandAccess: user.brandAccess,
+      storeAccess: user.storeAccess,
     };
 
     return {
@@ -64,10 +66,13 @@ export class AuthService {
         email: user.email,
         role: user.role.name,
         permissions: user.role.permissions,
+        brandAccess: user.brandAccess,
+        storeAccess: user.storeAccess,
       };
 
       return {
         accessToken: this.jwtService.sign(payload),
+        refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
       };
     } catch {
       throw new UnauthorizedException('Invalid refresh token');

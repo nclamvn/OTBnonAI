@@ -6,6 +6,8 @@ import { ROUTE_MAP } from '@/utils/routeMap';
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useAppContext } from '@/contexts/AppContext';
+import { notificationService, type Notification } from '@/services/notificationService';
 import {
   Wallet,
   DollarSign,
@@ -187,6 +189,7 @@ const AppHeader = ({
   const router = useRouter();
   const { t, language, setLanguage } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { triggerSave, hasSaveHandler } = useAppContext();
   const SCREEN_CONFIG: any = useMemo(() => getScreenConfig(t), [t]);
   const onNavigate = (screenId: any) => {
     const route = ROUTE_MAP[screenId];
@@ -198,6 +201,8 @@ const AppHeader = ({
   const CurrentIcon = currentConfig.icon || Home;
 
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
   const [openSaveMenu, setOpenSaveMenu] = useState(false);
   const saveButtonRef = useRef<any>(null);
   const [saveMenuPosition, setSaveMenuPosition] = useState({ top: 0, right: 0 });
@@ -257,6 +262,22 @@ const AppHeader = ({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Fetch notifications on mount and poll every 60s
+  const fetchNotifications = useCallback(async () => {
+    setNotifLoading(true);
+    try {
+      const data = await notificationService.getAll(20);
+      setNotifications(data);
+    } catch { /* silent */ }
+    finally { setNotifLoading(false); }
+  }, []);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60_000);
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   return (
     <div className="sticky top-0 z-40 shrink-0" style={{
@@ -471,7 +492,7 @@ const AppHeader = ({
           {/* Notification Bell */}
           <div className="relative" ref={notificationRef}>
             <button
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => { setShowNotifications(!showNotifications); if (!showNotifications) fetchNotifications(); }}
               className={`relative p-1.5 rounded-md transition-all duration-200 ${
                 showNotifications
                   ? darkMode
@@ -487,7 +508,12 @@ const AppHeader = ({
                   ? 'text-[#D7B797]'
                   : darkMode ? 'text-[#888888]' : 'text-gray-600'
               } style={showNotifications ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
-
+              {notifications.length > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#F85149] text-white text-[8px] font-bold flex items-center justify-center"
+                  style={{ border: `1.5px solid ${darkMode ? '#0A0A0A' : '#ffffff'}` }}>
+                  {notifications.length > 9 ? '9+' : notifications.length}
+                </span>
+              )}
             </button>
 
             {/* Notification Dropdown */}
@@ -509,13 +535,81 @@ const AppHeader = ({
                       {t('header.notifications') || 'Notifications'}
                     </h3>
                   </div>
+                  {notifications.length > 0 && (
+                    <span className={`text-[10px] font-semibold font-['JetBrains_Mono'] px-1.5 py-0.5 rounded ${
+                      darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-50 text-red-600'
+                    }`}>
+                      {notifications.length}
+                    </span>
+                  )}
                 </div>
 
-                {/* Empty State */}
+                {/* Notification List */}
                 <div className="max-h-80 overflow-y-auto">
-                  <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
-                    {t('header.noAlerts')}
-                  </div>
+                  {notifLoading && notifications.length === 0 ? (
+                    <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                      Loading...
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                      {t('header.noAlerts')}
+                    </div>
+                  ) : (
+                    <div className="py-1">
+                      {notifications.map((notif) => {
+                        const severityColors: Record<string, string> = {
+                          success: 'text-[#2A9E6A]',
+                          error: 'text-[#F85149]',
+                          warning: 'text-[#E3B341]',
+                          info: 'text-[#58A6FF]',
+                        };
+                        const severityBg: Record<string, string> = {
+                          success: 'bg-[rgba(42,158,106,0.12)]',
+                          error: 'bg-[rgba(248,81,73,0.12)]',
+                          warning: 'bg-[rgba(227,179,65,0.12)]',
+                          info: 'bg-[rgba(88,166,255,0.12)]',
+                        };
+                        const timeAgo = (date: string) => {
+                          const diff = Date.now() - new Date(date).getTime();
+                          const mins = Math.floor(diff / 60000);
+                          if (mins < 1) return 'just now';
+                          if (mins < 60) return `${mins}m ago`;
+                          const hrs = Math.floor(mins / 60);
+                          if (hrs < 24) return `${hrs}h ago`;
+                          return `${Math.floor(hrs / 24)}d ago`;
+                        };
+                        return (
+                          <div
+                            key={notif.id}
+                            className={`px-4 py-2.5 border-b last:border-b-0 transition-colors ${
+                              darkMode
+                                ? 'border-[#1A1A1A] hover:bg-[rgba(215,183,151,0.04)]'
+                                : 'border-gray-100 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="flex items-start gap-2.5">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${severityBg[notif.severity] || severityBg.info}`}>
+                                <Bell size={11} className={severityColors[notif.severity] || severityColors.info} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className={`text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'}`}>
+                                    {notif.title}
+                                  </span>
+                                  <span className={`text-[10px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-500'}`}>
+                                    {timeAgo(notif.createdAt)}
+                                  </span>
+                                </div>
+                                <p className={`text-[11px] mt-0.5 leading-snug ${darkMode ? 'text-[#888888]' : 'text-gray-600'}`}>
+                                  {notif.message}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -639,7 +733,13 @@ const AppHeader = ({
                 boxShadow: '0 2px 8px rgba(215,183,151,0.2)',
               }}>
                 <button
-                  onClick={() => toast.success(t('header.save'))}
+                  onClick={async () => {
+                    if (hasSaveHandler) {
+                      await triggerSave();
+                    } else {
+                      toast.success(t('header.save'));
+                    }
+                  }}
                   className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-0.5'} text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
                 >
                   <Save size={isMobile ? 14 : 12} />
@@ -677,8 +777,12 @@ const AppHeader = ({
           }}
         >
           <button
-            onClick={() => {
-              toast.success(t('header.save'));
+            onClick={async () => {
+              if (hasSaveHandler) {
+                await triggerSave();
+              } else {
+                toast.success(t('header.save'));
+              }
               setOpenSaveMenu(false);
             }}
             className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium transition-colors ${

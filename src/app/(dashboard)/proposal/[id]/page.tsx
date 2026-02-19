@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAppContext } from '@/contexts/AppContext';
 import { proposalService } from '@/services';
@@ -8,8 +8,9 @@ import ProposalDetailPage from '@/screens/ProposalDetailPage';
 export default function ProposalDetailRoute() {
   const router = useRouter();
   const params = useParams();
-  const { darkMode } = useAppContext();
+  const { darkMode, registerSave, unregisterSave } = useAppContext();
   const [proposal, setProposal] = useState<any>(null);
+  const saveRef = { current: null as any };
 
   useEffect(() => {
     // Try to get proposal data from sessionStorage first
@@ -29,9 +30,15 @@ export default function ProposalDetailRoute() {
     router.back();
   };
 
-  const handleSave = (_data: any) => {
+  const handleSave = useCallback((_data?: any) => {
     handleBack();
-  };
+  }, []);
+
+  // Register save handler for AppHeader Save button
+  useEffect(() => {
+    registerSave(handleSave);
+    return () => unregisterSave();
+  }, [registerSave, unregisterSave, handleSave]);
 
   return (
     <ProposalDetailPage

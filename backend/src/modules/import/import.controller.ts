@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { PermissionsGuard, RequirePermissions } from '../../common/guards/permissions.guard';
 import { ImportService } from './import.service';
 import {
   ImportTargetEnum,
@@ -24,12 +25,13 @@ import {
 
 @ApiTags('Import')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('import')
 export class ImportController {
   constructor(private readonly importService: ImportService) {}
 
   @Post('batch')
+  @RequirePermissions('import:write')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Batch import records' })
   @ApiResponse({ status: 200, description: 'Batch processed successfully' })
@@ -70,6 +72,7 @@ export class ImportController {
   }
 
   @Delete('data')
+  @RequirePermissions('import:write')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete imported data by session or clear all' })
   async deleteData(@Body() dto: ImportDeleteDto) {
@@ -92,6 +95,7 @@ export class ImportController {
   }
 
   @Delete('session/:sessionId')
+  @RequirePermissions('import:write')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete a specific import session' })
   @ApiParam({ name: 'sessionId', type: String })
@@ -105,6 +109,7 @@ export class ImportController {
   }
 
   @Delete('clear/:target')
+  @RequirePermissions('import:write')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Clear all data for a target' })
   @ApiParam({ name: 'target', enum: ImportTargetEnum })
