@@ -417,17 +417,17 @@ const AppHeader = ({
               onClick={() => setShowSearch(!showSearch)}
               className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border transition-all duration-200 ${
                 darkMode
-                  ? 'border-[#1A1A1A] hover:border-[rgba(215,183,151,0.2)] hover:bg-[rgba(160,120,75,0.06)]'
+                  ? 'border-[#444444] hover:border-[rgba(215,183,151,0.35)] hover:bg-[rgba(160,120,75,0.08)]'
                   : 'border-gray-300 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]'
               }`}
             >
-              <Search size={13} className={darkMode ? 'text-[#555555]' : 'text-gray-600'} />
-              <span className={`text-[11px] hidden sm:block ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
+              <Search size={13} className={darkMode ? 'text-[#999999]' : 'text-gray-600'} />
+              <span className={`text-[11px] hidden sm:block ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
                 {t('header.searchPlaceholder')}
               </span>
               <kbd className={`hidden sm:flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-['JetBrains_Mono'] ${
                 darkMode
-                  ? 'bg-[#0A0A0A] text-[#444444] border border-[#1A1A1A]'
+                  ? 'bg-[#1A1A1A] text-[#888888] border border-[#444444]'
                   : 'bg-gray-100 text-gray-500 border border-gray-300'
               }`}>
                 <Command size={8} />K
