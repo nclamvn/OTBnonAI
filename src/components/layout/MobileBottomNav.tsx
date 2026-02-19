@@ -55,7 +55,7 @@ export default function MobileBottomNav({ currentScreen, darkMode }: any) {
         {showMore && (
           <>
             <motion.div
-              className="fixed inset-0 z-[90] bg-black/50"
+              className="fixed inset-0 z-[90] bg-black/50 backdrop-blur-sm"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

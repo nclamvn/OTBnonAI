@@ -6,7 +6,9 @@ interface ConfirmState {
   title?: string;
   confirmLabel?: string;
   variant?: 'danger' | 'warning';
-  onConfirm: () => void;
+  promptPlaceholder?: string;
+  promptRequired?: string; // exact value required to confirm (e.g. "delete")
+  onConfirm: (inputValue?: string) => void;
 }
 
 const INITIAL: ConfirmState = {
@@ -23,13 +25,15 @@ export function useConfirmDialog() {
     title?: string;
     confirmLabel?: string;
     variant?: 'danger' | 'warning';
-    onConfirm: () => void;
+    promptPlaceholder?: string;
+    promptRequired?: string;
+    onConfirm: (inputValue?: string) => void;
   }) => {
     setState({ open: true, ...opts });
   }, []);
 
-  const handleConfirm = useCallback(() => {
-    state.onConfirm();
+  const handleConfirm = useCallback((inputValue?: string) => {
+    state.onConfirm(inputValue);
     setState(INITIAL);
   }, [state]);
 
@@ -44,6 +48,8 @@ export function useConfirmDialog() {
       title: state.title,
       confirmLabel: state.confirmLabel,
       variant: state.variant,
+      promptPlaceholder: state.promptPlaceholder,
+      promptRequired: state.promptRequired,
       onConfirm: handleConfirm,
       onCancel: handleCancel,
     },

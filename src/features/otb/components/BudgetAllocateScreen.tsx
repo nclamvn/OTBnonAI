@@ -866,7 +866,7 @@ const BudgetAllocateScreen = ({
       />
 
       {/* Allocation Toolbar — Back, Stepper, Undo/Redo, Save, Continue */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6`}>
         <AllocationToolbar
           onBack={handleBack}
           onContinue={handleContinue}
@@ -891,34 +891,30 @@ const BudgetAllocateScreen = ({
             autoSaving: allocation.autoSaving,
             lastSavedAt: allocation.lastSavedAt,
           }}
+          quickActions={(selectedBudget || selectedBudgetId) ? (
+            <>
+              <BulkActionsMenu
+                stores={stores}
+                allocationValues={allocationValues}
+                onBulkUpdate={handleBulkUpdate}
+                totalBudget={totalBudget}
+                darkMode={darkMode}
+              />
+              <button
+                onClick={handleExportExcel}
+                className={`p-1.5 rounded-md transition-colors border ${
+                  darkMode
+                    ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
+                    : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
+                }`}
+                title={t('planning.exportExcel')}
+              >
+                <Download size={12} />
+              </button>
+              <PrintButton darkMode={darkMode} />
+            </>
+          ) : undefined}
         />
-
-        {/* Quick actions bar — Bulk Actions + Export */}
-        {(selectedBudget || selectedBudgetId) && (
-          <div className={`px-3 md:px-6 py-1 border-b flex items-center gap-2 ${
-            darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'
-          }`}>
-            <BulkActionsMenu
-              stores={stores}
-              allocationValues={allocationValues}
-              onBulkUpdate={handleBulkUpdate}
-              totalBudget={totalBudget}
-              darkMode={darkMode}
-            />
-            <button
-              onClick={handleExportExcel}
-              className={`p-1.5 rounded-md transition-colors border ${
-                darkMode
-                  ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
-                  : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
-              }`}
-              title={t('planning.exportExcel')}
-            >
-              <Download size={12} />
-            </button>
-            <PrintButton darkMode={darkMode} />
-          </div>
-        )}
 
         {/* Allocation Progress Bar */}
         <AllocationProgressBar
@@ -929,7 +925,7 @@ const BudgetAllocateScreen = ({
       </div>
 
       {/* Filter Section — hides entirely on scroll */}
-      <div ref={barRef} className={`z-20 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
+      <div ref={barRef} className={`z-10 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
       }`}>
 

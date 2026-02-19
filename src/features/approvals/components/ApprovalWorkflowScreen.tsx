@@ -9,13 +9,15 @@ import {
 import toast from 'react-hot-toast';
 import { approvalWorkflowService } from '@/services/approvalWorkflowService';
 import { masterDataService } from '@/services';
-import { MobileDataCard } from '@/components/ui';
+import { MobileDataCard, ConfirmDialog } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const { dialogProps, confirm } = useConfirmDialog();
   const [steps, setSteps] = useState<any[]>([]);
   const [brands, setBrands] = useState<any[]>([]);
   const [availableRoles, setAvailableRoles] = useState<any[]>([]);
@@ -120,17 +122,24 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
     }
   };
 
-  const handleDelete = async (id: any) => {
-    const reason = window.prompt(t('approval.confirmDelete'));
-    if (reason !== 'delete') return;
-    try {
-      await approvalWorkflowService.delete(id);
-      toast.success(t('approval.stepDeleted'));
-      fetchSteps();
-    } catch (err: any) {
-      console.error('Failed to delete:', err);
-      toast.error(t('approval.failedToDeleteStep'));
-    }
+  const handleDelete = (id: any) => {
+    confirm({
+      title: t('common.delete'),
+      message: t('approval.confirmDelete'),
+      confirmLabel: t('common.delete'),
+      variant: 'danger',
+      promptRequired: 'delete',
+      onConfirm: async () => {
+        try {
+          await approvalWorkflowService.delete(id);
+          toast.success(t('approval.stepDeleted'));
+          fetchSteps();
+        } catch (err: any) {
+          console.error('Failed to delete:', err);
+          toast.error(t('approval.failedToDeleteStep'));
+        }
+      },
+    });
   };
 
   // Group steps by brand for progress view
@@ -568,6 +577,7 @@ const ApprovalWorkflowScreen = ({ darkMode = false }: any) => {
           </div>
         </div>
       )}
+      <ConfirmDialog darkMode={darkMode} {...dialogProps} />
     </div>
   );
 };

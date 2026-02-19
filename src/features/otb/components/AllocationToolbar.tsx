@@ -54,6 +54,7 @@ interface AllocationToolbarProps {
   darkMode?: boolean;
   kpiData?: Record<string, KpiItem>;
   statusInfo?: StatusInfo;
+  quickActions?: React.ReactNode;
 }
 
 const AllocationToolbar = ({
@@ -73,6 +74,7 @@ const AllocationToolbar = ({
   darkMode = false,
   kpiData = {},
   statusInfo,
+  quickActions,
 }: AllocationToolbarProps) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
@@ -199,17 +201,19 @@ const AllocationToolbar = ({
         {isMobile && <div className="flex-1" />}
 
         {/* Undo / Redo */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             onClick={onUndo}
             disabled={!canUndo}
-            className={`p-1 rounded transition-colors ${
+            className={`p-1.5 rounded-md transition-colors border ${
               canUndo
                 ? darkMode
-                  ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
-                  : 'text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
-                : 'opacity-30 cursor-not-allowed'
-            } ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}
+                  ? 'border-[#2E2E2E] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'border-[#C4B5A5] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
+                : darkMode
+                  ? 'border-[#2E2E2E] text-[#999] opacity-30 cursor-not-allowed'
+                  : 'border-[#C4B5A5] text-[#666] opacity-30 cursor-not-allowed'
+            }`}
             title={`${t('planning.undo')} (Ctrl+Z)`}
           >
             <Undo2 size={14} />
@@ -217,13 +221,15 @@ const AllocationToolbar = ({
           <button
             onClick={onRedo}
             disabled={!canRedo}
-            className={`p-1 rounded transition-colors ${
+            className={`p-1.5 rounded-md transition-colors border ${
               canRedo
                 ? darkMode
-                  ? 'text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
-                  : 'text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
-                : 'opacity-30 cursor-not-allowed'
-            } ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}
+                  ? 'border-[#2E2E2E] text-[#D7B797] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'border-[#C4B5A5] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'
+                : darkMode
+                  ? 'border-[#2E2E2E] text-[#999] opacity-30 cursor-not-allowed'
+                  : 'border-[#C4B5A5] text-[#666] opacity-30 cursor-not-allowed'
+            }`}
             title={`${t('planning.redo')} (Ctrl+Shift+Z)`}
           >
             <Redo2 size={14} />
@@ -235,7 +241,7 @@ const AllocationToolbar = ({
           <button
             onClick={() => setSaveMenuOpen(!saveMenuOpen)}
             disabled={saving}
-            className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors border ${
+            className={`flex items-center gap-1 p-1.5 rounded-md text-xs font-medium transition-colors border ${
               isDirty
                 ? darkMode
                   ? 'bg-[rgba(18,119,73,0.15)] border-[#127749] text-[#2A9E6A] hover:bg-[rgba(18,119,73,0.25)]'
@@ -246,9 +252,9 @@ const AllocationToolbar = ({
             }`}
           >
             {saving ? (
-              <div className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
             ) : (
-              <Save size={12} />
+              <Save size={14} />
             )}
             <ChevronDown size={10} className={`transition-transform ${saveMenuOpen ? 'rotate-180' : ''}`} />
           </button>
@@ -295,14 +301,14 @@ const AllocationToolbar = ({
         {onToggleSidePanel && (
           <button
             onClick={onToggleSidePanel}
-            className={`p-1 rounded transition-colors shrink-0 ${
+            className={`p-1.5 rounded-md transition-colors shrink-0 border ${
               sidePanelOpen
                 ? darkMode
-                  ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]'
-                  : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
+                  ? 'bg-[rgba(215,183,151,0.15)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
+                  : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
                 : darkMode
-                  ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
-                  : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
+                  ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
+                  : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
             }`}
             title={`${t('planning.validation')} / ${t('planning.history')}`}
           >
@@ -324,72 +330,84 @@ const AllocationToolbar = ({
         </button>
       </div>
 
-      {/* Row 2: Status info (merged from AllocationStatusBar) */}
-      {statusInfo?.budgetName && (
+      {/* Row 2: Status info + Quick actions (merged) */}
+      {(statusInfo?.budgetName || quickActions) && (
         <div
-          className={`px-3 md:px-6 py-1 border-t flex items-center gap-2 flex-wrap text-[11px] ${
+          className={`px-3 md:px-6 py-1 border-t flex items-center gap-2 text-[11px] ${
             darkMode ? 'border-[#2E2E2E]/50' : 'border-[rgba(215,183,151,0.15)]'
           }`}
         >
-          {/* Budget name */}
-          <div className="flex items-center gap-1 shrink-0">
-            <FileText size={11} className={darkMode ? 'text-[#999]' : 'text-[#666]'} />
-            <span
-              className={`font-semibold font-['Montserrat'] ${
-                darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'
-              }`}
-            >
-              {statusInfo.budgetName}
-            </span>
-          </div>
-
-          <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
-
-          {/* Status badge */}
-          <span
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-semibold ${statusCfg.bg} ${statusCfg.text}`}
-          >
-            <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
-            {statusLabel}
-          </span>
-
-          {/* Version */}
-          {statusInfo.versionName && (
+          {/* Status info */}
+          {statusInfo?.budgetName && (
             <>
+              {/* Budget name */}
+              <div className="flex items-center gap-1 shrink-0">
+                <FileText size={11} className={darkMode ? 'text-[#999]' : 'text-[#666]'} />
+                <span
+                  className={`font-semibold font-['Montserrat'] ${
+                    darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'
+                  }`}
+                >
+                  {statusInfo.budgetName}
+                </span>
+              </div>
+
               <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
-              <span className={`font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                {statusInfo.versionName}
+
+              {/* Status badge */}
+              <span
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full font-semibold ${statusCfg.bg} ${statusCfg.text}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
+                {statusLabel}
               </span>
+
+              {/* Version */}
+              {statusInfo.versionName && (
+                <>
+                  <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
+                  <span className={`font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                    {statusInfo.versionName}
+                  </span>
+                </>
+              )}
+
+              {/* Auto-save indicator */}
+              {(statusInfo.autoSaving || statusInfo.lastSavedAt) && (
+                <>
+                  <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
+                  {statusInfo.autoSaving ? (
+                    <span className="inline-flex items-center gap-1 text-[#E3B341]">
+                      <div className="w-2 h-2 border border-[#E3B341]/40 border-t-[#E3B341] rounded-full animate-spin" />
+                      {t('planning.autoSaving')}
+                    </span>
+                  ) : statusInfo.lastSavedAt ? (
+                    <span className={`inline-flex items-center gap-1 ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
+                      <Clock size={10} />
+                      {t('planning.savedAt', { time: statusInfo.lastSavedAt })}
+                    </span>
+                  ) : null}
+                </>
+              )}
+
+              {/* Unsaved indicator */}
+              {statusInfo.isDirty && (
+                <>
+                  <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
+                  <span className="inline-flex items-center gap-1 text-[#E3B341] font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#E3B341] animate-pulse" />
+                    {t('planning.unsavedChanges')}
+                  </span>
+                </>
+              )}
             </>
           )}
 
-          {/* Auto-save indicator */}
-          {(statusInfo.autoSaving || statusInfo.lastSavedAt) && (
-            <>
-              <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
-              {statusInfo.autoSaving ? (
-                <span className="inline-flex items-center gap-1 text-[#E3B341]">
-                  <div className="w-2 h-2 border border-[#E3B341]/40 border-t-[#E3B341] rounded-full animate-spin" />
-                  {t('planning.autoSaving')}
-                </span>
-              ) : statusInfo.lastSavedAt ? (
-                <span className={`inline-flex items-center gap-1 ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>
-                  <Clock size={10} />
-                  {t('planning.savedAt', { time: statusInfo.lastSavedAt })}
-                </span>
-              ) : null}
-            </>
-          )}
-
-          {/* Unsaved indicator */}
-          {statusInfo.isDirty && (
-            <>
-              <span className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'}>|</span>
-              <span className="inline-flex items-center gap-1 text-[#E3B341] font-semibold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#E3B341] animate-pulse" />
-                {t('planning.unsavedChanges')}
-              </span>
-            </>
+          {/* Quick actions (pushed to right) */}
+          {quickActions && (
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              {quickActions}
+            </div>
           )}
         </div>
       )}

@@ -253,27 +253,27 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
   };
 
   return (
-    <div className="space-y-3 md:space-y-6">
+    <div className="space-y-2 md:space-y-4">
       {/* ===== PAGE TITLE ===== */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-1.5">
         <div>
-          <h1 className={`text-lg font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
+          <h1 className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
             {t('ticket.title')}
           </h1>
-          <p className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>
+          <p className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-gray-700'}`}>
             {t('ticket.subtitle')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {/* Search Box */}
-          <div className={`relative flex items-center ${darkMode ? '' : ''}`}>
-            <Search size={14} className={`absolute left-3 ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`} />
+          <div className={`relative flex items-center`}>
+            <Search size={12} className={`absolute left-2.5 ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`} />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={t('common.search') + '...'}
-              className={`pl-9 pr-8 py-2 text-sm rounded-lg border w-48 focus:outline-none focus:ring-2 transition-all ${
+              className={`pl-7 pr-6 py-1.5 text-xs rounded-md border w-40 focus:outline-none focus:ring-1 transition-all ${
                 darkMode
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666666] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
                   : 'bg-white border-gray-300 text-gray-800 placeholder-gray-400 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
@@ -282,20 +282,20 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className={`absolute right-2 p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'}`}
+                className={`absolute right-1.5 p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'}`}
               >
-                <X size={14} />
+                <X size={12} />
               </button>
             )}
           </div>
 
           {/* View Toggle */}
-          <div className={`flex items-center gap-1 p-1 rounded-lg ${
+          <div className={`flex items-center gap-0.5 p-0.5 rounded-md ${
             darkMode ? 'bg-[#1A1A1A] border border-[#2E2E2E]' : 'bg-gray-100 border border-gray-300'
           }`}>
             <button
               onClick={() => setViewMode('table')}
-              className={`p-2 rounded-md transition-all duration-150 ${
+              className={`p-1.5 rounded transition-all duration-150 ${
                 viewMode === 'table'
                   ? darkMode
                     ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm'
@@ -306,11 +306,11 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
               }`}
               title={t('ticket.tableView')}
             >
-              <LayoutList size={16} />
+              <LayoutList size={13} />
             </button>
             <button
               onClick={() => setViewMode('kanban')}
-              className={`p-2 rounded-md transition-all duration-150 ${
+              className={`p-1.5 rounded transition-all duration-150 ${
                 viewMode === 'kanban'
                   ? darkMode
                     ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] shadow-sm'
@@ -321,20 +321,20 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
               }`}
               title={t('ticket.kanbanView')}
             >
-              <LayoutGrid size={16} />
+              <LayoutGrid size={13} />
             </button>
           </div>
 
           <button
             onClick={() => setShowCreatePopup(true)}
-            className={`p-2 rounded-lg transition-all duration-150 ${
+            className={`p-1.5 rounded-md transition-all duration-150 ${
               darkMode
                 ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]'
                 : 'bg-[#D7B797] text-[#333333] hover:bg-[#C4A584]'
             }`}
             title={t('ticket.createTicket')}
           >
-            <Plus size={18} />
+            <Plus size={14} />
           </button>
         </div>
       </div>

@@ -14,6 +14,7 @@ const en = {
     search: 'Search',
     filter: 'Filter',
     filters: 'Filters',
+    apply: 'Apply',
     refresh: 'Refresh',
     loading: 'Loading',
     error: 'Error',

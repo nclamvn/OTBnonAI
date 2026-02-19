@@ -183,7 +183,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
             className="w-full h-full flex items-center justify-center transition-all duration-200 hover:bg-[rgba(215,183,151,0.06)]"
             title={t('components.expandSidebar')}
           >
-            <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-[18px] w-auto object-contain" />
+            <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-[14px] w-auto object-contain" />
           </button>
         ) : (
           <div className="flex items-center gap-2.5 px-3 w-full h-full">
@@ -313,8 +313,8 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
                 {openGroups[group.id] && (
                   <div className="space-y-0.5 ml-1.5 pl-2.5 mt-0.5" style={{
                     borderLeft: darkMode
-                      ? '1px solid rgba(215,183,151,0.1)'
-                      : '1px solid rgba(215,183,151,0.2)',
+                      ? '1.5px solid rgba(215,183,151,0.3)'
+                      : '1.5px solid rgba(215,183,151,0.45)',
                   }}>
                     {group.items.map((item: any) => {
                       const isActive = currentScreen === item.id;
@@ -397,8 +397,8 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
               {isMasterDataOpen && (
                 <div className="space-y-0.5 ml-1.5 pl-2.5 mt-0.5" style={{
                   borderLeft: darkMode
-                    ? '1px solid rgba(215,183,151,0.1)'
-                    : '1px solid rgba(215,183,151,0.2)',
+                    ? '1.5px solid rgba(215,183,151,0.3)'
+                    : '1.5px solid rgba(215,183,151,0.45)',
                 }}>
                   {[
                     { id: 'master-brands', label: t('nav.brands'), icon: Building2 },

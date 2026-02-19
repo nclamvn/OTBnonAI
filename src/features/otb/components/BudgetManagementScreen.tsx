@@ -728,7 +728,7 @@ const BudgetManagementScreen = ({
         <div className="fixed inset-0 z-[9999]">
           {/* Overlay */}
           <div
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setShowViewModal(false)}
           />
 
@@ -893,7 +893,7 @@ const BudgetManagementScreen = ({
       {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && selectedBudget && (
         <div className="fixed inset-0 z-[10000]">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowDeleteConfirm(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(false)} />
           <div className="relative flex min-h-screen items-center justify-center p-4">
             <div className={`w-full max-w-sm rounded-2xl shadow-xl overflow-hidden ${darkMode ? 'bg-[#121212] text-[#F2F2F2]' : 'bg-white text-[#0A0A0A]'}`}>
               <div className="px-6 py-5 space-y-3">
@@ -926,7 +926,7 @@ const BudgetManagementScreen = ({
       {/* UX-26: Archive Confirmation Dialog */}
       {showArchiveConfirm && selectedBudget && (
         <div className="fixed inset-0 z-[10000]">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowArchiveConfirm(false)} />
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowArchiveConfirm(false)} />
           <div className="relative flex min-h-screen items-center justify-center p-4">
             <div className={`w-full max-w-sm rounded-2xl shadow-xl overflow-hidden ${darkMode ? 'bg-[#121212] text-[#F2F2F2]' : 'bg-white text-[#0A0A0A]'}`}>
               <div className="px-6 py-5 space-y-3">
@@ -966,7 +966,7 @@ const BudgetManagementScreen = ({
 
       {/* Create Budget Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`rounded-2xl shadow-xl w-full max-w-lg max-h-[calc(100vh-2rem)] overflow-hidden ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
             <div className={`flex items-center justify-between p-6 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
               <h3 className={`text-lg font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{t('budget.createNewBudget')}</h3>

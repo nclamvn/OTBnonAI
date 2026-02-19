@@ -4,12 +4,13 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
-import { ProductImage, Breadcrumbs } from '@/components/ui';
+import { ProductImage, Breadcrumbs, ConfirmDialog } from '@/components/ui';
 import { budgetService, planningService, proposalService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 
 /* =========================
    DAFC DESIGN SYSTEM COLORS
@@ -523,6 +524,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const { t } = useLanguage();
   const { user } = useAuth();
   const { isMobile } = useIsMobile();
+  const { dialogProps, confirm } = useConfirmDialog();
   const [collapsed, setCollapsed] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
   const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -597,27 +599,34 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     }
   };
 
-  const handleRejectTicket = async () => {
-    const reason = window.prompt(t('ticketDetail.reject') + ':');
-    if (reason === null) return; // User cancelled
-    const svc = getEntityService();
-    if (!svc) return;
-    const status = ticket?.status?.toUpperCase();
-    setActionLoading(true);
-    try {
-      if (status === 'SUBMITTED') {
-        await svc.rejectL1(ticket.id, reason || 'Rejected');
-      } else if (status === 'LEVEL1_APPROVED') {
-        await svc.rejectL2(ticket.id, reason || 'Rejected');
-      }
-      invalidateCache(`/${ticket.entityType}`);
-      toast.success(t('ticketDetail.reject'));
-      if (onBack) onBack();
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || t('common.error'));
-    } finally {
-      setActionLoading(false);
-    }
+  const handleRejectTicket = () => {
+    confirm({
+      title: t('ticketDetail.reject'),
+      message: t('ticketDetail.rejectReason') || 'Enter rejection reason:',
+      confirmLabel: t('ticketDetail.reject'),
+      variant: 'danger',
+      promptPlaceholder: t('ticketDetail.rejectReasonPlaceholder') || 'Reason...',
+      onConfirm: async (reason?: string) => {
+        const svc = getEntityService();
+        if (!svc) return;
+        const status = ticket?.status?.toUpperCase();
+        setActionLoading(true);
+        try {
+          if (status === 'SUBMITTED') {
+            await svc.rejectL1(ticket.id, reason || 'Rejected');
+          } else if (status === 'LEVEL1_APPROVED') {
+            await svc.rejectL2(ticket.id, reason || 'Rejected');
+          }
+          invalidateCache(`/${ticket.entityType}`);
+          toast.success(t('ticketDetail.reject'));
+          if (onBack) onBack();
+        } catch (err: any) {
+          toast.error(err.response?.data?.message || t('common.error'));
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
   // Approval history — derive from ticket status
@@ -1275,6 +1284,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         })}
       </div>
       )}
+      <ConfirmDialog darkMode={darkMode} {...dialogProps} />
     </div>
   );
 }

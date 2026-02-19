@@ -909,7 +909,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
 
       {/* Add SKU Modal */}
       {showAddSkuModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-end md:items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end md:items-center justify-center z-50">
           <div className={`${cardBg} rounded-t-xl md:rounded-xl shadow-xl w-full md:max-w-2xl max-h-[85vh] md:max-h-[70vh] overflow-hidden`}>
             <div className={`p-4 border-b ${borderColor}`}>
               <div className="flex items-center justify-between">

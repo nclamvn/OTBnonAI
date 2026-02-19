@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, X } from 'lucide-react';
 
@@ -12,7 +12,9 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
   variant?: 'danger' | 'warning';
   darkMode?: boolean;
-  onConfirm: () => void;
+  promptPlaceholder?: string;
+  promptRequired?: string;
+  onConfirm: (inputValue?: string) => void;
   onCancel: () => void;
 }
 
@@ -24,11 +26,17 @@ export default function ConfirmDialog({
   cancelLabel = 'Cancel',
   variant = 'danger',
   darkMode = true,
+  promptPlaceholder,
+  promptRequired,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const [inputValue, setInputValue] = useState('');
+  const hasPrompt = !!promptPlaceholder || !!promptRequired;
+  const canConfirm = !promptRequired || inputValue === promptRequired;
+
   useEffect(() => {
-    if (!open) return;
+    if (!open) { setInputValue(''); return; }
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onCancel();
     };
@@ -84,7 +92,7 @@ export default function ConfirmDialog({
         </button>
 
         {/* Content */}
-        <div className="px-6 pt-6 pb-5 flex flex-col items-center text-center">
+        <div className="px-6 pt-6 pb-4 flex flex-col items-center text-center">
           <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${iconBg}`}>
             <AlertTriangle size={22} className={iconColor} />
           </div>
@@ -96,6 +104,23 @@ export default function ConfirmDialog({
           <p className={`text-sm leading-relaxed ${dm ? 'text-[#999]' : 'text-gray-600'}`}>
             {message}
           </p>
+
+          {/* Prompt input */}
+          {hasPrompt && (
+            <input
+              autoFocus
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter' && canConfirm) onConfirm(inputValue); }}
+              placeholder={promptPlaceholder || (promptRequired ? `Type "${promptRequired}" to confirm` : '')}
+              className={`mt-3 w-full px-3 py-2 text-sm rounded-lg border text-center focus:outline-none focus:ring-1 ${
+                dm
+                  ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#555] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
+                  : 'bg-gray-50 border-gray-300 text-gray-800 placeholder-gray-400 focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'
+              }`}
+            />
+          )}
         </div>
 
         {/* Actions */}
@@ -113,8 +138,11 @@ export default function ConfirmDialog({
           </button>
           <button
             type="button"
-            onClick={onConfirm}
-            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${confirmBtnCls}`}
+            onClick={() => onConfirm(hasPrompt ? inputValue : undefined)}
+            disabled={!canConfirm}
+            className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${confirmBtnCls} ${
+              !canConfirm ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
           >
             {confirmLabel}
           </button>

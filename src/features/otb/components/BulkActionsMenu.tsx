@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect, memo } from 'react';
+import { useState, useRef, useEffect, useCallback, memo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Zap, Copy, Scale, ChevronDown, ArrowLeftRight,
 } from 'lucide-react';
@@ -26,17 +27,42 @@ const BulkActionsMenu = ({
   const [open, setOpen] = useState(false);
   const [scaleTarget, setScaleTarget] = useState('');
   const [ratioInputs, setRatioInputs] = useState<Record<string, string>>({});
-  const menuRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  // Calculate dropdown position from button rect
+  const updatePos = useCallback(() => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 4,
+        left: Math.max(8, rect.right - 256), // 256 = w-64
+      });
+    }
+  }, []);
 
   useEffect(() => {
+    if (!open) return;
+    updatePos();
     const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        btnRef.current && !btnRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
+    window.addEventListener('scroll', updatePos, true);
+    window.addEventListener('resize', updatePos);
+    return () => {
+      document.removeEventListener('mousedown', handler);
+      window.removeEventListener('scroll', updatePos, true);
+      window.removeEventListener('resize', updatePos);
+    };
+  }, [open, updatePos]);
 
   // Copy one store to another
   const handleCopyStore = (fromId: string, toId: string) => {
@@ -139,9 +165,116 @@ const BulkActionsMenu = ({
     setOpen(false);
   };
 
+  const dropdown = open ? createPortal(
+    <div
+      ref={dropdownRef}
+      style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 99999 }}
+      className={`w-64 border rounded-xl shadow-xl overflow-hidden ${
+        darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
+      }`}
+    >
+      {/* Copy store */}
+      <div className={`px-3 py-2 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#E8DDD0]'}`}>
+        <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+          <Copy size={10} className="inline mr-1" />
+          {t('planning.copyStore') || 'Copy Store'}
+        </div>
+        {stores.map((from) =>
+          stores
+            .filter((to) => to.id !== from.id)
+            .map((to) => (
+              <button
+                key={`${from.id}-${to.id}`}
+                onClick={() => handleCopyStore(from.id, to.id)}
+                className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
+                  darkMode
+                    ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)]'
+                    : 'text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.12)]'
+                }`}
+              >
+                {from.code} → {to.code}
+              </button>
+            ))
+        )}
+      </div>
+
+      {/* Apply ratio */}
+      <div className={`px-3 py-2 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#E8DDD0]'}`}>
+        <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+          <ArrowLeftRight size={10} className="inline mr-1" />
+          {t('planning.applyRatio') || 'Apply Ratio'}
+        </div>
+        <div className="flex items-center gap-1 mb-1.5">
+          {stores.map((store, i) => (
+            <div key={store.id} className="flex items-center gap-0.5">
+              {i > 0 && <span className={`text-[10px] ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>/</span>}
+              <span className={`text-[10px] ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>{store.code}</span>
+              <input
+                type="text"
+                value={ratioInputs[store.id] || ''}
+                onChange={(e) => setRatioInputs(prev => ({ ...prev, [store.id]: e.target.value }))}
+                placeholder={String(Math.round(100 / stores.length))}
+                className={`w-10 px-1 py-0.5 text-center text-[10px] font-['JetBrains_Mono'] border rounded ${
+                  darkMode
+                    ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2]'
+                    : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'
+                }`}
+              />
+              <span className={`text-[10px] ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>%</span>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={handleApplyRatio}
+          className={`w-full px-2 py-1 rounded text-xs font-medium transition-colors ${
+            darkMode
+              ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]'
+              : 'bg-[rgba(160,120,75,0.12)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'
+          }`}
+        >
+          {t('common.apply') || 'Apply'}
+        </button>
+      </div>
+
+      {/* Scale to total */}
+      <div className="px-3 py-2">
+        <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
+          <Scale size={10} className="inline mr-1" />
+          {t('planning.scaleToTotal') || 'Scale to Total'}
+        </div>
+        <div className="flex items-center gap-1">
+          <input
+            type="text"
+            value={scaleTarget}
+            onChange={(e) => setScaleTarget(e.target.value)}
+            placeholder={totalBudget > 0 ? String(totalBudget) : '0'}
+            className={`flex-1 px-2 py-1 text-xs font-['JetBrains_Mono'] border rounded ${
+              darkMode
+                ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2]'
+                : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'
+            }`}
+            onKeyDown={(e) => e.key === 'Enter' && handleScale()}
+          />
+          <button
+            onClick={handleScale}
+            className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
+              darkMode
+                ? 'bg-[rgba(18,119,73,0.15)] text-[#2A9E6A] hover:bg-[rgba(18,119,73,0.25)]'
+                : 'bg-[rgba(18,119,73,0.1)] text-[#127749] hover:bg-[rgba(18,119,73,0.18)]'
+            }`}
+          >
+            {t('planning.scale') || 'Scale'}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
+
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative">
       <button
+        ref={btnRef}
         onClick={() => setOpen(!open)}
         className={`flex items-center gap-0.5 p-1.5 rounded-md transition-colors border ${
           darkMode
@@ -154,108 +287,7 @@ const BulkActionsMenu = ({
         <ChevronDown size={8} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      {open && (
-        <div
-          className={`absolute top-full right-0 mt-1 w-64 border rounded-xl shadow-xl z-[9999] overflow-hidden ${
-            darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
-          }`}
-        >
-          {/* Copy store */}
-          <div className={`px-3 py-2 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#E8DDD0]'}`}>
-            <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-              <Copy size={10} className="inline mr-1" />
-              {t('planning.copyStore') || 'Copy Store'}
-            </div>
-            {stores.map((from) =>
-              stores
-                .filter((to) => to.id !== from.id)
-                .map((to) => (
-                  <button
-                    key={`${from.id}-${to.id}`}
-                    onClick={() => handleCopyStore(from.id, to.id)}
-                    className={`w-full text-left px-2 py-1 rounded text-xs transition-colors ${
-                      darkMode
-                        ? 'text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)]'
-                        : 'text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.12)]'
-                    }`}
-                  >
-                    {from.code} → {to.code}
-                  </button>
-                ))
-            )}
-          </div>
-
-          {/* Apply ratio */}
-          <div className={`px-3 py-2 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#E8DDD0]'}`}>
-            <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-              <ArrowLeftRight size={10} className="inline mr-1" />
-              {t('planning.applyRatio') || 'Apply Ratio'}
-            </div>
-            <div className="flex items-center gap-1 mb-1.5">
-              {stores.map((store, i) => (
-                <div key={store.id} className="flex items-center gap-0.5">
-                  {i > 0 && <span className={`text-[10px] ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>/</span>}
-                  <span className={`text-[10px] ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>{store.code}</span>
-                  <input
-                    type="text"
-                    value={ratioInputs[store.id] || ''}
-                    onChange={(e) => setRatioInputs(prev => ({ ...prev, [store.id]: e.target.value }))}
-                    placeholder={String(Math.round(100 / stores.length))}
-                    className={`w-10 px-1 py-0.5 text-center text-[10px] font-['JetBrains_Mono'] border rounded ${
-                      darkMode
-                        ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2]'
-                        : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'
-                    }`}
-                  />
-                  <span className={`text-[10px] ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>%</span>
-                </div>
-              ))}
-            </div>
-            <button
-              onClick={handleApplyRatio}
-              className={`w-full px-2 py-1 rounded text-xs font-medium transition-colors ${
-                darkMode
-                  ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]'
-                  : 'bg-[rgba(160,120,75,0.12)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'
-              }`}
-            >
-              {t('common.apply') || 'Apply'}
-            </button>
-          </div>
-
-          {/* Scale to total */}
-          <div className="px-3 py-2">
-            <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-              <Scale size={10} className="inline mr-1" />
-              {t('planning.scaleToTotal') || 'Scale to Total'}
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="text"
-                value={scaleTarget}
-                onChange={(e) => setScaleTarget(e.target.value)}
-                placeholder={totalBudget > 0 ? String(totalBudget) : '0'}
-                className={`flex-1 px-2 py-1 text-xs font-['JetBrains_Mono'] border rounded ${
-                  darkMode
-                    ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2]'
-                    : 'bg-white border-[#C4B5A5] text-[#0A0A0A]'
-                }`}
-                onKeyDown={(e) => e.key === 'Enter' && handleScale()}
-              />
-              <button
-                onClick={handleScale}
-                className={`px-2 py-1 rounded text-xs font-medium transition-colors ${
-                  darkMode
-                    ? 'bg-[rgba(18,119,73,0.15)] text-[#2A9E6A] hover:bg-[rgba(18,119,73,0.25)]'
-                    : 'bg-[rgba(18,119,73,0.1)] text-[#127749] hover:bg-[rgba(18,119,73,0.18)]'
-                }`}
-              >
-                {t('planning.scale') || 'Scale'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {dropdown}
     </div>
   );
 };

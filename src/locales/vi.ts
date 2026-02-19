@@ -14,6 +14,7 @@ const vi = {
     search: 'Tìm kiếm',
     filter: 'Lọc',
     filters: 'Bộ lọc',
+    apply: 'Áp dụng',
     refresh: 'Làm mới',
     loading: 'Đang tải',
     error: 'Lỗi',
