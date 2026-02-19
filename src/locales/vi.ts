@@ -268,6 +268,17 @@ const vi = {
     action: 'Hành động',
     checkInventory: 'Kiểm tra tồn kho',
     goToPage: 'Đi đến trang chi tiết',
+    // Alert cards
+    pending: 'Chờ duyệt',
+    now: 'Hiện tại',
+    brands: 'Thương hiệu',
+    totalBudgets: 'Tổng ngân sách',
+    noAlerts: 'Không có cảnh báo',
+    noAlertsMessage: 'Tất cả các chỉ số đều trong giới hạn bình thường.',
+    pendingApprovalsAlert: '{{count}} mục chờ duyệt',
+    pendingApprovalsMessage: 'Có {{count}} ngân sách/kế hoạch đang chờ phê duyệt.',
+    activePlansAlert: '{{count}} kế hoạch đang hoạt động',
+    activePlansMessage: 'Có {{count}} kế hoạch/đề xuất đang trong quy trình xử lý.',
     // KPI Detail Modal
     kpiDetail: {
       currentValue: 'Giá trị hiện tại',

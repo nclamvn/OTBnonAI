@@ -268,6 +268,17 @@ const en = {
     action: 'Action',
     checkInventory: 'Check Inventory',
     goToPage: 'Go to detail page',
+    // Alert cards
+    pending: 'Pending',
+    now: 'Now',
+    brands: 'Brands',
+    totalBudgets: 'Total Budgets',
+    noAlerts: 'No Alerts',
+    noAlertsMessage: 'All metrics are within normal limits.',
+    pendingApprovalsAlert: '{{count}} items pending approval',
+    pendingApprovalsMessage: '{{count}} budgets/plans are awaiting approval.',
+    activePlansAlert: '{{count}} plans in progress',
+    activePlansMessage: '{{count}} plans/proposals are currently being processed.',
     // KPI Detail Modal
     kpiDetail: {
       currentValue: 'Current Value',
