@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, memo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search, Check, Package } from 'lucide-react';
+import { X, Search, Check, Package, ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ProductImage } from '@/components/ui';
+import { STORES } from '@/utils/constants';
 
 interface AddSKUModalProps {
   isOpen: boolean;
@@ -16,6 +17,15 @@ interface AddSKUModalProps {
   existingSkus: string[];
   onAddSkus: (skus: any[]) => void;
   darkMode?: boolean;
+  stores?: { code: string; name: string }[];
+}
+
+interface SkuFormData {
+  order: number;
+  storeQty: Record<string, number>;
+  customerTarget: string;
+  unitCost: number;
+  composition: string;
 }
 
 const AddSKUModal = ({
@@ -28,43 +38,39 @@ const AddSKUModal = ({
   existingSkus,
   onAddSkus,
   darkMode = false,
+  stores: propStores,
 }: AddSKUModalProps) => {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkus, setSelectedSkus] = useState<Set<string>>(new Set());
+  const [step, setStep] = useState<1 | 2>(1);
+  const [formData, setFormData] = useState<Record<string, SkuFormData>>({});
+
+  const storeList = propStores && propStores.length > 0 ? propStores : STORES;
 
   // Pre-filter catalog by block's gender/category/subCategory, then by search
   const { filteredCatalog, isUnfiltered } = useMemo(() => {
     let items = skuCatalog;
     let didFallback = false;
 
-    // Pre-filter by block context — fall back to all items if block filter yields 0
     if (blockSubCategory) {
       const filtered = items.filter((s: any) =>
         (s.productType || '').toLowerCase() === blockSubCategory.toLowerCase() ||
         (s.division || '').toLowerCase() === blockSubCategory.toLowerCase()
       );
-      if (filtered.length > 0) {
-        items = filtered;
-      } else {
-        didFallback = true;
-      }
+      if (filtered.length > 0) items = filtered;
+      else didFallback = true;
     } else if (blockCategory) {
       const filtered = items.filter((s: any) =>
         (s.division || '').toLowerCase() === blockCategory.toLowerCase() ||
         (s.productType || '').toLowerCase().includes(blockCategory.toLowerCase())
       );
-      if (filtered.length > 0) {
-        items = filtered;
-      } else {
-        didFallback = true;
-      }
+      if (filtered.length > 0) items = filtered;
+      else didFallback = true;
     }
 
-    // Exclude already-added SKUs
     items = items.filter((s: any) => !existingSkus.includes(s.sku));
 
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       items = items.filter((s: any) =>
@@ -78,6 +84,10 @@ const AddSKUModal = ({
     return { filteredCatalog: items, isUnfiltered: didFallback };
   }, [skuCatalog, blockGender, blockCategory, blockSubCategory, existingSkus, searchQuery]);
 
+  const selectedSkuItems = useMemo(() => {
+    return skuCatalog.filter((s: any) => selectedSkus.has(s.sku));
+  }, [skuCatalog, selectedSkus]);
+
   const toggleSku = (sku: string) => {
     setSelectedSkus((prev) => {
       const next = new Set(prev);
@@ -87,178 +97,412 @@ const AddSKUModal = ({
     });
   };
 
+  const initFormData = useCallback(() => {
+    const data: Record<string, SkuFormData> = {};
+    selectedSkuItems.forEach((sku: any) => {
+      if (!formData[sku.sku]) {
+        const defaultStoreQty: Record<string, number> = {};
+        storeList.forEach(s => { defaultStoreQty[s.code] = 0; });
+        data[sku.sku] = {
+          order: 0,
+          storeQty: defaultStoreQty,
+          customerTarget: 'New',
+          unitCost: sku.unitCost || 0,
+          composition: sku.composition || '',
+        };
+      } else {
+        data[sku.sku] = formData[sku.sku];
+      }
+    });
+    setFormData(data);
+  }, [selectedSkuItems, formData, storeList]);
+
+  const goToStep2 = () => {
+    initFormData();
+    setStep(2);
+  };
+
+  const goBackToStep1 = () => {
+    setStep(1);
+  };
+
+  const updateFormField = (skuCode: string, field: keyof SkuFormData, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [skuCode]: { ...prev[skuCode], [field]: value }
+    }));
+  };
+
+  const updateStoreQty = (skuCode: string, storeCode: string, qty: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [skuCode]: {
+        ...prev[skuCode],
+        storeQty: { ...prev[skuCode].storeQty, [storeCode]: qty }
+      }
+    }));
+  };
+
+  const calcTtlValue = (skuCode: string): number => {
+    const fd = formData[skuCode];
+    if (!fd) return 0;
+    const totalQty = fd.order + Object.values(fd.storeQty).reduce((s, v) => s + v, 0);
+    return totalQty * fd.unitCost;
+  };
+
   const handleAdd = () => {
-    const skusToAdd = skuCatalog.filter((s: any) => selectedSkus.has(s.sku));
+    const skusToAdd = selectedSkuItems.map((sku: any) => {
+      const fd = formData[sku.sku];
+      return {
+        ...sku,
+        order: fd?.order || 0,
+        storeQty: fd?.storeQty || {},
+        customerTarget: fd?.customerTarget || 'New',
+        unitCost: fd?.unitCost ?? sku.unitCost ?? 0,
+        composition: fd?.composition || sku.composition || '',
+        ttlValue: calcTtlValue(sku.sku),
+      };
+    });
     onAddSkus(skusToAdd);
     setSelectedSkus(new Set());
     setSearchQuery('');
+    setFormData({});
+    setStep(1);
+    onClose();
+  };
+
+  const handleClose = () => {
+    setSelectedSkus(new Set());
+    setSearchQuery('');
+    setFormData({});
+    setStep(1);
     onClose();
   };
 
   if (!isOpen) return null;
 
+  const dm = darkMode;
+  const bg = dm ? 'bg-[#1A1A1A]' : 'bg-white';
+  const border = dm ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]';
+  const borderLight = dm ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]';
+  const textPrimary = dm ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]';
+  const textSecondary = dm ? 'text-[#999]' : 'text-[#666]';
+  const textMuted = dm ? 'text-[#666]' : 'text-[#999]';
+  const inputBg = dm ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A] placeholder-[#999]';
+  const accentGreen = dm ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A]' : 'bg-[rgba(18,119,73,0.12)] text-[#127749]';
+
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={handleClose}>
       <div
-        className={`w-full max-w-lg mx-0 md:mx-4 max-h-[100dvh] md:max-h-[80vh] h-[100dvh] md:h-auto rounded-none md:rounded-xl border shadow-2xl ${
-          darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
-        }`}
+        className={`w-full mx-0 md:mx-4 max-h-[100dvh] md:max-h-[85vh] h-[100dvh] md:h-auto rounded-none md:rounded-xl border shadow-2xl flex flex-col ${
+          step === 2 ? 'max-w-3xl' : 'max-w-lg'
+        } ${bg} ${border}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className={`flex items-center justify-between px-4 py-3 border-b ${
-          darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'
-        }`}>
-          <div>
-            <h3 className={`font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
-              {t('proposal.addSku')}
-            </h3>
-            {blockSubCategory && (
-              <p className={`text-xs mt-0.5 ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-                {blockGender} &bull; {blockCategory} &bull; {blockSubCategory}
-              </p>
+        <div className={`flex items-center justify-between px-4 py-3 border-b ${borderLight} shrink-0`}>
+          <div className="flex items-center gap-2">
+            {step === 2 && (
+              <button onClick={goBackToStep1} className={`p-1.5 rounded-lg transition-colors ${dm ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]'}`}>
+                <ArrowLeft size={16} />
+              </button>
             )}
+            <div>
+              <h3 className={`font-semibold font-['Montserrat'] ${textPrimary}`}>
+                {step === 1 ? (t('proposal.addSku')) : (t('proposal.skuDetails') || 'SKU Details')}
+              </h3>
+              <p className={`text-[10px] mt-0.5 ${textSecondary}`}>
+                {step === 1
+                  ? (blockSubCategory ? `${blockGender} • ${blockCategory} • ${blockSubCategory}` : (t('proposal.selectSkus') || 'Select SKUs to add'))
+                  : `${selectedSkus.size} SKU${selectedSkus.size > 1 ? 's' : ''} — ${t('proposal.fillDetails') || 'Fill in order details'}`
+                }
+              </p>
+            </div>
           </div>
-          <button onClick={onClose} className={`p-2.5 md:p-1.5 rounded-lg transition-colors ${
-            darkMode ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]'
-          }`}>
-            <X size={18} />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className={`px-4 py-2 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.2)]'}`}>
-          <div className="relative">
-            <Search size={14} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`} />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t('common.search') + '...'}
-              className={`w-full pl-8 pr-3 py-2.5 md:py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${
-                darkMode
-                  ? 'border-[#2E2E2E] bg-[#121212] text-[#F2F2F2] placeholder-[#666]'
-                  : 'border-[#C4B5A5] bg-white text-[#0A0A0A] placeholder-[#999]'
-              }`}
-              autoFocus
-            />
+          <div className="flex items-center gap-2">
+            {/* Step indicator */}
+            <div className="flex items-center gap-1 mr-2">
+              <div className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-[#2A9E6A]' : (dm ? 'bg-[#555]' : 'bg-[#C4B5A5]')}`} />
+              <div className={`w-2 h-2 rounded-full ${step === 2 ? 'bg-[#2A9E6A]' : (dm ? 'bg-[#555]' : 'bg-[#C4B5A5]')}`} />
+            </div>
+            <button onClick={handleClose} className={`p-2.5 md:p-1.5 rounded-lg transition-colors ${dm ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]'}`}>
+              <X size={18} />
+            </button>
           </div>
         </div>
 
-        {/* SKU List */}
-        <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
-          {/* Fallback notice when block filter didn't match */}
-          {isUnfiltered && filteredCatalog.length > 0 && (
-            <div className={`text-center py-1.5 mb-1 text-[10px] rounded-lg ${
-              darkMode ? 'bg-[rgba(227,179,65,0.1)] text-[#E3B341]' : 'bg-amber-50 text-amber-600'
-            }`}>
-              {t('proposal.showingAllSkus') || 'Showing all available SKUs (no exact match for this block)'}
+        {/* ==================== STEP 1: Select SKUs ==================== */}
+        {step === 1 && (
+          <>
+            {/* Search */}
+            <div className={`px-4 py-2 border-b ${borderLight} shrink-0`}>
+              <div className="relative">
+                <Search size={14} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${textMuted}`} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('common.search') + '...'}
+                  className={`w-full pl-8 pr-3 py-2.5 md:py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
+                  autoFocus
+                />
+              </div>
             </div>
-          )}
-          {skuCatalog.length === 0 ? (
-            <div className={`text-center py-8 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
-              <Package size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-xs font-semibold mb-1">{t('proposal.noCatalogData') || 'No SKU catalog data'}</p>
-              <p className="text-[10px] opacity-70">{t('proposal.importCatalogHint') || 'Import SKU catalog via master data to add items'}</p>
+
+            {/* SKU List */}
+            <div className="flex-1 overflow-y-auto px-2 py-2 min-h-0">
+              {isUnfiltered && filteredCatalog.length > 0 && (
+                <div className={`text-center py-1.5 mb-1 text-[10px] rounded-lg ${dm ? 'bg-[rgba(227,179,65,0.1)] text-[#E3B341]' : 'bg-amber-50 text-amber-600'}`}>
+                  {t('proposal.showingAllSkus') || 'Showing all available SKUs (no exact match for this block)'}
+                </div>
+              )}
+              {skuCatalog.length === 0 ? (
+                <div className={`text-center py-8 ${textMuted}`}>
+                  <Package size={32} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-xs font-semibold mb-1">{t('proposal.noCatalogData') || 'No SKU catalog data'}</p>
+                  <p className="text-[10px] opacity-70">{t('proposal.importCatalogHint') || 'Import SKU catalog via master data to add items'}</p>
+                </div>
+              ) : filteredCatalog.length === 0 ? (
+                <div className={`text-center py-8 ${textMuted}`}>
+                  <Package size={32} className="mx-auto mb-2 opacity-40" />
+                  <p className="text-xs">{searchQuery ? (t('common.noResults') || 'No results') : (t('proposal.allSkusAdded') || 'All available SKUs already added')}</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {filteredCatalog.map((sku: any) => {
+                    const isSelected = selectedSkus.has(sku.sku);
+                    return (
+                      <button
+                        key={sku.sku}
+                        type="button"
+                        onClick={() => toggleSku(sku.sku)}
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                          isSelected
+                            ? dm
+                              ? 'bg-[rgba(42,158,106,0.15)] border border-[#2A9E6A]/30'
+                              : 'bg-[rgba(18,119,73,0.08)] border border-[#127749]/20'
+                            : dm
+                              ? 'hover:bg-[rgba(215,183,151,0.06)] border border-transparent'
+                              : 'hover:bg-[rgba(215,183,151,0.08)] border border-transparent'
+                        }`}
+                      >
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected
+                            ? 'bg-[#2A9E6A] border-[#2A9E6A]'
+                            : dm ? 'border-[#555] bg-transparent' : 'border-[#C4B5A5] bg-transparent'
+                        }`}>
+                          {isSelected && <Check size={10} className="text-white" />}
+                        </div>
+                        <ProductImage subCategory={sku.productType || blockSubCategory} sku={sku.sku} size={40} darkMode={dm} rounded="rounded-lg" />
+                        <div className="flex-1 min-w-0">
+                          <div className={`text-xs font-semibold truncate ${dm ? 'text-[#F2F2F2]' : 'text-[#333]'}`}>
+                            <span className="font-['JetBrains_Mono']">{sku.sku}</span>
+                            <span className={`mx-1.5 ${dm ? 'text-[#555]' : 'text-[#C4B5A5]'}`}>&bull;</span>
+                            {sku.name || 'Unnamed'}
+                          </div>
+                          <div className={`text-[10px] ${textSecondary}`}>
+                            {[sku.color, sku.theme, sku.productType].filter(Boolean).join(' • ')}
+                          </div>
+                        </div>
+                        {sku.srp > 0 && (
+                          <span className={`text-[10px] font-['JetBrains_Mono'] shrink-0 ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {sku.srp.toLocaleString()}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          ) : filteredCatalog.length === 0 ? (
-            <div className={`text-center py-8 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>
-              <Package size={32} className="mx-auto mb-2 opacity-40" />
-              <p className="text-xs">{searchQuery ? (t('common.noResults') || 'No results') : (t('proposal.allSkusAdded') || 'All available SKUs already added')}</p>
+
+            {/* Footer Step 1 */}
+            <div className={`flex items-center justify-between px-4 py-3 border-t ${borderLight} shrink-0`}>
+              <span className={`text-xs ${textSecondary}`}>
+                {selectedSkus.size} {t('common.of')} {filteredCatalog.length} selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleClose}
+                  className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${dm ? 'text-[#999] hover:bg-[#2E2E2E]' : 'text-[#666] hover:bg-gray-100'}`}
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={goToStep2}
+                  disabled={selectedSkus.size === 0}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                    selectedSkus.size > 0
+                      ? dm
+                        ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'
+                        : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
+                      : dm
+                        ? 'bg-[#2E2E2E] text-[#555] cursor-not-allowed'
+                        : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {t('common.next') || 'Next'} ({selectedSkus.size})
+                  <ArrowRight size={14} />
+                </button>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-1">
-              {filteredCatalog.map((sku: any) => {
-                const isSelected = selectedSkus.has(sku.sku);
+          </>
+        )}
+
+        {/* ==================== STEP 2: Fill Details ==================== */}
+        {step === 2 && (
+          <>
+            {/* SKU Detail Forms */}
+            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0 space-y-4">
+              {selectedSkuItems.map((sku: any) => {
+                const fd = formData[sku.sku];
+                if (!fd) return null;
+                const ttl = calcTtlValue(sku.sku);
+                const totalStoreQty = Object.values(fd.storeQty).reduce((s, v) => s + v, 0);
+
                 return (
-                  <button
-                    key={sku.sku}
-                    type="button"
-                    onClick={() => toggleSku(sku.sku)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      isSelected
-                        ? darkMode
-                          ? 'bg-[rgba(42,158,106,0.15)] border border-[#2A9E6A]/30'
-                          : 'bg-[rgba(18,119,73,0.08)] border border-[#127749]/20'
-                        : darkMode
-                          ? 'hover:bg-[rgba(215,183,151,0.06)] border border-transparent'
-                          : 'hover:bg-[rgba(215,183,151,0.08)] border border-transparent'
-                    }`}
-                  >
-                    {/* Checkbox */}
-                    <div className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                      isSelected
-                        ? 'bg-[#2A9E6A] border-[#2A9E6A]'
-                        : darkMode
-                          ? 'border-[#555] bg-transparent'
-                          : 'border-[#C4B5A5] bg-transparent'
-                    }`}>
-                      {isSelected && <Check size={10} className="text-white" />}
+                  <div key={sku.sku} className={`rounded-lg border p-3 ${dm ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[rgba(215,183,151,0.3)] bg-[#FAFAF8]'}`}>
+                    {/* SKU Header */}
+                    <div className="flex items-center gap-3 mb-3">
+                      <ProductImage subCategory={sku.productType || blockSubCategory} sku={sku.sku} size={40} darkMode={dm} rounded="rounded-lg" />
+                      <div className="flex-1 min-w-0">
+                        <div className={`text-xs font-semibold truncate ${textPrimary}`}>
+                          <span className="font-['JetBrains_Mono']">{sku.sku}</span>
+                          <span className={`mx-1.5 ${dm ? 'text-[#555]' : 'text-[#C4B5A5]'}`}>&bull;</span>
+                          {sku.name || 'Unnamed'}
+                        </div>
+                        <div className={`text-[10px] ${textSecondary}`}>
+                          {[sku.color, sku.theme, sku.productType].filter(Boolean).join(' • ')}
+                        </div>
+                      </div>
+                      {ttl > 0 && (
+                        <div className="text-right shrink-0">
+                          <div className={`text-[9px] uppercase tracking-wider ${textMuted}`}>TTL</div>
+                          <div className={`text-xs font-semibold font-['JetBrains_Mono'] ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                            {ttl.toLocaleString()}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    {/* Product Image */}
-                    <ProductImage subCategory={sku.productType || blockSubCategory} sku={sku.sku} size={40} darkMode={darkMode} rounded="rounded-lg" />
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className={`text-xs font-semibold truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333]'}`}>
-                        <span className="font-['JetBrains_Mono']">{sku.sku}</span>
-                        <span className={`mx-1.5 ${darkMode ? 'text-[#555]' : 'text-[#C4B5A5]'}`}>&bull;</span>
-                        {sku.name || 'Unnamed'}
+                    {/* Row 1: Order + Unit Cost + Customer Target */}
+                    <div className="grid grid-cols-3 gap-2 mb-2">
+                      <div>
+                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
+                          {t('proposal.order') || 'Order'}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={fd.order || ''}
+                          onChange={(e) => updateFormField(sku.sku, 'order', parseInt(e.target.value) || 0)}
+                          placeholder="0"
+                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
+                        />
                       </div>
-                      <div className={`text-[10px] ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-                        {[sku.color, sku.theme, sku.productType].filter(Boolean).join(' • ')}
+                      <div>
+                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
+                          {t('proposal.unitCost') || 'Unit Cost'}
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={fd.unitCost || ''}
+                          onChange={(e) => updateFormField(sku.sku, 'unitCost', parseFloat(e.target.value) || 0)}
+                          placeholder="0"
+                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
+                          {t('proposal.customerTarget') || 'Customer'}
+                        </label>
+                        <select
+                          value={fd.customerTarget}
+                          onChange={(e) => updateFormField(sku.sku, 'customerTarget', e.target.value)}
+                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
+                        >
+                          <option value="New">New</option>
+                          <option value="Existing">Existing</option>
+                        </select>
                       </div>
                     </div>
 
-                    {/* SRP */}
-                    {sku.srp > 0 && (
-                      <span className={`text-[10px] font-['JetBrains_Mono'] shrink-0 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                        {sku.srp.toLocaleString()}
-                      </span>
-                    )}
-                  </button>
+                    {/* Row 2: Store Quantities */}
+                    <div>
+                      <label className={`block text-[9px] uppercase tracking-wider mb-1 ${textMuted}`}>
+                        {t('proposal.storeQuantities') || 'Store Quantities'}
+                        <span className={`ml-2 font-['JetBrains_Mono'] normal-case ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                          = {totalStoreQty}
+                        </span>
+                      </label>
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {storeList.map(store => (
+                          <div key={store.code} className="text-center">
+                            <div className={`text-[8px] font-semibold mb-0.5 ${textSecondary}`}>{store.code}</div>
+                            <input
+                              type="number"
+                              min="0"
+                              value={fd.storeQty[store.code] || ''}
+                              onChange={(e) => updateStoreQty(sku.sku, store.code, parseInt(e.target.value) || 0)}
+                              placeholder="0"
+                              className={`w-full px-1 py-1.5 text-xs text-center border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Row 3: Composition */}
+                    <div className="mt-2">
+                      <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
+                        {t('proposal.composition') || 'Composition'}
+                      </label>
+                      <input
+                        type="text"
+                        value={fd.composition}
+                        onChange={(e) => updateFormField(sku.sku, 'composition', e.target.value)}
+                        placeholder="e.g. 100% Cotton"
+                        className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
+                      />
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className={`flex items-center justify-between px-4 py-3 border-t ${
-          darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'
-        }`}>
-          <span className={`text-xs ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
-            {selectedSkus.size} {t('common.of')} {filteredCatalog.length} selected
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                darkMode
-                  ? 'text-[#999] hover:bg-[#2E2E2E]'
-                  : 'text-[#666] hover:bg-gray-100'
-              }`}
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              onClick={handleAdd}
-              disabled={selectedSkus.size === 0}
-              className={`px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                selectedSkus.size > 0
-                  ? darkMode
-                    ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'
-                    : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
-                  : darkMode
-                    ? 'bg-[#2E2E2E] text-[#555] cursor-not-allowed'
-                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {t('proposal.addSku')} ({selectedSkus.size})
-            </button>
-          </div>
-        </div>
+            {/* Footer Step 2 */}
+            <div className={`flex items-center justify-between px-4 py-3 border-t ${borderLight} shrink-0`}>
+              <div className={`text-xs ${textSecondary}`}>
+                <ShoppingCart size={12} className="inline mr-1" />
+                {selectedSkus.size} SKU{selectedSkus.size > 1 ? 's' : ''}
+                {' • '}
+                TTL: <span className={`font-['JetBrains_Mono'] font-semibold ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                  {selectedSkuItems.reduce((sum, sku: any) => sum + calcTtlValue(sku.sku), 0).toLocaleString()}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={goBackToStep1}
+                  className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${dm ? 'text-[#999] hover:bg-[#2E2E2E]' : 'text-[#666] hover:bg-gray-100'}`}
+                >
+                  {t('common.back') || 'Back'}
+                </button>
+                <button
+                  onClick={handleAdd}
+                  className={`flex items-center gap-1.5 px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                    dm
+                      ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'
+                      : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
+                  }`}
+                >
+                  <Check size={14} />
+                  {t('proposal.addSku')} ({selectedSkus.size})
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>,
     document.body,

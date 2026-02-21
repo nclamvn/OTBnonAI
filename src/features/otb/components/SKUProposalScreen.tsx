@@ -865,10 +865,10 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         regionalRrp: sku.regionalRrp || 0,
         theme: sku.theme || '',
         size: sku.size || '',
-        order: 0,
-        storeQty: {},
-        ttlValue: 0,
-        customerTarget: 'New',
+        order: sku.order || 0,
+        storeQty: sku.storeQty || {},
+        ttlValue: sku.ttlValue || 0,
+        customerTarget: sku.customerTarget || 'New',
         isNew: false,
       }));
       return { ...block, items: [...block.items, ...newItems] };
@@ -1971,6 +1971,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           }
           onAddSkus={(skus) => handleAddSkusFromModal(addSkuModal.blockKey, skus)}
           darkMode={darkMode}
+          stores={stores}
         />
       )}
     </div>
