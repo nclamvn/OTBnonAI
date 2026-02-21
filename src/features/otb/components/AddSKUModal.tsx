@@ -108,7 +108,7 @@ const AddSKUModal = ({
           order: 0,
           storeQty: defaultStoreQty,
           customerTarget: 'New',
-          unitCost: sku.unitCost || 0,
+          unitCost: sku.unitCost || sku.srp || 0,
           composition: sku.composition || '',
         };
       } else {

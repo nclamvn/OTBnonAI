@@ -600,6 +600,11 @@ const vi = {
     noCatalogData: 'Không có dữ liệu danh mục SKU',
     importCatalogHint: 'Import danh mục SKU qua dữ liệu chính để thêm sản phẩm',
     allSkusAdded: 'Tất cả SKU đã được thêm',
+    skuDetails: 'Chi tiết SKU',
+    fillDetails: 'Điền thông tin đặt hàng',
+    selectSkus: 'Chọn SKU để thêm',
+    storeQuantities: 'Số lượng theo cửa hàng',
+    customerTarget: 'Đối tượng khách hàng',
   },
 
   // ──────────────────────────────────────────────

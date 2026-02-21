@@ -600,6 +600,11 @@ const en = {
     noCatalogData: 'No SKU catalog data',
     importCatalogHint: 'Import SKU catalog via master data to add items',
     allSkusAdded: 'All available SKUs already added',
+    skuDetails: 'SKU Details',
+    fillDetails: 'Fill in order details',
+    selectSkus: 'Select SKUs to add',
+    storeQuantities: 'Store Quantities',
+    customerTarget: 'Customer Target',
   },
 
   // ──────────────────────────────────────────────
