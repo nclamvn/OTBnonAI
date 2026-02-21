@@ -4,8 +4,9 @@ import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ChevronDown, Package, Pencil, X, Plus, Trash2, Ruler,
-  Star, Layers, Check, LayoutGrid, List, SlidersHorizontal, Download
+  Star, Layers, Check, LayoutGrid, List, SlidersHorizontal, Download, Send
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
 import { budgetService, masterDataService, proposalService } from '@/services';
@@ -57,6 +58,7 @@ const SIZING_CHOICES = [
 const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const router = useRouter();
   const { dialogProps, confirm } = useConfirmDialog();
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
@@ -936,43 +938,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             </button>
           )}
 
-          {/* Context Banner from OTB Analysis */}
-          {contextBanner && (
-            <div className={`flex flex-wrap items-center gap-3 px-3 md:px-4 py-0.5 rounded-xl border ${darkMode ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)]' : 'bg-[rgba(160,120,75,0.12)] border-[rgba(215,183,151,0.3)]'}`}>
-              <div className="flex flex-wrap items-center gap-4 text-sm">
-                <div className="flex flex-col">
-                  <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.budget')}</span>
-                  <span className={`font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{contextBanner.budgetName || 'N/A'}</span>
-                </div>
-                <div className={`w-px h-8 hidden md:block ${darkMode ? 'bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(215,183,151,0.4)]'}`}></div>
-                <div className="flex flex-col">
-                  <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.season')}</span>
-                  <span className={`font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{contextBanner.seasonGroup} - {contextBanner.season}</span>
-                </div>
-                <div className={`w-px h-8 hidden md:block ${darkMode ? 'bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(215,183,151,0.4)]'}`}></div>
-                <div className="flex flex-col">
-                  <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.category')}</span>
-                  <span className={`font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{contextBanner.gender} / {contextBanner.category} / {contextBanner.subCategory}</span>
-                </div>
-                {contextBanner.otbData && (
-                  <>
-                    <div className={`w-px h-8 hidden md:block ${darkMode ? 'bg-[rgba(215,183,151,0.25)]' : 'bg-[rgba(215,183,151,0.4)]'}`}></div>
-                    <div className="flex flex-col">
-                      <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('skuProposal.totalValue')}</span>
-                      <span className={`font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(contextBanner.otbData.otbProposed || 0)}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-              <button
-                onClick={() => setContextBanner(null)}
-                className={`ml-2 p-1 rounded-lg transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.15)]' : 'hover:bg-[rgba(215,183,151,0.2)]'}`}
-                title="Dismiss"
-              >
-                <X size={16} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
-              </button>
-            </div>
-          )}
         </div>
 
         {!isMobile && <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
@@ -1670,9 +1635,28 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     ))}
                     <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
                     <div className="flex flex-col items-center">
-                      <span className={`text-[10px] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Total Value</span>
-                      <span className={`font-bold text-sm ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(grandTotals.ttlValue)}</span>
+                      <span className={`text-[10px] font-['Montserrat'] uppercase tracking-wider ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Total Value</span>
+                      <span className={`font-bold text-2xl font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#C4A77D]'}`}>{formatCurrency(grandTotals.ttlValue)}</span>
                     </div>
+                    <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
+                    <button
+                      onClick={() => {
+                        router.push(`/tickets?source=proposal&budgetId=${budgetFilter !== 'all' ? budgetFilter : ''}`);
+                      }}
+                      disabled={grandTotals.order === 0}
+                      className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold font-['Montserrat'] transition-colors ${
+                        grandTotals.order > 0
+                          ? darkMode
+                            ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]'
+                            : 'bg-[#C4A77D] text-white hover:bg-[#B8956D]'
+                          : darkMode
+                            ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed'
+                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                      }`}
+                    >
+                      <Send size={16} />
+                      Submit Ticket
+                    </button>
                   </div>
                 </div>
               </div>
