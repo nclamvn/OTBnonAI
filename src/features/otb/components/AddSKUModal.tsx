@@ -5,7 +5,6 @@ import { createPortal } from 'react-dom';
 import { X, Search, Check, Package, ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ProductImage } from '@/components/ui';
-import { STORES } from '@/utils/constants';
 
 interface AddSKUModalProps {
   isOpen: boolean;
@@ -46,7 +45,9 @@ const AddSKUModal = ({
   const [step, setStep] = useState<1 | 2>(1);
   const [formData, setFormData] = useState<Record<string, SkuFormData>>({});
 
-  const storeList = propStores && propStores.length > 0 ? propStores : STORES;
+  const storeList = propStores && propStores.length > 0
+    ? propStores
+    : [{ code: 'REX', name: 'REX' }, { code: 'TTP', name: 'TTP' }];
 
   // Pre-filter catalog by block's gender/category/subCategory, then by search
   const { filteredCatalog, isUnfiltered } = useMemo(() => {
@@ -436,7 +437,7 @@ const AddSKUModal = ({
                           = {totalStoreQty}
                         </span>
                       </label>
-                      <div className="grid grid-cols-5 gap-1.5">
+                      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(storeList.length, 6)}, minmax(0, 1fr))` }}>
                         {storeList.map(store => (
                           <div key={store.code} className="text-center">
                             <div className={`text-[8px] font-semibold mb-0.5 ${textSecondary}`}>{store.code}</div>
