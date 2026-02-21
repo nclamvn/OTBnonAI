@@ -3,8 +3,10 @@ import { useState, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { proposalService, masterDataService } from '../../../services';
 import { invalidateCache } from '../../../services/api';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const useProposal = () => {
+  const { isAuthenticated } = useAuth();
   const [proposals, setProposals] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,6 +20,7 @@ export const useProposal = () => {
 
   // Fetch proposals
   const fetchProposals = useCallback(async (budgetId?: string) => {
+    if (!isAuthenticated) return;
     setLoading(true);
     setError(null);
     try {
@@ -63,7 +66,7 @@ export const useProposal = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch SKU catalog
   const fetchSkuCatalog = useCallback(async (params: any = {}) => {

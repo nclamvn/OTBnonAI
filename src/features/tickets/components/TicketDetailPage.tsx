@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown, ChevronUp, Package, ArrowLeft, Loader2, Check, X, Clock, Send, CheckCircle, XCircle, LayoutGrid, List, GitCompare, RotateCcw, ExternalLink, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
-import { ProductImage, Breadcrumbs, ConfirmDialog } from '@/components/ui';
+import { ProductImage, ConfirmDialog } from '@/components/ui';
 import { budgetService, planningService, proposalService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,10 +53,28 @@ const EMPTY_SEASON_DATA = {
    PREMIUM SKU CARD
 ========================= */
 
-const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; darkMode: boolean }) => {
+const PremiumSKUCard = ({ item, block, darkMode, prevItem }: { item: any; block: any; darkMode: boolean; prevItem?: any }) => {
   const [flipped, setFlipped] = useState(false);
   const totalQty = (item.rex || 0) + (item.ttp || 0);
   const totalValue = totalQty * (item.srp || 0);
+
+  // Diff helpers
+  const hasDiff = (field: string) => prevItem && prevItem[field] !== undefined && prevItem[field] !== item[field];
+  const diffDelta = (field: string) => {
+    if (!prevItem) return null;
+    const curr = Number(item[field]) || 0;
+    const prev = Number(prevItem[field]) || 0;
+    if (curr === prev) return null;
+    const d = curr - prev;
+    return <span className={`text-[9px] font-['JetBrains_Mono'] ml-0.5 ${d > 0 ? 'text-[#2A9E6A]' : 'text-[#F85149]'}`}>{d > 0 ? `+${d}` : d}</span>;
+  };
+  const diffBorder = (field: string) => {
+    if (!prevItem) return '';
+    const curr = Number(item[field]) || 0;
+    const prev = Number(prevItem[field]) || 0;
+    if (curr === prev) return '';
+    return curr > prev ? 'ring-2 ring-[#2A9E6A]/40' : 'ring-2 ring-[#F85149]/40';
+  };
 
   // Cost & margin calculations
   const unitCost = item.unitCost || (item.srp ? item.srp * 0.45 : 0);
@@ -73,7 +91,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
   const flipBtn = (
     <button
       onClick={(e) => { e.stopPropagation(); setFlipped(!flipped); }}
-      className={`absolute top-3 left-3 z-[5] w-7 h-7 rounded-full flex items-center justify-center transition-all duration-300 ${
+      className={`absolute top-3 left-3 z-[5] w-7 h-7 rounded-full flex items-center justify-center transition-colors duration-200 ${
         darkMode
           ? 'bg-[rgba(215,183,151,0.15)] hover:bg-[rgba(215,183,151,0.3)] text-[#D7B797]'
           : 'bg-[rgba(160,120,75,0.1)] hover:bg-[rgba(160,120,75,0.2)] text-[#6B4D30]'
@@ -87,25 +105,24 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
   return (
     <div
       className="flex-shrink-0 w-[280px] snap-start"
-      style={{ perspective: '1200px' }}
     >
       <div
-        className="relative w-full transition-transform duration-[600ms] ease-in-out"
-        style={{
-          transformStyle: 'preserve-3d',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
-        }}
+        className="relative w-full"
       >
         {/* ===== FRONT FACE ===== */}
         <div
-          className={`group/card relative w-full rounded-2xl border overflow-hidden transition-all duration-200 ease-out ${
+          className={`group/card relative w-full rounded-2xl border overflow-hidden ${
             darkMode
-              ? 'bg-[#121212] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)] hover:shadow-[0_8px_32px_rgba(215,183,151,0.12)]'
-              : 'bg-white border-[rgba(160,120,75,0.2)] hover:border-[rgba(160,120,75,0.5)] hover:shadow-[0_8px_32px_rgba(160,120,75,0.15)]'
+              ? 'bg-[#121212] border-[#2E2E2E]'
+              : 'bg-white border-[rgba(160,120,75,0.2)]'
           }`}
-          style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', pointerEvents: flipped ? 'none' : 'auto' }}
+          style={{ display: flipped ? 'none' : 'block' }}
         >
           {flipBtn}
+          {/* New item badge */}
+          {prevItem !== undefined && !prevItem && (
+            <span className="absolute top-3 right-14 z-[5] px-2 py-0.5 text-[9px] font-bold rounded-full bg-[#2A9E6A] text-white">NEW</span>
+          )}
           {/* Gold accent line */}
           <div className="h-[2px] bg-gradient-to-r from-transparent via-[#D7B797] to-transparent" />
 
@@ -120,7 +137,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
                 backgroundSize: '12px 12px',
               }}
             />
-            <div className="relative z-[1] transition-transform duration-200 ease-out group-hover/card:scale-105">
+            <div className="relative z-[1]">
               <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={140} darkMode={darkMode} rounded="rounded-xl" />
             </div>
             <span className={`absolute top-3 right-3 px-2.5 py-1 text-[10px] font-semibold rounded-full z-[2] font-['Montserrat'] tracking-wide ${
@@ -155,7 +172,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
 
             {/* Store pills */}
             <div className="flex gap-2 mt-3">
-              <div className={`flex-1 rounded-xl px-3 py-2 text-center ${
+              <div className={`flex-1 rounded-xl px-3 py-2 text-center ${diffBorder('rex')} ${
                 darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border border-[rgba(215,183,151,0.15)]'
                   : 'bg-[rgba(160,120,75,0.06)] border border-[rgba(160,120,75,0.15)]'
@@ -164,9 +181,9 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
                   <span className="w-2 h-2 rounded-full bg-[#D7B797]" />
                   <span className={`text-[10px] font-semibold tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>REX</span>
                 </div>
-                <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.rex || 0}</div>
+                <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.rex || 0}{diffDelta('rex')}</div>
               </div>
-              <div className={`flex-1 rounded-xl px-3 py-2 text-center ${
+              <div className={`flex-1 rounded-xl px-3 py-2 text-center ${diffBorder('ttp')} ${
                 darkMode
                   ? 'bg-[rgba(18,119,73,0.08)] border border-[rgba(18,119,73,0.15)]'
                   : 'bg-[rgba(18,119,73,0.04)] border border-[rgba(18,119,73,0.15)]'
@@ -175,24 +192,24 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
                   <span className="w-2 h-2 rounded-full bg-[#127749]" />
                   <span className="text-[10px] font-semibold tracking-wide text-[#127749]">TTP</span>
                 </div>
-                <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.ttp || 0}</div>
+                <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.ttp || 0}{diffDelta('ttp')}</div>
               </div>
             </div>
 
             {/* Summary bar */}
-            <div className={`mt-3 rounded-lg px-3 py-2 flex items-center justify-between ${
+            <div className={`mt-3 rounded-lg px-3 py-2 flex items-center justify-between ${diffBorder('order')} ${
               darkMode
                 ? 'bg-[rgba(215,183,151,0.05)] border border-[rgba(215,183,151,0.1)]'
                 : 'bg-[rgba(160,120,75,0.04)] border border-[rgba(160,120,75,0.1)]'
             }`}>
               <div>
                 <span className={`text-[9px] uppercase tracking-wider ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>Total Qty</span>
-                <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}</div>
+                <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{totalQty}{diffDelta('order')}</div>
               </div>
               <div className={`w-px h-6 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-200'}`} />
               <div className="text-right">
                 <span className={`text-[9px] uppercase tracking-wider ${darkMode ? 'text-[#666666]' : 'text-gray-400'}`}>Value</span>
-                <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(totalValue)}</div>
+                <div className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(totalValue)}{diffDelta('ttlValue')}</div>
               </div>
             </div>
 
@@ -210,17 +227,12 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
 
         {/* ===== BACK FACE ===== */}
         <div
-          className={`absolute inset-0 w-full rounded-2xl border overflow-hidden overflow-y-auto ${
+          className={`w-full rounded-2xl border overflow-hidden overflow-y-auto ${
             darkMode
               ? 'bg-[#121212] border-[#2E2E2E]'
               : 'bg-white border-[rgba(160,120,75,0.2)]'
           }`}
-          style={{
-            backfaceVisibility: 'hidden',
-            WebkitBackfaceVisibility: 'hidden',
-            transform: 'rotateY(180deg)',
-            pointerEvents: flipped ? 'auto' : 'none',
-          }}
+          style={{ display: flipped ? 'block' : 'none' }}
         >
           {/* Gold accent line */}
           <div className="h-[2px] bg-gradient-to-r from-transparent via-[#D7B797] to-transparent" />
@@ -230,7 +242,7 @@ const PremiumSKUCard = ({ item, block, darkMode }: { item: any; block: any; dark
             <div className="flex items-start gap-2 mb-3">
               <button
                 onClick={(e) => { e.stopPropagation(); setFlipped(false); }}
-                className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-colors duration-200 ${
                   darkMode
                     ? 'bg-[rgba(215,183,151,0.15)] hover:bg-[rgba(215,183,151,0.3)] text-[#D7B797]'
                     : 'bg-[rgba(160,120,75,0.1)] hover:bg-[rgba(160,120,75,0.2)] text-[#6B4D30]'
@@ -504,6 +516,15 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }: any) => (
                   {new Date(item.decidedAt).toLocaleString('vi-VN')}
                 </div>
               )}
+              {item.comment && (
+                <div className={`mt-0.5 text-[10px] px-2 py-1 rounded ${
+                  item.action === 'rejected'
+                    ? darkMode ? 'bg-[rgba(248,81,73,0.08)] text-[#FF7B72] border border-[rgba(248,81,73,0.15)]' : 'bg-red-50 text-red-600 border border-red-100'
+                    : darkMode ? 'bg-[rgba(215,183,151,0.06)] text-[#999]' : 'bg-gray-50 text-gray-500'
+                }`}>
+                  {item.comment}
+                </div>
+              )}
             </div>
           </div>
         ))
@@ -520,7 +541,7 @@ const StatusTrackingPanel = ({ approvalHistory, ticket, darkMode, t }: any) => (
    MAIN SCREEN
 ========================= */
 
-export default function TicketDetailPage({ ticket, onBack, darkMode = true }: any) {
+export default function TicketDetailPage({ ticket, onBack, darkMode = true, showApprovalActions = false }: any) {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { isMobile } = useIsMobile();
@@ -531,6 +552,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
   const [detailData, setDetailData] = useState<any>(null);
   const [skuData, setSkuData] = useState<any[]>([]);
   const [skuViewMode, setSkuViewMode] = useState<string>('card');
+  const [highlightedRow, setHighlightedRow] = useState<string>('');
 
   // Diff/View Changes state
   const [showDiff, setShowDiff] = useState(false);
@@ -895,34 +917,106 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     fetchDetailData();
   }, [ticket]);
 
-  // Generate previous version data for diff comparison
-  // In production, this would fetch the actual previous version from the API
-  const generatePreviousVersion = useCallback((currentData: any[]) => {
-    return currentData.map((block: any) => ({
-      ...block,
-      items: block.items.map((item: any) => {
-        // Simulate previous version with slight differences in quantities and values
-        const orderDiff = Math.max(0, (item.order || 0) - Math.floor(Math.random() * 3 + 1));
-        const rexDiff = Math.max(0, Math.floor(orderDiff * 0.5));
-        const ttpDiff = orderDiff - rexDiff;
-        return {
-          ...item,
-          order: orderDiff,
-          rex: rexDiff,
-          ttp: ttpDiff,
-          ttlValue: orderDiff * (item.srp || 0),
-        };
-      }),
-    }));
-  }, []);
+  // Fetch previous version data from API for diff comparison
+  const [diffLoading, setDiffLoading] = useState(false);
+  const [noPreviousVersion, setNoPreviousVersion] = useState(false);
+
+  const fetchPreviousVersion = useCallback(async () => {
+    if (!detailData || !ticket) return;
+    setDiffLoading(true);
+    setNoPreviousVersion(false);
+    try {
+      const entityType = ticket.entityType;
+      let prevData: any = null;
+
+      if (entityType === 'planning' && detailData.budgetDetailId) {
+        // Find sibling planning versions with same budgetDetailId
+        const allRes = await planningService.getAll({ budgetDetailId: detailData.budgetDetailId });
+        const versions = (Array.isArray(allRes) ? allRes : allRes?.data || [])
+          .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0));
+        const currentVersion = detailData.versionNumber || 1;
+        const prevVersion = versions.find((v: any) => (v.versionNumber || 0) < currentVersion && v.id !== ticket.id);
+        if (prevVersion) {
+          const res = await planningService.getOne(prevVersion.id);
+          prevData = res?.data || res;
+        }
+      } else if (entityType === 'proposal' && (detailData.planningId || detailData.budgetDetailId)) {
+        // Find sibling proposal versions
+        const allRes = await proposalService.getAll();
+        const versions = (Array.isArray(allRes) ? allRes : allRes?.data || [])
+          .filter((p: any) => p.id !== ticket.id && (
+            (detailData.planningId && p.planningId === detailData.planningId) ||
+            (detailData.budgetDetailId && p.budgetDetailId === detailData.budgetDetailId)
+          ))
+          .sort((a: any, b: any) => (b.versionNumber || 0) - (a.versionNumber || 0));
+        if (versions.length > 0) {
+          const res = await proposalService.getOne(versions[0].id);
+          prevData = res?.data || res;
+        }
+      }
+
+      if (!prevData) {
+        setNoPreviousVersion(true);
+        setPreviousSkuData([]);
+        return;
+      }
+
+      // Transform previous version data into same SKU block format
+      if (entityType === 'proposal') {
+        const products = prevData.products || prevData.items || [];
+        if (products.length > 0) {
+          setPreviousSkuData(transformToSkuBlocks(products));
+        } else {
+          setNoPreviousVersion(true);
+        }
+      } else if (entityType === 'planning') {
+        const details = prevData.details || [];
+        if (details.length > 0) {
+          const planningBlocks: any[] = [];
+          const categoryMap: Record<string, any[]> = {};
+          details.forEach((d: any) => {
+            const catName = d.category?.name || d.gender?.name || 'General';
+            if (!categoryMap[catName]) categoryMap[catName] = [];
+            categoryMap[catName].push(d);
+          });
+          Object.entries(categoryMap).forEach(([catName, catDetails]) => {
+            planningBlocks.push({
+              gender: catName.toLowerCase(),
+              productType: catName,
+              subCategory: catName,
+              items: catDetails.map((d: any) => ({
+                sku: d.subCategory?.name || d.categoryId || '-',
+                name: d.subCategory?.name || d.category?.name || catName,
+                srp: Number(d.otbValue) || 0,
+                unitCost: Number(d.unitCost) || 0,
+                order: Number(d.quantity) || 0,
+                rex: Math.floor((Number(d.quantity) || 0) / 2),
+                ttp: Math.ceil((Number(d.quantity) || 0) / 2),
+                ttlValue: Number(d.otbValue) || 0,
+              })),
+            });
+          });
+          setPreviousSkuData(planningBlocks);
+        } else {
+          setNoPreviousVersion(true);
+        }
+      } else {
+        setNoPreviousVersion(true);
+      }
+    } catch (err: any) {
+      console.error('Failed to fetch previous version:', err);
+      setNoPreviousVersion(true);
+    } finally {
+      setDiffLoading(false);
+    }
+  }, [detailData, ticket, transformToSkuBlocks]);
 
   const handleToggleDiff = useCallback(() => {
-    if (!showDiff && previousSkuData.length === 0) {
-      const dataToUse = skuData;
-      setPreviousSkuData(generatePreviousVersion(dataToUse));
+    if (!showDiff && previousSkuData.length === 0 && !noPreviousVersion) {
+      fetchPreviousVersion();
     }
     setShowDiff((prev) => !prev);
-  }, [showDiff, previousSkuData, skuData, generatePreviousVersion]);
+  }, [showDiff, previousSkuData, noPreviousVersion, fetchPreviousVersion]);
 
   // Helper: find previous item by SKU code
   const getPreviousItem = useCallback((sku: string) => {
@@ -1068,15 +1162,6 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
     <div className={`p-3 md:p-4 min-h-screen space-y-2 md:space-y-3 ${
       darkMode ? 'bg-[#0A0A0A]' : ''
     }`}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        darkMode={darkMode}
-        items={[
-          { label: t('common.breadcrumbTickets'), href: '/tickets' },
-          { label: ticket?.name || t('ticketDetail.title') },
-        ]}
-      />
-
       {/* ===== COMPACT HEADER ===== */}
       {onBack && (
         <div className={`flex items-center justify-between gap-2 px-3 py-2 rounded-lg ${
@@ -1119,7 +1204,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
                 <Send size={11} /> {t('common.submit')}
               </button>
             )}
-            {canApprove() && (<>
+            {showApprovalActions && canApprove() && (<>
               <button onClick={handleRejectTicket} disabled={actionLoading} className="flex items-center gap-1 px-2.5 py-1 bg-[#F85149]/20 hover:bg-[#F85149]/30 text-white font-medium rounded text-[11px] border border-[#F85149]/25 disabled:opacity-50">
                 <XCircle size={11} /> {t('ticketDetail.reject')}
               </button>
@@ -1321,117 +1406,242 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
         {/* Diff Legend */}
         {showDiff && (
           <div className={`flex items-center gap-4 px-4 py-2 rounded-xl text-xs font-['Montserrat'] ${darkMode ? 'bg-[rgba(215,183,151,0.05)] border border-[#2E2E2E]' : 'bg-amber-50 border border-amber-200'}`}>
-            <span className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}>
-              <GitCompare size={12} className="inline mr-1" />
-              {t('ticketDetail.comparingVersions') || 'Comparing with previous version'}
-            </span>
-            <span className="flex items-center gap-1">
-              <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(42,158,106,0.25)] ring-1 ring-[#2A9E6A]/40' : 'bg-emerald-100 ring-1 ring-emerald-300'}`} />
-              <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.increased') || 'Increased'}</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(248,81,73,0.15)] ring-1 ring-[#F85149]/40' : 'bg-red-100 ring-1 ring-red-300'}`} />
-              <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.decreased') || 'Decreased'}</span>
-            </span>
+            {diffLoading ? (
+              <span className={`flex items-center gap-2 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                <Loader2 size={12} className="animate-spin" />
+                {t('ticketDetail.loadingChanges') || 'Loading previous version...'}
+              </span>
+            ) : noPreviousVersion ? (
+              <span className={darkMode ? 'text-[#999]' : 'text-gray-500'}>
+                <GitCompare size={12} className="inline mr-1" />
+                {t('ticketDetail.noPreviousVersion') || 'No previous version available for comparison'}
+              </span>
+            ) : (
+              <>
+                <span className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}>
+                  <GitCompare size={12} className="inline mr-1" />
+                  {t('ticketDetail.comparingVersions') || 'Comparing with previous version'}
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(42,158,106,0.25)] ring-1 ring-[#2A9E6A]/40' : 'bg-emerald-100 ring-1 ring-emerald-300'}`} />
+                  <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.increased') || 'Increased'}</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <span className={`w-3 h-3 rounded ${darkMode ? 'bg-[rgba(248,81,73,0.15)] ring-1 ring-[#F85149]/40' : 'bg-red-100 ring-1 ring-red-300'}`} />
+                  <span className={darkMode ? 'text-[#999999]' : 'text-gray-600'}>{t('ticketDetail.decreased') || 'Decreased'}</span>
+                </span>
+              </>
+            )}
           </div>
         )}
 
-        {/* === TABLE VIEW (desktop only) === */}
-        {skuViewMode === 'table' && !isMobile && (
-          <div className={`border rounded-2xl shadow-sm overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-separate border-spacing-0 [&_th]:whitespace-nowrap [&_td]:whitespace-nowrap">
-                <thead>
-                  <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider sticky left-0 z-10 ${darkMode ? 'text-[#999999] bg-[#1A1A1A]' : 'text-[#666666] bg-[rgba(160,120,75,0.18)]'}`}></th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.category')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.subCategory')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.rail')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.color')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.skuCode')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.productName')}</th>
-                    <th className={`px-4 py-0.5 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.sizing')}</th>
-                    <th className={`px-4 py-0.5 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.srp')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('proposal.rex')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider text-[#127749]`}>{t('proposal.ttp')}</th>
-                    <th className={`px-4 py-0.5 text-center text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalQty')}</th>
-                    <th className={`px-4 py-0.5 text-right text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('proposal.totalValue')}</th>
-                  </tr>
-                </thead>
-                <tbody className={`divide-y ${darkMode ? 'divide-[#2E2E2E]' : 'divide-gray-100'}`}>
-                  {displaySkuData.flatMap((block: any) => block.items.map((item: any, idx: any) => {
-                    const prevItem = showDiff ? getPreviousItem(item.sku) : null;
-                    const diffCls = (field: string) => {
-                      if (!showDiff || !prevItem) return '';
-                      const curr = item[field];
-                      const prev = prevItem[field];
-                      if (curr === prev) return '';
-                      return curr > prev
-                        ? (darkMode ? 'bg-[rgba(42,158,106,0.15)] ring-1 ring-inset ring-[#2A9E6A]/30 rounded' : 'bg-emerald-50 ring-1 ring-inset ring-emerald-300 rounded')
-                        : (darkMode ? 'bg-[rgba(248,81,73,0.12)] ring-1 ring-inset ring-[#F85149]/30 rounded' : 'bg-red-50 ring-1 ring-inset ring-red-300 rounded');
-                    };
-                    const diffLabel = (field: string) => {
-                      if (!showDiff || !prevItem) return null;
-                      const curr = item[field];
-                      const prev = prevItem[field];
-                      if (curr === prev) return null;
-                      const delta = curr - prev;
-                      return (
-                        <span className={`text-[9px] ml-1 ${delta > 0 ? 'text-[#2A9E6A]' : 'text-[#F85149]'}`}>
-                          {delta > 0 ? `+${delta}` : delta}
-                        </span>
-                      );
-                    };
-                    return (
-                    <tr key={`${item.sku}_${idx}`} className={`transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.05)]' : 'hover:bg-[rgba(160,120,75,0.1)]'}`}>
-                      <td className={`px-4 py-0.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
-                        <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={40} darkMode={darkMode} />
-                      </td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.gender || '-'}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{block.subCategory || '-'}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.theme || '-'}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
-                      <td className={`px-4 py-0.5 font-['JetBrains_Mono'] text-sm ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
-                      <td className={`px-4 py-0.5 font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{item.name}</td>
-                      <td className={`px-4 py-0.5 text-[11px] ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>{item.sizing?.sizes?.join(', ') || '-'}</td>
-                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.srp || 0)}</td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${diffCls('rex')}`}>
-                        {item.rex || 0}{diffLabel('rex')}
-                      </td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-medium text-[#127749] ${diffCls('ttp')}`}>
-                        {item.ttp || 0}{diffLabel('ttp')}
-                      </td>
-                      <td className={`px-4 py-0.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'} ${diffCls('order')}`}>
-                        {item.order || 0}{diffLabel('order')}
-                      </td>
-                      <td className={`px-4 py-0.5 text-right font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'} ${diffCls('ttlValue')}`}>
-                        {formatCurrency(item.ttlValue || 0)}
-                      </td>
-                    </tr>
-                    );
-                  }))}
-                </tbody>
-                <tfoot>
-                  <tr className={`border-t-2 ${darkMode ? 'border-[#D7B797]/30 bg-[rgba(215,183,151,0.05)]' : 'border-[#D7B797]/40 bg-[rgba(160,120,75,0.12)]'}`}>
-                    <td colSpan={9} className={`px-4 py-0.5 font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{t('skuProposal.total')}</td>
-                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                      {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.rex || 0), 0), 0)}
-                    </td>
-                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] text-[#127749]`}>
-                      {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttp || 0), 0), 0)}
-                    </td>
-                    <td className={`px-4 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
-                      {displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.order || 0), 0), 0)}
-                    </td>
-                    <td className={`px-4 py-0.5 text-right font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>
-                      {formatCurrency(displaySkuData.reduce((s: any, b: any) => s + b.items.reduce((ss: any, i: any) => ss + (i.ttlValue || 0), 0), 0))}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+        {/* === TABLE VIEW (desktop only) — Transposed: fields as rows, SKUs as columns === */}
+        {skuViewMode === 'table' && !isMobile && displaySkuData.map((block: any) => {
+          const blockKey = `${block.gender}_${block.productType}`;
+          const isBlockCollapsed = collapsed[blockKey];
+          const hlBg = darkMode ? 'bg-[rgba(215,183,151,0.12)]' : 'bg-[rgba(160,120,75,0.1)]';
+          const hlLabel = darkMode ? 'bg-[#1f1a14]' : 'bg-[#ede4d8]';
+          const labelBg = darkMode ? 'bg-[#0A0A0A]' : 'bg-white';
+          const labelBorder = darkMode ? '!border-r-[#555]' : '!border-r-[rgba(160,120,75,0.4)]';
+          const toggleHl = (rowId: string) => setHighlightedRow(prev => prev === `${blockKey}_${rowId}` ? '' : `${blockKey}_${rowId}`);
+          const isHl = (rowId: string) => highlightedRow === `${blockKey}_${rowId}`;
+          const trCls = (rowId: string, extra?: string) => `${isHl(rowId) ? hlBg : ''} ${extra || ''}`;
+          const tdLabel = (rowId: string, extra?: string) => `px-3 py-1.5 text-xs font-semibold whitespace-nowrap sticky left-0 z-10 cursor-pointer select-none ${isHl(rowId) ? hlLabel : labelBg} ${labelBorder} border-r ${darkMode ? 'text-[#999] hover:text-[#D7B797]' : 'text-[#666] hover:text-[#6B4D30]'} ${extra || ''}`;
+
+          // Diff helpers per item
+          const itemDiff = (item: any) => {
+            const prev = showDiff ? getPreviousItem(item.sku) : null;
+            const diffCls = (field: string) => {
+              if (!showDiff || !prev) return '';
+              const c = Number(item[field]) || 0;
+              const p = Number(prev[field]) || 0;
+              if (c === p) return '';
+              return c > p
+                ? (darkMode ? 'bg-[rgba(42,158,106,0.15)] ring-1 ring-inset ring-[#2A9E6A]/30 rounded' : 'bg-emerald-50 ring-1 ring-inset ring-emerald-300 rounded')
+                : (darkMode ? 'bg-[rgba(248,81,73,0.12)] ring-1 ring-inset ring-[#F85149]/30 rounded' : 'bg-red-50 ring-1 ring-inset ring-red-300 rounded');
+            };
+            const diffLabel = (field: string) => {
+              if (!showDiff || !prev) return null;
+              const c = Number(item[field]) || 0;
+              const p = Number(prev[field]) || 0;
+              if (c === p) return null;
+              const d = c - p;
+              return <span className={`text-[9px] ml-1 ${d > 0 ? 'text-[#2A9E6A]' : 'text-[#F85149]'}`}>{d > 0 ? `+${d}` : d}</span>;
+            };
+            const isNew = showDiff && !prev;
+            return { diffCls, diffLabel, isNew };
+          };
+
+          return (
+            <div key={blockKey} className={`border rounded-2xl shadow-sm overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'}`}>
+              {/* Block Header */}
+              <button
+                type="button"
+                onClick={() => setCollapsed((p: any) => ({ ...p, [blockKey]: !p[blockKey] }))}
+                className={`w-full flex items-center gap-3 px-4 py-2 transition-colors ${
+                  darkMode
+                    ? 'bg-gradient-to-r from-[#2A2118] via-[#3A2D1E] to-[#2A2118] text-[#F2F2F2] hover:from-[#342820]'
+                    : 'bg-gradient-to-r from-[#6B4D30] via-[#8B7355] to-[#6B4D30] text-white hover:from-[#7A5A3A]'
+                }`}
+              >
+                <ChevronDown size={16} className={`transition-transform duration-200 shrink-0 ${isBlockCollapsed ? '-rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#F5E6D3]'}`} />
+                <div className="text-left flex-1 min-w-0">
+                  <span className="font-semibold text-sm font-['Montserrat']">{block.subCategory}</span>
+                  <span className={`ml-2 text-xs ${darkMode ? 'text-[#A69076]' : 'text-[#E8D5BE]'}`}>
+                    {block.gender} • <span className="font-['JetBrains_Mono']">{block.items.length}</span> SKUs
+                  </span>
+                </div>
+                <div className="flex items-center gap-4 shrink-0">
+                  <span className={`text-xs font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2E8DC]' : 'text-white'}`}>
+                    {formatCurrency(block.items.reduce((s: any, i: any) => s + (i.ttlValue || 0), 0))}
+                  </span>
+                </div>
+              </button>
+
+              {/* Transposed Table */}
+              {!isBlockCollapsed && (
+                <div className="overflow-x-auto">
+                  <table className={`w-full text-xs border-separate border-spacing-0 [&_td]:border ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'}`}>
+                    <tbody>
+                      {/* Image row */}
+                      <tr className={trCls('image')}>
+                        <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { isNew } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-2 text-center min-w-[140px] ${isNew ? (darkMode ? 'bg-[rgba(42,158,106,0.06)]' : 'bg-emerald-50/50') : ''}`}>
+                              <div className="relative inline-block">
+                                <ProductImage subCategory={block.subCategory || ''} sku={item.sku || ''} size={48} darkMode={darkMode} rounded="rounded-lg" />
+                                {isNew && <span className="absolute -top-1 -right-1 px-1 py-0.5 text-[7px] font-bold rounded bg-[#2A9E6A] text-white">NEW</span>}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* SKU row */}
+                      <tr className={trCls('sku')}>
+                        <td className={tdLabel('sku')} onClick={() => toggleHl('sku')}>SKU</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-semibold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{item.sku}</td>
+                        ))}
+                      </tr>
+                      {/* Name row */}
+                      <tr className={trCls('name')}>
+                        <td className={tdLabel('name')} onClick={() => toggleHl('name')}>Name</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-medium max-w-[160px] truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`} title={item.name}>{item.name}</td>
+                        ))}
+                      </tr>
+                      {/* Theme row */}
+                      <tr className={trCls('theme')}>
+                        <td className={tdLabel('theme')} onClick={() => toggleHl('theme')}>Theme</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999]' : 'text-gray-600'}`}>{item.theme || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Color row */}
+                      <tr className={trCls('color')}>
+                        <td className={tdLabel('color')} onClick={() => toggleHl('color')}>Color</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999]' : 'text-gray-600'}`}>{item.color || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Composition row */}
+                      <tr className={trCls('composition')}>
+                        <td className={tdLabel('composition')} onClick={() => toggleHl('composition')}>Composition</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center max-w-[160px] truncate ${darkMode ? 'text-[#999]' : 'text-gray-600'}`} title={item.composition}>{item.composition || '-'}</td>
+                        ))}
+                      </tr>
+                      {/* Unit Cost row */}
+                      <tr className={trCls('unitCost')}>
+                        <td className={tdLabel('unitCost')} onClick={() => toggleHl('unitCost')}>Unit Cost</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'}`}>{formatCurrency(item.unitCost || 0)}</td>
+                        ))}
+                      </tr>
+                      {/* SRP row */}
+                      <tr className={trCls('srp')}>
+                        <td className={tdLabel('srp')} onClick={() => toggleHl('srp')}>SRP</td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { diffCls, diffLabel } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-semibold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'} ${diffCls('srp')}`}>
+                              {formatCurrency(item.srp || 0)}{diffLabel('srp')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* REX row */}
+                      <tr className={trCls('rex', darkMode ? 'bg-[rgba(215,183,151,0.04)]' : 'bg-[rgba(160,120,75,0.03)]')}>
+                        <td className={tdLabel('rex')} onClick={() => toggleHl('rex')}>
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#D7B797]" /> REX</span>
+                        </td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { diffCls, diffLabel } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${diffCls('rex')}`}>
+                              {item.rex || 0}{diffLabel('rex')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* TTP row */}
+                      <tr className={trCls('ttp', darkMode ? 'bg-[rgba(18,119,73,0.04)]' : 'bg-[rgba(18,119,73,0.02)]')}>
+                        <td className={tdLabel('ttp')} onClick={() => toggleHl('ttp')}>
+                          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#127749]" /> TTP</span>
+                        </td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { diffCls, diffLabel } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold text-[#127749] ${diffCls('ttp')}`}>
+                              {item.ttp || 0}{diffLabel('ttp')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* Total Order row — always highlighted */}
+                      <tr className={trCls('order', darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]')}>
+                        <td className={tdLabel('order')} onClick={() => toggleHl('order')}>
+                          <span className="font-bold">{t('proposal.totalQty') || 'Total Qty'}</span>
+                        </td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { diffCls, diffLabel } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold text-base ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-800'} ${diffCls('order')}`}>
+                              {item.order || ((item.rex || 0) + (item.ttp || 0))}{diffLabel('order')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* TTL Value row — always highlighted */}
+                      <tr className={trCls('ttlValue', darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.06)]')}>
+                        <td className={tdLabel('ttlValue')} onClick={() => toggleHl('ttlValue')}>
+                          <span className="font-bold">{t('proposal.totalValue') || 'TTL Value'}</span>
+                        </td>
+                        {block.items.map((item: any, idx: number) => {
+                          const { diffCls, diffLabel } = itemDiff(item);
+                          return (
+                            <td key={idx} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'} ${diffCls('ttlValue')}`}>
+                              {formatCurrency(item.ttlValue || 0)}{diffLabel('ttlValue')}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                      {/* Customer Target row */}
+                      <tr className={trCls('customerTarget')}>
+                        <td className={tdLabel('customerTarget')} onClick={() => toggleHl('customerTarget')}>Target</td>
+                        {block.items.map((item: any, idx: number) => (
+                          <td key={idx} className={`px-3 py-1.5 text-center ${darkMode ? 'text-[#999]' : 'text-gray-600'}`}>{item.customerTarget || '-'}</td>
+                        ))}
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })}
 
         {/* === CARD VIEW (always on mobile, or when card mode selected) === */}
         {(skuViewMode === 'card' || isMobile) && displaySkuData.map((block: any) => {
@@ -1493,7 +1703,7 @@ export default function TicketDetailPage({ ticket, onBack, darkMode = true }: an
                     .premium-card-scroll::-webkit-scrollbar-thumb:hover { background: ${darkMode ? '#E3C8A8' : '#B8973C'}; }
                   `}</style>
                   {block.items.map((item: any, idx: number) => (
-                    <PremiumSKUCard key={idx} item={item} block={block} darkMode={darkMode} />
+                    <PremiumSKUCard key={idx} item={item} block={block} darkMode={darkMode} prevItem={showDiff ? getPreviousItem(item.sku) : undefined} />
                   ))}
                 </div>
               )}

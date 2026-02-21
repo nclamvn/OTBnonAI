@@ -62,9 +62,7 @@ const ExpandableStatCard = ({
 
   return (
     <div
-      className={`relative overflow-hidden border ${borderColor} rounded-xl transition-all duration-300 ${
-        expanded ? 'shadow-lg' : 'hover:shadow-md'
-      } group`}
+      className={`relative overflow-hidden border ${borderColor} rounded-xl group`}
       style={{
         background: darkMode
           ? `linear-gradient(135deg, #121212 0%, ${a.darkMid} 40%, ${a.darkGrad} 100%)`
@@ -75,7 +73,7 @@ const ExpandableStatCard = ({
       {/* Watermark Icon */}
       {Icon && (
         <div
-          className="absolute -bottom-1 -right-1 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.12] pointer-events-none"
+          className="absolute -bottom-1 -right-1 pointer-events-none"
           style={{ opacity: darkMode ? 0.04 : 0.12 }}
         >
           <Icon size={48} color={a.color} strokeWidth={1} />
@@ -94,7 +92,7 @@ const ExpandableStatCard = ({
               {hasExpandContent && (
                 <ChevronDown
                   size={10}
-                  className={`transition-transform duration-300 ${textMuted} ${expanded ? 'rotate-180' : ''}`}
+                  className={`transition-transform duration-200 ${textMuted} ${expanded ? 'rotate-180' : ''}`}
                 />
               )}
             </div>
@@ -163,7 +161,7 @@ const ExpandableStatCard = ({
 
       {/* Expanded Panel */}
       <div
-        className={`relative z-10 overflow-hidden transition-all duration-300 ease-in-out ${
+        className={`relative z-10 overflow-hidden transition-all duration-200 ease-out ${
           expanded ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >

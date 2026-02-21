@@ -10,11 +10,12 @@ import {
 import { formatCurrency } from '@/utils';
 import { GENDERS, STORES } from '@/utils/constants';
 import { masterDataService, planningService, approvalService } from '@/services';
+import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSessionRecoveryGeneric } from '../hooks/useSessionRecovery';
-import { Breadcrumbs } from '@/components/ui';
+
 
 const TABS = [
   { id: 'collection', label: 'Collection', icon: Layers },
@@ -167,6 +168,9 @@ const PlanningDetailPage = ({
   const [pendingApproval, setPendingApproval] = useState<any>(null);
   const [approvalComment, setApprovalComment] = useState('');
   const [approvalProcessing, setApprovalProcessing] = useState(false);
+
+  // Save action state
+  const [saveLoading, setSaveLoading] = useState(false);
 
   // Fetch categories and planning versions from API
   useEffect(() => {
@@ -331,65 +335,108 @@ const PlanningDetailPage = ({
   ];
 
   // Initialize local data for editable cells
+  // Bug fix WF-05: Prioritize real API planningDetailData over demo fallback.
+  // Demo data is ONLY used when no API data is available.
   useEffect(() => {
     const initialData: Record<string, any> = {};
 
-    // Fixed demo data sets for category tab (cycling through for variety)
-    const catDemoSets = [
-      { buyPct: 8, salesPct: 12, stPct: 62, buyProposed: 10, otbProposed: 245680, varPct: -2, otbSubmitted: 238450, buyActual: 9 },
-      { buyPct: 5, salesPct: 7, stPct: 55, buyProposed: 6, otbProposed: 178320, varPct: -1, otbSubmitted: 172100, buyActual: 6 },
-      { buyPct: 12, salesPct: 14, stPct: 68, buyProposed: 13, otbProposed: 356740, varPct: -1, otbSubmitted: 348200, buyActual: 12 },
-      { buyPct: 6, salesPct: 9, stPct: 48, buyProposed: 8, otbProposed: 198560, varPct: -1, otbSubmitted: 192300, buyActual: 7 },
-      { buyPct: 15, salesPct: 18, stPct: 72, buyProposed: 17, otbProposed: 425890, varPct: -1, otbSubmitted: 418600, buyActual: 16 },
-      { buyPct: 4, salesPct: 5, stPct: 44, buyProposed: 5, otbProposed: 134250, varPct: 0, otbSubmitted: 130800, buyActual: 5 },
-      { buyPct: 10, salesPct: 11, stPct: 58, buyProposed: 11, otbProposed: 287430, varPct: 0, otbSubmitted: 282100, buyActual: 10 },
-      { buyPct: 7, salesPct: 8, stPct: 52, buyProposed: 8, otbProposed: 215780, varPct: 0, otbSubmitted: 210400, buyActual: 8 },
-    ];
-    let catIdx = 0;
-    categoryStructure.forEach((genderGroup: any) => {
-      genderGroup.categories.forEach((cat: any) => {
-        cat.subCategories.forEach((subCat: any) => {
-          const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
-          initialData[key] = { ...catDemoSets[catIdx % catDemoSets.length] };
-          catIdx++;
+    // Check if we have real API planning data to populate from
+    const hasApiData = planningDetailData && (
+      (Array.isArray(planningDetailData) && planningDetailData.length > 0) ||
+      (!Array.isArray(planningDetailData) && planningDetailData.data && Object.keys(planningDetailData.data).length > 0)
+    );
+
+    if (hasApiData) {
+      // Populate localData from real API planning data
+      if (!Array.isArray(planningDetailData) && planningDetailData.data) {
+        // planningDetailData.data is the saved localData map from the backend
+        Object.assign(initialData, planningDetailData.data);
+      } else if (Array.isArray(planningDetailData)) {
+        // Array of planning detail items from API
+        planningDetailData.forEach((item: any) => {
+          const genderId = (item.genderId || item.gender?.id || '').toLowerCase();
+          const catId = item.categoryId || item.category?.id || '';
+          const subCatId = item.subCategoryId || item.subCategory?.id || '';
+          if (genderId && catId && subCatId) {
+            const key = `${genderId}_${catId}_${subCatId}`;
+            initialData[key] = {
+              buyPct: item.systemBuyPct ?? item.buyPct ?? 0,
+              salesPct: item.lastSeasonSalesPct ?? item.salesPct ?? 0,
+              stPct: item.sellThroughPct ?? item.stPct ?? 0,
+              buyProposed: item.userBuyPct ?? item.buyProposed ?? 0,
+              otbProposed: item.otbValue ?? item.otbProposed ?? 0,
+              varPct: item.variancePct ?? item.varPct ?? 0,
+              otbSubmitted: item.otbSubmitted ?? item.otbValue ?? 0,
+              buyActual: item.buyActual ?? item.buyPct ?? 0,
+            };
+          }
+        });
+      }
+    }
+
+    // Only use demo data as fallback when no API data populated the category keys
+    const hasCategoryKeys = Object.keys(initialData).some(k => !k.startsWith('collection_') && !k.startsWith('gender_'));
+    if (!hasCategoryKeys && categoryStructure.length > 0) {
+      // Fallback: demo data sets for category tab (only when no real data)
+      const catDemoSets = [
+        { buyPct: 8, salesPct: 12, stPct: 62, buyProposed: 10, otbProposed: 245680, varPct: -2, otbSubmitted: 238450, buyActual: 9 },
+        { buyPct: 5, salesPct: 7, stPct: 55, buyProposed: 6, otbProposed: 178320, varPct: -1, otbSubmitted: 172100, buyActual: 6 },
+        { buyPct: 12, salesPct: 14, stPct: 68, buyProposed: 13, otbProposed: 356740, varPct: -1, otbSubmitted: 348200, buyActual: 12 },
+        { buyPct: 6, salesPct: 9, stPct: 48, buyProposed: 8, otbProposed: 198560, varPct: -1, otbSubmitted: 192300, buyActual: 7 },
+        { buyPct: 15, salesPct: 18, stPct: 72, buyProposed: 17, otbProposed: 425890, varPct: -1, otbSubmitted: 418600, buyActual: 16 },
+        { buyPct: 4, salesPct: 5, stPct: 44, buyProposed: 5, otbProposed: 134250, varPct: 0, otbSubmitted: 130800, buyActual: 5 },
+        { buyPct: 10, salesPct: 11, stPct: 58, buyProposed: 11, otbProposed: 287430, varPct: 0, otbSubmitted: 282100, buyActual: 10 },
+        { buyPct: 7, salesPct: 8, stPct: 52, buyProposed: 8, otbProposed: 215780, varPct: 0, otbSubmitted: 210400, buyActual: 8 },
+      ];
+      let catIdx = 0;
+      categoryStructure.forEach((genderGroup: any) => {
+        genderGroup.categories.forEach((cat: any) => {
+          cat.subCategories.forEach((subCat: any) => {
+            const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
+            initialData[key] = { ...catDemoSets[catIdx % catDemoSets.length] };
+            catIdx++;
+          });
         });
       });
-    });
+    }
 
-    // Fixed demo data for Collection tab (REX/TTP per collection)
-    const collectionDemo: Record<string, Record<string, number>> = {
-      carryover: { rex: 22, ttp: 16 },
-      seasonal: { rex: 35, ttp: 26 },
-    };
-    COLLECTION_SECTIONS.forEach((section: any) => {
-      STORES.forEach((store: any) => {
-        const key = `collection_${section.id}_${store.id}`;
-        initialData[key] = {
-          userBuyPct: collectionDemo[section.id]?.[store.id] || 20
-        };
+    // Only use demo data for collection/gender tabs if those keys are not populated
+    if (!Object.keys(initialData).some(k => k.startsWith('collection_'))) {
+      const collectionDemo: Record<string, Record<string, number>> = {
+        carryover: { rex: 22, ttp: 16 },
+        seasonal: { rex: 35, ttp: 26 },
+      };
+      COLLECTION_SECTIONS.forEach((section: any) => {
+        STORES.forEach((store: any) => {
+          const key = `collection_${section.id}_${store.id}`;
+          initialData[key] = {
+            userBuyPct: collectionDemo[section.id]?.[store.id] || 20
+          };
+        });
       });
-    });
+    }
 
-    // Fixed demo data for Gender tab (REX/TTP per gender)
-    const genderDemo: Record<string, Record<string, number>> = {
-      gen1: { rex: 36, ttp: 25 },
-      gen2: { rex: 22, ttp: 17 },
-    };
-    GENDERS.forEach((gender: any) => {
-      STORES.forEach((store: any) => {
-        const key = `gender_${gender.id}_${store.id}`;
-        initialData[key] = {
-          userBuyPct: genderDemo[gender.id]?.[store.id] || 20
-        };
+    if (!Object.keys(initialData).some(k => k.startsWith('gender_'))) {
+      const genderDemo: Record<string, Record<string, number>> = {
+        gen1: { rex: 36, ttp: 25 },
+        gen2: { rex: 22, ttp: 17 },
+      };
+      GENDERS.forEach((gender: any) => {
+        STORES.forEach((store: any) => {
+          const key = `gender_${gender.id}_${store.id}`;
+          initialData[key] = {
+            userBuyPct: genderDemo[gender.id]?.[store.id] || 20
+          };
+        });
       });
-    });
+    }
 
     setLocalData((prev: any) => {
       // If we already have user-edited data, keep it (recovery may have loaded)
       if (Object.keys(prev).length > 0) return prev;
       return initialData;
     });
-  }, [categoryStructure]);
+  }, [categoryStructure, planningDetailData]);
 
   // UX-21: Auto-save localData to session storage on edit
   const localDataInitialised = useRef(false);
@@ -468,42 +515,76 @@ const PlanningDetailPage = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle approve - create new version
-  const handleApprove = () => {
-    const newVersion = {
-      id: `v${versions.length + 1}`,
-      versionNumber: versions.length + 1,
-      createdAt: new Date().toISOString(),
-      createdBy: { name: 'Current User', avatar: 'CU' },
-      data: JSON.parse(JSON.stringify(localData)),
-      status: 'pending_review',
-      approvals: {
-        level1: level1Approvers.map((a: any) => ({
-          approverId: a.id,
-          status: 'pending',
-          comment: '',
-          approvedAt: null
-        })),
-        level2: level2Approvers.map((a: any) => ({
-          approverId: a.id,
-          status: 'waiting',
-          comment: '',
-          approvedAt: null
-        }))
-      }
-    };
-
-    setVersions((prev: any) => [...prev, newVersion]);
+  // Handle submit - save current data then submit for approval via API
+  // Bug fix WF-03: Previously only updated local React state without API call.
+  // Now calls planningService.update() to persist, then planningService.submit() to submit for approval.
+  const handleApprove = async () => {
     setApproveAnimation(true);
-    planningRecovery.clearDraft(); // UX-21: clear draft on submit
 
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
-    }
-    animationTimeoutRef.current = setTimeout(() => {
+    try {
+      // Step 1: Save current data to backend before submitting
+      const savePayload = {
+        budgetDetailId: selectedBudgetDetail?.id,
+        data: JSON.parse(JSON.stringify(localData)),
+      };
+
+      let planningId = entityId;
+
+      if (planningId) {
+        // Update existing planning
+        await planningService.update(planningId, savePayload);
+      } else if (selectedBudgetDetail?.id) {
+        // Create new planning if none exists yet
+        const created = await planningService.create(savePayload);
+        planningId = created?.id;
+      }
+
+      // Step 2: Submit for approval via API
+      if (planningId) {
+        await planningService.submit(planningId);
+      }
+
+      // Step 3: Invalidate cache so lists reflect the new status
+      invalidateCache('/planning');
+
+      // Step 4: Update local UI state optimistically
+      const newVersion = {
+        id: planningId || `v${versions.length + 1}`,
+        versionNumber: versions.length + 1,
+        createdAt: new Date().toISOString(),
+        createdBy: { name: user?.name || 'Current User', avatar: (user?.name || 'CU').substring(0, 2).toUpperCase() },
+        data: JSON.parse(JSON.stringify(localData)),
+        status: 'pending_review',
+        approvals: {
+          level1: level1Approvers.map((a: any) => ({
+            approverId: a.id,
+            status: 'pending',
+            comment: '',
+            approvedAt: null
+          })),
+          level2: level2Approvers.map((a: any) => ({
+            approverId: a.id,
+            status: 'waiting',
+            comment: '',
+            approvedAt: null
+          }))
+        }
+      };
+
+      setVersions((prev: any) => [...prev, newVersion]);
+      planningRecovery.clearDraft(); // UX-21: clear draft on submit
+
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current);
+      }
+      animationTimeoutRef.current = setTimeout(() => {
+        setApproveAnimation(false);
+        setSelectedVersion(newVersion.id);
+      }, 1500);
+    } catch (err: any) {
+      console.error('[PlanningDetailPage] Submit failed:', err);
       setApproveAnimation(false);
-      setSelectedVersion(newVersion.id);
-    }, 1500);
+    }
   };
 
   // Check if current view is read-only
@@ -1298,7 +1379,7 @@ const PlanningDetailPage = ({
     }
 
     return (
-      <div className="space-y-3 md:space-y-6 animate-in fade-in slide-in-from-right duration-500">
+      <div className="space-y-3 md:space-y-6">
         {/* Version Info — compact */}
         <div className={`rounded-lg px-3 py-2 border ${darkMode ? 'bg-[rgba(215,183,151,0.06)] border-[#2E2E2E]' : 'bg-[#FAF7F2] border-[#E8DFD3]'}`}>
           <div className="flex items-center gap-2">
@@ -1415,17 +1496,6 @@ const PlanningDetailPage = ({
 
   return (
     <div className={`${bgPage} overflow-x-hidden`}>
-      {/* Breadcrumbs */}
-      <div className="px-3 md:px-6 pt-2">
-        <Breadcrumbs
-          darkMode={darkMode}
-          items={[
-            { label: t('common.breadcrumbPlanning'), href: '/planning' },
-            { label: selectedBudgetDetail?.budget?.groupBrandName || t('planningDetail.title') },
-          ]}
-        />
-      </div>
-
       {/* UX-21: Session recovery banner */}
       {planningRecovery.hasDraft && (
         <div className={`mx-3 md:mx-6 mt-2 px-4 py-2.5 rounded-lg border flex items-center justify-between gap-3 ${darkMode ? 'bg-[rgba(215,183,151,0.12)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2]' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
@@ -1692,7 +1762,7 @@ const PlanningDetailPage = ({
                 >
                   {approveAnimation ? (
                     <>
-                      <CheckCircle2 size={14} className="animate-bounce" />
+                      <CheckCircle2 size={14} />
                       <span>{t('planningDetail.versionCreated').replace('{{version}}', String(versions.length))}</span>
                     </>
                   ) : (
@@ -1704,16 +1774,46 @@ const PlanningDetailPage = ({
                 </button>
               )}
               <button
-                onClick={() => { planningRecovery.clearDraft(); onSave && onSave(); }}
-                disabled={isReadOnly}
+                onClick={async () => {
+                  // Bug fix WF-02: Actually persist data to backend via API
+                  setSaveLoading(true);
+                  try {
+                    const savePayload = {
+                      budgetDetailId: selectedBudgetDetail?.id,
+                      data: JSON.parse(JSON.stringify(localData)),
+                    };
+
+                    if (entityId) {
+                      // Update existing planning
+                      await planningService.update(entityId, savePayload);
+                    } else if (selectedBudgetDetail?.id) {
+                      // Create new planning if none exists
+                      await planningService.create(savePayload);
+                    }
+
+                    // Invalidate cache so lists reflect saved changes
+                    invalidateCache('/planning');
+
+                    // Clear session recovery draft since data is now persisted
+                    planningRecovery.clearDraft();
+
+                    // Notify parent if callback provided
+                    onSave && onSave();
+                  } catch (err: any) {
+                    console.error('[PlanningDetailPage] Save failed:', err);
+                  } finally {
+                    setSaveLoading(false);
+                  }
+                }}
+                disabled={isReadOnly || saveLoading}
                 className={`px-3 md:px-4 py-1.5 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 text-xs md:text-sm ${
-                  isReadOnly
+                  isReadOnly || saveLoading
                     ? (darkMode ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed' : 'bg-slate-200 text-slate-500 cursor-not-allowed')
                     : (darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A682]' : 'bg-[#8B6F47] text-white hover:bg-[#6B4D30]')
                 }`}
               >
-                <Save size={14} />
-                {t('planningDetail.savePlanning')}
+                <Save size={14} className={saveLoading ? 'animate-spin' : ''} />
+                {saveLoading ? (t('common.saving') || 'Saving...') : t('planningDetail.savePlanning')}
               </button>
             </div>
           </div>
@@ -1768,8 +1868,8 @@ const PlanningDetailPage = ({
       {/* Approve Success Overlay Animation */}
       {approveAnimation && (
         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none bg-black/30">
-          <div className="animate-in zoom-in duration-300 bg-emerald-500 text-white px-10 py-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
-            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+          <div className="bg-emerald-500 text-white px-10 py-8 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
               <CheckCircle2 size={50} />
             </div>
             <div className="text-2xl font-bold">{t('planningDetail.versionCreated').replace('{{version}}', String(versions.length))}</div>

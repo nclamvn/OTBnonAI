@@ -22,6 +22,31 @@ const DUPLICATE_MODES = [
   { value: 'merge', label: 'Merge fields' },
 ];
 
+// Parse CSV line respecting quoted fields
+const parseCSVLine = (line: string, delimiter: string): string[] => {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+        current += '"';
+        i++; // skip escaped quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === delimiter && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+};
+
 export const useDataImport = () => {
   // Upload state
   const [file, setFile] = useState<File | null>(null);
@@ -52,6 +77,12 @@ export const useDataImport = () => {
 
   // ─── Parse CSV/Excel file ─────────────────────────────────────────
   const parseFile = useCallback(async (selectedFile: File) => {
+    // File size guard (50 MB max)
+    if (selectedFile.size > 50 * 1024 * 1024) {
+      setError('File is too large. Maximum allowed size is 50 MB.');
+      return;
+    }
+
     setFile(selectedFile);
     setError(null);
     setResult(null);
@@ -67,12 +98,12 @@ export const useDataImport = () => {
         return;
       }
 
-      const parsedHeaders = lines[0].split(delimiter).map((h: string) => h.trim().replace(/^"|"$/g, ''));
+      const parsedHeaders = parseCSVLine(lines[0], delimiter);
       setHeaders(parsedHeaders);
 
       const rows = [];
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(delimiter).map((v: string) => v.trim().replace(/^"|"$/g, ''));
+        const values = parseCSVLine(lines[i], delimiter);
         const row: Record<string, any> = {};
         parsedHeaders.forEach((h: string, idx: number) => {
           row[h] = values[idx] || '';

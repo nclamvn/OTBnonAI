@@ -514,7 +514,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
             }}
           >
             <div
-              className="absolute -bottom-2 -right-2 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.10] pointer-events-none"
+              className="absolute -bottom-2 -right-2 pointer-events-none"
               style={{ opacity: darkMode ? 0.04 : 0.06 }}
             >
               <FileText size={65} color={CARD_ACCENTS.pages.color} strokeWidth={1} />
@@ -543,7 +543,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
             }}
           >
             <div
-              className="absolute -bottom-2 -right-2 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.10] pointer-events-none"
+              className="absolute -bottom-2 -right-2 pointer-events-none"
               style={{ opacity: darkMode ? 0.04 : 0.06 }}
             >
               <CircleCheckBig size={65} color={CARD_ACCENTS.done.color} strokeWidth={1} />
@@ -574,7 +574,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
             }}
           >
             <div
-              className="absolute -bottom-2 -right-2 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.10] pointer-events-none"
+              className="absolute -bottom-2 -right-2 pointer-events-none"
               style={{ opacity: darkMode ? 0.04 : 0.06 }}
             >
               <Code2 size={65} color={CARD_ACCENTS.props.color} strokeWidth={1} />
@@ -605,7 +605,7 @@ const DevTicketScreen = ({ darkMode = false }) => {
             }}
           >
             <div
-              className="absolute -bottom-2 -right-2 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.10] pointer-events-none"
+              className="absolute -bottom-2 -right-2 pointer-events-none"
               style={{ opacity: darkMode ? 0.04 : 0.06 }}
             >
               <Sparkles size={65} color={CARD_ACCENTS.features.color} strokeWidth={1} />

@@ -16,14 +16,14 @@ import toast from 'react-hot-toast';
 const FashionIcons = () => (
   <div className="fixed inset-0 pointer-events-none overflow-hidden">
     {/* Handbag */}
-    <svg className="absolute w-20 h-20 top-[10%] right-[8%] opacity-[0.25] animate-[float_6s_ease-in-out_infinite]"
+    <svg className="absolute w-20 h-20 top-[10%] right-[8%] opacity-[0.25]"
       viewBox="0 0 50 50" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22 C12 16, 18 12, 25 12 C32 12, 38 16, 38 22 L38 40 C38 43, 34 45, 25 45 C16 45, 12 43, 12 40 Z"/>
       <path d="M18 12 C18 6, 21 4, 25 4 C29 4, 32 6, 32 12"/>
       <circle cx="25" cy="30" r="3"/>
     </svg>
     {/* Watch */}
-    <svg className="absolute w-[65px] h-20 top-[22%] left-[10%] opacity-20 animate-[float_5s_ease-in-out_infinite_0.5s]"
+    <svg className="absolute w-[65px] h-20 top-[22%] left-[10%] opacity-20"
       viewBox="0 0 40 50" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <rect x="10" y="12" width="20" height="26" rx="3"/>
       <circle cx="20" cy="25" r="8"/>
@@ -33,7 +33,7 @@ const FashionIcons = () => (
       <path d="M13 38 L13 45 L27 45 L27 38"/>
     </svg>
     {/* Dress */}
-    <svg className="absolute w-[70px] h-[100px] bottom-[25%] right-[6%] opacity-20 animate-[float_6s_ease-in-out_infinite_2s]"
+    <svg className="absolute w-[70px] h-[100px] bottom-[25%] right-[6%] opacity-20"
       viewBox="0 0 50 70" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 5 C20 3, 22 2, 25 2 C28 2, 30 3, 30 5"/>
       <path d="M20 5 L17 15 L10 60 C10 63, 15 65, 25 65 C35 65, 40 63, 40 60 L33 15 L30 5"/>
@@ -41,7 +41,7 @@ const FashionIcons = () => (
       <ellipse cx="25" cy="25" rx="8" ry="3"/>
     </svg>
     {/* Sunglasses */}
-    <svg className="absolute w-[75px] h-10 top-[55%] right-[12%] opacity-[0.18] animate-[float_7s_ease-in-out_infinite_1.5s]"
+    <svg className="absolute w-[75px] h-10 top-[55%] right-[12%] opacity-[0.18]"
       viewBox="0 0 60 30" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <ellipse cx="15" cy="17" rx="12" ry="10"/>
       <ellipse cx="45" cy="17" rx="12" ry="10"/>
@@ -50,7 +50,7 @@ const FashionIcons = () => (
       <path d="M57 15 L60 12"/>
     </svg>
     {/* Jacket */}
-    <svg className="absolute w-[85px] h-[90px] bottom-[12%] right-[25%] opacity-[0.18] animate-[float_5s_ease-in-out_infinite_2.5s]"
+    <svg className="absolute w-[85px] h-[90px] bottom-[12%] right-[25%] opacity-[0.18]"
       viewBox="0 0 60 65" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 5 L15 8 L8 60 L25 60 L25 25 L30 15 L35 25 L35 60 L52 60 L45 8 L40 5"/>
       <path d="M20 5 C20 2, 25 0, 30 0 C35 0, 40 2, 40 5"/>
@@ -60,14 +60,14 @@ const FashionIcons = () => (
       <circle cx="30" cy="45" r="2"/>
     </svg>
     {/* T-Shirt */}
-    <svg className="absolute w-[70px] h-[65px] top-[42%] left-[5%] opacity-[0.16] animate-[float_6.5s_ease-in-out_infinite_1.8s]"
+    <svg className="absolute w-[70px] h-[65px] top-[42%] left-[5%] opacity-[0.16]"
       viewBox="0 0 55 50" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 5 L12 8 L2 15 L8 22 L15 18 L15 45 L40 45 L40 18 L47 22 L53 15 L43 8 L37 5"/>
       <path d="M18 5 C18 2, 23 0, 27.5 0 C32 0, 37 2, 37 5"/>
       <ellipse cx="27.5" cy="6" rx="5" ry="3"/>
     </svg>
     {/* Pants */}
-    <svg className="absolute w-[60px] h-[85px] bottom-[15%] left-[8%] opacity-[0.18] animate-[float_7s_ease-in-out_infinite_1s]"
+    <svg className="absolute w-[60px] h-[85px] bottom-[15%] left-[8%] opacity-[0.18]"
       viewBox="0 0 45 65" fill="none" stroke="#A69076" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 2 L37 2 L37 8 L40 60 L28 60 L25 25 L22.5 8 L20 25 L17 60 L5 60 L8 8 Z"/>
       <path d="M8 2 L37 2 L37 8 L8 8 Z"/>
@@ -145,7 +145,7 @@ const LoginScreen = () => {
       </div>
 
       {/* Main content */}
-      <div className="relative z-10 w-full max-w-[420px] animate-[fadeInUp_0.8s_ease_forwards]">
+      <div className="relative z-10 w-full max-w-[420px]">
 
         {/* Logo Section */}
         <div className="text-center mb-10">
@@ -195,21 +195,11 @@ const LoginScreen = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder={t('login.emailPlaceholder') || 'Email address'}
-                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-all duration-300"
+                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-colors duration-200 focus:border-[rgba(139,115,85,0.50)] focus:bg-[rgba(255,255,255,0.9)] focus:ring-[3px] focus:ring-[rgba(139,115,85,0.08)]"
                 style={{
                   background: 'rgba(255, 255, 255, 0.7)',
                   border: '1px solid rgba(139, 115, 85, 0.28)',
                   fontFamily: 'var(--font-montserrat), sans-serif',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.50)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.9)';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(139, 115, 85, 0.08)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.28)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.7)';
-                  e.target.style.boxShadow = 'none';
                 }}
               />
               <svg className="absolute right-[18px] top-1/2 -translate-y-1/2 w-5 h-5 text-[#8B7A6B] pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
@@ -225,21 +215,11 @@ const LoginScreen = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={t('login.passwordPlaceholder') || 'Password'}
-                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-all duration-300"
+                className="login-input w-full py-4 pl-5 pr-[50px] rounded-[14px] text-[14px] font-normal text-[#3D2E22] tracking-[0.02em] outline-none transition-colors duration-200 focus:border-[rgba(139,115,85,0.50)] focus:bg-[rgba(255,255,255,0.9)] focus:ring-[3px] focus:ring-[rgba(139,115,85,0.08)]"
                 style={{
                   background: 'rgba(255, 255, 255, 0.7)',
                   border: '1px solid rgba(139, 115, 85, 0.28)',
                   fontFamily: 'var(--font-montserrat), sans-serif',
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.50)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.9)';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(139, 115, 85, 0.08)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = 'rgba(139, 115, 85, 0.28)';
-                  e.target.style.background = 'rgba(255, 255, 255, 0.7)';
-                  e.target.style.boxShadow = 'none';
                 }}
               />
               <button
@@ -288,14 +268,12 @@ const LoginScreen = () => {
               data-testid="submit-button"
               type="submit"
               disabled={loading}
-              className="w-full py-[18px] rounded-[14px] text-white text-[12px] font-medium tracking-[0.25em] uppercase cursor-pointer relative overflow-hidden transition-all duration-400 disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-px"
+              className="w-full py-[18px] rounded-[14px] text-white text-[12px] font-medium tracking-[0.25em] uppercase cursor-pointer relative overflow-hidden transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#7A6548]"
               style={{
                 background: 'linear-gradient(135deg, #8B7355 0%, #6B5744 100%)',
                 fontFamily: 'var(--font-montserrat), sans-serif',
                 boxShadow: '0 4px 15px rgba(107, 87, 68, 0.2)',
               }}
-              onMouseEnter={(e) => { (e.target as HTMLElement).style.boxShadow = '0 8px 25px rgba(107, 87, 68, 0.25)'; }}
-              onMouseLeave={(e) => { (e.target as HTMLElement).style.boxShadow = '0 4px 15px rgba(107, 87, 68, 0.2)'; }}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -322,18 +300,10 @@ const LoginScreen = () => {
                 key={account.email}
                 type="button"
                 onClick={() => handleDemoLogin(account)}
-                className="flex items-center justify-between px-3 py-2.5 rounded-[10px] text-[12px] cursor-pointer transition-all duration-200 hover:-translate-y-px group"
+                className="flex items-center justify-between px-3 py-2.5 rounded-[10px] text-[12px] cursor-pointer transition-colors duration-200 hover:bg-[rgba(255,255,255,0.9)] hover:border-[rgba(139,115,85,0.35)] group"
                 style={{
                   background: 'rgba(255, 255, 255, 0.75)',
                   border: '1px solid rgba(139, 115, 85, 0.22)',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.9)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139, 115, 85, 0.35)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255, 255, 255, 0.6)';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(139, 115, 85, 0.22)';
                 }}
               >
                 <span className="text-[#3D2E22] font-normal truncate">{account.email.split('@')[0]}</span>
@@ -353,14 +323,6 @@ const LoginScreen = () => {
 
       {/* Keyframe animations - using dangerouslySetInnerHTML to avoid jsx type issues */}
       <style dangerouslySetInnerHTML={{ __html: `
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
         .login-input::placeholder {
           color: #8B7A6B;
           font-weight: 300;

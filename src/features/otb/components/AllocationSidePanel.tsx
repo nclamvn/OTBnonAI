@@ -347,7 +347,7 @@ const AllocationSidePanel = ({
   // Desktop: slide-in panel
   return (
     <div
-      className={`fixed top-0 right-0 h-full w-80 z-40 border-l shadow-xl transition-transform duration-300 ${
+      className={`fixed top-0 right-0 h-full w-80 z-40 border-l shadow-xl transition-transform duration-200 ease-out ${
         isOpen ? 'translate-x-0' : 'translate-x-full'
       } ${
         darkMode

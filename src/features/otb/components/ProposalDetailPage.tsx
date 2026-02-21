@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
+import { STORES } from '@/utils/constants';
 import { masterDataService, proposalService, budgetService, approvalService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useSessionRecoveryGeneric } from '../hooks/useSessionRecovery';
-import { ConfirmDialog, Breadcrumbs, PrintButton } from '@/components/ui';
+import { ConfirmDialog, PrintButton } from '@/components/ui';
 
 const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: any) => {
   const { t } = useLanguage();
@@ -76,12 +77,8 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
         ]);
 
         const allStoresRaw = Array.isArray(storesRes) ? storesRes : (storesRes?.data || []);
-        // Only show REX and TTP stores
-        const stores = allStoresRaw.filter((s: any) => {
-          const code = (s.code || s.storeCode || s.name || '').toUpperCase();
-          return code === 'REX' || code === 'TTP';
-        });
-        setAllStores((stores.length > 0 ? stores : allStoresRaw.slice(0, 2)).map((s: any) => ({
+        // Use all stores from API; fall back to constants if empty
+        setAllStores((allStoresRaw.length > 0 ? allStoresRaw : STORES).map((s: any) => ({
           id: s.id || s.code?.toLowerCase(),
           code: s.code || s.storeCode,
           name: s.name || s.storeName,
@@ -382,17 +379,6 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
 
   return (
     <div className={`min-h-screen ${bg}`}>
-      {/* Breadcrumbs */}
-      <div className="px-3 md:px-6 pt-2">
-        <Breadcrumbs
-          darkMode={darkMode}
-          items={[
-            { label: t('common.breadcrumbProposals'), href: '/proposals' },
-            { label: ticketName || t('proposal.newProposal') },
-          ]}
-        />
-      </div>
-
       {/* UX-21: Session recovery banner */}
       {proposalRecovery.hasDraft && (
         <div className={`mx-3 md:mx-6 mt-2 px-4 py-2.5 rounded-lg border flex items-center justify-between gap-3 ${darkMode ? 'bg-[rgba(215,183,151,0.12)] border-[rgba(215,183,151,0.3)] text-[#F2F2F2]' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
@@ -734,13 +720,13 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
             <table className="w-full">
               <thead>
                 <tr className={`${headerGradient} border-b ${darkMode ? 'border-[rgba(215,183,151,0.2)]' : 'border-[rgba(160,120,75,0.25)]'}`}>
-                  <th className="w-8 px-2 py-0.5">
+                  <th className={`w-8 px-2 py-0.5 sticky left-0 z-10 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-white'}`}>
                     <button onClick={toggleSelectAllSkus} className="p-0.5">
                       {selectedSkuIds.size === skuList.length ? <CheckSquare size={16} className={accentText} /> : selectedSkuIds.size > 0 ? <MinusSquare size={16} className={accentText} /> : <Square size={16} className={textMuted} />}
                     </button>
                   </th>
-                  <th className="w-10 px-3 py-0.5"></th>
-                  <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.skuCode')}</th>
+                  <th className={`w-10 px-3 py-0.5 sticky left-8 z-10 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-white'}`}></th>
+                  <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase sticky left-[72px] z-10 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-white'}`}>{t('proposal.skuCode')}</th>
                   <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.productName')}</th>
                   <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.rail')} / {t('proposal.productType')}</th>
                   <th className={`text-left px-4 py-0.5 text-xs font-semibold ${textMuted} uppercase`}>{t('proposal.color')}</th>
@@ -760,12 +746,12 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
                   return (
                     <React.Fragment key={sku.id}>
                       <tr className={`border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-slate-100'} ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-slate-50'} ${isExpanded ? (darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-purple-50/50') : ''}`}>
-                        <td className="px-2 py-0.5">
+                        <td className={`px-2 py-0.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                           <button onClick={() => toggleSkuSelect(sku.id)} className="p-0.5">
                             {selectedSkuIds.has(sku.id) ? <CheckSquare size={16} className={accentText} /> : <Square size={16} className={textMuted} />}
                           </button>
                         </td>
-                        <td className="px-3 py-0.5">
+                        <td className={`px-3 py-0.5 sticky left-8 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                           <button
                             onClick={() => setExpandedSku(isExpanded ? null : sku.id)}
                             className={`p-1 ${hoverBg} rounded transition-colors`}
@@ -773,7 +759,7 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
                             {isExpanded ? <ChevronDown size={16} className={textMuted} /> : <ChevronRight size={16} className={textMuted} />}
                           </button>
                         </td>
-                        <td className="px-4 py-0.5">
+                        <td className={`px-4 py-0.5 sticky left-[72px] z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                           <div className="flex items-center gap-3">
                             <img
                               src={sku.imageUrl}

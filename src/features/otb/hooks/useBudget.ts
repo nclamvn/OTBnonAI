@@ -44,13 +44,9 @@ export const useBudget = () => {
         ]);
         if (controller.signal.aborted) return;
         setBrands(brandsRes || []);
-        // Only show REX and TTP stores
+        // Use all stores from API; fall back to constants if empty
         const allStores = storesRes || [];
-        const filtered = allStores.filter((s: any) => {
-          const code = (s.code || s.storeCode || s.name || '').toUpperCase();
-          return code === 'REX' || code === 'TTP';
-        });
-        setStores(filtered.length > 0 ? filtered : allStores.slice(0, 2));
+        setStores(allStores.length > 0 ? allStores : STORES);
         setSeasons(seasonsRes || []);
       } catch (err: any) {
         if (err?.name === 'AbortError' || controller.signal.aborted) return;

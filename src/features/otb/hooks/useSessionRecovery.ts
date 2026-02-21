@@ -101,6 +101,7 @@ export function useSessionRecoveryGeneric<T>(
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const data: GenericDraft<T> = JSON.parse(raw);
+        localStorage.removeItem(storageKey);
         setRecovery({ hasDraft: false, draftInfo: null });
         setDismissed(true);
         return data.payload;
@@ -208,6 +209,7 @@ export function useSessionRecovery(budgetId: string | null) {
       const raw = localStorage.getItem(storageKey);
       if (raw) {
         const data: DraftData = JSON.parse(raw);
+        localStorage.removeItem(storageKey);
         setRecovery({ hasDraft: false, draftInfo: null });
         setDismissed(true);
         return data;

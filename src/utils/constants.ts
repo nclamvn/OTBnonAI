@@ -50,5 +50,5 @@ export const SUB_CATEGORIES = [
   { id: 'm_bags', name: 'M Bags', categoryId: 'men_hard_acc' }
 ];
 
-export const CURRENT_YEAR = 2025;
+export const CURRENT_YEAR = new Date().getFullYear();
 export const CURRENT_SEASON_GROUP = 'SS';

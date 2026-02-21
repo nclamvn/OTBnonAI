@@ -49,6 +49,10 @@ const vi = {
     required: '*',
     selected: 'đã chọn',
     print: 'In',
+    draft: 'Nháp',
+    submitted: 'Đã gửi',
+    approved: 'Đã duyệt',
+    rejected: 'Từ chối',
     viewDetails: 'Xem chi tiết',
     chartsComingSoon: 'Biểu đồ sắp ra mắt',
     entryPointSidebar: 'Điểm vào: Thanh bên',
@@ -559,6 +563,9 @@ const vi = {
     totalAllocated: 'Tổng phân bổ',
     avgAllocation: 'Phân bổ trung bình',
     brandOverview: 'Tổng quan thương hiệu',
+    noApprovedBudgets: 'Không có ngân sách đã duyệt',
+    noApprovedBudgetsDescription: 'Vui lòng gửi và duyệt ngân sách trong Quản lý Ngân sách trước.',
+    goToBudgetManagement: 'Đi tới Quản lý Ngân sách',
   },
 
   // ──────────────────────────────────────────────
@@ -605,6 +612,8 @@ const vi = {
     selectSkus: 'Chọn SKU để thêm',
     storeQuantities: 'Số lượng theo cửa hàng',
     customerTarget: 'Đối tượng khách hàng',
+    orderSummary: 'Tóm tắt đơn hàng',
+    totalOrder: 'Tổng đặt hàng',
   },
 
   // ──────────────────────────────────────────────

@@ -88,7 +88,7 @@ const AllocationProgressBar = ({
           }`}
         >
           <div
-            className={`h-full rounded-full transition-all duration-500 ${barColor}`}
+            className={`h-full rounded-full transition-all duration-200 ${barColor}`}
             style={{ width: `${isOver ? Math.min(overPct, 100) : pct}%` }}
           />
         </div>

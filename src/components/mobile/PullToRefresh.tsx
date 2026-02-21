@@ -37,9 +37,14 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({
   const checkIfAtTop = useCallback(() => {
     const container = containerRef.current;
     if (!container) return false;
-    
-    // Check if scrolled to top
-    return container.scrollTop <= 0;
+
+    // Check if scrolled to top — also check the parent #main-scroll element
+    // because container.scrollTop may always be 0 when actual scroll happens
+    // in a parent element
+    if (container.scrollTop > 0) return false;
+    const mainScroll = document.getElementById('main-scroll');
+    if (mainScroll && mainScroll.scrollTop > 0) return false;
+    return true;
   }, []);
 
   const handleTouchStart = useCallback((e: TouchEvent) => {

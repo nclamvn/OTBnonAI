@@ -354,59 +354,44 @@ const AppHeader = ({
           ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.02) 100%)'
           : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 100%)',
       }}>
-        {/* Left - Page Title */}
+        {/* Left - Breadcrumb Navigation */}
         <div className="flex items-center gap-2.5">
-          {/* Icon with gradient background */}
-          <div className="relative">
-            <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300"
-              style={{
-                background: darkMode
-                  ? 'linear-gradient(135deg, rgba(215,183,151,0.10) 0%, rgba(215,183,151,0.20) 100%)'
-                  : 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)',
-                border: `1px solid ${darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}`,
-                boxShadow: darkMode ? '0 0 8px rgba(215,183,151,0.08)' : 'none',
-              }}
-            >
-              <CurrentIcon size={14} strokeWidth={2} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={{ filter: darkMode ? 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' : 'none' }} />
-            </div>
-            <div
-              className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#2A9E6A]"
-              style={{
-                border: `1.5px solid ${darkMode ? '#0A0A0A' : '#ffffff'}`,
-                boxShadow: '0 0 4px rgba(42,158,106,0.5)',
-              }}
-            />
-          </div>
+          {/* Home Icon */}
+          <button
+            onClick={() => onNavigate('home')}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300"
+            style={{
+              background: darkMode
+                ? 'linear-gradient(135deg, rgba(215,183,151,0.10) 0%, rgba(215,183,151,0.20) 100%)'
+                : 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)',
+              border: `1px solid ${darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}`,
+            }}
+          >
+            <Home size={14} strokeWidth={2} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={{ filter: darkMode ? 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' : 'none' }} />
+          </button>
 
-          {/* Title & Breadcrumb */}
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className={`text-sm font-semibold font-['Montserrat'] tracking-tight ${
-                darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'
-              }`}>
-                {currentConfig.label || 'Dashboard'}
-              </h1>
-              {currentConfig.step && (
-                <span className={`px-1.5 py-px rounded text-[9px] font-medium font-['JetBrains_Mono'] uppercase tracking-wider ${
-                  darkMode
-                    ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797] border border-[rgba(215,183,151,0.15)]'
-                    : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30] border border-[rgba(215,183,151,0.25)]'
-                }`}>
-                  {t('common.step')} {currentConfig.step}
-                </span>
-              )}
-            </div>
-            {currentConfig.step && (
-              <div className="flex items-center gap-1">
-                <span className={`text-[10px] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>{t('header.planningBreadcrumb')}</span>
-                <ChevronRight size={10} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
-                <span className={`text-[10px] font-medium ${darkMode ? 'text-[#888888]' : 'text-gray-600'}`}>
-                  {currentConfig.shortLabel}
-                </span>
-              </div>
+          {/* Breadcrumb Trail */}
+          <nav className="flex items-center gap-1">
+            {isInPlanningWorkflow && (
+              <>
+                <ChevronRight size={11} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
+                <button
+                  onClick={() => onNavigate('budget-management')}
+                  className={`text-[11px] font-['Montserrat'] transition-colors ${
+                    darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {t('screenConfig.budgetManagement')}
+                </button>
+              </>
             )}
-          </div>
+            <ChevronRight size={11} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
+            <span className={`text-[11px] font-semibold font-['Montserrat'] ${
+              darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'
+            }`}>
+              {currentConfig.label || 'Dashboard'}
+            </span>
+          </nav>
         </div>
 
         {/* Right - Actions */}
@@ -644,9 +629,9 @@ const AppHeader = ({
             title={darkMode ? t('header.darkModeTitle') : t('header.lightModeTitle')}
           >
             {darkMode ? (
-              <Moon size={15} strokeWidth={2} className="text-[#D7B797] transition-transform group-hover:-rotate-12" style={{ filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.3))' }} />
+              <Moon size={15} strokeWidth={2} className="text-[#D7B797]" style={{ filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.3))' }} />
             ) : (
-              <Sun size={15} strokeWidth={2} className="text-[#6B4D30] transition-transform group-hover:rotate-45" />
+              <Sun size={15} strokeWidth={2} className="text-[#6B4D30]" />
             )}
           </button>
 
@@ -778,8 +763,8 @@ const AppHeader = ({
         </div>
       </div>
 
-      {/* KPI Tracking Bar - Only show for Planning workflow */}
-      {currentScreen !== 'budget-management' && currentScreen !== 'planning' && currentScreen !== 'otb-analysis' && currentScreen !== 'proposal' && isInPlanningWorkflow && (
+      {/* Workflow Stepper Bar - Show for all Planning workflow screens */}
+      {isInPlanningWorkflow && (
         <div className={`px-4 ${isMobile ? 'py-1.5' : 'py-1.5'}`} style={{
           borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
@@ -787,6 +772,19 @@ const AppHeader = ({
             : 'linear-gradient(90deg, #FAFAFA 0%, #ffffff 50%, #FAFAFA 100%)',
         }}>
           <div className="flex items-center gap-4">
+            {/* Back Arrow */}
+            {currentStepIndex > 0 && !isMobile && (
+              <button
+                onClick={() => onNavigate(PLANNING_STEPS[currentStepIndex - 1].id)}
+                className={`p-1 rounded-md transition-colors shrink-0 ${
+                  darkMode ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#888888]' : 'hover:bg-gray-100 text-gray-500'
+                }`}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
             {/* Step Progress */}
             <div className={`flex items-center ${isMobile ? 'gap-1.5 flex-1 justify-between' : 'gap-2'}`}>
               {PLANNING_STEPS.map((step: any, index: any) => {
@@ -837,49 +835,33 @@ const AppHeader = ({
                         </span>
                       </button>
                     ) : (
-                      /* Desktop: full label + KPI */
+                      /* Desktop: pill-shaped step with count */
                       <button
                         onClick={() => onNavigate(step.id)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all duration-200"
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-200 ${isCurrent ? 'shadow-sm' : ''}`}
                         style={{
                           background: isCurrent
-                            ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
-                            : isCompleted
-                              ? 'linear-gradient(135deg, rgba(18,119,73,0.06) 0%, rgba(18,119,73,0.12) 100%)'
-                              : 'transparent',
-                          border: `1px solid ${
-                            isCurrent ? 'rgba(215,183,151,0.2)' : isCompleted ? 'rgba(18,119,73,0.2)' : 'transparent'
-                          }`,
+                            ? 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)'
+                            : 'transparent',
+                          border: `1px solid ${isCurrent ? 'rgba(215,183,151,0.25)' : 'transparent'}`,
                         }}
                       >
-                        <div className={`p-0.5 rounded ${
-                          isCurrent ? 'bg-[#D7B797]' : isCompleted ? 'bg-[#127749]' : darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-200'
+                        {isCompleted && (
+                          <CheckCircle size={12} className="text-[#2A9E6A]" strokeWidth={2.5} />
+                        )}
+                        {isCurrent && (
+                          <div className="w-2 h-2 rounded-full bg-[#D7B797]" style={{ boxShadow: '0 0 6px rgba(215,183,151,0.4)' }} />
+                        )}
+                        <span className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
+                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#666666]' : 'text-gray-400'
                         }`}>
-                          {isCompleted ? (
-                            <CheckCircle size={10} className="text-white" strokeWidth={2.5} />
-                          ) : (
-                            <Icon size={10} className={isCurrent ? 'text-[#0A0A0A]' : darkMode ? 'text-[#555555]' : 'text-gray-600'} strokeWidth={2.5} />
-                          )}
-                        </div>
-                        <div className="text-left">
-                          <div className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
-                            isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#888888]' : 'text-gray-600'
-                          }`}>
-                            {config.shortLabel}
-                          </div>
-                          <div className="flex items-center gap-0.5">
-                            {kpi.status === 'completed' ? (
-                              <CheckCircle size={7} className="text-[#2A9E6A]" />
-                            ) : kpi.status === 'in-progress' ? (
-                              <Clock size={7} className="text-[#E3B341]" />
-                            ) : (
-                              <Target size={7} className={darkMode ? 'text-[#444444]' : 'text-gray-500'} />
-                            )}
-                            <span className={`text-[8px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-600'}`}>
-                              {kpi.value} {config.kpiLabel}
-                            </span>
-                          </div>
-                        </div>
+                          {config.shortLabel}
+                        </span>
+                        <span className={`text-[9px] font-['JetBrains_Mono'] ${
+                          isCurrent ? (darkMode ? 'text-[#D7B797]/70' : 'text-[#6B4D30]/60') : isCompleted ? 'text-[#2A9E6A]/60' : darkMode ? 'text-[#444444]' : 'text-gray-300'
+                        }`}>
+                          ({kpi.value || 0})
+                        </span>
                       </button>
                     )}
                   </React.Fragment>

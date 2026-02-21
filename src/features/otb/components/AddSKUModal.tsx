@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X, Search, Check, Package, ArrowLeft, ArrowRight, ShoppingCart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ProductImage } from '@/components/ui';
+import CreatableSelect from '@/components/ui/CreatableSelect';
 
 interface AddSKUModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ interface AddSKUModalProps {
   onAddSkus: (skus: any[]) => void;
   darkMode?: boolean;
   stores?: { code: string; name: string }[];
+  customerTargetOptions?: string[];
+  onCreateCustomerTarget?: (value: string) => void;
 }
 
 interface SkuFormData {
@@ -38,12 +41,15 @@ const AddSKUModal = ({
   onAddSkus,
   darkMode = false,
   stores: propStores,
+  customerTargetOptions = ['New', 'Existing'],
+  onCreateCustomerTarget,
 }: AddSKUModalProps) => {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSkus, setSelectedSkus] = useState<Set<string>>(new Set());
   const [step, setStep] = useState<1 | 2>(1);
   const [formData, setFormData] = useState<Record<string, SkuFormData>>({});
+  const [activeSkuIndex, setActiveSkuIndex] = useState(0);
 
   const storeList = propStores && propStores.length > 0
     ? propStores
@@ -120,6 +126,7 @@ const AddSKUModal = ({
 
   const goToStep2 = () => {
     initFormData();
+    setActiveSkuIndex(0);
     setStep(2);
   };
 
@@ -177,6 +184,7 @@ const AddSKUModal = ({
     setSearchQuery('');
     setFormData({});
     setStep(1);
+    setActiveSkuIndex(0);
     onClose();
   };
 
@@ -221,6 +229,21 @@ const AddSKUModal = ({
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* SKU selector dropdown — always visible in Step 2 */}
+            {step === 2 && (
+              <select
+                value={selectedSkuItems[activeSkuIndex]?.sku || ''}
+                onChange={(e) => {
+                  const idx = selectedSkuItems.findIndex((s: any) => s.sku === e.target.value);
+                  if (idx >= 0) setActiveSkuIndex(idx);
+                }}
+                className={`px-2 py-1 text-[10px] border rounded-lg font-['JetBrains_Mono'] max-w-[180px] focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
+              >
+                {selectedSkuItems.map((s: any) => (
+                  <option key={s.sku} value={s.sku}>{s.sku} - {s.name || 'Unnamed'}</option>
+                ))}
+              </select>
+            )}
             {/* Step indicator */}
             <div className="flex items-center gap-1 mr-2">
               <div className={`w-2 h-2 rounded-full ${step === 1 ? 'bg-[#2A9E6A]' : (dm ? 'bg-[#555]' : 'bg-[#C4B5A5]')}`} />
@@ -350,160 +373,189 @@ const AddSKUModal = ({
           </>
         )}
 
-        {/* ==================== STEP 2: Fill Details ==================== */}
-        {step === 2 && (
-          <>
-            {/* SKU Detail Forms */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0 space-y-4">
-              {selectedSkuItems.map((sku: any) => {
-                const fd = formData[sku.sku];
-                if (!fd) return null;
-                const ttl = calcTtlValue(sku.sku);
-                const totalStoreQty = Object.values(fd.storeQty).reduce((s, v) => s + v, 0);
+        {/* ==================== STEP 2: Fill Details (Redesigned) ==================== */}
+        {step === 2 && (() => {
+          const skuArr = selectedSkuItems;
+          const activeSku: any = skuArr[activeSkuIndex];
+          const fd = activeSku ? formData[activeSku.sku] : null;
+          if (!activeSku || !fd) return null;
+          const totalStoreQty = Object.values(fd.storeQty).reduce((s, v) => s + v, 0);
+          const totalOrder = totalStoreQty;
+          const totalValue = totalOrder * fd.unitCost;
 
-                return (
-                  <div key={sku.sku} className={`rounded-lg border p-3 ${dm ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[rgba(215,183,151,0.3)] bg-[#FAFAF8]'}`}>
-                    {/* SKU Header */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <ProductImage subCategory={sku.productType || blockSubCategory} sku={sku.sku} size={40} darkMode={dm} rounded="rounded-lg" />
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-xs font-semibold truncate ${textPrimary}`}>
-                          <span className="font-['JetBrains_Mono']">{sku.sku}</span>
-                          <span className={`mx-1.5 ${dm ? 'text-[#555]' : 'text-[#C4B5A5]'}`}>&bull;</span>
-                          {sku.name || 'Unnamed'}
-                        </div>
-                        <div className={`text-[10px] ${textSecondary}`}>
-                          {[sku.color, sku.theme, sku.productType].filter(Boolean).join(' • ')}
-                        </div>
-                      </div>
-                      {ttl > 0 && (
-                        <div className="text-right shrink-0">
-                          <div className={`text-[9px] uppercase tracking-wider ${textMuted}`}>TTL</div>
-                          <div className={`text-xs font-semibold font-['JetBrains_Mono'] ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                            {ttl.toLocaleString()}
-                          </div>
-                        </div>
-                      )}
+          return (
+            <>
+              {/* Single-SKU detail view */}
+              <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0 space-y-3">
+                {/* SKU Header Card — Image + Info + Customer Target */}
+                <div className="flex items-start gap-3">
+                  <ProductImage subCategory={activeSku.productType || blockSubCategory} sku={activeSku.sku} size={56} darkMode={dm} rounded="rounded-xl" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-bold font-['JetBrains_Mono'] ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{activeSku.sku}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${dm ? 'bg-[#2E2E2E] text-[#999]' : 'bg-gray-100 text-gray-500'}`}>{activeSku.productType}</span>
                     </div>
-
-                    {/* Row 1: Order + Unit Cost + Customer Target */}
-                    <div className="grid grid-cols-3 gap-2 mb-2">
-                      <div>
-                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
-                          {t('proposal.order') || 'Order'}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={fd.order || ''}
-                          onChange={(e) => updateFormField(sku.sku, 'order', parseInt(e.target.value) || 0)}
-                          placeholder="0"
-                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
-                          {t('proposal.unitCost') || 'Unit Cost'}
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={fd.unitCost || ''}
-                          onChange={(e) => updateFormField(sku.sku, 'unitCost', parseFloat(e.target.value) || 0)}
-                          placeholder="0"
-                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
-                          {t('proposal.customerTarget') || 'Customer'}
-                        </label>
-                        <select
-                          value={fd.customerTarget}
-                          onChange={(e) => updateFormField(sku.sku, 'customerTarget', e.target.value)}
-                          className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
-                        >
-                          <option value="New">New</option>
-                          <option value="Existing">Existing</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    {/* Row 2: Store Quantities */}
-                    <div>
-                      <label className={`block text-[9px] uppercase tracking-wider mb-1 ${textMuted}`}>
-                        {t('proposal.storeQuantities') || 'Store Quantities'}
-                        <span className={`ml-2 font-['JetBrains_Mono'] normal-case ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                          = {totalStoreQty}
-                        </span>
-                      </label>
-                      <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(storeList.length, 6)}, minmax(0, 1fr))` }}>
-                        {storeList.map(store => (
-                          <div key={store.code} className="text-center">
-                            <div className={`text-[8px] font-semibold mb-0.5 ${textSecondary}`}>{store.code}</div>
-                            <input
-                              type="number"
-                              min="0"
-                              value={fd.storeQty[store.code] || ''}
-                              onChange={(e) => updateStoreQty(sku.sku, store.code, parseInt(e.target.value) || 0)}
-                              placeholder="0"
-                              className={`w-full px-1 py-1.5 text-xs text-center border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Row 3: Composition */}
-                    <div className="mt-2">
-                      <label className={`block text-[9px] uppercase tracking-wider mb-0.5 ${textMuted}`}>
-                        {t('proposal.composition') || 'Composition'}
-                      </label>
-                      <input
-                        type="text"
-                        value={fd.composition}
-                        onChange={(e) => updateFormField(sku.sku, 'composition', e.target.value)}
-                        placeholder="e.g. 100% Cotton"
-                        className={`w-full px-2 py-1.5 text-xs border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] ${inputBg}`}
-                      />
+                    <div className={`text-sm font-semibold mt-0.5 ${textPrimary}`}>{activeSku.name || 'Unnamed'}</div>
+                    <div className={`text-[10px] mt-0.5 ${textSecondary}`}>
+                      {[activeSku.color, activeSku.theme].filter(Boolean).join(' · ')}
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                  <div className="text-right shrink-0 min-w-[120px]">
+                    <CreatableSelect
+                      value={fd.customerTarget}
+                      options={customerTargetOptions}
+                      onChange={(val) => updateFormField(activeSku.sku, 'customerTarget', val)}
+                      onCreateOption={onCreateCustomerTarget}
+                      placeholder="Target..."
+                      darkMode={dm}
+                    />
+                    <div className={`text-sm font-bold font-['JetBrains_Mono'] mt-1 ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                      {fd.unitCost.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
 
-            {/* Footer Step 2 */}
-            <div className={`flex items-center justify-between px-4 py-3 border-t ${borderLight} shrink-0`}>
-              <div className={`text-xs ${textSecondary}`}>
-                <ShoppingCart size={12} className="inline mr-1" />
-                {selectedSkus.size} SKU{selectedSkus.size > 1 ? 's' : ''}
-                {' • '}
-                TTL: <span className={`font-['JetBrains_Mono'] font-semibold ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                  {selectedSkuItems.reduce((sum, sku: any) => sum + calcTtlValue(sku.sku), 0).toLocaleString()}
-                </span>
+                {/* SKU Details Grid */}
+                <div className={`rounded-lg border p-3 ${dm ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[rgba(215,183,151,0.3)] bg-[#FAFAF8]'}`}>
+                  <div className={`text-[9px] font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>
+                    {t('proposal.skuDetails') || 'SKU Details'}
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>SKU</span>
+                      <span className={`text-[10px] font-medium font-['JetBrains_Mono'] ${textPrimary}`}>{activeSku.sku}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.productType') || 'Product Type'}</span>
+                      <span className={`text-[10px] font-medium ${textPrimary}`}>{activeSku.productType || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.productName') || 'Name'}</span>
+                      <span className={`text-[10px] font-medium truncate max-w-[120px] ${textPrimary}`}>{activeSku.name || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.theme') || 'Theme'}</span>
+                      <span className={`text-[10px] font-medium ${textPrimary}`}>{activeSku.theme || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.color') || 'Color'}</span>
+                      <span className={`text-[10px] font-medium ${textPrimary}`}>{activeSku.color || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.composition') || 'Composition'}</span>
+                      <span className={`text-[10px] font-medium ${textPrimary}`}>{activeSku.composition || fd.composition || '—'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>{t('proposal.unitCost') || 'Unit Cost'}</span>
+                      <span className={`text-[10px] font-medium font-['JetBrains_Mono'] ${textPrimary}`}>{(activeSku.unitCost || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className={`text-[10px] ${textMuted}`}>SRP</span>
+                      <span className={`text-[10px] font-bold font-['JetBrains_Mono'] ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{fd.unitCost.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Store Quantities */}
+                <div>
+                  <label className={`block text-[9px] uppercase tracking-wider mb-1 font-semibold ${textMuted}`}>
+                    {t('proposal.storeQuantities') || 'Store Quantities'}
+                  </label>
+                  <div className="grid gap-1.5" style={{ gridTemplateColumns: `repeat(${Math.min(storeList.length, 6)}, minmax(0, 1fr))` }}>
+                    {storeList.map(store => (
+                      <div key={store.code} className="text-center">
+                        <div className={`text-[8px] font-semibold mb-0.5 ${textSecondary}`}>{store.code}</div>
+                        <input
+                          type="number"
+                          min="0"
+                          value={fd.storeQty[store.code] || ''}
+                          onChange={(e) => updateStoreQty(activeSku.sku, store.code, parseInt(e.target.value) || 0)}
+                          placeholder="0"
+                          className={`w-full px-1 py-1.5 text-xs text-center border rounded-lg focus:outline-none focus:ring-1 focus:ring-[#D7B797] font-['JetBrains_Mono'] ${inputBg}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Order Summary (replaces Composition input) */}
+                <div className={`rounded-lg border p-3 ${dm ? 'border-[rgba(215,183,151,0.2)] bg-[rgba(215,183,151,0.04)]' : 'border-[rgba(215,183,151,0.35)] bg-[rgba(215,183,151,0.06)]'}`}>
+                  <div className={`text-[9px] font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>
+                    {t('proposal.orderSummary') || 'Order Summary'}
+                  </div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className={`text-xs ${textSecondary}`}>{t('proposal.totalOrder') || 'Total Order'}</span>
+                    <span className={`text-lg font-bold font-['JetBrains_Mono'] ${textPrimary}`}>
+                      {totalOrder} <span className={`text-[10px] font-normal ${textMuted}`}>units</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xs ${textSecondary}`}>{t('proposal.totalValue') || 'Total Value'}</span>
+                    <span className={`text-xl font-bold font-['JetBrains_Mono'] ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                      {totalValue.toLocaleString()}
+                    </span>
+                  </div>
+                  {totalOrder > 0 && (
+                    <p className={`text-[9px] mt-1.5 text-right font-['JetBrains_Mono'] ${textMuted}`}>
+                      = {totalOrder} x {fd.unitCost.toLocaleString()}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={goBackToStep1}
-                  className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${dm ? 'text-[#999] hover:bg-[#2E2E2E]' : 'text-[#666] hover:bg-gray-100'}`}
-                >
-                  {t('common.back') || 'Back'}
-                </button>
-                <button
-                  onClick={handleAdd}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
-                    dm
-                      ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'
-                      : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
-                  }`}
-                >
-                  <Check size={14} />
-                  {t('proposal.addSku')} ({selectedSkus.size})
-                </button>
+
+              {/* Footer Step 2 */}
+              <div className={`flex items-center justify-between px-4 py-3 border-t ${borderLight} shrink-0`}>
+                <div className={`text-xs ${textSecondary}`}>
+                  <ShoppingCart size={12} className="inline mr-1" />
+                  {selectedSkus.size} SKU{selectedSkus.size > 1 ? 's' : ''}
+                  {' · TTL: '}
+                  <span className={`font-['JetBrains_Mono'] font-semibold ${dm ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                    {selectedSkuItems.reduce((sum: number, sku: any) => sum + calcTtlValue(sku.sku), 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {/* Prev/Next SKU navigation */}
+                  {selectedSkuItems.length > 1 && (
+                    <div className="flex items-center gap-1 mr-2">
+                      <button
+                        onClick={() => setActiveSkuIndex(Math.max(0, activeSkuIndex - 1))}
+                        disabled={activeSkuIndex === 0}
+                        className={`p-1.5 rounded-lg transition-colors ${activeSkuIndex > 0 ? (dm ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]') : (dm ? 'text-[#333] cursor-not-allowed' : 'text-gray-300 cursor-not-allowed')}`}
+                      >
+                        <ArrowLeft size={14} />
+                      </button>
+                      <span className={`text-[10px] font-['JetBrains_Mono'] ${textMuted}`}>{activeSkuIndex + 1}/{selectedSkuItems.length}</span>
+                      <button
+                        onClick={() => setActiveSkuIndex(Math.min(selectedSkuItems.length - 1, activeSkuIndex + 1))}
+                        disabled={activeSkuIndex >= selectedSkuItems.length - 1}
+                        className={`p-1.5 rounded-lg transition-colors ${activeSkuIndex < selectedSkuItems.length - 1 ? (dm ? 'hover:bg-[#2E2E2E] text-[#999]' : 'hover:bg-gray-100 text-[#666]') : (dm ? 'text-[#333] cursor-not-allowed' : 'text-gray-300 cursor-not-allowed')}`}
+                      >
+                        <ArrowRight size={14} />
+                      </button>
+                    </div>
+                  )}
+                  <button
+                    onClick={goBackToStep1}
+                    className={`px-3 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${dm ? 'text-[#999] hover:bg-[#2E2E2E]' : 'text-[#666] hover:bg-gray-100'}`}
+                  >
+                    {t('common.back') || 'Back'}
+                  </button>
+                  <button
+                    onClick={handleAdd}
+                    className={`flex items-center gap-1.5 px-4 py-2.5 md:py-1.5 text-xs font-semibold rounded-lg transition-colors ${
+                      dm
+                        ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.3)]'
+                        : 'bg-[rgba(18,119,73,0.12)] text-[#127749] hover:bg-[rgba(18,119,73,0.2)]'
+                    }`}
+                  >
+                    <Check size={14} />
+                    {t('proposal.addSku')} ({selectedSkus.size})
+                  </button>
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          );
+        })()}
       </div>
     </div>,
     document.body,

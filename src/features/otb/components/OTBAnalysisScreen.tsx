@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   BarChart3, Filter, ChevronDown, Check,
   Calendar, Tag, Layers, Users, Info, Pencil, X,
@@ -38,7 +39,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
   const { t } = useLanguage();
   if (isEditing && !readOnly) {
     return (
-      <div className="flex items-center justify-center animate-in zoom-in duration-200">
+      <div className="flex items-center justify-center">
         <input
           type="number"
           value={editValue}
@@ -95,6 +96,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
 const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
+  const router = useRouter();
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
   const [activeTab, setActiveTab] = useState('category');
@@ -1634,7 +1636,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   }`}>{selectedBrandIds.length}</span>
                 )}
               </div>
-              <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-all duration-250 ease-out ${openBrandDropdown ? 'rotate-180' : ''} ${
+              <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-transform duration-200 ease-out ${openBrandDropdown ? 'rotate-180' : ''} ${
                 darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]'
               }`} />
             </button>
@@ -1644,7 +1646,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
                 }`}
                 style={{
-                  animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
                   boxShadow: darkMode
                     ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
                     : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)',
@@ -1953,7 +1954,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         </div>
                         <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#E8E0D8]'}`}>
                           <div
-                            className="h-full rounded-full transition-all duration-500"
+                            className="h-full rounded-full transition-all duration-200"
                             style={{ width: `${pct}%`, backgroundColor: BRAND_COLORS[idx] }}
                           />
                         </div>
@@ -1968,6 +1969,35 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       </div>
     );
   };
+
+  // Empty state: no approved budgets available
+  if (!loadingBudgets && apiBudgets.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
+        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-4 ${
+          darkMode ? 'bg-[rgba(215,183,151,0.1)]' : 'bg-[rgba(215,183,151,0.15)]'
+        }`}>
+          <BarChart3 size={32} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+        </div>
+        <h3 className={`text-lg font-bold font-['Montserrat'] mb-2 ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+          {t('otbAnalysis.noApprovedBudgets') || 'No approved budgets available'}
+        </h3>
+        <p className={`text-sm mb-6 max-w-md ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+          {t('otbAnalysis.noApprovedBudgetsDescription') || 'Please submit and approve a budget in Budget Management first.'}
+        </p>
+        <button
+          onClick={() => router.push('/budget-management')}
+          className={`px-5 py-2.5 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all ${
+            darkMode
+              ? 'bg-[#D7B797] text-[#1A1A1A] hover:bg-[#C4A882]'
+              : 'bg-[#6B4D30] text-white hover:bg-[#5C4028]'
+          }`}
+        >
+          {t('otbAnalysis.goToBudgetManagement') || 'Go to Budget Management'}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">
@@ -2025,12 +2055,12 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   >
                       <Calendar size={12} className={selectedYear !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')} />
                       <span>{selectedYear === 'all' ? (t('common.all') || 'All') : `FY ${selectedYear}`}</span>
-                    <ChevronDown size={10} strokeWidth={2} className={`transition-all duration-250 ease-out ${openDropdown === 'year' ? 'rotate-180' : ''} ${openDropdown === 'year' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                    <ChevronDown size={10} strokeWidth={2} className={`transition-transform duration-200 ease-out ${openDropdown === 'year' ? 'rotate-180' : ''} ${openDropdown === 'year' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                   </button>
                   {openDropdown === 'year' && (
                     <div className={`absolute top-full left-0 mt-1.5 whitespace-nowrap w-max min-w-full border rounded-lg z-[9999] overflow-hidden ${
                       darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
-                    }`} style={{ animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards', boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)' }}>
+                    }`} style={{ boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)' }}>
                       <div className="h-[1.5px]" style={{ background: darkMode ? 'linear-gradient(90deg, transparent 5%, rgba(215,183,151,0.35) 50%, transparent 95%)' : 'linear-gradient(90deg, transparent 5%, rgba(184,153,112,0.4) 50%, transparent 95%)' }} />
                       <div className="py-1">
                       <div
@@ -2128,12 +2158,12 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   >
                       <Calendar size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                       <span>{seasonCount}</span>
-                    <ChevronDown size={10} strokeWidth={2} className={`transition-all duration-250 ease-out ${openDropdown === 'seasonCount' ? 'rotate-180' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+                    <ChevronDown size={10} strokeWidth={2} className={`transition-transform duration-200 ease-out ${openDropdown === 'seasonCount' ? 'rotate-180' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                   </button>
                   {openDropdown === 'seasonCount' && (
                     <div className={`absolute top-full left-0 mt-1.5 whitespace-nowrap w-max min-w-full border rounded-lg z-[9999] overflow-hidden ${
                       darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
-                    }`} style={{ animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards', boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)' }}>
+                    }`} style={{ boxShadow: darkMode ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)' : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)' }}>
                       <div className="h-[1.5px]" style={{ background: darkMode ? 'linear-gradient(90deg, transparent 5%, rgba(215,183,151,0.35) 50%, transparent 95%)' : 'linear-gradient(90deg, transparent 5%, rgba(184,153,112,0.4) 50%, transparent 95%)' }} />
                       <div className="py-1">
                       {[1, 2, 3].map((n) => (
@@ -2199,7 +2229,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         }`} style={{ letterSpacing: '0.02em' }}>{selectedBudgetIds.length}</span>
                       )}
                     </div>
-                    <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-all duration-250 ease-out ${openDropdown === 'budgetSeason' ? 'rotate-180' : ''} ${openDropdown === 'budgetSeason' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                    <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-transform duration-200 ease-out ${openDropdown === 'budgetSeason' ? 'rotate-180' : ''} ${openDropdown === 'budgetSeason' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                   </button>
                   {openDropdown === 'budgetSeason' && (
                     <div
@@ -2207,7 +2237,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
                       }`}
                       style={{
-                        animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         boxShadow: darkMode
                           ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
                           : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',
@@ -2238,8 +2267,13 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           </div>
                         )}
                         {!loadingBudgets && filteredBudgets.length === 0 && (
-                          <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                            {t('budget.noMatchingBudgets') || 'No budgets found'}
+                          <div className={`px-4 py-6 text-center ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                            <p className="text-sm mb-2">{t('budget.noMatchingBudgets') || 'No budgets found'}</p>
+                            {apiBudgets.length === 0 && (
+                              <p className="text-xs">
+                                {t('otbAnalysis.noApprovedBudgetsDescription') || 'Please submit and approve a budget in Budget Management first.'}
+                              </p>
+                            )}
                           </div>
                         )}
                         {!loadingBudgets && filteredBudgets.map((budget: any) => {
@@ -2316,7 +2350,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   >
                       <Calendar size={12} className={`shrink-0 ${selectedSeasonGroup !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                       <span className="truncate">{selectedSeasonGroup === 'all' ? (t('planning.allSeasonGroups') || 'All') : (SEASON_GROUPS.find((s: any) => s.id === selectedSeasonGroup)?.label || selectedSeasonGroup)}</span>
-                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-all duration-250 ease-out ${openDropdown === 'seasonGroup' ? 'rotate-180' : ''} ${openDropdown === 'seasonGroup' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-transform duration-200 ease-out ${openDropdown === 'seasonGroup' ? 'rotate-180' : ''} ${openDropdown === 'seasonGroup' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                   </button>
                   {openDropdown === 'seasonGroup' && (
                     <div
@@ -2324,7 +2358,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
                       }`}
                       style={{
-                        animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         boxShadow: darkMode
                           ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
                           : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',
@@ -2389,7 +2422,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   >
                       <Clock size={12} className={`shrink-0 ${selectedSeason !== 'all' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                       <span className="whitespace-nowrap">{selectedSeason === 'all' ? (t('otbAnalysis.allSeasons') || 'All') : (SEASONS.find((s: any) => s.id === selectedSeason)?.label || selectedSeason)}</span>
-                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-all duration-250 ease-out ${openDropdown === 'season' ? 'rotate-180' : ''} ${openDropdown === 'season' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-transform duration-200 ease-out ${openDropdown === 'season' ? 'rotate-180' : ''} ${openDropdown === 'season' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                   </button>
                   {openDropdown === 'season' && (
                     <div
@@ -2397,7 +2430,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
                       }`}
                       style={{
-                        animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         boxShadow: darkMode
                           ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
                           : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',
@@ -2477,7 +2509,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       <span className="whitespace-nowrap">
                         {loadingVersions ? '...' : selectedVersion ? `v${versions.indexOf(selectedVersion) + 1}${selectedVersion.isFinal ? ' ★' : ''}` : t('common.version')}
                       </span>
-                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-all duration-250 ease-out ${openDropdown === 'version' ? 'rotate-180' : ''} ${openDropdown === 'version' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                    <ChevronDown size={12} strokeWidth={2} className={`shrink-0 transition-transform duration-200 ease-out ${openDropdown === 'version' ? 'rotate-180' : ''} ${openDropdown === 'version' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
                   </button>
                   {openDropdown === 'version' && (
                     <div
@@ -2485,7 +2517,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                         darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
                       }`}
                       style={{
-                        animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
                         boxShadow: darkMode
                           ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
                           : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',

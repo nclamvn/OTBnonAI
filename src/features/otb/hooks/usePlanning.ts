@@ -136,9 +136,13 @@ export const usePlanning = () => {
       const budgetAmount = Number(budgetDetail.budgetAmount);
       const initialData: any[] = [];
 
-      // Create one row per collection for simplicity
+      // Create one row per collection with precise distribution summing to exactly 1.0
+      const count = collections.length;
+      const basePct = Math.floor((1 / count) * 10000) / 10000; // 4 decimal precision
+      const remainder = 1 - basePct * (count - 1); // assign remainder to last item
+
       collections.forEach((col: any, index: number) => {
-        const pct = 1 / collections.length; // Equal distribution
+        const pct = index === count - 1 ? remainder : basePct;
         initialData.push({
           id: `new_${col.id}`,
           dimensionType: 'collection',
@@ -190,10 +194,13 @@ export const usePlanning = () => {
           details
         });
       } else {
-        // Create new
+        // Create new — auto-increment version name based on existing plannings
+        const existingCount = plannings.filter(
+          (p: any) => p.budgetDetailId === selectedBudgetDetail.id
+        ).length;
         await planningService.create({
           budgetDetailId: selectedBudgetDetail.id,
-          versionName: 'Version 1',
+          versionName: `Version ${existingCount + 1}`,
           details
         });
       }

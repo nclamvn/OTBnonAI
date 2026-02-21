@@ -117,7 +117,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
       <div
         className={`
           fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]
-          transition-opacity duration-300
+          transition-opacity duration-200
           ${isOpen ? 'opacity-100' : 'opacity-0'}
         `}
         onClick={closeOnBackdrop ? onClose : undefined}
@@ -133,25 +133,24 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           rounded-t-[28px]
           ${heightClasses[height]}
           shadow-2xl
-          transition-transform duration-300 ease-out
+          transition-transform duration-200 ease-out
           ${isOpen ? 'translate-y-0' : 'translate-y-full'}
+          cursor-grab active:cursor-grabbing touch-none
         `}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'bottom-sheet-title' : undefined}
+        onMouseDown={handleDragStart}
+        onMouseMove={handleDragMove}
+        onMouseUp={handleDragEnd}
+        onMouseLeave={handleDragEnd}
+        onTouchStart={handleDragStart}
+        onTouchMove={handleDragMove}
+        onTouchEnd={handleDragEnd}
       >
-        {/* Drag Handle */}
+        {/* Drag Handle (visual indicator) */}
         {showHandle && (
-          <div
-            className="flex justify-center pt-3 pb-2 cursor-grab active:cursor-grabbing touch-none"
-            onMouseDown={handleDragStart}
-            onMouseMove={handleDragMove}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
-            onTouchStart={handleDragStart}
-            onTouchMove={handleDragMove}
-            onTouchEnd={handleDragEnd}
-          >
+          <div className="flex justify-center pt-3 pb-2">
             <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full" />
           </div>
         )}
@@ -310,7 +309,10 @@ export const FilterBottomSheet: React.FC<FilterBottomSheetProps> = ({
       }}
       secondaryAction={{
         label: 'Reset All',
-        onClick: onReset,
+        onClick: () => {
+          onReset();
+          onClose();
+        },
       }}
     >
       <div className="space-y-6">

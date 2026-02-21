@@ -310,6 +310,8 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
   const [confirmModal, setConfirmModal] = useState<any>(null);
   const [processing, setProcessing] = useState<boolean>(false);
   const [expandedOrderId, setExpandedOrderId] = useState<any>(null);
+  // Track order statuses locally (confirmed/cancelled via API)
+  const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({});
   // UX-25: Bulk confirm state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
@@ -338,7 +340,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
         season: p.seasonGroup || p.season || '-',
         skuCount: p.products?.length || p.items?.length || p.skuCount || 0,
         totalValue: Number(p.totalValue || p.amount || 0),
-        status: 'PENDING',
+        status: orderStatuses[p.id] || p.orderStatus?.toUpperCase() || 'PENDING',
         createdAt: p.updatedAt || p.createdAt || new Date().toISOString(),
         proposalId: p.id,
         products: (p.products || []).map((prod: any) => ({
@@ -368,6 +370,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     setProcessing(true);
     try {
       await orderService.confirmOrder(order.id);
+      setOrderStatuses(prev => ({ ...prev, [order.id]: 'CONFIRMED' }));
       invalidateCache('/orders');
       invalidateCache('/proposals');
       toast.success(t('orderConfirm.orderConfirmed'));
@@ -385,6 +388,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     setProcessing(true);
     try {
       await orderService.cancelOrder(order.id);
+      setOrderStatuses(prev => ({ ...prev, [order.id]: 'CANCELLED' }));
       invalidateCache('/orders');
       invalidateCache('/proposals');
       toast.success(t('orderConfirm.orderCancelled'));
@@ -450,7 +454,11 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
     setBulkProcessing(true);
     let ok = 0, fail = 0;
     for (const id of selectedIds) {
-      try { await orderService.confirmOrder(id); ok++; } catch { fail++; }
+      try {
+        await orderService.confirmOrder(id);
+        setOrderStatuses(prev => ({ ...prev, [id as string]: 'CONFIRMED' }));
+        ok++;
+      } catch { fail++; }
     }
     setBulkProcessing(false);
     setSelectedIds(new Set());
@@ -480,7 +488,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3 md:gap-5">
             <div className="flex items-center gap-1.5">
-              <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-5 w-auto" />
+              <img src="/dafc-logo.png" alt="DAFC" className="h-5 w-auto" />
               <span className="text-sm font-semibold font-['Cormorant_Garamond'] text-[#C4A77D] tracking-wider hidden md:inline">DAFC</span>
             </div>
             <div className={`hidden md:block w-px h-7 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-300'}`} />
@@ -518,7 +526,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
                 className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary} placeholder:${textMuted}`}
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')}>
+                <button onClick={() => setSearchTerm('')} aria-label="Clear search">
                   <X size={12} className={textMuted} />
                 </button>
               )}
@@ -527,6 +535,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
               onClick={fetchOrders}
               className={`p-1.5 rounded-lg border ${border} transition-all ${darkMode ? 'hover:bg-[#1A1A1A] text-[#999999]' : 'hover:bg-gray-50 text-gray-500'}`}
               title={t('common.refresh')}
+              aria-label="Refresh orders"
             >
               <RefreshCw size={14} />
             </button>
@@ -707,7 +716,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
                 <thead>
                   <tr className={`${darkMode ? 'bg-[#141414]' : 'bg-[#FAF9F6]'} border-b ${border}`}>
                     {['', t('orderConfirm.colPO'), t('orderConfirm.colBrand'), t('orderConfirm.colSeason'), t('orderConfirm.colSKUs'), t('orderConfirm.colValue'), t('orderConfirm.colStatus'), t('orderConfirm.colDate'), t('common.actions')].map((h: any, i: number) => (
-                      <th key={`${h}-${i}`} className={`px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>
+                      <th key={`${h}-${i}`} className={`px-4 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? `w-8 sticky left-0 z-10 ${darkMode ? 'bg-[#141414]' : 'bg-[#FAF9F6]'}` : ''}`}>
                         {h}
                       </th>
                     ))}
@@ -728,7 +737,7 @@ const OrderConfirmationScreen = ({ darkMode }: any) => {
                           }`}
                           onClick={() => setExpandedOrderId(isExpanded ? null : order.id)}
                         >
-                          <td className="px-4 py-3">
+                          <td className={`px-4 py-3 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                             <ChevronRight size={14} className={`transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#8B6914]'}`} />
                           </td>
                           <td className="px-4 py-3">

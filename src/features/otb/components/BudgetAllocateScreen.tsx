@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
-import { TableSkeleton, Breadcrumbs, PrintButton } from '@/components/ui';
+import { TableSkeleton, PrintButton } from '@/components/ui';
 import { useAllocationState, BRAND_BUDGET_CAP_PCT } from '../hooks/useAllocationState';
 import { useSessionRecovery } from '../hooks/useSessionRecovery';
 import { useClipboardPaste } from '../hooks/useClipboardPaste';
@@ -853,17 +853,8 @@ const BudgetAllocateScreen = ({
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        darkMode={darkMode}
-        items={[
-          { label: t('common.breadcrumbBudget'), href: '/budget' },
-          { label: selectedBudget?.budgetName || fallbackBudgetName || t('common.breadcrumbBudgetAllocation') },
-        ]}
-      />
-
       {/* Allocation Toolbar — Back, Stepper, Undo/Redo, Save, Continue */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6`}>
+      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
         <AllocationToolbar
           onBack={handleBack}
           onContinue={handleContinue}

@@ -168,7 +168,7 @@ const MobileListItem: React.FC<ListItemProps> = ({
 
       {/* Expanded Content */}
       {isExpanded && hasExpandableContent && (
-        <div className="bg-gray-50 dark:bg-gray-800/50 px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+        <div className="bg-gray-50 dark:bg-gray-800/50 px-4 pb-4">
           {item.details && item.details.length > 0 && (
             <div className="grid grid-cols-2 gap-3 pt-2">
               {item.details.map((detail, i) => (

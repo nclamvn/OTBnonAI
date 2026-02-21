@@ -159,7 +159,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
 
   return (
     <div
-      className={`${isCollapsed ? 'w-[56px]' : 'w-[264px]'} h-screen border-r flex flex-col sticky top-0 z-40 transition-all duration-300 ease-in-out`}
+      className={`${isCollapsed ? 'w-[56px]' : 'w-[264px]'} h-screen border-r flex flex-col sticky top-0 z-40 transition-[width] duration-200 ease-out`}
       style={{
         background: darkMode
           ? 'linear-gradient(180deg, #0A0A0A 0%, #080808 50%, rgba(13,11,9,1) 100%)'

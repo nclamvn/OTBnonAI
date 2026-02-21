@@ -73,7 +73,7 @@ const TABS = [
 const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStartEdit, onSaveEdit, onChangeValue, onKeyDown, readOnly = false }: any) => {
   if (isEditing && !readOnly) {
     return (
-      <div className="flex items-center justify-center animate-in zoom-in duration-200">
+      <div className="flex items-center justify-center">
         <input
           type="number"
           value={editValue}
@@ -947,11 +947,11 @@ const PlanningDetailModal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]"
       style={{ pointerEvents: 'auto' }}
     >
       <div
-        className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1rem)] md:max-w-7xl max-h-[90vh] flex flex-col transform animate-in zoom-in-95 duration-300 border border-[#2E2E2E]"
+        className="bg-[#0A0A0A] rounded-2xl shadow-2xl w-full max-w-[calc(100vw-1rem)] md:max-w-7xl max-h-[90vh] flex flex-col border border-[#2E2E2E]"
         onClick={(e: any) => e.stopPropagation()}
       >
         {/* Header */}
@@ -972,7 +972,7 @@ const PlanningDetailModal = ({
               <button
                 type="button"
                 onClick={() => setIsVersionDropdownOpen(!isVersionDropdownOpen)}
-                className={`flex items-center gap-2 px-3 py-0.5 rounded-xl font-medium text-sm transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center gap-2 px-3 py-0.5 rounded-xl font-medium text-sm transition-colors duration-200 ${
                   selectedVersion === 'draft'
                     ? 'bg-[#E3B341] text-[#0A0A0A] hover:bg-[#E3B341]/90 shadow-lg'
                     : 'bg-[#127749] text-white hover:bg-[#2A9E6A] shadow-lg'
@@ -993,7 +993,7 @@ const PlanningDetailModal = ({
               </button>
 
               {isVersionDropdownOpen && (
-                <div className="absolute top-full left-0 mt-2 w-72 bg-[#121212] border-2 border-[#2E2E2E] rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="absolute top-full left-0 mt-2 w-72 bg-[#121212] border-2 border-[#2E2E2E] rounded-xl shadow-2xl z-[9999] overflow-hidden">
                   {/* Draft Option */}
                   <div
                     onClick={() => {
@@ -1043,7 +1043,7 @@ const PlanningDetailModal = ({
                             setSelectedVersion(version.id);
                             setIsVersionDropdownOpen(false);
                           }}
-                          className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-all duration-200 hover:pl-6 animate-in fade-in slide-in-from-right ${
+                          className={`px-4 py-0.5 flex items-center gap-3 cursor-pointer transition-colors duration-200 ${
                             selectedVersion === version.id
                               ? 'bg-[rgba(42,158,106,0.15)] border-l-4 border-[#2A9E6A]'
                               : 'hover:bg-[rgba(215,183,151,0.08)]'
@@ -1074,7 +1074,7 @@ const PlanningDetailModal = ({
 
           <button
             onClick={onClose}
-            className="relative z-10 text-[#0A0A0A] hover:bg-[rgba(0,0,0,0.1)] rounded-xl p-2.5 transition-all duration-300 hover:rotate-90"
+            className="relative z-10 text-[#0A0A0A] hover:bg-[rgba(0,0,0,0.1)] rounded-xl p-2.5 transition-colors duration-200"
           >
             <X size={22} />
           </button>
@@ -1082,7 +1082,7 @@ const PlanningDetailModal = ({
 
         {/* Read-only indicator when viewing approved version */}
         {isReadOnly && (
-          <div className="px-6 py-0.5 bg-[#127749] text-white flex items-center justify-center gap-2 text-sm font-medium animate-in slide-in-from-top duration-300">
+          <div className="px-6 py-0.5 bg-[#127749] text-white flex items-center justify-center gap-2 text-sm font-medium">
             <CheckCircle2 size={16} />
             <span>{t('planningDetail.viewingApprovedVersion', { version: versions.find((v: any) => v.id === selectedVersion)?.versionNumber })}</span>
             <button
@@ -1120,8 +1120,8 @@ const PlanningDetailModal = ({
 
         {/* Hint for editable cells */}
         {!isReadOnly && (
-          <div className="px-6 py-0.5 bg-[rgba(215,183,151,0.08)] border-b border-[#2E2E2E] flex items-center gap-2 text-sm text-[#D7B797] animate-in fade-in slide-in-from-top duration-300">
-            <Pencil size={14} className="animate-bounce" style={{ animationDuration: '2s' }} />
+          <div className="px-6 py-0.5 bg-[rgba(215,183,151,0.08)] border-b border-[#2E2E2E] flex items-center gap-2 text-sm text-[#D7B797]">
+            <Pencil size={14} />
             <span>{t('planningDetail.editHint')}</span>
           </div>
         )}
@@ -1149,7 +1149,7 @@ const PlanningDetailModal = ({
               </span>
             </div>
             {versions.length > 0 && (
-              <div className="text-sm animate-in fade-in slide-in-from-left duration-300">
+              <div className="text-sm">
                 <span className="text-[#666666]">{t('planningDetail.versions')}</span>
                 <span className="ml-2 font-bold text-[#D7B797] font-['JetBrains_Mono']">
                   {versions.length} {t('planningDetail.approved')}
@@ -1170,7 +1170,7 @@ const PlanningDetailModal = ({
               <button
                 onClick={handleApprove}
                 disabled={approveAnimation}
-                className={`px-4 py-0.5 rounded-lg font-medium text-sm transition-all duration-300 flex items-center gap-2 transform hover:scale-105 active:scale-95 relative overflow-hidden ${
+                className={`px-4 py-0.5 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center gap-2 relative overflow-hidden ${
                   approveAnimation
                     ? 'bg-[#2A9E6A] text-white shadow-lg'
                     : 'bg-[#127749] text-white hover:bg-[#2A9E6A] shadow-lg'
@@ -1178,7 +1178,7 @@ const PlanningDetailModal = ({
               >
                 {approveAnimation ? (
                   <>
-                    <CheckCircle2 size={16} className="animate-bounce" />
+                    <CheckCircle2 size={16} />
                     <span>{t('planningDetail.versionCreated', { version: versions.length })}</span>
                   </>
                 ) : (
@@ -1208,8 +1208,8 @@ const PlanningDetailModal = ({
         {/* Approve Success Overlay Animation */}
         {approveAnimation && (
           <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="animate-in zoom-in duration-300 bg-[#127749] text-white px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3 border border-[#2A9E6A]">
-              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+            <div className="bg-[#127749] text-white px-8 py-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3 border border-[#2A9E6A]">
+              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                 <CheckCircle2 size={40} />
               </div>
               <div className="text-xl font-bold font-['Montserrat']">{t('planningDetail.versionApproved', { version: versions.length })}</div>

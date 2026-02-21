@@ -49,6 +49,10 @@ const en = {
     required: '*',
     selected: 'selected',
     print: 'Print',
+    draft: 'Draft',
+    submitted: 'Submitted',
+    approved: 'Approved',
+    rejected: 'Rejected',
     viewDetails: 'View Details',
     chartsComingSoon: 'Charts coming soon',
     entryPointSidebar: 'Entry point: Sidebar',
@@ -559,6 +563,9 @@ const en = {
     totalAllocated: 'Total Allocated',
     avgAllocation: 'Avg Allocation',
     brandOverview: 'Brand Overview',
+    noApprovedBudgets: 'No approved budgets available',
+    noApprovedBudgetsDescription: 'Please submit and approve a budget in Budget Management first.',
+    goToBudgetManagement: 'Go to Budget Management',
   },
 
   // ──────────────────────────────────────────────
@@ -578,7 +585,7 @@ const en = {
     order: 'Order',
     rex: 'Rex',
     ttp: 'TTP',
-    totalValue: 'Ttl Value',
+    totalValue: 'Total Value',
     addSku: 'Add SKU',
     deleteSku: 'Delete SKU',
     store: 'Store',
@@ -605,6 +612,8 @@ const en = {
     selectSkus: 'Select SKUs to add',
     storeQuantities: 'Store Quantities',
     customerTarget: 'Customer Target',
+    orderSummary: 'Order Summary',
+    totalOrder: 'Total Order',
   },
 
   // ──────────────────────────────────────────────

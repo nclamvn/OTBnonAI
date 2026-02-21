@@ -225,6 +225,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   const [confirmModal, setConfirmModal] = useState<any>(null);
   const [processing, setProcessing] = useState<boolean>(false);
   const [discrepancyNote, setDiscrepancyNote] = useState<string>('');
+  const [editReceivedQty, setEditReceivedQty] = useState<number>(0);
   const [expandedReceiptId, setExpandedReceiptId] = useState<any>(null);
 
   // Remove parent scroll container padding so sticky toolbar is flush with header
@@ -283,7 +284,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
   const handleConfirmReceipt = async (receipt: any) => {
     setProcessing(true);
     try {
-      await orderService.confirmReceipt(receipt.id, { receivedQty: receipt.orderedQty });
+      await orderService.confirmReceipt(receipt.id, { receivedQty: editReceivedQty });
       invalidateCache('/receipts');
       invalidateCache('/proposals');
       toast.success(t('receiptConfirm.receiptConfirmed'));
@@ -371,7 +372,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
         <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-3 md:gap-5">
             <div className="flex items-center gap-1.5">
-              <img src="/dafc-logo-icon.svg" alt="DAFC" className="h-5 w-auto" />
+              <img src="/dafc-logo.png" alt="DAFC" className="h-5 w-auto" />
               <span className="text-sm font-semibold font-['Cormorant_Garamond'] text-[#C4A77D] tracking-wider hidden md:inline">DAFC</span>
             </div>
             <div className={`hidden md:block w-px h-7 ${darkMode ? 'bg-[#2E2E2E]' : 'bg-gray-300'}`} />
@@ -490,7 +491,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
                     ]}
                     actions={[
                       ...(receipt.status === 'PENDING' ? [
-                        { label: t('common.confirm'), primary: true, onClick: () => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); } },
+                        { label: t('common.confirm'), primary: true, onClick: () => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); setEditReceivedQty(receipt.orderedQty); } },
                         { label: t('receiptConfirm.flag'), onClick: () => { setConfirmModal({ receipt, action: 'discrepancy' }); setDiscrepancyNote(''); } },
                       ] : []),
                       { label: expandedReceiptId === receipt.id ? 'Hide SKUs' : `View ${receipt.itemCount || receipt.products?.length || 0} SKUs`, onClick: () => setExpandedReceiptId(expandedReceiptId === receipt.id ? null : receipt.id) },
@@ -508,7 +509,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
               <thead>
                 <tr className={`${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} border-b ${border}`}>
                   {['', t('receiptConfirm.colReceipt'), t('receiptConfirm.colPORef'), t('receiptConfirm.colBrand'), t('receiptConfirm.colItems'), t('receiptConfirm.colStatus'), t('receiptConfirm.colDate'), t('common.actions')].map((h: any, i: number) => (
-                    <th key={`${h}-${i}`} className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? 'w-8' : ''}`}>{h}</th>
+                    <th key={`${h}-${i}`} className={`px-3 py-0.5 text-left text-[10px] font-semibold uppercase tracking-wider font-['Montserrat'] ${textMuted} ${i === 0 ? `w-8 sticky left-0 z-10 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'}` : ''}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -522,7 +523,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
                         className={`border-b ${border} transition-colors cursor-pointer ${isExpanded ? (darkMode ? 'bg-[rgba(215,183,151,0.05)]' : 'bg-[rgba(215,183,151,0.06)]') : (darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-50')}`}
                         onClick={() => setExpandedReceiptId(isExpanded ? null : receipt.id)}
                       >
-                        <td className="px-3 py-0.5">
+                        <td className={`px-3 py-0.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                           <ChevronRight size={14} className={`transition-transform ${isExpanded ? 'rotate-90' : ''} ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
                         </td>
                         <td className="px-3 py-0.5"><span className={`text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary}`}>{receipt.receiptNumber}</span></td>
@@ -543,7 +544,7 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
                         <td className="px-3 py-0.5" onClick={(e) => e.stopPropagation()}>
                           {receipt.status === 'PENDING' && (
                             <div className="flex items-center gap-2">
-                              <button onClick={() => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
+                              <button onClick={() => { setConfirmModal({ receipt, action: 'confirm' }); setDiscrepancyNote(''); setEditReceivedQty(receipt.orderedQty); }} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(42,158,106,0.12)] text-[#2A9E6A] hover:bg-[rgba(42,158,106,0.2)]">
                                 <CheckCircle size={13} /> {t('common.confirm')}
                               </button>
                               <button onClick={() => { setConfirmModal({ receipt, action: 'discrepancy' }); setDiscrepancyNote(''); }} className="flex items-center gap-1 px-3 py-0.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all bg-[rgba(248,81,73,0.1)] text-[#F85149] hover:bg-[rgba(248,81,73,0.18)]">
@@ -591,6 +592,29 @@ const ReceiptConfirmationScreen = ({ darkMode }: any) => {
                   <div className="flex justify-between"><span className={`text-xs ${textMuted}`}>{t('receiptConfirm.colBrand')}</span><span className={`text-sm font-['Montserrat'] ${textPrimary}`}>{confirmModal.receipt.brandName}</span></div>
                 </div>
               </div>
+              {confirmModal.action === 'confirm' && (
+                <div className="mt-4">
+                  <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>{t('receiptConfirm.receivedQuantity') || 'Received Quantity'}</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min={0}
+                      max={confirmModal.receipt.orderedQty * 2}
+                      value={editReceivedQty}
+                      onChange={(e: any) => setEditReceivedQty(Math.max(0, parseInt(e.target.value) || 0))}
+                      className={`w-28 px-3 py-2 rounded-xl border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-sm font-semibold font-['JetBrains_Mono'] ${textPrimary} outline-none focus:border-[#D7B797] text-center`}
+                    />
+                    <span className={`text-xs ${textMuted}`}>/ {confirmModal.receipt.orderedQty} {t('receiptConfirm.ordered') || 'ordered'}</span>
+                    {editReceivedQty !== confirmModal.receipt.orderedQty && (
+                      <span className="text-xs text-[#F85149] font-medium">
+                        {editReceivedQty < confirmModal.receipt.orderedQty
+                          ? `(-${confirmModal.receipt.orderedQty - editReceivedQty})`
+                          : `(+${editReceivedQty - confirmModal.receipt.orderedQty})`}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               {confirmModal.action === 'discrepancy' && (
                 <div className="mt-4">
                   <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${textMuted}`}>{t('receiptConfirm.discrepancyNote')}</label>

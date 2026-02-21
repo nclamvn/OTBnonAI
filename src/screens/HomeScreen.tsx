@@ -57,7 +57,7 @@ const StatCard = ({ title, value, subtitle, trend, trendLabel, icon: Icon, darkM
     >
       {/* Watermark Icon */}
       <div
-        className="absolute -bottom-1 -right-1 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.15] pointer-events-none"
+        className="absolute -bottom-1 -right-1 pointer-events-none"
         style={{ opacity: darkMode ? 0.06 : 0.14 }}
       >
         <Icon size={48} color={a.color} strokeWidth={1} />
@@ -118,7 +118,7 @@ const SmallCard = ({ title, value, subtitle, icon: Icon, darkMode, accent = 'gol
     >
       {/* Watermark Icon */}
       <div
-        className="absolute -bottom-1 -right-1 transition-all duration-300 group-hover:scale-110 group-hover:opacity-[0.15] pointer-events-none"
+        className="absolute -bottom-1 -right-1 pointer-events-none"
         style={{ opacity: darkMode ? 0.05 : 0.13 }}
       >
         <Icon size={44} color={a.color} strokeWidth={1} />
@@ -240,13 +240,16 @@ const HomeScreen = ({ darkMode = true }) => {
     setStatsLoading(true);
     try {
       // UX-04: Pass dashboard filters to API
-      const filters: { fiscalYear?: number } = {};
+      const filters: { fiscalYear?: number; region?: string } = {};
       if (selectedSeason) {
         const yearMatch = selectedSeason.match(/\d{2,4}$/);
         if (yearMatch) {
           const yr = Number(yearMatch[0]);
           filters.fiscalYear = yr < 100 ? 2000 + yr : yr;
         }
+      }
+      if (selectedRegion) {
+        filters.region = selectedRegion;
       }
       const data = await budgetService.getStatistics(filters);
       if (data) {
@@ -323,7 +326,7 @@ const HomeScreen = ({ darkMode = true }) => {
   useEffect(() => {
     fetchStats();
     fetchChartData();
-  }, [selectedSeason, selectedBrand]);
+  }, [selectedSeason, selectedBrand, selectedRegion]);
 
   const userName = user?.name || user?.email?.split('@')[0] || 'User';
 
@@ -342,7 +345,11 @@ const HomeScreen = ({ darkMode = true }) => {
             ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797] border border-[rgba(215,183,151,0.3)]'
             : 'bg-[rgba(138,99,64,0.18)] text-[#5A3D22] border border-[rgba(138,99,64,0.45)]'
         }`}>
-          {t('home.springSummer2025')}
+          {selectedSeason === 'SS25' ? 'Spring Summer 2025'
+            : selectedSeason === 'FW25' ? 'Fall Winter 2025'
+            : selectedSeason === 'SS26' ? 'Spring Summer 2026'
+            : selectedSeason === 'FW26' ? 'Fall Winter 2026'
+            : selectedSeason}
         </span>
       </div>
 

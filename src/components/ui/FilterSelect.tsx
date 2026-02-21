@@ -107,7 +107,7 @@ function FilterSelect({
         <ChevronDown
           size={13}
           strokeWidth={2}
-          className={`shrink-0 transition-all duration-250 ease-out ${
+          className={`shrink-0 transition-transform duration-200 ease-out ${
             isOpen ? 'rotate-180' : ''
           } ${
             isOpen
@@ -119,10 +119,8 @@ function FilterSelect({
 
       {/* Golden accent line — visible on open */}
       <div
-        className={`absolute bottom-0 left-3 right-3 h-[1.5px] rounded-full transition-all duration-300 ${
-          isOpen
-            ? 'opacity-100 scale-x-100'
-            : 'opacity-0 scale-x-0'
+        className={`absolute bottom-0 left-3 right-3 h-[1.5px] rounded-full ${
+          isOpen ? 'opacity-100' : 'opacity-0'
         }`}
         style={{
           background: darkMode
@@ -145,7 +143,6 @@ function FilterSelect({
             }
           `}
           style={{
-            animation: 'filterDropIn 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
             boxShadow: darkMode
               ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
               : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',

@@ -15,6 +15,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { ProductImage, ConfirmDialog, FilterSelect } from '@/components/ui';
+import CreatableSelect from '@/components/ui/CreatableSelect';
 import AddSKUModal from './AddSKUModal';
 
 const SEASON_GROUPS = [
@@ -152,9 +153,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         proposals.forEach((p: any) => {
           (p.products || []).forEach((prod: any) => {
             const gender = (prod.gender || '').toLowerCase();
-            const category = prod.category || '';
-            const subCategory = prod.subCategory || '';
-            let block = blocks.find((b: any) => b.gender === gender && b.category === category && b.subCategory === subCategory);
+            const category = (prod.category || '').toLowerCase();
+            const subCategory = (prod.subCategory || '').toLowerCase();
+            let block = blocks.find((b: any) => b.gender === gender && b.category.toLowerCase() === category && b.subCategory.toLowerCase() === subCategory);
             if (!block) {
               block = { gender, category, subCategory, items: [] };
               blocks.push(block);
@@ -310,6 +311,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
   const [skuVersion, setSkuVersion] = useState('v3');
   const [skuVersions, setSkuVersions] = useState(SKU_VERSIONS);
   const [isSkuVersionOpen, setIsSkuVersionOpen] = useState(false);
+  const [customerTargetOptions, setCustomerTargetOptions] = useState<string[]>(['New', 'Existing']);
   const [sizingVersion, setSizingVersion] = useState('choice-a');
   const [sizingChoices, setSizingChoices] = useState(SIZING_CHOICES);
   const [isSizingVersionOpen, setIsSizingVersionOpen] = useState(false);
@@ -419,13 +421,13 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
       if (skuContext.gender?.name) {
         setGenderFilter(skuContext.gender.name.toLowerCase());
       }
-      // Use category name to match SKU data (e.g., 'RTW', 'Accessories')
+      // Use category name to match SKU data (case-insensitive)
       if (skuContext.category?.name) {
-        setCategoryFilter(skuContext.category.name);
+        setCategoryFilter(skuContext.category.name.toLowerCase());
       }
-      // Use subCategory name to match SKU data (e.g., 'W Outerwear', 'M Bags')
+      // Use subCategory name to match SKU data (case-insensitive)
       if (skuContext.subCategory?.name) {
-        setSubCategoryFilter(skuContext.subCategory.name);
+        setSubCategoryFilter(skuContext.subCategory.name.toLowerCase());
       }
 
       // Set banner info
@@ -573,31 +575,31 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
   const categoryOptions = useMemo(() => {
     const fromBlocks = skuBlocks
-      .filter((s: any) => genderFilter === 'all' || s.gender === genderFilter)
+      .filter((s: any) => genderFilter === 'all' || s.gender.toLowerCase() === genderFilter.toLowerCase())
       .map((s: any) => s.category)
       .filter(Boolean);
-    const fromMaster = masterCategories.map((c: any) => c.name || c.code || '').filter(Boolean);
+    const fromMaster = masterCategories.map((c: any) => (c.name || c.code || '').toLowerCase()).filter(Boolean);
     return ['all', ...Array.from(new Set([...fromBlocks, ...fromMaster]))];
   }, [genderFilter, skuBlocks, masterCategories]);
 
   const subCategoryOptions = useMemo(() => {
     const fromBlocks = skuBlocks
-      .filter((s: any) => (genderFilter === 'all' || s.gender === genderFilter)
-        && (categoryFilter === 'all' || s.category === categoryFilter))
+      .filter((s: any) => (genderFilter === 'all' || s.gender.toLowerCase() === genderFilter.toLowerCase())
+        && (categoryFilter === 'all' || s.category.toLowerCase() === categoryFilter.toLowerCase()))
       .map((s: any) => s.subCategory)
       .filter(Boolean);
     // Also extract sub-categories from master data
     const fromMaster = masterCategories
-      .flatMap((c: any) => (c.subCategories || []).map((sc: any) => sc.name || sc.code || ''))
+      .flatMap((c: any) => (c.subCategories || []).map((sc: any) => (sc.name || sc.code || '').toLowerCase()))
       .filter(Boolean);
     return ['all', ...Array.from(new Set([...fromBlocks, ...fromMaster]))];
   }, [genderFilter, categoryFilter, skuBlocks, masterCategories]);
 
   const filteredSkuBlocks = useMemo(() => {
     return skuBlocks.filter((block: any) => {
-      if (genderFilter !== 'all' && block.gender !== genderFilter) return false;
-      if (categoryFilter !== 'all' && block.category !== categoryFilter) return false;
-      if (subCategoryFilter !== 'all' && block.subCategory !== subCategoryFilter) return false;
+      if (genderFilter !== 'all' && block.gender.toLowerCase() !== genderFilter.toLowerCase()) return false;
+      if (categoryFilter !== 'all' && block.category.toLowerCase() !== categoryFilter.toLowerCase()) return false;
+      if (subCategoryFilter !== 'all' && block.subCategory.toLowerCase() !== subCategoryFilter.toLowerCase()) return false;
       return true;
     });
   }, [genderFilter, categoryFilter, subCategoryFilter, skuBlocks]);
@@ -1360,7 +1362,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                 const blockKey = `${firstBlock.gender}_${firstBlock.category}_${firstBlock.subCategory}`;
                 setAddSkuModal({ open: true, blockKey, block: firstBlock });
               }}
-              className={`rounded-2xl border-2 border-dashed p-8 flex flex-col items-center justify-center gap-3 transition-all hover:scale-[1.02] ${
+              className={`rounded-2xl border-2 border-dashed p-8 flex flex-col items-center justify-center gap-3 transition-colors duration-200 ${
                 darkMode
                   ? 'border-[rgba(215,183,151,0.3)] hover:border-[#D7B797] hover:bg-[rgba(215,183,151,0.05)]'
                   : 'border-[rgba(215,183,151,0.4)] hover:border-[#8A6340] hover:bg-[rgba(215,183,151,0.08)]'
@@ -1595,14 +1597,14 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                           <td className={tdLabel('customerTarget')} onClick={() => toggleHl('customerTarget')}>Customer Target</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className="px-3 py-1.5 text-center">
-                              <select
+                              <CreatableSelect
                                 value={item.customerTarget}
-                                onChange={(e) => handleSelectChange(key, idx, 'customerTarget', e.target.value)}
-                                className={`px-1.5 py-0.5 rounded-md border text-xs ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A] text-[#F2F2F2]' : 'border-[rgba(215,183,151,0.3)] bg-white text-[#333333]'}`}
-                              >
-                                <option value="New">New</option>
-                                <option value="Existing">Existing</option>
-                              </select>
+                                options={customerTargetOptions}
+                                onChange={(val) => handleSelectChange(key, idx, 'customerTarget', val)}
+                                onCreateOption={(val) => setCustomerTargetOptions(prev => [...prev, val])}
+                                placeholder="Target..."
+                                darkMode={darkMode}
+                              />
                             </td>
                           ))}
                         </tr>
@@ -1755,15 +1757,15 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     <div className={`font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#2A9E6A]' : 'text-[#127749]'}`}>{formatCurrency(lightbox.item.srp)}</div>
                   </div>
                   <div>
-                    <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Customer target</span>
-                    <select
+                    <CreatableSelect
                       value={lightbox.item.customerTarget}
-                      onChange={(e) => handleSelectChange(lightbox.blockKey, lightbox.idx, 'customerTarget', e.target.value)}
-                      className={`mt-1 w-full px-3 py-1 rounded-lg border text-sm focus:outline-none focus:ring-2 ${darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#F2F2F2] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]' : 'bg-white border-[rgba(215,183,151,0.3)] text-[#333333] focus:ring-[rgba(215,183,151,0.3)] focus:border-[#D7B797]'}`}
-                    >
-                      <option value="New">New</option>
-                      <option value="Existing">Existing</option>
-                    </select>
+                      options={customerTargetOptions}
+                      onChange={(val) => handleSelectChange(lightbox.blockKey, lightbox.idx, 'customerTarget', val)}
+                      onCreateOption={(val) => setCustomerTargetOptions(prev => [...prev, val])}
+                      placeholder="Select target..."
+                      darkMode={darkMode}
+                      label="Customer target"
+                    />
                   </div>
                 </div>
               )}
@@ -1972,6 +1974,8 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
           onAddSkus={(skus) => handleAddSkusFromModal(addSkuModal.blockKey, skus)}
           darkMode={darkMode}
           stores={stores}
+          customerTargetOptions={customerTargetOptions}
+          onCreateCustomerTarget={(val) => setCustomerTargetOptions(prev => [...prev, val])}
         />
       )}
     </div>

@@ -29,11 +29,16 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
 
   // Load persisted language on mount
   useEffect(() => {
-    const saved = localStorage.getItem('app-language');
-    if (saved && translations[saved]) {
-      setLanguageState(saved);
-      document.documentElement.lang = saved;
-    } else {
+    try {
+      const saved = localStorage.getItem('app-language');
+      if (saved && translations[saved]) {
+        setLanguageState(saved);
+        document.documentElement.lang = saved;
+      } else {
+        document.documentElement.lang = 'vi';
+      }
+    } catch {
+      // localStorage may throw SecurityError in private browsing mode
       document.documentElement.lang = 'vi';
     }
   }, []);
@@ -41,7 +46,11 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   const setLanguage = useCallback((code: string) => {
     if (!translations[code]) return;
     setLanguageState(code);
-    localStorage.setItem('app-language', code);
+    try {
+      localStorage.setItem('app-language', code);
+    } catch {
+      // localStorage may throw SecurityError in private browsing mode
+    }
     document.documentElement.lang = code;
   }, []);
 

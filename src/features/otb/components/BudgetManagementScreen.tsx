@@ -170,12 +170,7 @@ const BudgetManagementScreen = ({
     // Fetch master data for create form
     masterDataService.getStores().then(s => {
       const all = Array.isArray(s) ? s : [];
-      // Only show REX and TTP stores
-      const filtered = all.filter((st: any) => {
-        const code = (st.code || st.name || '').toUpperCase();
-        return code === 'REX' || code === 'TTP';
-      });
-      setApiStores(filtered.length > 0 ? filtered : all.slice(0, 2));
+      setApiStores(all.length > 0 ? all : []);
     }).catch(() => {});
   }, [fetchBudgets]);
 
@@ -194,9 +189,20 @@ const BudgetManagementScreen = ({
   const [approvalHistory, setApprovalHistory] = useState<any[]>([]); // UX-16: approval timeline
   const [loadingApprovals, setLoadingApprovals] = useState(false);
 
+  // Status filter (P1 UX-01)
+  const [statusFilter, setStatusFilter] = useState<string>('');
+
+  // Column sorting (P1 UX-06)
+  const [sortColumn, setSortColumn] = useState<string>('');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const toggleSort = (col: string) => {
+    if (sortColumn === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortColumn(col); setSortDir('desc'); }
+  };
+
   // Form state for create budget
   const [newBudgetForm, setNewBudgetForm] = useState({
-    fiscalYear: 2026,
+    fiscalYear: new Date().getFullYear() + 1,
     seasonGroup: 'SS',
     seasonType: 'pre',
     name: '',
@@ -219,14 +225,26 @@ const BudgetManagementScreen = ({
     }
   }, [showViewModal, selectedBudget?.id]);
 
-  // Filter budgets
+  // Filter + sort budgets
   const filteredBudgets = useMemo(() => {
-    return budgetData.filter((budget: any) => {
+    let list = budgetData.filter((budget: any) => {
       if (selectedYear && budget.fiscalYear !== selectedYear) return false;
+      if (statusFilter && budget.status !== statusFilter) return false;
       if (searchQuery && !budget.budgetName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
       return true;
     });
-  }, [budgetData, selectedYear, searchQuery]);
+    if (sortColumn) {
+      list = [...list].sort((a: any, b: any) => {
+        let va = a[sortColumn], vb = b[sortColumn];
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va < vb) return sortDir === 'asc' ? -1 : 1;
+        if (va > vb) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return list;
+  }, [budgetData, selectedYear, statusFilter, searchQuery, sortColumn, sortDir]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -255,12 +273,13 @@ const BudgetManagementScreen = ({
       remainingPct: total > 0 ? ((remaining / total) * 100).toFixed(1) : 0,
       statusCounts,
     };
-  }, [budgetData, currency]);
+  }, [budgetData]);
 
   // Clear all filters
   const clearFilters = () => {
     setSelectedYear(null);
     setSearchQuery('');
+    setStatusFilter('');
   };
 
   const DetailRow = ({ label, value, strong }: any) => (
@@ -273,7 +292,7 @@ const BudgetManagementScreen = ({
 );
 
 
-  const hasActiveFilters = selectedYear || searchQuery;
+  const hasActiveFilters = selectedYear || searchQuery || statusFilter;
 
   // Loading state
   if (loading) {
@@ -333,6 +352,7 @@ const BudgetManagementScreen = ({
                   ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] hover:bg-[rgba(215,183,151,0.08)] hover:border-[rgba(215,183,151,0.25)]'
                   : 'bg-white border-[#C4B5A5] text-[#0A0A0A] hover:bg-[rgba(160,120,75,0.18)] hover:border-[rgba(215,183,151,0.4)]'
                 }`}
+              aria-label="Select fiscal year"
             >
               <span className="text-xs font-medium">{selectedYear ? `FY${selectedYear}` : t('budget.allYears')}</span>
               <ChevronDown size={12} className="opacity-50 shrink-0" />
@@ -358,6 +378,28 @@ const BudgetManagementScreen = ({
             )}
           </div>
 
+          {/* Status Filter Chips */}
+          <div className="flex items-center gap-1">
+            {['draft', 'submitted', 'approved', 'rejected'].map(s => (
+              <button
+                key={s}
+                onClick={() => setStatusFilter(statusFilter === s ? '' : s)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-colors ${
+                  statusFilter === s
+                    ? s === 'approved' ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A]'
+                      : s === 'rejected' ? 'bg-[rgba(248,81,73,0.15)] text-[#F85149]'
+                      : s === 'submitted' ? 'bg-[rgba(88,166,255,0.15)] text-[#58A6FF]'
+                      : darkMode ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
+                    : darkMode ? 'text-[#666] hover:bg-[#1A1A1A]' : 'text-[#999] hover:bg-gray-100'
+                }`}
+              >
+                {t(`common.${s}`) || s}
+                {summaryStats.statusCounts[s] > 0 && (
+                  <span className="ml-1 opacity-70">({summaryStats.statusCounts[s]})</span>
+                )}
+              </button>
+            ))}
+          </div>
           </>}
 
           {/* Search */}
@@ -385,6 +427,7 @@ const BudgetManagementScreen = ({
                     ? 'text-[#666666] hover:text-[#F2F2F2]'
                     : 'text-[#999999] hover:text-[#0A0A0A]'
               }`}
+              aria-label="Switch to VND currency"
             >
               VND
             </button>
@@ -399,6 +442,7 @@ const BudgetManagementScreen = ({
                     ? 'text-[#666666] hover:text-[#F2F2F2]'
                     : 'text-[#999999] hover:text-[#0A0A0A]'
               }`}
+              aria-label="Switch to USD currency"
             >
               USD
             </button>
@@ -435,6 +479,7 @@ const BudgetManagementScreen = ({
               onClick={clearFilters}
               className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#666666] hover:text-red-400 hover:bg-red-400/10' : 'text-[#999999] hover:text-red-500 hover:bg-red-50'}`}
               title={t('common.clearAllFilters')}
+              aria-label="Clear search"
             >
               <X size={14} />
             </button>
@@ -537,6 +582,7 @@ const BudgetManagementScreen = ({
                         })}
                         className="px-2 py-1 rounded-lg bg-[#127749] text-white"
                         title={t('budget.allocate')}
+                        aria-label="Allocate budget"
                       >
                         <Split size={14} />
                       </button>
@@ -600,11 +646,12 @@ const BudgetManagementScreen = ({
                           setSelectedBudget(budget);
                           setShowViewModal(true);
                         }}
-                        className={`p-1.5 rounded-md transition ${darkMode
+                        className={`p-2.5 md:p-1.5 rounded-md transition ${darkMode
                             ? 'text-[#999999] hover:text-[#F2F2F2] hover:bg-[#2E2E2E]'
                             : 'text-[#666666] hover:text-[#0A0A0A] hover:bg-[#F2F2F2]'
                           }`}
                         title={t('budget.view')}
+                        aria-label="View budget"
                       >
                         <Eye size={14} />
                       </button>
@@ -614,11 +661,12 @@ const BudgetManagementScreen = ({
                         <button
                           onClick={() => handleQuickSubmit(budget.id)}
                           disabled={submittingId === budget.id}
-                          className={`p-1.5 rounded-md transition ${submittingId === budget.id ? 'opacity-50 cursor-not-allowed' : ''} ${darkMode
+                          className={`p-2.5 md:p-1.5 rounded-md transition ${submittingId === budget.id ? 'opacity-50 cursor-not-allowed' : ''} ${darkMode
                               ? 'text-blue-400 hover:bg-blue-500/10'
                               : 'text-blue-600 hover:bg-blue-50'
                             }`}
                           title={t('budget.submit') || 'Submit for Approval'}
+                          aria-label="Submit budget"
                         >
                           <Send size={14} />
                         </button>
@@ -631,11 +679,12 @@ const BudgetManagementScreen = ({
                             setSelectedBudget(budget);
                             setShowArchiveConfirm(true);
                           }}
-                          className={`p-1.5 rounded-md transition ${darkMode
+                          className={`p-2.5 md:p-1.5 rounded-md transition ${darkMode
                               ? 'text-[#E3B341] hover:bg-[rgba(227,179,65,0.1)]'
                               : 'text-[#9A7B2E] hover:bg-[rgba(227,179,65,0.1)]'
                             }`}
                           title={t('budget.archive') || 'Archive'}
+                          aria-label="Archive budget"
                         >
                           <Archive size={14} />
                         </button>
@@ -652,11 +701,12 @@ const BudgetManagementScreen = ({
                             budgetName: budget.budgetName,
                           })
                         }
-                        className={`p-1.5 rounded-md transition ${darkMode
+                        className={`p-2.5 md:p-1.5 rounded-md transition ${darkMode
                             ? 'bg-[rgba(215,183,151,0.08)] text-[#D7B797] hover:bg-[rgba(160,120,75,0.18)] border border-[rgba(215,183,151,0.25)]'
                             : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30] hover:bg-[rgba(215,183,151,0.25)] border border-[rgba(215,183,151,0.4)]'
                           }`}
                         title={t('budget.allocate')}
+                        aria-label="Allocate budget"
                       >
                         <Split size={14} />
                       </button>
@@ -747,6 +797,7 @@ const BudgetManagementScreen = ({
                 <button
                   onClick={() => setShowViewModal(false)}
                   className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-[#2E2E2E]' : 'hover:bg-[#F2F2F2]'}`}
+                  aria-label="Close budget detail"
                 >
                   <X size={18} />
                 </button>
@@ -973,6 +1024,7 @@ const BudgetManagementScreen = ({
               <button
                 onClick={() => setShowCreateModal(false)}
                 className={`p-2 rounded-lg transition-colors ${darkMode ? 'text-[#666666] hover:text-[#F2F2F2] hover:bg-[#2E2E2E]' : 'text-[#999999] hover:text-[#0A0A0A] hover:bg-[#F2F2F2]'}`}
+                aria-label="Close create budget dialog"
               >
                 <X size={20} />
               </button>

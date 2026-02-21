@@ -1,13 +1,15 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppContext } from '@/contexts/AppContext';
 import TicketDetailPage from '@/screens/TicketDetailPage';
 
 export default function TicketDetailRoute() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { darkMode } = useAppContext();
   const [ticket, setTicket] = useState<any>(null);
+  const showApprovalActions = searchParams.get('source') === 'approvals';
 
   useEffect(() => {
     const stored = sessionStorage.getItem('selectedTicket');
@@ -18,7 +20,7 @@ export default function TicketDetailRoute() {
 
   const handleBack = () => {
     sessionStorage.removeItem('selectedTicket');
-    router.push('/tickets');
+    router.push(showApprovalActions ? '/approvals' : '/tickets');
   };
 
   return (
@@ -26,6 +28,7 @@ export default function TicketDetailRoute() {
       darkMode={darkMode}
       ticket={ticket}
       onBack={handleBack}
+      showApprovalActions={showApprovalActions}
     />
   );
 }

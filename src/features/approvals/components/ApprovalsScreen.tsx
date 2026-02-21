@@ -69,6 +69,8 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState<boolean>(false);
+  const [bulkRejectModalOpen, setBulkRejectModalOpen] = useState<boolean>(false);
+  const [bulkRejectComment, setBulkRejectComment] = useState<string>('');
 
   // Fetch pending approvals
   useEffect(() => {
@@ -107,7 +109,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   // Navigate to entity detail page
   const navigateToEntity = (item: any) => {
     const routes: Record<string, string> = {
-      budget: '/budget-management',
+      budget: `/budget-management?highlight=${item.entityId}`,
       planning: `/planning/${item.entityId}`,
       proposal: `/proposal/${item.entityId}`,
     };
@@ -144,8 +146,15 @@ const ApprovalsScreen = ({ darkMode }: any) => {
   }, [filtered]);
 
   // Bulk approve/reject handler
-  const handleBulkAction = useCallback(async (action: 'approve' | 'reject') => {
+  const handleBulkAction = useCallback(async (action: 'approve' | 'reject', comment?: string) => {
     if (selectedIds.size === 0) return;
+
+    // For reject, prompt for a comment first
+    if (action === 'reject' && !bulkRejectModalOpen) {
+      setBulkRejectComment('');
+      setBulkRejectModalOpen(true);
+      return;
+    }
 
     const selectedItems = filtered.filter((item: any) => selectedIds.has(getItemKey(item)));
     if (selectedItems.length === 0) return;
@@ -161,7 +170,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
         if (action === 'approve') {
           await approvalService.approve(item.entityType, item.entityId, item.level);
         } else {
-          await approvalService.reject(item.entityType, item.entityId, item.level);
+          await approvalService.reject(item.entityType, item.entityId, item.level, comment || '');
         }
         successCount++;
       } catch (err: any) {
@@ -172,6 +181,8 @@ const ApprovalsScreen = ({ darkMode }: any) => {
 
     setBulkProcessing(false);
     setSelectedIds(new Set());
+    setBulkRejectModalOpen(false);
+    setBulkRejectComment('');
 
     if (successCount > 0 && failCount === 0) {
       toast.success(`${actionLabel}: ${successCount} ${t('approvals.itemsProcessed')}`);
@@ -183,7 +194,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
     }
 
     await fetchPendingApprovals();
-  }, [selectedIds, filtered, t]);
+  }, [selectedIds, filtered, t, bulkRejectModalOpen]);
 
   // Stats
   const stats = useMemo(() => {
@@ -268,7 +279,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                 className={`bg-transparent outline-none text-xs w-full font-['Montserrat'] ${textPrimary} placeholder:${textMuted}`}
               />
               {searchTerm && (
-                <button onClick={() => setSearchTerm('')}>
+                <button onClick={() => setSearchTerm('')} aria-label="Clear search">
                   <X size={10} className={textMuted} />
                 </button>
               )}
@@ -453,7 +464,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                     className={`flex items-start gap-2 p-3 rounded-xl border ${border} transition-colors ${isSelected ? (darkMode ? 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]' : 'bg-[rgba(215,183,151,0.08)] border-[#6B4D30]') : (darkMode ? 'bg-[#1A1A1A]' : 'bg-white')}`}
                   >
                     {/* Checkbox */}
-                    <button onClick={() => toggleSelect(itemKey)} className="flex-shrink-0 mt-0.5">
+                    <button onClick={() => toggleSelect(itemKey)} className="flex-shrink-0 mt-0.5" aria-label={`Select ${name}`}>
                       {isSelected
                         ? <CheckSquare size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                         : <Square size={18} className={textMuted} />
@@ -500,7 +511,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
               <thead>
                 <tr className={`${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} border-b ${border}`}>
                   <th className="px-3 py-2 w-8">
-                    <button onClick={toggleSelectAll} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`}>
+                    <button onClick={toggleSelectAll} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`} aria-label="Select all approvals">
                       {selectedIds.size === filtered.length && filtered.length > 0
                         ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                         : selectedIds.size > 0
@@ -532,7 +543,7 @@ const ApprovalsScreen = ({ darkMode }: any) => {
                     >
                       {/* Checkbox */}
                       <td className="px-3 py-1.5 w-8">
-                        <button onClick={() => toggleSelect(itemKey)} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`}>
+                        <button onClick={() => toggleSelect(itemKey)} className={`flex items-center justify-center ${textMuted} hover:text-[#D7B797] transition-colors`} aria-label={`Select ${name}`}>
                           {isSelected
                             ? <CheckSquare size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                             : <Square size={16} />
@@ -651,6 +662,52 @@ const ApprovalsScreen = ({ darkMode }: any) => {
           setLevelFilter('all');
         }}
       />
+
+      {/* Bulk Reject Comment Modal */}
+      {bulkRejectModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className={`w-full max-w-md mx-4 rounded-2xl border ${border} ${cardBg} shadow-2xl`}>
+            <div className={`p-5 border-b ${border}`}>
+              <div className="flex items-center justify-between">
+                <h3 className={`text-lg font-bold font-['Montserrat'] ${textPrimary}`}>
+                  {t('approvals.rejectReason') || 'Rejection Reason'}
+                </h3>
+                <button onClick={() => { setBulkRejectModalOpen(false); setBulkRejectComment(''); }} className={`p-1.5 rounded-lg ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`} aria-label="Close rejection dialog">
+                  <X size={18} className={textMuted} />
+                </button>
+              </div>
+            </div>
+            <div className="p-5">
+              <p className={`text-sm mb-3 ${textSecondary}`}>
+                {t('approvals.rejectReasonDescription') || `Please provide a reason for rejecting ${selectedIds.size} item(s).`}
+              </p>
+              <textarea
+                value={bulkRejectComment}
+                onChange={(e: any) => setBulkRejectComment(e.target.value)}
+                rows={3}
+                className={`w-full px-3 py-2 rounded-xl border ${border} ${darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-50'} text-sm font-['Montserrat'] ${textPrimary} outline-none resize-none focus:border-[#D7B797]`}
+                placeholder={t('approvals.rejectCommentPlaceholder') || 'Enter reason for rejection...'}
+                autoFocus
+              />
+            </div>
+            <div className={`p-5 border-t ${border} flex justify-end gap-3`}>
+              <button
+                onClick={() => { setBulkRejectModalOpen(false); setBulkRejectComment(''); }}
+                className={`px-4 py-2 rounded-xl border ${border} text-sm font-medium font-['Montserrat'] ${textSecondary} transition-all ${darkMode ? 'hover:bg-[#1A1A1A]' : 'hover:bg-gray-100'}`}
+              >
+                {t('common.cancel') || 'Cancel'}
+              </button>
+              <button
+                onClick={() => handleBulkAction('reject', bulkRejectComment)}
+                disabled={bulkProcessing || !bulkRejectComment.trim()}
+                className="px-5 py-2 rounded-xl text-sm font-semibold font-['Montserrat'] transition-all disabled:opacity-50 bg-[#F85149] text-white hover:bg-[#e0443d]"
+              >
+                {bulkProcessing ? <Loader2 size={16} className="animate-spin mx-auto" /> : (t('approvals.confirmReject') || 'Reject')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
