@@ -496,6 +496,7 @@ const vi = {
     recoverData: 'Khôi phục dữ liệu',
     discardRecovery: 'Bỏ qua, dùng dữ liệu server',
     // Phase 3 — Excel
+    allocateAll: 'Phân bổ tất cả',
     exportExcel: 'Xuất Excel',
     exportSuccess: 'Xuất thành công',
     pastedValues: 'Đã dán {{count}} giá trị',

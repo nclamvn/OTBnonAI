@@ -1054,6 +1054,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     })).filter((genderGroup: any) => genderGroup.categories.length > 0);
 
     const getSelectedLabel = (options: any, value: any) => {
+      if (value === 'all') return t('common.all') || 'All';
       const option = options.find((o: any) => o.id === value);
       return option ? option.name : 'Select...';
     };
@@ -1082,6 +1083,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 }`}
               >
                 <Users size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.gender')}</span>
                 <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
                   {getSelectedLabel(filterOptions.genders, genderFilter)}
                 </span>
@@ -1128,6 +1130,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 }`}
               >
                 <Tag size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.category')}</span>
                 <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
                   {getSelectedLabel(filterOptions.categories, categoryFilter)}
                 </span>
@@ -1174,6 +1177,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 }`}
               >
                 <Layers size={12} className="text-[#2A9E6A]" />
+                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.subCategories')}</span>
                 <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
                   {getSelectedLabel(filterOptions.subCategories, subCategoryFilter)}
                 </span>
@@ -2224,7 +2228,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           : `${selectedBudgetIds.length} ${t('otbAnalysis.budgetsSelected') || 'selected'}`}
                       </span>
                       {selectedBudgetIds.length > 0 && (
-                        <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md ${
+                        <span className={`px-1.5 text-[10px] leading-[16px] font-bold rounded-md ${
                           darkMode ? 'bg-[#D7B797]/90 text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
                         }`} style={{ letterSpacing: '0.02em' }}>{selectedBudgetIds.length}</span>
                       )}
@@ -2591,7 +2595,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 {hasActiveFilters && (
                   <button
                     onClick={clearFilters}
-                    className={`shrink-0 p-1.5 rounded-lg border transition-all duration-200 ${
+                    className={`shrink-0 px-1.5 py-[8px] rounded-lg border transition-all duration-200 ${
                       darkMode
                         ? 'text-[#666666] border-transparent hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.08)] hover:border-[rgba(248,81,73,0.15)]'
                         : 'text-[#999999] border-transparent hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.06)] hover:border-[rgba(248,81,73,0.12)]'

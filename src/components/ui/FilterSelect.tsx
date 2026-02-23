@@ -58,24 +58,13 @@ function FilterSelect({
 
   return (
     <div ref={containerRef} className="relative group">
-      {/* Label */}
-      <div
-        className={`text-[10px] uppercase tracking-[0.12em] font-semibold mb-1.5 font-['Montserrat'] transition-colors duration-200 ${
-          isOpen
-            ? darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'
-            : darkMode ? 'text-[#666666] group-hover:text-[#999999]' : 'text-[#999999] group-hover:text-[#666666]'
-        }`}
-      >
-        {label}
-      </div>
-
       {/* Trigger */}
       <button
         type="button"
         onClick={() => setIsOpen((p) => !p)}
         onKeyDown={handleKeyDown}
         className={`
-          w-full flex items-center justify-between gap-2
+          w-full flex items-center gap-1.5
           pl-3 pr-2.5 py-[7px]
           text-sm font-medium
           border rounded-lg
@@ -96,7 +85,16 @@ function FilterSelect({
         `}
       >
         <span
-          className={`truncate text-left leading-tight ${
+          className={`text-[10px] uppercase tracking-[0.08em] font-semibold shrink-0 transition-colors duration-200 ${
+            isOpen
+              ? darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'
+              : darkMode ? 'text-[#666666] group-hover:text-[#999999]' : 'text-[#999999] group-hover:text-[#666666]'
+          }`}
+        >
+          {label}
+        </span>
+        <span
+          className={`truncate text-left leading-tight flex-1 ${
             !isDefault
               ? darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'
               : darkMode ? 'text-[#888888]' : 'text-[#888888]'

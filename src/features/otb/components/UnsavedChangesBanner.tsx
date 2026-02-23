@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, Save, X } from 'lucide-react';
+import { AlertTriangle, Save } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UnsavedChangesBannerProps {

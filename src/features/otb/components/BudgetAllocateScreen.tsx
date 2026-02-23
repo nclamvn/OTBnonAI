@@ -5,7 +5,7 @@ import {
   DollarSign, Sparkles, Filter, Clock, ChevronDown, Check,
   ChevronRight, TrendingUp, Sun, Snowflake,
   Star, Layers, Tag, FileText, X, Split, Pencil,
-  Download, RefreshCw
+  RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency, parseSmartInput } from '@/utils';
@@ -18,15 +18,13 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
-import { TableSkeleton, PrintButton } from '@/components/ui';
+import { TableSkeleton } from '@/components/ui';
 import { useAllocationState, BRAND_BUDGET_CAP_PCT } from '../hooks/useAllocationState';
 import { useSessionRecovery } from '../hooks/useSessionRecovery';
 import { useClipboardPaste } from '../hooks/useClipboardPaste';
-import AllocationToolbar from './AllocationToolbar';
 import AllocationProgressBar from './AllocationProgressBar';
 import AllocationSidePanel from './AllocationSidePanel';
 import UnsavedChangesBanner from './UnsavedChangesBanner';
-import BulkActionsMenu from './BulkActionsMenu';
 import VersionCompareModal from './VersionCompareModal';
 import { exportAllocationToExcel } from '../utils/exportExcel';
 
@@ -688,6 +686,26 @@ const BudgetAllocateScreen = ({
     return Math.round((value / brandTotals.sum) * 100);
   };
 
+  // Row completion status: 'empty' | 'partial' | 'complete'
+  const getRowStatus = useCallback((brandId: string, seasonGroup: string, subSeason: string) => {
+    const data = getBudgetData(brandId, seasonGroup, subSeason);
+    let filled = 0;
+    stores.forEach((s: any) => {
+      if (data[s.id] && data[s.id] > 0) filled++;
+    });
+    if (filled === 0) return 'empty';
+    if (filled === stores.length) return 'complete';
+    return 'partial';
+  }, [getBudgetData, stores]);
+
+  // Aggregate status for a group of rows
+  const getAggregateStatus = (statuses: string[]) => {
+    if (statuses.length === 0) return 'empty';
+    if (statuses.every(s => s === 'complete')) return 'complete';
+    if (statuses.every(s => s === 'empty')) return 'empty';
+    return 'partial';
+  };
+
   // Toggle group collapse
   const toggleGroupCollapse = (groupId: any) => {
     setCollapsedGroups((prev: any) => ({
@@ -853,58 +871,8 @@ const BudgetAllocateScreen = ({
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
-      {/* Allocation Toolbar — Back, Stepper, Undo/Redo, Save, Continue */}
+      {/* Allocation Progress Bar */}
       <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
-        <AllocationToolbar
-          onBack={handleBack}
-          onContinue={handleContinue}
-          onStepClick={handleStepClick}
-          onUndo={undo}
-          onRedo={redo}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          onSaveDraft={handleSaveDraft}
-          onSubmit={handleSubmitForApproval}
-          saving={saving}
-          isDirty={isDirty}
-          onToggleSidePanel={() => setSidePanelOpen(!sidePanelOpen)}
-          sidePanelOpen={sidePanelOpen}
-          darkMode={darkMode}
-          kpiData={kpiData}
-          statusInfo={{
-            budgetName: selectedBudget?.budgetName || fallbackBudgetName,
-            status: selectedVersion?.status || selectedBudget?.status || 'draft',
-            versionName: selectedVersion?.name,
-            isDirty,
-            autoSaving: allocation.autoSaving,
-            lastSavedAt: allocation.lastSavedAt,
-          }}
-          quickActions={(selectedBudget || selectedBudgetId) ? (
-            <>
-              <BulkActionsMenu
-                stores={stores}
-                allocationValues={allocationValues}
-                onBulkUpdate={handleBulkUpdate}
-                totalBudget={totalBudget}
-                darkMode={darkMode}
-              />
-              <button
-                onClick={handleExportExcel}
-                className={`p-1.5 rounded-md transition-colors border ${
-                  darkMode
-                    ? 'border-[#2E2E2E] text-[#999] hover:bg-[rgba(215,183,151,0.08)]'
-                    : 'border-[#C4B5A5] text-[#666] hover:bg-[rgba(160,120,75,0.12)]'
-                }`}
-                title={t('planning.exportExcel')}
-              >
-                <Download size={12} />
-              </button>
-              <PrintButton darkMode={darkMode} />
-            </>
-          ) : undefined}
-        />
-
-        {/* Allocation Progress Bar */}
         <AllocationProgressBar
           totalBudget={totalBudget}
           totalAllocated={totalAllocated}
@@ -1379,7 +1347,7 @@ const BudgetAllocateScreen = ({
                     setSelectedVersionId(null);
                     setVersions([]);
                   }}
-                  className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[#1A1A1A]' : 'text-[#666666] hover:text-[#F85149] hover:bg-red-50'}`}
+                  className={`shrink-0 px-1.5 py-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[#1A1A1A]' : 'text-[#666666] hover:text-[#F85149] hover:bg-red-50'}`}
                   title={t('common.clearAllFilters')}
                 >
                   <X size={14} />
@@ -1527,6 +1495,18 @@ const BudgetAllocateScreen = ({
                                   className={`transition-transform duration-200 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'} ${!isBrandCollapsed ? 'rotate-90' : ''}`}
                                 />
                                 <Tag size={16} className={darkMode ? 'text-[#999999]' : 'text-[#666666]'} />
+                                {(() => {
+                                  const brandStatuses = (selectedSeasonGroup ? [selectedSeasonGroup] : SEASON_GROUPS)
+                                    .flatMap((sg: string) => (SEASON_CONFIG[sg]?.subSeasons || [])
+                                      .map((ss: string) => getRowStatus(brand.id, sg, ss))
+                                    );
+                                  const bs = getAggregateStatus(brandStatuses);
+                                  return <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                    bs === 'complete' ? 'bg-[#2A9E6A]'
+                                    : bs === 'partial' ? 'bg-[#D97706]'
+                                    : darkMode ? 'bg-[#333]' : 'bg-[#D1D5DB]'
+                                  }`} />;
+                                })()}
                                 <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{brand.name}</span>
                               </div>
                               <div className="flex items-center gap-2 md:gap-4">
@@ -1594,6 +1574,17 @@ const BudgetAllocateScreen = ({
                                             ) : (
                                               <Snowflake size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                                             )}
+                                            {(() => {
+                                              const sgSubSeasons = SEASON_CONFIG[seasonGroup]?.subSeasons || [];
+                                              const sgStatus = getAggregateStatus(
+                                                sgSubSeasons.map((ss: string) => getRowStatus(brand.id, seasonGroup, ss))
+                                              );
+                                              return <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                                sgStatus === 'complete' ? 'bg-[#2A9E6A]'
+                                                : sgStatus === 'partial' ? 'bg-[#D97706]'
+                                                : darkMode ? 'bg-[#333]' : 'bg-[#D1D5DB]'
+                                              }`} />;
+                                            })()}
                                             <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#4A3728]'}`}>{SEASON_CONFIG[seasonGroup]?.name}</span>
                                           </div>
                                         </td>
@@ -1627,7 +1618,17 @@ const BudgetAllocateScreen = ({
                                         return (
                                           <tr key={`${brand.id}-${seasonGroup}-${subSeason}`} className={`border-b transition-colors ${darkMode ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)]' : 'border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.12)]'}`}>
                                             <td className="px-3 md:px-4 py-0.5 pl-10 md:pl-12">
-                                              <span className={`text-xs font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{subSeason}</span>
+                                              <div className="flex items-center gap-1.5">
+                                                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                                  (() => {
+                                                    const st = getRowStatus(brand.id, seasonGroup, subSeason);
+                                                    return st === 'complete' ? 'bg-[#2A9E6A]'
+                                                         : st === 'partial'  ? 'bg-[#D97706]'
+                                                         : darkMode ? 'bg-[#333]' : 'bg-[#D1D5DB]';
+                                                  })()
+                                                }`} />
+                                                <span className={`text-xs font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{subSeason}</span>
+                                              </div>
                                             </td>
                                             {stores.map((store: any) => {
                                               const cellVal = data[store.id] || 0;
@@ -1777,7 +1778,31 @@ const BudgetAllocateScreen = ({
           })}
         </div>
       )}
-      {/* Category Breakdown Table - removed per customer request */}
+      {/* Phân bổ tất cả — end-of-grid CTA */}
+      {(selectedBudget || selectedBudgetId) && (
+        <div className="mt-4 mb-3 flex justify-end">
+          <button
+            onClick={handleSaveDraft}
+            disabled={!isDirty || saving}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all ${
+              isDirty && !saving
+                ? darkMode
+                  ? 'bg-[#127749] text-white hover:bg-[#15874F]'
+                  : 'bg-[#127749] text-white hover:bg-[#0E5F3A]'
+                : darkMode
+                  ? 'bg-[#1A1A1A] border border-[#2E2E2E] text-[#555] cursor-not-allowed'
+                  : 'bg-[#F5F5F5] border border-[#D1D5DB] text-[#999] cursor-not-allowed'
+            }`}
+          >
+            {saving ? (
+              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <Split size={13} />
+            )}
+            {t('planning.allocateAll')}
+          </button>
+        </div>
+      )}
 
       {/* Allocation Side Panel */}
       <AllocationSidePanel

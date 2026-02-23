@@ -39,7 +39,8 @@ import {
   LineChart,
   PieChart,
   Activity,
-  Loader2
+  Loader2,
+  Printer
 } from 'lucide-react';
 
 // Screen configuration builder (uses t() for translations)
@@ -869,12 +870,22 @@ const AppHeader = ({
               })}
             </div>
 
-            {/* Save Button - hidden on Tickets pages */}
+            {/* Print + Save — hidden on Tickets pages */}
             {currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
-            <div className="ml-auto relative shrink-0" ref={saveButtonRef}>
-              <div className="inline-flex rounded-lg" style={{
-                boxShadow: '0 2px 8px rgba(215,183,151,0.2)',
-              }}>
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => window.print()}
+                className={`no-print px-1.5 py-1 rounded-lg transition-colors ${
+                  darkMode
+                    ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797]'
+                    : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'
+                }`}
+                title={t('common.print')}
+              >
+                <Printer size={14} />
+              </button>
+            <div className="relative" ref={saveButtonRef}>
+              <div className="inline-flex items-stretch rounded-lg border border-[rgba(215,183,151,0.3)] overflow-hidden">
                 <button
                   onClick={async () => {
                     if (hasSaveHandler) {
@@ -883,10 +894,10 @@ const AppHeader = ({
                       toast.success(t('header.save'));
                     }
                   }}
-                  className={`flex items-center gap-1.5 ${isMobile ? 'px-2 py-1' : 'px-3 py-0.5'} text-xs font-medium font-['Montserrat'] rounded-l-lg transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
+                  className="flex items-center px-2 py-1 transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  title={t('header.save')}
                 >
-                  <Save size={isMobile ? 14 : 12} />
-                  {!isMobile && t('header.save')}
+                  <Save size={14} />
                 </button>
                 <button
                   onClick={() => {
@@ -896,11 +907,12 @@ const AppHeader = ({
                     }
                     setOpenSaveMenu(!openSaveMenu);
                   }}
-                  className={`${isMobile ? 'px-1.5 py-1' : 'px-2 py-0.5'} rounded-r-lg border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]`}
+                  className="flex items-center px-1 py-1 border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
                 >
                   <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
                 </button>
               </div>
+            </div>
             </div>
             )}
           </div>

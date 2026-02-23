@@ -496,6 +496,7 @@ const en = {
     recoverData: 'Recover data',
     discardRecovery: 'Discard, use server data',
     // Phase 3 — Excel
+    allocateAll: 'Allocate All',
     exportExcel: 'Export Excel',
     exportSuccess: 'Exported successfully',
     pastedValues: 'Pasted {{count}} values',
