@@ -18,17 +18,31 @@ export interface ApiError {
 
 // ─── User & Auth ────────────────────────────────────────────────
 
-export type UserRole = 'admin' | 'buyer' | 'merchandiser' | 'manager' | 'finance';
+export type RoleName = 'buyer' | 'merchandiser' | 'merch_manager' | 'finance_director' | 'admin';
+
+/** e.g. "budget:read", "planning:approve" */
+export type Permission = string;
+
+export interface Role {
+  id: string;
+  name: RoleName;
+  description?: string;
+  permissions: Permission[];
+}
 
 export interface User {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
-  avatar?: string;
+  roleId: string;
+  role?: Role;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+/** @deprecated Use RoleName instead */
+export type UserRole = RoleName;
 
 export interface AuthState {
   user: User | null;
@@ -38,177 +52,495 @@ export interface AuthState {
 }
 
 // ─── Budget ─────────────────────────────────────────────────────
+// Tables: budget, allocate_headers, budget_allocate
 
-export type BudgetStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+export type BudgetStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
+/**
+ * Budget - Main budget entity
+ * Table: budget
+ */
 export interface Budget {
-  id: string;
+  id: number;
   name: string;
-  code: string;
-  totalBudget: number;
-  committedBudget: number;
+  amount: number;
+  description?: string;
   status: BudgetStatus;
-  brandId: string;
-  brand?: GroupBrand;
   fiscalYear: number;
-  seasonGroup?: string;
-  season?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdBy: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  creator?: User;
+  allocateHeaders?: AllocateHeader[];
 }
 
-export interface BudgetDetail {
-  id: string;
-  budgetId: string;
-  storeId: string;
-  store?: Store;
-  seasonGroup: string;
-  season: string;
-  rexAmount: number;
-  ttpAmount: number;
-  totalAmount: number;
+/**
+ * AllocateHeader - Versioned allocation header per brand
+ * Table: allocate_headers
+ *
+ * Brand is linked here, not on Budget.
+ * One Budget can have multiple AllocateHeaders (different brands, versions).
+ */
+export interface AllocateHeader {
+  id: number;
+  budgetId: number;
+  brandId: number;
+  version: number;
+  isFinalVersion: boolean;
+  createdBy: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  budget?: Budget;
+  brand?: Brand;
+  creator?: User;
+  budgetAllocates?: BudgetAllocate[];
 }
+
+/**
+ * BudgetAllocate - Store/Season allocation detail
+ * Table: budget_allocate
+ *
+ * Replaces old BudgetDetail. Links to AllocateHeader, not directly to Budget.
+ */
+export interface BudgetAllocate {
+  id: number;
+  allocateHeaderId: number;
+  storeId: number;
+  seasonGroupId: number;
+  seasonId: number;
+  budgetAmount: number;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  allocateHeader?: AllocateHeader;
+  store?: Store;
+  seasonGroup?: SeasonGroup;
+  season?: Season;
+  tickets?: Ticket[];
+}
+
+/** @deprecated Use BudgetAllocate instead */
+export type BudgetDetail = BudgetAllocate;
 
 export interface BudgetFilters {
   fiscalYear?: number;
-  brandId?: string;
+  brandId?: number;
   status?: BudgetStatus;
-  seasonGroup?: string;
+  seasonGroupId?: number;
   search?: string;
 }
 
 // ─── Planning ───────────────────────────────────────────────────
+// Tables: planning_headers, collection_proposal, gender_proposal, category_proposal
 
-export type PlanningVersionType = 'V0' | 'V1' | 'V2' | 'V3' | 'FINAL';
-
-export interface PlanningVersion {
-  id: string;
-  budgetId: string;
-  budget?: Budget;
-  version: PlanningVersionType;
-  isFinal: boolean;
-  totalPlanned: number;
-  createdAt: string;
-  updatedAt: string;
+/**
+ * PlanningHeader - Main planning version header
+ * Table: planning_headers
+ *
+ * No budgetId in DB — planning exists independently of budget.
+ */
+export interface PlanningHeader {
+  id: number;
+  version: number;
+  isFinalVersion: boolean;
+  createdBy: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  creator?: User;
+  planningCollections?: PlanningCollection[];
+  planningGenders?: PlanningGender[];
+  planningCategories?: PlanningCategory[];
 }
 
-export interface PlanningDetail {
-  id: string;
-  planningVersionId: string;
-  collectionId?: string;
+/**
+ * PlanningCollection - Collection-level planning with store breakdown
+ * Table: collection_proposal
+ *
+ * 7 decimal fields + storeId
+ */
+export interface PlanningCollection {
+  id: number;
+  collectionId: number;
+  storeId: number;
+  planningHeaderId: number;
+  // Decimal fields
+  actualBuyPct: number;
+  actualSalesPct: number;
+  actualStPct: number;
+  actualMoc: number;
+  proposedBuyPct: number;
+  otbProposedAmount: number;
+  pctVarVsLast: number;
+  // Audit
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
   collection?: Collection;
-  genderId?: string;
+  store?: Store;
+  planningHeader?: PlanningHeader;
+}
+
+/**
+ * PlanningGender - Gender-level planning with store breakdown
+ * Table: gender_proposal
+ *
+ * 6 decimal fields + storeId (no actualMoc)
+ */
+export interface PlanningGender {
+  id: number;
+  genderId: number;
+  storeId: number;
+  planningHeaderId: number;
+  // Decimal fields (no actualMoc)
+  actualBuyPct: number;
+  actualSalesPct: number;
+  actualStPct: number;
+  proposedBuyPct: number;
+  otbProposedAmount: number;
+  pctVarVsLast: number;
+  // Audit
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
   gender?: Gender;
-  categoryId?: string;
-  category?: Category;
+  store?: Store;
+  planningHeader?: PlanningHeader;
+}
+
+/**
+ * PlanningCategory - Category-level planning (aggregate, no store)
+ * Table: category_proposal
+ *
+ * 8 decimal fields. NO storeId — categories are aggregate.
+ */
+export interface PlanningCategory {
+  id: number;
+  subcategoryId: number;
+  planningHeaderId: number;
+  // Decimal fields
+  actualBuyPct: number;
+  actualSalesPct: number;
+  actualStPct: number;
+  proposedBuyPct: number;
+  otbProposedAmount: number;
+  varLastyearPct: number;
+  otbActualAmount: number;
+  otbActualBuyPct: number;
+  // Audit
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  subcategory?: SubCategory;
+  planningHeader?: PlanningHeader;
+}
+
+/** @deprecated Use PlanningHeader instead */
+export type PlanningVersion = PlanningHeader;
+
+/** @deprecated Use PlanningCollection, PlanningGender, or PlanningCategory instead */
+export type PlanningVersionType = 'V0' | 'V1' | 'V2' | 'V3' | 'FINAL';
+
+/** @deprecated Use PlanningCollection, PlanningGender, or PlanningCategory instead */
+export interface PlanningDetail {
+  id: number;
+  planningVersionId: number;
+  collectionId?: number;
+  genderId?: number;
+  categoryId?: number;
   percentage: number;
   amount: number;
 }
 
 // ─── Proposal ───────────────────────────────────────────────────
+// Tables: proposals, proposal_products, product_allocations
 
-export type ProposalStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
+export type ProposalStatus = 'DRAFT' | 'SUBMITTED' | 'LEVEL1_APPROVED' | 'APPROVED' | 'REJECTED';
 
+/**
+ * Proposal - SKU proposal / ticket header
+ * Table: proposals
+ */
 export interface Proposal {
   id: string;
+  ticketName: string;
   budgetId: string;
-  budget?: Budget;
-  planningVersionId: string;
-  planningVersion?: PlanningVersion;
+  planningVersionId?: string;
   status: ProposalStatus;
+  totalSkuCount: number;
+  totalOrderQty: number;
   totalValue: number;
-  totalQuantity: number;
-  createdAt: string;
-  updatedAt: string;
+  version: number;
+  createdById: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Relations
+  budget?: Budget;
+  planningVersion?: PlanningVersion;
+  createdBy?: User;
+  products?: ProposalProduct[];
 }
 
+/**
+ * ProposalProduct - Individual SKU line in a proposal
+ * Table: proposal_products
+ *
+ * Fields are denormalized from SkuCatalog for snapshot integrity.
+ */
 export interface ProposalProduct {
   id: string;
   proposalId: string;
   skuId: string;
-  sku?: SkuCatalog;
+  skuCode: string;
+  productName: string;
+  collection?: string;
+  gender?: string;
+  category?: string;
+  subCategory?: string;
+  theme?: string;
+  color?: string;
+  composition?: string;
+  unitCost: number;
+  srp: number;
+  orderQty: number;
+  totalValue: number;
+  customerTarget?: string;
+  imageUrl?: string;
+  sortOrder: number;
+  // Relations
+  proposal?: Proposal;
+  sku?: Product;
+  allocations?: ProductAllocation[];
+}
+
+/**
+ * ProductAllocation - Per-store quantity allocation for a proposal product
+ * Table: product_allocations
+ */
+export interface ProductAllocation {
+  id: string;
+  proposalProductId: string;
+  storeId: string;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
+  // Relations
+  proposalProduct?: ProposalProduct;
+  store?: Store;
 }
 
 // ─── Master Data ────────────────────────────────────────────────
 
 export interface GroupBrand {
   id: string;
-  name: string;
   code: string;
-  sortOrder: number;
+  name: string;
+  isActive: boolean;
+}
+
+export interface Brand {
+  id: string;
+  code: string;
+  name: string;
+  groupBrandId: string;
+  groupBrand?: GroupBrand;
   isActive: boolean;
 }
 
 export interface Store {
   id: string;
-  name: string;
   code: string;
-  type: 'REX' | 'TTP' | 'OUTLET';
+  name: string;
+  region?: string;
+  location?: string;
   isActive: boolean;
 }
 
 export interface Collection {
   id: string;
   name: string;
-  code: string;
+  isActive: boolean;
+}
+
+export interface SeasonGroup {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
+
+export interface Season {
+  id: string;
+  name: string;
+  seasonGroupId: string;
+  seasonGroup?: SeasonGroup;
+  isActive: boolean;
 }
 
 export interface Gender {
   id: string;
   name: string;
-  code: string;
+  isActive: boolean;
 }
 
 export interface Category {
   id: string;
   name: string;
-  code: string;
-  parentId?: string;
+  genderId: string;
+  gender?: Gender;
+  isActive: boolean;
   subCategories?: SubCategory[];
 }
 
 export interface SubCategory {
   id: string;
   name: string;
-  code: string;
-  categoryId: string;
-}
-
-export interface SkuCatalog {
-  id: string;
-  sku: string;
-  name: string;
-  brandId: string;
-  brand?: GroupBrand;
   categoryId: string;
   category?: Category;
-  genderId: string;
-  gender?: Gender;
-  unitPrice: number;
+  isActive: boolean;
+}
+
+export interface SubcategorySize {
+  id: string;
+  name: string;
+  subCategoryId: string;
+  subCategory?: SubCategory;
+}
+
+export interface Product {
+  id: string;
+  skuCode: string;
+  productName: string;
+  subCategoryId: string;
+  brandId?: string;
+  theme?: string;
+  color?: string;
+  composition?: string;
+  srp: number;
   imageUrl?: string;
   isActive: boolean;
 }
 
-// ─── Approval ───────────────────────────────────────────────────
+/** @deprecated Use Product instead */
+export type SkuCatalog = Product;
 
-export type ApprovalStatus = 'pending' | 'approved' | 'rejected';
+// ─── Approval & Tickets ─────────────────────────────────────────
+// Tables: approval_statuses, approval_workflow, approval_workflow_level,
+//         ticket, approval_request_log
 
-export interface Approval {
-  id: string;
-  entityType: 'budget' | 'planning' | 'proposal';
-  entityId: string;
-  status: ApprovalStatus;
-  step: number;
-  approverId?: string;
-  approver?: User;
-  comments?: string;
-  createdAt: string;
-  updatedAt: string;
+export type ApprovalStatusName = 'PENDING' | 'APPROVED' | 'REJECTED' | 'IN_REVIEW';
+
+/**
+ * ApprovalStatus - Status lookup table
+ * Table: approval_statuses
+ */
+export interface ApprovalStatus {
+  id: number;
+  name: ApprovalStatusName;
+  isActive: boolean;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
 }
 
+/**
+ * ApprovalWorkflow - Workflow definition per brand group
+ * Table: approval_workflow
+ */
+export interface ApprovalWorkflow {
+  id: number;
+  groupBrandId: number;
+  workflowName: string;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  groupBrand?: GroupBrand;
+  levels?: ApprovalWorkflowLevel[];
+}
+
+/**
+ * ApprovalWorkflowLevel - N-level approval steps
+ * Table: approval_workflow_level
+ *
+ * approverUserId is a SPECIFIC USER, not a role.
+ * Supports unlimited levels (1, 2, 3, ... N).
+ */
+export interface ApprovalWorkflowLevel {
+  id: number;
+  approvalWorkflowId: number;
+  levelOrder: number;
+  levelName: string;
+  approverUserId: number;
+  isRequired: boolean;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  approvalWorkflow?: ApprovalWorkflow;
+  approverUser?: User;
+  ticketApprovalLogs?: TicketApprovalLog[];
+}
+
+/**
+ * Ticket - Approval request for a budget allocation
+ * Table: ticket
+ *
+ * Links to BudgetAllocate, NOT Budget.
+ * One ticket per store+season allocation.
+ */
+export interface Ticket {
+  id: number;
+  budgetAllocateId: number;
+  status: ApprovalStatusName;
+  createdBy: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  budgetAllocate?: BudgetAllocate;
+  creator?: User;
+  approvalLogs?: TicketApprovalLog[];
+}
+
+/**
+ * TicketApprovalLog - Individual approval/rejection action
+ * Table: approval_request_log
+ */
+export interface TicketApprovalLog {
+  id: number;
+  ticketId: number;
+  approvalWorkflowLevelId: number;
+  approverUserId: number;
+  isApproved: boolean;
+  comment?: string;
+  approvedAt?: string;
+  createdBy?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  updatedBy?: number;
+  // Relations
+  ticket?: Ticket;
+  approvalWorkflowLevel?: ApprovalWorkflowLevel;
+  approverUser?: User;
+}
+
+// ─── Deprecated Approval Aliases ────────────────────────────────
+
+/** @deprecated Use ApprovalWorkflowLevel instead */
 export interface ApprovalWorkflowStep {
   id: string;
   step: number;
@@ -217,31 +549,32 @@ export interface ApprovalWorkflowStep {
   isRequired: boolean;
 }
 
-// ─── Ticket ─────────────────────────────────────────────────────
+/** @deprecated Use ApprovalStatusName instead */
+export type TicketStatus = ApprovalStatusName;
 
-export type TicketStatus = 'draft' | 'submitted' | 'in_review' | 'approved' | 'rejected';
-
-export interface Ticket {
-  id: string;
-  budgetId: string;
-  budget?: Budget;
-  status: TicketStatus;
-  currentStep: number;
-  submittedBy?: string;
-  submittedAt?: string;
-  approvalHistory: ApprovalHistoryItem[];
-  createdAt: string;
-  updatedAt: string;
-}
-
+/** @deprecated Use TicketApprovalLog instead */
 export interface ApprovalHistoryItem {
   step: number;
   stepName: string;
-  status: ApprovalStatus;
+  status: 'pending' | 'approved' | 'rejected';
   approverId?: string;
   approverName?: string;
   comments?: string;
   timestamp: string;
+}
+
+/** @deprecated Use ApprovalWorkflow + ApprovalWorkflowLevel instead */
+export interface Approval {
+  id: string;
+  entityType: 'budget' | 'planning' | 'proposal';
+  entityId: string;
+  status: 'pending' | 'approved' | 'rejected';
+  step: number;
+  approverId?: string;
+  approver?: User;
+  comments?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── UI & Component Types ───────────────────────────────────────

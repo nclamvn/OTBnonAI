@@ -7,7 +7,7 @@
 
 ---
 
-## Cap nhat lan cuoi: 14/02/2026 (Session 23 - Performance: Zero-Lag Filter Bar + Flip Card)
+## Cap nhat lan cuoi: 23/02/2026 (Session 29 - S25 CreatableSelect + Add SKU Modal + SKU UI)
 
 ---
 
@@ -24,7 +24,7 @@
 | **Dev Port** | `http://localhost:3006` |
 | **Language** | Bilingual EN/VN with toggle |
 | **Theme** | Dark/Light mode with CSS variables |
-| **Testing** | Vitest 4.0, jsdom, @testing-library/react (114 tests, 5 suites) |
+| **Testing** | Vitest 4.0, jsdom, @testing-library/react (201 tests, 9 suites) + Playwright E2E (4 specs) |
 | **Mobile** | Responsive (useIsMobile hook + MobileBottomNav + Mobile UI 2.0 components) |
 | **Animation** | framer-motion 12.34 (BottomSheet, SwipeAction) |
 
@@ -81,8 +81,14 @@ OTBnonAI/
 │   ├── features/                         # Feature-based architecture (NEW Session 14)
 │   │   ├── otb/                          # Budget, Planning, Proposal, OTB Analysis
 │   │   │   ├── components/               # BudgetManagement, BudgetAllocate, OTBAnalysis,
-│   │   │   │                             # PlanningDetail, ProposalDetail, SKUProposal
-│   │   │   ├── hooks/                    # useBudget, usePlanning, useProposal
+│   │   │   │                             # PlanningDetail, ProposalDetail, SKUProposal,
+│   │   │   │                             # AllocationToolbar, AllocationSidePanel, AllocationProgressBar,
+│   │   │   │                             # BulkActionsMenu, VersionCompareModal, ViewToggleBar,
+│   │   │   │                             # UnsavedChangesBanner, AddSKUModal (NEW S25-29)
+│   │   │   ├── hooks/                    # useBudget, usePlanning, useProposal,
+│   │   │   │                             # useAllocationState, useSessionRecovery,
+│   │   │   │                             # useClipboardPaste, useTableFilters (NEW S25)
+│   │   │   ├── utils/                    # exportExcel (NEW S25)
 │   │   │   └── index.ts
 │   │   ├── tickets/                      # Ticket, TicketDetail, TicketKanbanBoard
 │   │   ├── approvals/                    # ApprovalsScreen, ApprovalWorkflowScreen
@@ -116,7 +122,16 @@ OTBnonAI/
 │   │   │   ├── MobileDataCard.tsx        # Card for mobile data display (NEW)
 │   │   │   ├── MobileFilterSheet.tsx     # Filter panel slide-up (NEW)
 │   │   │   ├── MobileTableView.tsx       # Responsive table/card switcher (NEW)
-│   │   │   ├── SwipeAction.tsx           # Swipe approve/reject (NEW)
+│   │   │   ├── SwipeAction.tsx           # Swipe approve/reject
+│   │   │   ├── FilterSelect.tsx         # Luxury dropdown (NEW Session 25)
+│   │   │   ├── CreatableSelect.tsx      # Dropdown + create-new (NEW Session 29)
+│   │   │   ├── CurrencyInput.tsx        # VND formatted input (NEW Session 25)
+│   │   │   ├── FormattedCurrency.tsx    # Currency display (NEW Session 25)
+│   │   │   ├── TableSkeleton.tsx        # Table loading skeleton (NEW Session 25)
+│   │   │   ├── Breadcrumbs.tsx          # Navigation breadcrumbs (NEW Session 27)
+│   │   │   ├── PrintButton.tsx          # Print support (NEW Session 27)
+│   │   │   ├── ConfirmDialog.tsx        # Custom confirm dialog (NEW Session 27)
+│   │   │   ├── ErrorBoundary.tsx        # Error boundary wrapper (NEW Session 25)
 │   │   │   └── index.ts
 │   │   ├── mobile/                      # Mobile UI 2.0 Revolution (NEW Session 14)
 │   │   │   ├── MobileCard.tsx           # Card: avatar, badges, progress, metrics
@@ -131,7 +146,7 @@ OTBnonAI/
 │   │   ├── LanguageContext.tsx            # Bilingual EN/VN with t()
 │   │   └── AppContext.tsx                # Shared state (AppContextType)
 │   ├── services/                         # All .ts with typed methods
-│   │   ├── api.ts                        # Axios + JWT interceptor + GET caching
+│   │   ├── api.ts                        # Axios + JWT interceptor + GET caching + auto-retry
 │   │   ├── authService.ts
 │   │   ├── budgetService.ts
 │   │   ├── planningService.ts
@@ -139,13 +154,20 @@ OTBnonAI/
 │   │   ├── masterDataService.ts
 │   │   ├── approvalService.ts
 │   │   ├── approvalWorkflowService.ts
-│   │   ├── importService.ts              # Bulk CSV/Excel import (NEW Session 14)
+│   │   ├── importService.ts              # Bulk CSV/Excel import
+│   │   ├── orderService.ts               # Order CRUD (NEW S26)
+│   │   ├── notificationService.ts        # Notification API (NEW S27)
+│   │   ├── approvalHelper.ts             # Shared approval utilities (NEW S25)
+│   │   ├── withErrorHandling.ts          # Error handling wrapper (NEW S25)
 │   │   └── index.ts
 │   ├── hooks/                            # Custom hooks
 │   │   ├── useIsMobile.ts                # Responsive breakpoints → {isMobile,isTablet,isDesktop}
 │   │   ├── useMobile.ts                  # Mobile UI 2.0 hooks (NEW Session 14)
 │   │   ├── useKPIBreakdown.ts            # KPI analytics
-│   │   ├── useDataImport.ts              # File parsing + batch import (NEW)
+│   │   ├── useDataImport.ts              # File parsing + batch import
+│   │   ├── useMasterData.ts              # Centralized master data fetching (NEW S25)
+│   │   ├── useConfirmDialog.ts           # Custom confirm dialog hook (NEW S25)
+│   │   ├── useUnsavedChanges.ts          # Unsaved changes detection (NEW S27)
 │   │   └── index.ts
 │   ├── types/
 │   │   └── index.ts                      # 50+ TypeScript interfaces (NEW Session 14)
@@ -170,6 +192,12 @@ OTBnonAI/
 │   └── test/
 │       ├── setup.tsx                     # Vitest test setup (jsdom, mocks)
 │       └── utils.tsx                     # Mock factories + API test helpers
+├── e2e/                                  # Playwright E2E tests (NEW Session 24)
+│   ├── playwright.config.ts
+│   ├── specs/                            # auth, budget, planning, approval
+│   ├── fixtures/                         # Test data JSON
+│   └── helpers/                          # API mocks, auth helpers
+├── .github/workflows/ci.yml             # CI/CD pipeline (NEW Session 24)
 ├── vitest.config.ts                      # Vitest config (jsdom, V8 coverage)
 ├── tsconfig.json                         # TypeScript strict mode
 └── public/
@@ -458,6 +486,39 @@ const { language, setLanguage, t } = useLanguage();
 - `useHaptic()` → `{ trigger(type) }` — vibration feedback (light/medium/heavy/selection/success/warning/error)
 - **Access via:** `import { useSwipe } from '@/components/mobile'` or `from '@/hooks/useMobile'`
 
+### useAllocationState.ts (src/features/otb/hooks/) — NEW Session 25
+- Central allocation state management (393 lines)
+- Tracks: allocations, dirty cells, selection, undo/redo stack
+- Actions: `updateCell()`, `bulkUpdate()`, `undo()`, `redo()`, `selectRows()`, `getTotal()`
+- Integrates with `useSessionRecovery` for auto-save
+
+### useSessionRecovery.ts (src/features/otb/hooks/) — NEW Session 25
+- Auto-save allocation state to sessionStorage every 30s
+- Restore on page reload with "recover unsaved changes?" banner
+- Returns: `{ hasRecovery, recover(), dismiss() }`
+
+### useClipboardPaste.ts (src/features/otb/hooks/) — NEW Session 25
+- Paste from Excel via clipboard API
+- Detects tab-separated values, maps to table cells
+- Returns: `{ handlePaste }`
+
+### useTableFilters.ts (src/features/otb/hooks/) — NEW Session 25
+- Table filtering/sorting/search logic
+- Returns: `{ filters, setFilter, sortBy, searchTerm, filteredData }`
+
+### useMasterData.ts (src/hooks/) — NEW Session 25
+- Centralized master data fetching (brands, stores, collections, genders, categories, seasons)
+- Caches data, prevents duplicate API calls
+- Returns: `{ brands, stores, collections, genders, categories, seasons, loading }`
+
+### useConfirmDialog.ts (src/hooks/) — NEW Session 25
+- Custom confirm dialog (replaces window.confirm)
+- Returns: `{ isOpen, title, message, confirm(), cancel(), showConfirm(options) }`
+
+### useUnsavedChanges.ts (src/hooks/) — NEW Session 27
+- Tracks form dirty state, warns before navigation
+- Returns: `{ isDirty, setDirty, resetDirty }`
+
 ### useKPIBreakdown.ts (src/hooks/)
 - Advanced KPI analytics with breakdown calculations
 
@@ -559,20 +620,26 @@ const { language, setLanguage, t } = useLanguage();
 
 ### Location & Tech
 ```
-/Users/mac/OTBDAFC/DAFC-Backend/dafc-otb-backend/
+/Users/mac/OTBDAFC/OTBnonAI/backend/
 ├── src/
-│   ├── main.ts                          # Bootstrap + Swagger
-│   ├── app.module.ts                    # Root (7 feature modules)
-│   ├── prisma/                          # Prisma service
-│   ├── common/guards/                   # jwt-auth.guard, permissions.guard
+│   ├── main.ts                          # Bootstrap + Swagger + CORS + PrismaExceptionFilter
+│   ├── app.module.ts                    # Root (9 feature modules)
+│   ├── prisma/                          # Prisma service (global module)
+│   ├── common/
+│   │   ├── guards/                      # jwt-auth.guard, permissions.guard
+│   │   ├── filters/                     # prisma-exception.filter (NEW S27)
+│   │   ├── services/                    # audit-log.service (NEW S27)
+│   │   └── utils/                       # financial.ts — safeSum, roundVND, toNumber (NEW S27)
 │   └── modules/
-│       ├── auth/                        # Login, JWT, refresh
-│       ├── master-data/                 # Brands, stores, SKU catalog
-│       ├── budget/                      # Budget CRUD + 2-level approval
-│       ├── planning/                    # Planning versions + dimensions
-│       ├── proposal/                    # Flat proposal products
-│       ├── ai/                          # Size curve, alerts, allocation, risk, SKU
-│       └── approval-workflow/           # Workflow config per brand
+│       ├── auth/                        # Login, JWT, refresh, GDPR erasure (enhanced S27)
+│       ├── master-data/                 # Brands, stores, SKU catalog (pagination S27)
+│       ├── budget/                      # Budget CRUD + 2-level approval + soft delete + optimistic lock (S27)
+│       ├── planning/                    # Planning versions + dimensions + optimistic lock (S27)
+│       ├── proposal/                    # Flat proposal products + optimistic lock (S27)
+│       ├── import/                      # Bulk import + WSSI analytics (enhanced S27)
+│       ├── approval-workflow/           # Workflow config per brand
+│       ├── notification/                # Real-time notifications (NEW S27)
+│       └── data-retention/              # Data cleanup policies (NEW S27)
 ├── prisma/
 │   ├── schema.prisma                    # 29 tables
 │   ├── seed.ts                          # Default users + master data
@@ -746,6 +813,344 @@ npm run dev
 | class-validator | — | DTO validation |
 | helmet | — | HTTP security headers |
 | @nestjs/swagger | — | API documentation |
+
+---
+
+## SESSION 21/02/2026 - Session 29 (S25 CreatableSelect + Add SKU Modal + SKU UI)
+
+### Thay doi chinh
+
+**CreatableSelect Component + View Changes (`84b2c8a` — 38 files, +1615/-1067 lines):**
+- `CreatableSelect.tsx` — Luxury dropdown with inline "create new" option (type to add new brand/collection/etc)
+- TicketDetailPage: major redesign (554 lines changed), improved layout + data display
+- AppHeader: 162 lines changed, improved KPI bar
+- AllocationToolbar: simplified (363 lines → compact)
+- PlanningDetailPage: redesigned (294 lines changed)
+- BudgetManagementScreen: enhanced (+84 lines)
+- BudgetModal/PlanningDetailModal: compact redesign
+- LoginScreen: simplified (-62 lines)
+- Fixed duplicate navigation entries in Sidebar
+- LanguageContext: improved type handling
+
+**Add SKU Modal Two-Step Form (`2ac6ac7`, `d3a2418`, `34abd8d`):**
+- `AddSKUModal.tsx` upgraded from simple form to two-step wizard (552 lines → full form)
+- Step 1: Select brand, collection, gender, category, subcategory
+- Step 2: Full data entry (SKU code, name, color, composition, pricing, sizes, store allocation)
+- Dynamic API stores (removed hardcoded STORES import)
+- Missing i18n keys added for Step 2 + unitCost fallback
+
+**SKU Proposal UI Polish (`d0a63bc`):**
+- Removed context bar (budget/version info) for cleaner layout
+- Added "Submit Ticket" button for SKU proposals
+- Enhanced Total Value display
+
+### Files chinh (42 files)
+```
+# New files
+src/components/ui/CreatableSelect.tsx               # Luxury dropdown with create-new
+
+# Major changes
+src/features/tickets/components/TicketDetailPage.tsx  # Major redesign
+src/features/otb/components/AddSKUModal.tsx           # Two-step wizard form
+src/features/otb/components/AllocationToolbar.tsx      # Simplified
+src/features/otb/components/PlanningDetailPage.tsx     # Redesigned
+src/features/otb/components/SKUProposalScreen.tsx      # UI cleanup + Submit Ticket
+src/components/layout/AppHeader.tsx                    # KPI bar improvements
+src/features/otb/components/BudgetManagementScreen.tsx # Enhanced
+```
+
+---
+
+## SESSION 20/02/2026 - Session 28 (Client Feedback Round 2)
+
+### Thay doi chinh
+
+**7 Bugs Fixed (`010db53` — 8 files, +417/-115 lines):**
+1. **AddSKUModal**: Fixed form submission + validation issues
+2. **BudgetAllocateScreen**: Removed unnecessary allocation elements (-24 lines)
+3. **OTBAnalysisScreen**: Minor display fix
+4. **SKUProposalScreen**: 3 fixes (46 lines changed) — filter behavior + data display
+5. **TicketDetailPage**: Major enhancement (+329 lines) — improved ticket detail layout + data
+6. **TicketScreen**: Search/filter improvements (54 lines changed)
+7. **i18n**: 36 new translation keys (EN + VI) for ticket/proposal screens
+
+### Files chinh (8 files)
+```
+src/features/otb/components/AddSKUModal.tsx
+src/features/otb/components/BudgetAllocateScreen.tsx
+src/features/otb/components/OTBAnalysisScreen.tsx
+src/features/otb/components/SKUProposalScreen.tsx
+src/features/tickets/components/TicketDetailPage.tsx
+src/features/tickets/components/TicketScreen.tsx
+src/locales/en.ts
+src/locales/vi.ts
+```
+
+---
+
+## SESSION 18-19/02/2026 - Sessions 26-27 (RRI Pipeline Audit — 73 Gaps Fixed)
+
+### Thay doi chinh
+
+Applied **Reverse Requirements Interview (RRI)** methodology. 73 gaps found, ALL FIXED across 3 commits:
+
+**Round 1 — 18 gaps (`dca11bb` — 28 files, +349/-332 lines):**
+- New `orderService.ts` — confirmOrder, cancelOrder, confirmReceipt, flagDiscrepancy
+- Order/Receipt confirmation screens: real API wiring instead of demo data
+- Budget/Planning/Proposal hooks: AbortController cleanup, error handling
+- Removed hardcoded ticket data in TicketDetailPage (-214 lines)
+- VersionDiffModal fix, AllocationState improvements
+- Removed unused types from index.ts
+
+**Round 2 — P0 Security & Business Logic (`feceb82` — 26 files, +750/-127 lines):**
+- **Backend Notification module** (NEW): controller + service + module (real-time alerts)
+- **Frontend notificationService.ts** (NEW): API integration for notifications
+- Backend auth: JWT strategy hardened, login security improvements
+- Backend budget/planning/proposal services: enhanced validation, error handling
+- AppHeader: notification bell with real API (122+ lines)
+- AppContext: expanded state management (+32 lines)
+- HomeScreen: improved KPI data flow
+
+**Round 3 — Complete 73 gaps (`be6cf25` — 60 files, +3704/-481 lines):**
+
+**P0 Critical (16/16):**
+- Mock data removal from all screens, replaced with real API calls
+- Cache invalidation on mutations (budgetService, planningService, proposalService)
+- API wiring for all CRUD operations
+
+**P1 Major (30/30):**
+- `financial.ts` utils: `safeSum()` (Kahan summation), `toNumber()` (Prisma Decimal), `roundVND()`
+- Workflow enforcement: `validateWorkflowStep()` for brand-specific approval
+- WSSI analytics: `getWssiAnalytics()` + `GET /import/wssi/analytics`
+- Optimistic locking: `version Int @default(1)` on Budget/Planning/Proposal
+- Soft delete: `deletedAt DateTime?` on Budget + `restore()` + `PATCH /budgets/:id/restore`
+
+**P2 Minor (27/27):**
+- `Breadcrumbs.tsx` + `PrintButton.tsx` — UI components for detail pages
+- Global search with API search (budgets + proposals) in AppHeader
+- Session recovery hook `useSessionRecovery.ts` (auto-save to sessionStorage)
+- Data-driven budget chart in HomeScreen (replaces fake SVG)
+- Brand comparison tab in OTBAnalysisScreen (+496 lines)
+- Bulk confirm orders in OrderConfirmation
+- Budget archive feature (full-stack)
+- Per-brand budget cap (80% limit, client warning + server block)
+- GDPR erasure: `DELETE /auth/users/:id/erase` (anonymizes PII)
+- Data retention service: cleanup audit logs >365d, archived budgets >730d
+- Auto-retry GET requests on network errors (max 2 retries with backoff)
+
+**QA Polish (`8e0d3de`, `183a7eb`, `42c3320`, `533c90e`):**
+- `ConfirmDialog.tsx` enhanced — custom dialog component
+- UI consistency, compact layout across 15 files
+- Missing i18n keys: home screen (10), budget (4)
+- Search box dark mode: brightened border, icon, text, kbd badge
+- Console errors: createdBy object rendering fix
+
+### New Backend Modules
+- `notification/` — notification controller, service, module
+- `data-retention/` — `GET /data-retention/policy`, `POST /data-retention/cleanup`
+- `import/` — WSSI analytics endpoint added
+- Prisma schema: +`version` on Budget/Planning/Proposal, +`deletedAt` on Budget, +`PrismaExceptionFilter`
+
+### New Frontend Files
+```
+src/services/orderService.ts                    # Order CRUD operations
+src/services/notificationService.ts             # Notification API
+src/services/approvalHelper.ts                  # Shared approval utilities
+src/services/withErrorHandling.ts               # Error handling wrapper
+src/components/ui/Breadcrumbs.tsx               # Navigation breadcrumbs
+src/components/ui/PrintButton.tsx               # Print support
+src/hooks/useUnsavedChanges.ts                  # Unsaved changes detection
+backend/src/modules/notification/               # Notification module (NEW)
+backend/src/modules/data-retention/             # Data retention module (NEW)
+backend/src/common/utils/financial.ts           # Financial utilities
+backend/src/common/filters/prisma-exception.filter.ts  # Prisma error filter
+backend/src/common/services/audit-log.service.ts       # Audit logging
+```
+
+---
+
+## SESSION 16/02/2026 - Session 25 (Budget Allocation Phase 3 + FilterSelect + Code Quality)
+
+### Thay doi chinh
+
+**Phase 3 Budget Allocation (`bc93d29` — 23 NEW files, +3496/-54 lines):**
+
+Major feature drop — transformed BudgetAllocateScreen from basic table to full allocation workstation:
+
+| Component | Description |
+|-----------|-------------|
+| `AllocationToolbar.tsx` | Toolbar with filters, view toggle, bulk actions |
+| `AllocationProgressBar.tsx` | Visual progress for allocation completion |
+| `AllocationSidePanel.tsx` | Slide-out panel with allocation details + charts |
+| `AllocationStatusBar.tsx` | Status summary bar |
+| `BulkActionsMenu.tsx` | Multi-select actions (approve, reject, export) |
+| `UnsavedChangesBanner.tsx` | Warning banner for unsaved changes |
+| `VersionCompareModal.tsx` | Side-by-side version comparison |
+| `ViewToggleBar.tsx` | Toggle between table/card/chart views |
+| `CurrencyInput.tsx` | Formatted VND currency input |
+| `FormattedCurrency.tsx` | Display component for formatted amounts |
+| `TableSkeleton.tsx` | Loading skeleton for tables |
+
+New hooks:
+| Hook | Description |
+|------|-------------|
+| `useAllocationState.ts` | Central allocation state management (393 lines) |
+| `useClipboardPaste.ts` | Paste from Excel (clipboard API) |
+| `useSessionRecovery.ts` | Auto-save/restore allocation state |
+| `useTableFilters.ts` | Table filtering logic |
+
+New utils:
+| Util | Description |
+|------|-------------|
+| `exportExcel.ts` | Excel export for allocation data |
+
+- 118 new i18n keys (EN + VI) for allocation features
+
+**Merge AppHeader + AllocationToolbar (`452c5ac` — 11 files, +696/-446 lines):**
+- Merged KPI stepper bar and AllocationToolbar on /planning page
+- HomeScreen: major restructure (+561 lines)
+
+**Luxury FilterSelect Component (`41745ad` — 5 files, +534/-254 lines):**
+- `FilterSelect.tsx` — Premium dropdown with search, multi-select, luxury styling
+- Applied to OTBAnalysisScreen (435 lines changed) and SKUProposalScreen
+
+**QA/QC 8 Issues (`f4c2afd` — 13 files, +539/-52 lines):**
+1. Allocation badges on progress bar
+2. Filter persistence across navigation
+3. Sizing status display
+4. AddSKUModal improvements (243-line NEW file)
+5. Comment column in tables
+6. Removed approvals route from sidebar (now in Approvals screen only)
+
+**Code Quality (`fa88a34` — 15 files, +398/-144 lines):**
+- `ErrorBoundary.tsx` (130 lines) — wraps app in providers.tsx
+- `React.memo` applied to heavy components
+- `approvalHelper.ts` — shared approval logic extracted from 3 services
+- `useMasterData.ts` hook (124 lines) — centralized master data fetching
+- `withErrorHandling.ts` — service error handling wrapper
+- Reduced duplication in budget/planning/proposal services (~100 lines each)
+
+**Responsive Optimization (`c5e829d` — 9 files):**
+- Modal/dropdown touch targets
+- Safe area padding
+- Tailwind config updates
+
+**Code Quality & Responsive (`5f9e36a` — 25 files, +446/-238 lines):**
+- Service methods restructured with better error handling
+- Responsive improvements across all screens
+
+### Files chinh (75+ files)
+```
+# 23 NEW files in Phase 3
+src/features/otb/components/AllocationToolbar.tsx
+src/features/otb/components/AllocationProgressBar.tsx
+src/features/otb/components/AllocationSidePanel.tsx
+src/features/otb/components/AllocationStatusBar.tsx
+src/features/otb/components/BulkActionsMenu.tsx
+src/features/otb/components/UnsavedChangesBanner.tsx
+src/features/otb/components/VersionCompareModal.tsx
+src/features/otb/components/ViewToggleBar.tsx
+src/features/otb/hooks/useAllocationState.ts
+src/features/otb/hooks/useClipboardPaste.ts
+src/features/otb/hooks/useSessionRecovery.ts
+src/features/otb/hooks/useTableFilters.ts
+src/features/otb/utils/exportExcel.ts
+src/components/ui/CurrencyInput.tsx
+src/components/ui/FormattedCurrency.tsx
+src/components/ui/TableSkeleton.tsx
+src/components/ui/FilterSelect.tsx
+src/components/ui/ErrorBoundary.tsx
+src/hooks/useMasterData.ts
+src/hooks/useConfirmDialog.ts
+src/components/ui/ConfirmDialog.tsx
+src/services/approvalHelper.ts
+src/services/withErrorHandling.ts
+```
+
+---
+
+## SESSION 14/02/2026 - Session 24 (Approvals Navigation + Phase 1 Hardening)
+
+### Thay doi chinh
+
+**Approvals Navigation Fix (`d1cb244` — 6 files, +456/-339 lines):**
+- PlanningDetailPage now works when navigated from Approvals screen (not just from Budget Allocation)
+- ProposalDetailPage: same fix — works standalone from Approvals
+- SKUProposalScreen: refactored data loading (115 lines)
+- ApprovalsScreen: added navigation links to detail pages
+- approvalService: expanded API methods
+
+**PlanningDetailPage Light Mode Redesign (`48cd245` — 15 files, +337/-332 lines):**
+- Full light mode redesign for PlanningDetailPage (641 lines touched)
+- Removed unused `darkMode` props from ui components
+- Codebase cleanup across 15 files
+
+**Phase 1 Hardening — E2E + Tests + CI/CD (`ae44096` — 23 files, +2234/-11 lines):**
+
+*E2E Tests (Playwright):*
+| Spec | Tests |
+|------|-------|
+| `e2e/specs/auth.spec.ts` | Login flow, session persistence, logout |
+| `e2e/specs/budget.spec.ts` | Budget CRUD, allocation, approval workflow |
+| `e2e/specs/planning.spec.ts` | Planning versions, details, finalization |
+| `e2e/specs/approval.spec.ts` | Approval workflow, L1/L2 approve/reject |
+
+E2E helpers: `api-mocks.ts` (API route mocking), `auth.ts` (login helper)
+E2E fixtures: `auth.json`, `budgets.json`, `master-data.json`, `planning.json`
+
+*Hook Tests:*
+| Test File | Tests |
+|-----------|-------|
+| `useBudget.test.ts` | 344 lines — fetch, filter, create, update, submit, approve |
+| `usePlanning.test.ts` | 311 lines — versions, details, finalize, copy |
+| `useProposal.test.ts` | 261 lines — CRUD, products, submit, approve |
+
+*Service Tests:*
+| Test File | Tests |
+|-----------|-------|
+| `services.test.ts` | 355 lines — budget, planning, proposal, masterData API calls |
+
+*CI/CD:*
+- `.github/workflows/ci.yml` (96 lines) — lint, type-check, unit tests, build, E2E
+
+*Test Infrastructure:*
+- `src/test/mock-services.ts` (237 lines) — comprehensive service mocks
+- Updated `setup.tsx` and `utils.tsx` for new test patterns
+
+### Build & Test Status
+- **201 tests** (185 pass, 16 fail in useProposal due to context mock issue)
+- **9 test files** (was 5 files / 114 tests in Session 14)
+- **4 E2E spec files** with Playwright
+
+### Files chinh (44 files)
+```
+# NEW — E2E
+.github/workflows/ci.yml
+e2e/playwright.config.ts
+e2e/specs/auth.spec.ts
+e2e/specs/budget.spec.ts
+e2e/specs/planning.spec.ts
+e2e/specs/approval.spec.ts
+e2e/helpers/api-mocks.ts
+e2e/helpers/auth.ts
+e2e/fixtures/*.json
+
+# NEW — Hook tests
+src/features/otb/hooks/__tests__/useBudget.test.ts
+src/features/otb/hooks/__tests__/usePlanning.test.ts
+src/features/otb/hooks/__tests__/useProposal.test.ts
+
+# NEW — Service tests
+src/services/__tests__/services.test.ts
+src/test/mock-services.ts
+
+# Modified
+src/features/otb/components/PlanningDetailPage.tsx
+src/features/otb/components/ProposalDetailPage.tsx
+src/features/otb/components/SKUProposalScreen.tsx
+src/features/approvals/components/ApprovalsScreen.tsx
+src/services/approvalService.ts
+```
 
 ---
 
@@ -1585,11 +1990,23 @@ src/locales/vi.js                             # 105+ new keys
 - [x] ~~X-Ray UX minimalist (remove fancy animations)~~ → Done Session 23
 - [x] ~~Zero-lag filter bar (bypass React re-render)~~ → Done Session 23
 - [x] ~~Remove sticky image row (blank gap fix)~~ → Done Session 23
+- [x] ~~Approvals navigation fix (planning/proposal from Approvals)~~ → Done Session 24
+- [x] ~~Phase 1 Hardening (E2E + hook/service tests + CI/CD)~~ → Done Session 24
+- [x] ~~Phase 3 Budget Allocation (toolbar, bulk actions, session recovery, Excel export)~~ → Done Session 25
+- [x] ~~FilterSelect luxury component~~ → Done Session 25
+- [x] ~~ErrorBoundary + useMasterData + approvalHelper~~ → Done Session 25
+- [x] ~~RRI Pipeline Audit (73 gaps — P0:16, P1:30, P2:27)~~ → Done Sessions 26-27
+- [x] ~~Notification module (backend + frontend)~~ → Done Session 27
+- [x] ~~Data retention module + GDPR erasure~~ → Done Session 27
+- [x] ~~Financial utils (safeSum, roundVND, toNumber)~~ → Done Session 27
+- [x] ~~Optimistic locking + Soft delete~~ → Done Session 27
+- [x] ~~Client feedback round 2 (7 bugs)~~ → Done Session 28
+- [x] ~~CreatableSelect component~~ → Done Session 29
+- [x] ~~Add SKU Modal two-step wizard~~ → Done Session 29
+- [ ] Fix useProposal test failures (16 tests fail — context mock issue)
 - [ ] TicketScreen.tsx: TODO - Implement create ticket API call
-- [ ] Azure Portal manual config (Node 22 LTS, `node .next/standalone/server.js` / `node dist/src/main.js`, env vars)
-- [ ] Backend import endpoints — importService.ts references `/import/*` endpoints chua co trong NestJS backend
-- [ ] Expand test coverage (5 suites/114 tests — chua co proposal, orders, tickets, import tests)
-- [ ] Mobile responsive E2E testing (Mobile UI 2.0 da ready, can kiem tra tren thiet bi thuc)
+- [ ] Azure Portal manual config (Node 22 LTS, env vars)
+- [ ] Mobile responsive E2E testing on real devices
 - [ ] Hardcoded years (2025) o nhieu noi can dynamic
 - [ ] Performance tuning (virtual scrolling da add @tanstack/react-virtual, can apply)
 
@@ -1599,7 +2016,7 @@ src/locales/vi.js                             # 105+ new keys
 
 Khi doc file nay:
 1. **Frontend**: `/Users/mac/OTBDAFC/OTBnonAI/` (TypeScript, Next.js 16, App Router)
-2. **Backend**: `/Users/mac/OTBDAFC/DAFC-Backend/dafc-otb-backend/` (NestJS)
+2. **Backend**: `/Users/mac/OTBDAFC/OTBnonAI/backend/` (NestJS — 9 modules)
 3. **API**: `http://localhost:4000/api/v1` | Swagger: `http://localhost:4000/api/docs`
 4. **Database**: PostgreSQL via Docker (port 5432, user=dafc, db=dafc_otb)
 5. Tat ca file la `.tsx`/`.ts` — TypeScript strict mode
@@ -1612,13 +2029,19 @@ Khi doc file nay:
 11. Premium cards: gradient + watermark icon pattern (xem HomeScreen lam mau)
 12. 2-level approval: DRAFT → SUBMITTED → L1_APPROVED → APPROVED
 13. Permissions: `budget:read`, `budget:write`, `budget:approve_l1`, `budget:approve_l2`, etc.
-14. Testing: `npm run test` (Vitest + jsdom, 114 tests)
+14. Testing: `npm run test` (Vitest, 9 suites, 201 tests) + E2E (Playwright, 4 specs)
 15. Types: `src/types/index.ts` (50+ shared interfaces)
 16. Filter bars: sticky flat toolbar, auto-hide on scroll via `useSmartScrollState` (DOM-direct, zero re-render)
-17. SKU Proposal table: Excel format (W25 DAFC_proposal.xlsx), transposed Rail-based, dynamic store columns
+17. SKU Proposal table: Excel format, transposed Rail-based, dynamic store columns
 18. Store columns: dynamic from API (khong hardcode REX/TTP)
-19. VersionDiffModal: so sanh planning versions tren Approvals screen
+19. VersionDiffModal + VersionCompareModal: so sanh planning versions
 20. Deploy: Render (free-tier, cold-start 120s timeout + 2 retries)
+21. Budget Allocation: full workstation with AllocationToolbar, BulkActionsMenu, SidePanel, SessionRecovery, Excel export
+22. `CreatableSelect` + `FilterSelect`: luxury dropdown components
+23. `AddSKUModal`: two-step wizard (brand/collection → full data entry)
+24. Backend modules: auth, master-data, budget, planning, proposal, approval-workflow, import, notification, data-retention
+25. CI/CD: `.github/workflows/ci.yml` (lint, typecheck, test, build, E2E)
+26. RRI audit completed: 73 gaps fixed (optimistic locking, soft delete, financial utils, GDPR, data retention)
 
 ---
 
