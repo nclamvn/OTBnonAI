@@ -149,7 +149,7 @@ export default function MobileBottomNav({ currentScreen, darkMode }: any) {
                 onClick={() => navigateTo(tab.id)}
                 className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors"
               >
-                <div className={`p-1 rounded-lg transition-colors ${
+                <div className={`p-1 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center ${
                   active
                     ? darkMode
                       ? 'bg-[rgba(215,183,151,0.15)]'

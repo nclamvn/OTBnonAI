@@ -557,6 +557,42 @@ const HomeScreen = ({ darkMode = true }) => {
         />
       </div>
 
+      {/* Getting Started Card — shown when all stats are zero */}
+      {!statsLoading && (stats as any)._totalBudgets === 0 && (
+        <div className={`rounded-xl border p-5 ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.3)]'}`}>
+          <h3 className={`text-base font-semibold font-['Montserrat'] mb-3 ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>
+            Getting Started
+          </h3>
+          <p className={`text-sm mb-4 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+            Follow these 5 steps to set up your first OTB plan:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
+            {[
+              { step: 1, label: 'Create Budget', path: '/budget-management' },
+              { step: 2, label: 'Allocate Budget', path: '/budget-management' },
+              { step: 3, label: 'OTB Analysis', path: '/otb-analysis' },
+              { step: 4, label: 'SKU Proposal', path: '/sku-proposal' },
+              { step: 5, label: 'Submit Ticket', path: '/tickets' },
+            ].map((item) => (
+              <button
+                key={item.step}
+                onClick={() => router.push(item.path)}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  darkMode
+                    ? 'bg-[rgba(215,183,151,0.08)] hover:bg-[rgba(215,183,151,0.15)] text-[#D7B797]'
+                    : 'bg-[rgba(160,120,75,0.08)] hover:bg-[rgba(160,120,75,0.15)] text-[#6B4D30]'
+                }`}
+              >
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  darkMode ? 'bg-[#D7B797] text-[#0A0A0A]' : 'bg-[#C4A77D] text-white'
+                }`}>{item.step}</span>
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Sales Performance Chart - Full Width Premium */}
       <div className={`border rounded-xl overflow-hidden transition-all duration-300 ${
         darkMode
@@ -630,9 +666,13 @@ const HomeScreen = ({ darkMode = true }) => {
         {/* UX-23: Data-driven chart from real budget data */}
         <div className="px-2 sm:px-4 mt-4 pb-5">
           {chartData.length === 0 ? (
-            <div className={`flex items-center justify-center py-12 text-sm ${textMuted}`}>
-              {statsLoading ? t('common.loading') || 'Loading...' : t('home.noChartData') || 'No budget data available for chart'}
-            </div>
+            statsLoading ? (
+              <div className="animate-pulse h-[200px] bg-gray-200 dark:bg-gray-700 rounded-xl" />
+            ) : (
+              <div className={`flex items-center justify-center py-12 text-sm ${textMuted}`}>
+                {t('home.noChartData') || 'No budget data available for chart'}
+              </div>
+            )
           ) : (
             (() => {
               // Compute SVG coordinates from real data

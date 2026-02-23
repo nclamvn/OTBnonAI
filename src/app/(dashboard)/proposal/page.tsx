@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/contexts/AppContext';
 import SKUProposalScreen from '@/screens/SKUProposalScreen';
 import ProposalDetailPage from '@/screens/ProposalDetailPage';
+import ProposalTicketReview from '@/features/otb/components/ProposalTicketReview';
 
 export default function ProposalPage() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export default function ProposalPage() {
 
   const [showDetail, setShowDetail] = useState(false);
   const [selectedProposal, setSelectedProposal] = useState<any>(null);
+  const [reviewData, setReviewData] = useState<any>(null);
 
   const handleCreateProposal = (proposal: any) => {
     setSelectedProposal(proposal);
@@ -31,6 +33,25 @@ export default function ProposalPage() {
     handleCloseDetail();
   };
 
+  const handleSubmitTicket = (data: any) => {
+    setReviewData(data);
+  };
+
+  // Review screen
+  if (reviewData) {
+    return (
+      <ProposalTicketReview
+        reviewData={reviewData}
+        darkMode={darkMode}
+        onBack={() => setReviewData(null)}
+        onSubmitted={() => {
+          setReviewData(null);
+          router.push('/tickets');
+        }}
+      />
+    );
+  }
+
   if (showDetail) {
     return (
       <ProposalDetailPage
@@ -46,6 +67,7 @@ export default function ProposalPage() {
     <SKUProposalScreen
       onCreateProposal={handleCreateProposal}
       onEditProposal={handleEditProposal}
+      onSubmitTicket={handleSubmitTicket}
       skuContext={skuProposalContext}
       onContextUsed={() => setSkuProposalContext(null)}
       darkMode={darkMode}

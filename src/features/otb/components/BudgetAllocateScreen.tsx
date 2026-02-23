@@ -234,6 +234,7 @@ const BudgetAllocateScreen = ({
     handleAllocationChange, handleSeasonTotalChange, handleBrandTotalChange,
     canUndo, canRedo, undo, redo,
     isDirty, discardChanges, saving, saveDraft, submitForApproval, validate,
+    autoSaving, lastSavedAt,
   } = allocation;
 
   // UX-27: Warn on browser close/refresh with unsaved changes
@@ -866,22 +867,27 @@ const BudgetAllocateScreen = ({
     submitForApproval(selectedVersionId);
   }, [checkBrandCapAndWarn, submitForApproval, selectedVersionId]);
 
+  // Ctrl+S keyboard shortcut to save draft
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveDraft();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [handleSaveDraft]);
+
   // Get selected group brand object (match by ID or name)
   const selectedGroupBrandObj = groupBrandList.find((b: any) => b.id === selectedGroupBrand || b.name === selectedGroupBrand);
   const selectedBrandObj = brandList.find((b: any) => b.id === selectedBrand);
   return (
     <>
-      {/* Allocation Progress Bar */}
-      <div className={`sticky -top-3 md:-top-6 z-30 -mx-3 md:-mx-6 -mt-3 md:-mt-6`}>
-        <AllocationProgressBar
-          totalBudget={totalBudget}
-          totalAllocated={totalAllocated}
-          darkMode={darkMode}
-        />
-      </div>
+      {/* Progress bar moved to bottom combined footer */}
 
       {/* Filter Section — hides entirely on scroll */}
-      <div ref={barRef} className={`z-10 -mx-3 md:-mx-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
+      <div ref={barRef} className={`sticky -top-3 md:-top-6 z-10 -mx-3 md:-mx-6 -mt-3 md:-mt-6 mb-2 md:mb-3 backdrop-blur-sm relative border-b ${
         darkMode ? 'bg-[#121212]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
       }`}>
 
@@ -1539,11 +1545,11 @@ const BudgetAllocateScreen = ({
 
                           {/* Brand Table Content */}
                           {(!isBrandCollapsed || selectedBrand || groupBrands.length === 1) && (
-                            <div className="overflow-x-auto">
+                            <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)]">
                               <table className="w-full">
-                                <thead>
+                                <thead className="sticky top-0 z-10">
                                   <tr className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(215,183,151,0.2)]'}>
-                                    <th className={`px-3 md:px-4 py-0.5 text-left text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white' : 'text-[#333333]'}`}>
+                                    <th className={`sticky left-0 z-20 px-3 md:px-4 py-0.5 text-left text-xs font-semibold font-['Montserrat'] whitespace-nowrap ${darkMode ? 'text-white bg-[#1A1A1A]' : 'text-[#333333] bg-[rgba(215,183,151,0.2)]'}`}>
                                       <div className="flex items-center gap-1.5">
                                         <TrendingUp size={12} />
                                         <span className="uppercase">FY {selectedYear}</span>
@@ -1566,7 +1572,7 @@ const BudgetAllocateScreen = ({
                                     <Fragment key={`${brand.id}-${seasonGroup}`}>
                                       {/* Season Group Header — summary row (non-editable) */}
                                       <tr data-season-group={seasonGroup} className={`border-b ${darkMode ? 'bg-[#1e1a14] border-[#2E2E2E]' : 'bg-[rgba(160,120,75,0.18)] border-[#C4B5A5]'}`}>
-                                        <td className="px-3 md:px-4 py-1">
+                                        <td className={`sticky left-0 z-20 px-3 md:px-4 py-1 ${darkMode ? 'bg-[#1e1a14]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
                                           <div className="flex items-center gap-2">
                                             <div className={`w-1.5 h-4 rounded-full ${seasonGroup === 'SS' ? 'bg-[#E3B341]' : 'bg-[#D7B797]'}`}></div>
                                             {seasonGroup === 'SS' ? (
@@ -1617,7 +1623,7 @@ const BudgetAllocateScreen = ({
 
                                         return (
                                           <tr key={`${brand.id}-${seasonGroup}-${subSeason}`} className={`border-b transition-colors ${darkMode ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)]' : 'border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.12)]'}`}>
-                                            <td className="px-3 md:px-4 py-0.5 pl-10 md:pl-12">
+                                            <td className={`sticky left-0 z-20 px-3 md:px-4 py-0.5 pl-10 md:pl-12 ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
                                               <div className="flex items-center gap-1.5">
                                                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                                                   (() => {
@@ -1778,29 +1784,40 @@ const BudgetAllocateScreen = ({
           })}
         </div>
       )}
-      {/* Phân bổ tất cả — end-of-grid CTA */}
+      {/* Combined Progress Bar + Allocate All Footer */}
       {(selectedBudget || selectedBudgetId) && (
-        <div className="mt-4 mb-3 flex justify-end">
-          <button
-            onClick={handleSaveDraft}
-            disabled={!isDirty || saving}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold font-['Montserrat'] transition-all ${
-              isDirty && !saving
-                ? darkMode
-                  ? 'bg-[#127749] text-white hover:bg-[#15874F]'
-                  : 'bg-[#127749] text-white hover:bg-[#0E5F3A]'
-                : darkMode
-                  ? 'bg-[#1A1A1A] border border-[#2E2E2E] text-[#555] cursor-not-allowed'
-                  : 'bg-[#F5F5F5] border border-[#D1D5DB] text-[#999] cursor-not-allowed'
-            }`}
-          >
-            {saving ? (
-              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Split size={13} />
-            )}
-            {t('planning.allocateAll')}
-          </button>
+        <div className={`sticky bottom-0 z-30 mt-4 mb-3 rounded-xl border overflow-hidden backdrop-blur-sm ${darkMode ? 'border-[#2E2E2E] bg-[#121212]/95' : 'border-[rgba(215,183,151,0.3)] bg-white/95'}`}>
+          <div className="flex items-center gap-4 px-4 py-2.5">
+            <div className="flex-1">
+              <AllocationProgressBar
+                totalBudget={totalBudget}
+                totalAllocated={totalAllocated}
+                darkMode={darkMode}
+              />
+            </div>
+            {autoSaving && <span className="text-xs text-slate-400 animate-pulse whitespace-nowrap">Auto-saving…</span>}
+            {!autoSaving && lastSavedAt && <span className="text-xs text-slate-400 whitespace-nowrap">Saved {lastSavedAt}</span>}
+            <button
+              onClick={handleSaveDraft}
+              disabled={!isDirty || saving}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold font-['Montserrat'] transition-all shadow-md hover:shadow-lg ring-2 ring-[#127749]/30 ${
+                isDirty && !saving
+                  ? darkMode
+                    ? 'bg-[#127749] text-white hover:bg-[#15874F]'
+                    : 'bg-[#127749] text-white hover:bg-[#0E5F3A]'
+                  : darkMode
+                    ? 'bg-[#1A1A1A] border border-[#2E2E2E] text-[#555] cursor-not-allowed ring-0'
+                    : 'bg-[#F5F5F5] border border-[#D1D5DB] text-[#999] cursor-not-allowed ring-0'
+              }`}
+            >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Split size={16} />
+              )}
+              {t('planning.allocateAll')}
+            </button>
+          </div>
         </div>
       )}
 

@@ -366,9 +366,11 @@ const ProposalDetailPage = ({ proposal, onBack, onSave, entityId, darkMode }: an
       }
       invalidateCache('/proposals');
       proposalRecovery.clearDraft(); // UX-21: clear draft on successful save
+      toast.success(t('proposal.savedSuccessfully') || 'Proposal saved');
       onSave && onSave({ ticketName, skuList, totals: grandTotals, savedProposal });
     } catch (err: any) {
       console.error('Failed to save proposal:', err);
+      toast.error(t('proposal.saveFailed') || 'Failed to save proposal');
     } finally {
       setSaving(false);
     }

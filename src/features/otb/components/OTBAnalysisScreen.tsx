@@ -4,8 +4,8 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation';
 import {
   BarChart3, Filter, ChevronDown, Check,
-  Calendar, Tag, Layers, Users, Info, Pencil, X,
-  FileText, Clock, Split, ArrowLeftRight, GitCompareArrows
+  Calendar, Tag, Layers, Users, Pencil, X,
+  FileText, Clock, Split
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
@@ -13,6 +13,7 @@ import { STORES, GENDERS } from '@/utils/constants';
 import { budgetService, masterDataService, planningService } from '@/services';
 import { invalidateCache } from '@/services/api';
 import { FilterBottomSheet, useBottomSheet } from '@/components/mobile';
+import { FilterSelect } from '@/components/ui';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import { useSmartScrollState } from '@/hooks/useSmartScrollState';
@@ -26,12 +27,6 @@ const SEASON_GROUPS = [
 const SEASONS = [
   { id: 'Pre', label: 'Pre' },
   { id: 'Main/Show', label: 'Main/Show' }
-];
-
-const TABS = [
-  { id: 'category', labelKey: 'otbAnalysis.category', fallback: 'Category', icon: Tag },
-  { id: 'collection', labelKey: 'otbAnalysis.collection', fallback: 'Collection', icon: Layers },
-  { id: 'gender', labelKey: 'otbAnalysis.gender', fallback: 'Gender', icon: Users },
 ];
 
 // Reusable editable cell component (memoized to prevent unnecessary re-renders)
@@ -87,7 +82,7 @@ const EditableCell = React.memo(({ cellKey, value, isEditing, editValue, onStart
         <span className={`font-['JetBrains_Mono'] font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
           {typeof value === 'number' ? value.toFixed(0) : value}%
         </span>
-        <Pencil size={12} className={`opacity-0 group-hover:opacity-100 transition-opacity ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
+        <Pencil size={12} className={`opacity-40 group-hover:opacity-100 transition-opacity ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`} />
       </div>
     </div>
   );
@@ -99,7 +94,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const router = useRouter();
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilterValues, setMobileFilterValues] = useState<Record<string, string | string[]>>({});
-  const [activeTab, setActiveTab] = useState('category');
 
   // API data states
   const [categoryStructure, setCategoryStructure] = useState<any[]>([]);
@@ -114,59 +108,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [versions, setVersions] = useState<any[]>([]);
   const [selectedVersionId, setSelectedVersionId] = useState<any>(null);
   const [loadingVersions, setLoadingVersions] = useState(false);
-
-  // Brand comparison states
-  const [availableBrands, setAvailableBrands] = useState<any[]>([]);
-  const [selectedBrandIds, setSelectedBrandIds] = useState<string[]>([]);
-  const [loadingBrands, setLoadingBrands] = useState(false);
-  const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
-  const brandDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fetch brands from master data
-  useEffect(() => {
-    const fetchBrands = async () => {
-      setLoadingBrands(true);
-      try {
-        const brands = await masterDataService.getBrands();
-        const brandList = Array.isArray(brands) ? brands : [];
-        setAvailableBrands(brandList.map((b: any) => ({
-          id: b.id || b.code,
-          code: b.code || b.id,
-          name: b.name || b.brandName || 'Unknown',
-        })));
-      } catch (err: any) {
-        console.error('Failed to fetch brands:', err);
-      } finally {
-        setLoadingBrands(false);
-      }
-    };
-    fetchBrands();
-  }, []);
-
-  // Toggle brand selection (max 3)
-  const toggleBrandSelection = (brandId: string) => {
-    setSelectedBrandIds(prev => {
-      if (prev.includes(brandId)) {
-        return prev.filter(id => id !== brandId);
-      }
-      if (prev.length >= 3) {
-        toast.error(t('otbAnalysis.maxBrands'));
-        return prev;
-      }
-      return [...prev, brandId];
-    });
-  };
-
-  // Close brand dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: any) => {
-      if (openBrandDropdown && brandDropdownRef.current && !brandDropdownRef.current.contains(event.target)) {
-        setOpenBrandDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [openBrandDropdown]);
 
   // Fetch budgets from API
   const fetchBudgets = useCallback(async () => {
@@ -308,9 +249,9 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [editValue, setEditValue] = useState('');
   const [localData, setLocalData] = useState<Record<string, any>>({});
 
-  // Category hierarchy collapse states
-  const [expandedGenders, setExpandedGenders] = useState<Record<string, boolean>>({ female: true, male: true });
+  // Category hierarchy collapse states (Category -> SubCategory -> Gender)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, any>>({});
+  const [expandedSubCategories, setExpandedSubCategories] = useState<Record<string, any>>({});
 
 
   // Refs
@@ -432,92 +373,8 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       });
     });
 
-    // Initialize Collection tab data with reference values
-    const collectionDemoData: Record<string, Record<string, any>> = {
-      rex: { buyPct: 22.5, salesPct: 28, stPct: 67, moc: '3.2', userBuyPct: 28, otbValue: 1179776, varPct: 5 },
-      ttp: { buyPct: 16.3, salesPct: 19, stPct: 64, moc: '3.7', userBuyPct: 19, otbValue: 800562, varPct: 3 },
-    };
-    const collectionDemoData2: Record<string, Record<string, any>> = {
-      rex: { buyPct: 35.5, salesPct: 32, stPct: 48, moc: '7.0', userBuyPct: 32, otbValue: 1348316, varPct: -3 },
-      ttp: { buyPct: 25.7, salesPct: 21, stPct: 45, moc: '8.0', userBuyPct: 21, otbValue: 884832, varPct: -5 },
-    };
-    collectionSections.forEach((section: any, sIdx: number) => {
-      const demoSet = sIdx === 0 ? collectionDemoData : collectionDemoData2;
-      STORES.forEach((store: any) => {
-        const key = `collection_${section.id}_${store.id}`;
-        const demo = demoSet[store.id] || demoSet.rex;
-        initialData[key] = {
-          buyPct: demo.buyPct,
-          salesPct: demo.salesPct,
-          stPct: demo.stPct,
-          moc: demo.moc,
-          userBuyPct: demo.userBuyPct,
-          otbValue: demo.otbValue,
-          varPct: demo.varPct,
-        };
-      });
-    });
-
-    // Initialize Gender tab data with reference values
-    const genderDemoData: Record<string, Record<string, any>> = {
-      // Female
-      'gen2_rex': { buyPct: 22, salesPct: 17, stPct: 42, userBuyPct: 17, otbValue: 724121, varPct: -5 },
-      'gen2_ttp': { buyPct: 17, salesPct: 14, stPct: 44, userBuyPct: 14, otbValue: 586263, varPct: -3 },
-      // Male
-      'gen1_rex': { buyPct: 36, salesPct: 42, stPct: 63, userBuyPct: 42, otbValue: 1776427, varPct: 6 },
-      'gen1_ttp': { buyPct: 25, salesPct: 27, stPct: 58, userBuyPct: 27, otbValue: 1126675, varPct: 2 },
-    };
-    GENDERS.forEach((gender: any) => {
-      STORES.forEach((store: any) => {
-        const key = `gender_${gender.id}_${store.id}`;
-        const demo = genderDemoData[`${gender.id}_${store.id}`];
-        initialData[key] = demo ? { ...demo } : {
-          buyPct: 0, salesPct: 0, stPct: 0, userBuyPct: 0, otbValue: 0, varPct: 0,
-        };
-      });
-    });
-
     setLocalData(initialData);
   }, [categoryStructure, collectionSections]);
-
-  // Get brand budgets for comparison (must be after localData declaration)
-  const brandBudgetData = useMemo(() => {
-    const result: Record<string, { brand: any; budgets: any[]; totalBudget: number; categoryData: Record<string, any> }> = {};
-    selectedBrandIds.forEach(brandId => {
-      const brand = availableBrands.find((b: any) => b.id === brandId);
-      if (!brand) return;
-      // Find budgets for this brand
-      const brandBudgets = apiBudgets.filter((b: any) => {
-        const budgetBrandId = b.brandId || b.groupBrand;
-        const budgetBrandName = b.brandName || '';
-        return budgetBrandId === brandId ||
-               budgetBrandName.toLowerCase() === brand.name.toLowerCase() ||
-               budgetBrandName.toLowerCase() === brand.code?.toLowerCase();
-      });
-      const totalBudget = brandBudgets.reduce((sum: number, b: any) => sum + (b.totalBudget || 0), 0);
-
-      // Build category breakdown from localData
-      const categoryData: Record<string, any> = {};
-      categoryStructure.forEach((genderGroup: any) => {
-        genderGroup.categories.forEach((cat: any) => {
-          let catTotal = { buyPct: 0, salesPct: 0, stPct: 0, buyProposed: 0, otbProposed: 0 };
-          cat.subCategories.forEach((subCat: any) => {
-            const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
-            const data = localData[key] || {};
-            catTotal.buyPct += data.buyPct || 0;
-            catTotal.salesPct += data.salesPct || 0;
-            catTotal.buyProposed += data.buyProposed || 0;
-            catTotal.otbProposed += data.otbProposed || 0;
-          });
-          catTotal.stPct = catTotal.salesPct > 0 ? Math.round((catTotal.salesPct / (catTotal.buyPct || 1)) * 100) : 0;
-          categoryData[`${genderGroup.gender.name} - ${cat.name}`] = catTotal;
-        });
-      });
-
-      result[brandId] = { brand, budgets: brandBudgets, totalBudget, categoryData };
-    });
-    return result;
-  }, [selectedBrandIds, availableBrands, apiBudgets, categoryStructure, localData]);
 
   useEffect(() => {
     if (!otbContext) return;
@@ -729,14 +586,14 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     return { otbValue: totalOtbValue };
   }, [localData]);
 
-  // Toggle expanded state for hierarchy
-  const toggleGenderExpanded = (genderId: any) => {
-    setExpandedGenders((prev: any) => ({ ...prev, [genderId]: !prev[genderId] }));
+  // Toggle expanded state for hierarchy (Category -> SubCategory -> Gender)
+  const toggleCategoryExpanded = (categoryId: any) => {
+    setExpandedCategories((prev: any) => ({ ...prev, [categoryId]: prev[categoryId] === false ? true : false }));
   };
 
-  const toggleCategoryExpanded = (genderId: any, categoryId: any) => {
-    const key = `${genderId}_${categoryId}`;
-    setExpandedCategories((prev: any) => ({ ...prev, [key]: !prev[key] }));
+  const toggleSubCategoryExpanded = (catId: any, subCatId: any) => {
+    const key = `${catId}_${subCatId}`;
+    setExpandedSubCategories((prev: any) => ({ ...prev, [key]: prev[key] === false ? true : false }));
   };
 
   // Generate filter options from categoryStructure
@@ -815,197 +672,41 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     ? "bg-gradient-to-r from-[rgba(215,183,151,0.2)] to-[rgba(215,183,151,0.15)] text-[#D7B797] font-semibold"
     : "bg-gradient-to-r from-[rgba(215,183,151,0.25)] to-[rgba(215,183,151,0.2)] text-[#5C4A32] font-semibold";
 
-  // Render Collection Tab
-  const renderCollectionTab = () => {
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className={`${headerCellClass} ${headerDarkCell} text-left min-w-[200px]`}>{t('otbAnalysis.collection')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>MOC</th>
-              <th className={`${headerCellClass} ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
-              <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
-              <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {collectionSections.map((section: any) => (
-              <React.Fragment key={`col-${section.id}`}>
-                <tr className={groupRowClass}>
-                  <td className="px-3 py-0.5" colSpan={8}>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold text-xs uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{section.name}</span>
-                      <Info size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                    </div>
-                  </td>
-                </tr>
+  // Transform categoryStructure (Gender->Cat->SubCat) into categoryFirstStructure (Cat->SubCat->Gender)
+  const categoryFirstStructure = useMemo(() => {
+    const catMap: Record<string, { category: any; subCategories: Record<string, { subCategory: any; genders: { gender: any; dataKey: string }[] }> }> = {};
 
-                {STORES.map((store: any) => {
-                  const cellKey = `collection_${section.id}_${store.id}`;
-                  const isEditing = editingCell === cellKey;
-                  const cellData = localData[cellKey] || {};
-                  const userBuyPctValue = cellData.userBuyPct ?? 0;
-                  const variance = cellData.varPct ?? (userBuyPctValue - (cellData.salesPct || 0));
-
-                  return (
-                    <tr
-                      key={cellKey}
-                      className={`border-b transition-colors ${
-                        darkMode
-                          ? 'border-[#2E2E2E] hover:bg-[#1A1A1A]'
-                          : 'border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)]'
-                      }`}
-                    >
-                      <td className="px-3 py-0.5 pl-6">
-                        <span className={darkMode ? 'text-[#999999]' : 'text-[#666666]'}>{store.name}</span>
-                      </td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.buyPct || 0).toFixed(1)}%</td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.salesPct || 0).toFixed(0)}%</td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.stPct || 0).toFixed(0)}%</td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{cellData.moc || 0}</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-                        <EditableCell
-                          cellKey={cellKey}
-                          value={userBuyPctValue}
-                          isEditing={isEditing}
-                          editValue={editValue}
-                          onStartEdit={handleStartEdit}
-                          onSaveEdit={handleSaveEdit}
-                          onChangeValue={setEditValue}
-                          onKeyDown={handleKeyDown}
-                          darkMode={darkMode}
-                        />
-                      </td>
-                      <td className={`px-4 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{formatCurrency(cellData.otbValue || 0)}</td>
-                      <td className={`px-4 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${
-                        variance < 0 ? 'text-[#F85149]' : variance > 0 ? 'text-[#2A9E6A]' : (darkMode ? 'text-[#999999]' : 'text-[#666666]')
-                      }`}>
-                        {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
-                      </td>
-                    </tr>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-
-            <tr className={sumRowClass}>
-              <td className="px-3 py-0.5 font-semibold text-xs uppercase tracking-wide font-['Montserrat']">{t('otbAnalysis.total')}</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">{formatCurrency(grandTotals.otbValue)}</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  // Render Gender Tab
-  const renderGenderTab = () => {
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className={`${headerCellClass} ${headerDarkCell} text-left min-w-[200px]`}>{t('otbAnalysis.gender')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
-              <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
-              <th className={`${headerCellClass} ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
-              <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
-              <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {GENDERS.map((gen: any) => (
-              <React.Fragment key={`gen-${gen.id}`}>
-                <tr className={groupRowClass}>
-                  <td className="px-3 py-0.5" colSpan={7}>
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold text-xs uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{gen.name}</span>
-                      <Info size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                    </div>
-                  </td>
-                </tr>
-
-                {STORES.map((store: any) => {
-                  const cellKey = `gender_${gen.id}_${store.id}`;
-                  const isEditing = editingCell === cellKey;
-                  const cellData = localData[cellKey] || {};
-                  const userBuyPctValue = cellData.userBuyPct ?? 0;
-                  const variance = cellData.varPct ?? (userBuyPctValue - (cellData.salesPct || 0));
-
-                  return (
-                    <tr
-                      key={cellKey}
-                      className={`border-b transition-colors ${
-                        darkMode
-                          ? 'border-[#2E2E2E] hover:bg-[#1A1A1A]'
-                          : 'border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)]'
-                      }`}
-                    >
-                      <td className="px-3 py-0.5 pl-6">
-                        <span className={darkMode ? 'text-[#999999]' : 'text-[#666666]'}>{store.name}</span>
-                      </td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.buyPct || 0).toFixed(0)}%</td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.salesPct || 0).toFixed(0)}%</td>
-                      <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{(cellData.stPct || 0).toFixed(0)}%</td>
-                      <td className={`px-4 py-0.5 ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
-                        <EditableCell
-                          cellKey={cellKey}
-                          value={userBuyPctValue}
-                          isEditing={isEditing}
-                          editValue={editValue}
-                          onStartEdit={handleStartEdit}
-                          onSaveEdit={handleSaveEdit}
-                          onChangeValue={setEditValue}
-                          onKeyDown={handleKeyDown}
-                          darkMode={darkMode}
-                        />
-                      </td>
-                      <td className={`px-4 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{formatCurrency(cellData.otbValue || 0)}</td>
-                      <td className={`px-4 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${
-                        variance < 0 ? 'text-[#F85149]' : variance > 0 ? 'text-[#2A9E6A]' : (darkMode ? 'text-[#999999]' : 'text-[#666666]')
-                      }`}>
-                        {variance > 0 ? '+' : ''}{variance.toFixed(0)}%
-                      </td>
-                    </tr>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-
-            <tr className={sumRowClass}>
-              <td className="px-3 py-0.5 font-semibold text-xs uppercase tracking-wide font-['Montserrat']">{t('otbAnalysis.total')}</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">100%</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">{formatCurrency(grandTotals.otbValue)}</td>
-              <td className="px-3 py-0.5 text-center font-['JetBrains_Mono']">-</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  // Render Category Tab - Hierarchical Collapsible
-  const renderCategoryTab = () => {
-    const calculateGenderTotals = (genderGroup: any) => {
-      let totals = { buyPct: 0, salesPct: 0, stPct: 0, buyProposed: 0, otbProposed: 0, varPct: 0, otbSubmitted: 0, buyActual: 0 };
+    categoryStructure.forEach((genderGroup: any) => {
       genderGroup.categories.forEach((cat: any) => {
+        if (!catMap[cat.id]) {
+          catMap[cat.id] = { category: { id: cat.id, name: cat.name }, subCategories: {} };
+        }
         cat.subCategories.forEach((subCat: any) => {
-          const key = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
-          const data = localData[key] || {};
+          if (!catMap[cat.id].subCategories[subCat.id]) {
+            catMap[cat.id].subCategories[subCat.id] = { subCategory: { id: subCat.id, name: subCat.name }, genders: [] };
+          }
+          catMap[cat.id].subCategories[subCat.id].genders.push({
+            gender: genderGroup.gender,
+            dataKey: `${genderGroup.gender.id}_${cat.id}_${subCat.id}`,
+          });
+        });
+      });
+    });
+
+    return Object.values(catMap).map(entry => ({
+      ...entry.category,
+      subCategories: Object.values(entry.subCategories),
+    }));
+  }, [categoryStructure]);
+
+  // Render Category Tab - Hierarchical Collapsible (Category -> SubCategory -> Gender)
+  const renderCategoryTab = () => {
+    // Calculate category-level totals (across all sub-cats and genders)
+    const calculateCategoryTotals = (catEntry: any) => {
+      let totals = { buyPct: 0, salesPct: 0, stPct: 0, buyProposed: 0, otbProposed: 0, varPct: 0, otbSubmitted: 0, buyActual: 0 };
+      catEntry.subCategories.forEach((subCatEntry: any) => {
+        subCatEntry.genders.forEach((g: any) => {
+          const data = localData[g.dataKey] || {};
           totals.buyPct += data.buyPct || 0;
           totals.salesPct += data.salesPct || 0;
           totals.buyProposed += data.buyProposed || 0;
@@ -1014,16 +715,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           totals.buyActual += data.buyActual || 0;
         });
       });
-      totals.stPct = 90;
+      totals.stPct = totals.salesPct > 0 ? Math.round((totals.salesPct / (totals.buyPct || 1)) * 100) : 0;
       totals.varPct = totals.buyProposed - totals.salesPct;
       return totals;
     };
 
-    const calculateCategoryTotals = (genderId: any, cat: any) => {
+    // Calculate subcategory-level totals (across all genders)
+    const calculateSubCategoryTotals = (subCatEntry: any) => {
       let totals = { buyPct: 0, salesPct: 0, stPct: 0, buyProposed: 0, otbProposed: 0, varPct: 0, otbSubmitted: 0, buyActual: 0 };
-      cat.subCategories.forEach((subCat: any) => {
-        const key = `${genderId}_${cat.id}_${subCat.id}`;
-        const data = localData[key] || {};
+      subCatEntry.genders.forEach((g: any) => {
+        const data = localData[g.dataKey] || {};
         totals.buyPct += data.buyPct || 0;
         totals.salesPct += data.salesPct || 0;
         totals.buyProposed += data.buyProposed || 0;
@@ -1031,212 +732,38 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
         totals.otbSubmitted += data.otbSubmitted || 0;
         totals.buyActual += data.buyActual || 0;
       });
-      totals.stPct = 47;
+      totals.stPct = totals.salesPct > 0 ? Math.round((totals.salesPct / (totals.buyPct || 1)) * 100) : 0;
       totals.varPct = totals.buyProposed - totals.salesPct;
       return totals;
     };
 
-    const filteredData = categoryStructure.filter((genderGroup: any) => {
-      if (genderFilter !== 'all' && genderGroup.gender.id !== genderFilter) return false;
-      return true;
-    }).map((genderGroup: any) => ({
-      ...genderGroup,
-      categories: genderGroup.categories.filter((cat: any) => {
-        if (categoryFilter !== 'all' && cat.id !== categoryFilter) return false;
-        return true;
-      }).map((cat: any) => ({
-        ...cat,
-        subCategories: cat.subCategories.filter((subCat: any) => {
-          if (subCategoryFilter !== 'all' && subCat.id !== subCategoryFilter) return false;
-          return true;
-        })
-      })).filter((cat: any) => cat.subCategories.length > 0)
-    })).filter((genderGroup: any) => genderGroup.categories.length > 0);
-
-    const getSelectedLabel = (options: any, value: any) => {
-      if (value === 'all') return t('common.all') || 'All';
-      const option = options.find((o: any) => o.id === value);
-      return option ? option.name : 'Select...';
-    };
+    // Filter: L1=category, L2=subCategory, L3=gender
+    const filteredData = categoryFirstStructure
+      .filter((catEntry: any) => categoryFilter === 'all' || catEntry.id === categoryFilter)
+      .map((catEntry: any) => ({
+        ...catEntry,
+        subCategories: catEntry.subCategories
+          .filter((subCatEntry: any) => subCategoryFilter === 'all' || subCatEntry.subCategory.id === subCategoryFilter)
+          .map((subCatEntry: any) => ({
+            ...subCatEntry,
+            genders: subCatEntry.genders.filter((g: any) => genderFilter === 'all' || g.gender.id === genderFilter),
+          }))
+          .filter((subCatEntry: any) => subCatEntry.genders.length > 0),
+      }))
+      .filter((catEntry: any) => catEntry.subCategories.length > 0);
 
     return (
       <div className="p-4 space-y-3">
-        {/* Filter Section */}
-        <div className={`mb-2 md:mb-3 py-1.5 ${
-          darkMode
-            ? 'border-b border-[#2E2E2E]'
-            : 'border-b border-[#C4B5A5]'
-        }`}>
-          <div className="flex items-center gap-2">
-            {/* Gender Filter */}
-            <div className="relative shrink-0" ref={setDropdownRef('genderFilter')}>
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenCategoryDropdown((prev: any) => (prev === 'genderFilter' ? null : 'genderFilter'));
-                  setOpenDropdown(null);
-                }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[90px] ${
-                  darkMode
-                    ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
-                    : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
-                }`}
-              >
-                <Users size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.gender')}</span>
-                <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                  {getSelectedLabel(filterOptions.genders, genderFilter)}
-                </span>
-                <ChevronDown size={12} className={`transition-transform ${darkMode ? 'text-[#666666]' : 'text-[#999999]'} ${openCategoryDropdown === 'genderFilter' ? 'rotate-180' : ''}`} />
-              </button>
-              {openCategoryDropdown === 'genderFilter' && (
-                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full border-2 rounded-lg shadow-lg z-50 overflow-hidden ${
-                  darkMode
-                    ? 'bg-[#121212] border-[#2E2E2E]'
-                    : 'bg-white border-[#C4B5A5]'
-                }`}>
-                  {filterOptions.genders.map((option: any) => (
-                    <div
-                      key={option.id}
-                      onClick={() => handleGenderFilterChange(option.id)}
-                      className={`px-4 py-0.5 flex items-center gap-2 cursor-pointer transition-colors ${
-                        darkMode
-                          ? 'hover:bg-[rgba(215,183,151,0.08)]'
-                          : 'hover:bg-[rgba(160,120,75,0.12)]'
-                      }`}
-                    >
-                      <span className={`text-sm ${genderFilter === option.id ? (darkMode ? 'text-[#D7B797] font-semibold' : 'text-[#6B4D30] font-semibold') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
-                        {option.name}
-                      </span>
-                      {genderFilter === option.id && <Check size={14} className={darkMode ? 'text-[#D7B797] ml-auto' : 'text-[#6B4D30] ml-auto'} />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Category Filter */}
-            <div className="relative shrink-0" ref={setDropdownRef('categoryFilter')}>
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenCategoryDropdown((prev: any) => (prev === 'categoryFilter' ? null : 'categoryFilter'));
-                  setOpenDropdown(null);
-                }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[100px] ${
-                  darkMode
-                    ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
-                    : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
-                }`}
-              >
-                <Tag size={12} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.category')}</span>
-                <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                  {getSelectedLabel(filterOptions.categories, categoryFilter)}
-                </span>
-                <ChevronDown size={12} className={`transition-transform ${darkMode ? 'text-[#666666]' : 'text-[#999999]'} ${openCategoryDropdown === 'categoryFilter' ? 'rotate-180' : ''}`} />
-              </button>
-              {openCategoryDropdown === 'categoryFilter' && (
-                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full border-2 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto ${
-                  darkMode
-                    ? 'bg-[#121212] border-[#2E2E2E]'
-                    : 'bg-white border-[#C4B5A5]'
-                }`}>
-                  {filteredCategoryOptions.map((option: any) => (
-                    <div
-                      key={option.id}
-                      onClick={() => handleCategoryFilterChange(option.id)}
-                      className={`px-4 py-0.5 flex items-center gap-2 cursor-pointer transition-colors ${
-                        darkMode
-                          ? 'hover:bg-[rgba(215,183,151,0.08)]'
-                          : 'hover:bg-[rgba(160,120,75,0.12)]'
-                      }`}
-                    >
-                      <span className={`text-sm ${categoryFilter === option.id ? (darkMode ? 'text-[#D7B797] font-semibold' : 'text-[#6B4D30] font-semibold') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
-                        {option.name}
-                      </span>
-                      {categoryFilter === option.id && <Check size={14} className={darkMode ? 'text-[#D7B797] ml-auto' : 'text-[#6B4D30] ml-auto'} />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Sub-Category Filter */}
-            <div className="relative shrink-0" ref={setDropdownRef('subCategoryFilter')}>
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenCategoryDropdown((prev: any) => (prev === 'subCategoryFilter' ? null : 'subCategoryFilter'));
-                  setOpenDropdown(null);
-                }}
-                className={`flex items-center gap-1.5 text-xs px-2 py-1 border rounded-md transition-all min-w-[100px] ${
-                  darkMode
-                    ? 'bg-[#1A1A1A] border-[#2E2E2E] hover:border-[rgba(215,183,151,0.4)]'
-                    : 'bg-white border-[#C4B5A5] hover:border-[rgba(215,183,151,0.5)]'
-                }`}
-              >
-                <Layers size={12} className="text-[#2A9E6A]" />
-                <span className={`text-[10px] font-semibold uppercase tracking-wide shrink-0 ${darkMode ? 'text-[#666]' : 'text-[#999]'}`}>{t('common.subCategories')}</span>
-                <span className={`text-xs font-medium flex-1 text-left truncate ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                  {getSelectedLabel(filterOptions.subCategories, subCategoryFilter)}
-                </span>
-                <ChevronDown size={12} className={`transition-transform ${darkMode ? 'text-[#666666]' : 'text-[#999999]'} ${openCategoryDropdown === 'subCategoryFilter' ? 'rotate-180' : ''}`} />
-              </button>
-              {openCategoryDropdown === 'subCategoryFilter' && (
-                <div className={`absolute top-full left-0 mt-1 whitespace-nowrap w-max min-w-full border-2 rounded-lg shadow-lg z-50 overflow-hidden max-h-[300px] overflow-y-auto ${
-                  darkMode
-                    ? 'bg-[#121212] border-[#2E2E2E]'
-                    : 'bg-white border-[#C4B5A5]'
-                }`}>
-                  {filteredSubCategoryOptions.map((option: any) => (
-                    <div
-                      key={option.id}
-                      onClick={() => handleSubCategoryFilterChange(option.id)}
-                      className={`px-4 py-0.5 flex items-center gap-2 cursor-pointer transition-colors ${
-                        darkMode
-                          ? 'hover:bg-[rgba(215,183,151,0.08)]'
-                          : 'hover:bg-[rgba(160,120,75,0.12)]'
-                      }`}
-                    >
-                      <span className={`text-sm ${subCategoryFilter === option.id ? 'text-[#2A9E6A] font-semibold' : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
-                        {option.name}
-                      </span>
-                      {subCategoryFilter === option.id && <Check size={14} className="text-[#2A9E6A] ml-auto" />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Clear Filters */}
-            {(genderFilter !== 'all' || categoryFilter !== 'all' || subCategoryFilter !== 'all') && (
-              <button
-                onClick={() => {
-                  setGenderFilter('all');
-                  setCategoryFilter('all');
-                  setSubCategoryFilter('all');
-                }}
-                className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[#1A1A1A]' : 'text-[#666666] hover:text-[#F85149] hover:bg-red-50'}`}
-                title={t('common.clearAll')}
-              >
-                <X size={14} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Hierarchical Content */}
-        {filteredData.map((genderGroup: any) => {
-          const genderTotals = calculateGenderTotals(genderGroup);
-          const isGenderExpanded = expandedGenders[genderGroup.gender.id];
-          const isFemale = genderGroup.gender.id === 'female';
+        {/* Hierarchical Content: Category (L1) -> SubCategory (L2) -> Gender rows (L3) */}
+        {filteredData.map((catEntry: any) => {
+          const catTotals = calculateCategoryTotals(catEntry);
+          const isCatExpanded = expandedCategories[catEntry.id] !== false;
 
           return (
-            <div key={genderGroup.gender.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
-              {/* Gender Header - Level 1 */}
+            <div key={catEntry.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+              {/* Category Header - Level 1 */}
               <div
-                onClick={() => toggleGenderExpanded(genderGroup.gender.id)}
+                onClick={() => toggleCategoryExpanded(catEntry.id)}
                 className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-0.5 cursor-pointer transition-all ${
                   darkMode
                     ? 'bg-gradient-to-r from-[#1A1A1A] to-[#121212] hover:from-[#2E2E2E] hover:to-[#1A1A1A]'
@@ -1248,34 +775,34 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 }`}>
                   <ChevronDown
                     size={18}
-                    className={`transition-transform duration-200 ${isGenderExpanded ? '' : '-rotate-90'} ${darkMode ? 'text-white' : 'text-[#6B4D30]'}`}
+                    className={`transition-transform duration-200 ${isCatExpanded ? '' : '-rotate-90'} ${darkMode ? 'text-white' : 'text-[#6B4D30]'}`}
                   />
                 </button>
-                <Users size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{genderGroup.gender.name}</span>
+                <Tag size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{catEntry.name}</span>
                 <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-white/80' : 'text-[#6B4D30]'}`}>
-                  {genderGroup.categories.length} categories
+                  {catEntry.subCategories.length} sub-categories
                 </span>
                 <div className={`hidden md:flex items-center gap-4 ml-4 text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-white/90' : 'text-[#5C4A3A]'}`}>
-                  <span>Buy: <strong>{genderTotals.buyPct}%</strong></span>
-                  <span>Sales: <strong>{genderTotals.salesPct}%</strong></span>
-                  <span>OTB: <strong>{genderTotals.otbProposed.toLocaleString()}</strong></span>
+                  <span>Buy: <strong>{catTotals.buyPct}%</strong></span>
+                  <span>Sales: <strong>{catTotals.salesPct}%</strong></span>
+                  <span>OTB: <strong>{catTotals.otbProposed.toLocaleString()}</strong></span>
                 </div>
               </div>
 
-              {/* Gender Content */}
-              {isGenderExpanded && (
+              {/* Category Content */}
+              {isCatExpanded && (
                 <div className={`p-3 space-y-2 ${darkMode ? 'bg-[#0A0A0A]' : 'bg-[#F2F2F2]'}`}>
-                  {genderGroup.categories.map((cat: any, catIdx: any) => {
-                    const catKey = `${genderGroup.gender.id}_${cat.id}`;
-                    const isCatExpanded = expandedCategories[catKey] !== false;
-                    const catTotals = calculateCategoryTotals(genderGroup.gender.id, cat);
+                  {catEntry.subCategories.map((subCatEntry: any) => {
+                    const subCatKey = `${catEntry.id}_${subCatEntry.subCategory.id}`;
+                    const isSubCatExpanded = expandedSubCategories[subCatKey] !== false;
+                    const subCatTotals = calculateSubCategoryTotals(subCatEntry);
 
                     return (
-                      <div key={cat.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'}`}>
-                        {/* Category Header - Level 2 */}
+                      <div key={subCatEntry.subCategory.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'}`}>
+                        {/* SubCategory Header - Level 2 */}
                         <div
-                          onClick={() => toggleCategoryExpanded(genderGroup.gender.id, cat.id)}
+                          onClick={() => toggleSubCategoryExpanded(catEntry.id, subCatEntry.subCategory.id)}
                           className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-0.5 cursor-pointer transition-all ${
                             darkMode
                               ? 'bg-[rgba(215,183,151,0.08)] hover:bg-[rgba(160,120,75,0.18)]'
@@ -1287,30 +814,30 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           }`}>
                             <ChevronDown
                               size={16}
-                              className={`transition-transform duration-200 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${isCatExpanded ? '' : '-rotate-90'}`}
+                              className={`transition-transform duration-200 ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} ${isSubCatExpanded ? '' : '-rotate-90'}`}
                             />
                           </button>
-                          <Tag size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                          <Layers size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
                           <span className={`font-semibold text-xs uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                            {cat.name}
+                            {subCatEntry.subCategory.name}
                           </span>
                           <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                            {cat.subCategories.length} sub-categories
+                            {subCatEntry.genders.length} genders
                           </span>
                           <div className={`hidden md:flex items-center gap-4 ml-4 text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                            <span>Buy: <strong>{catTotals.buyPct}%</strong></span>
-                            <span>Proposed: <strong>{catTotals.buyProposed}%</strong></span>
-                            <span>OTB: <strong>{catTotals.otbProposed.toLocaleString()}</strong></span>
+                            <span>Buy: <strong>{subCatTotals.buyPct}%</strong></span>
+                            <span>Proposed: <strong>{subCatTotals.buyProposed}%</strong></span>
+                            <span>OTB: <strong>{subCatTotals.otbProposed.toLocaleString()}</strong></span>
                           </div>
                         </div>
 
-                        {/* Sub-Categories Table - Level 3 */}
-                        {isCatExpanded && (
+                        {/* Gender Table - Level 3 */}
+                        {isSubCatExpanded && (
                           <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                               <thead>
                                 <tr>
-                                  <th className={`px-4 py-2 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('nav.subCategories')}</th>
+                                  <th className={`px-4 py-2 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.gender') || 'Gender'}</th>
                                   <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
                                   <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
                                   <th className={`px-3 py-2 text-center text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
@@ -1323,24 +850,24 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                 </tr>
                               </thead>
                               <tbody>
-                                {cat.subCategories.map((subCat: any, subIdx: any) => {
-                                  const cellKey = `${genderGroup.gender.id}_${cat.id}_${subCat.id}`;
+                                {subCatEntry.genders.map((gEntry: any, gIdx: number) => {
+                                  const cellKey = gEntry.dataKey;
                                   const rowData = localData[cellKey] || {};
                                   const isEditing = editingCell === cellKey;
 
                                   return (
                                     <tr
-                                      key={subCat.id}
+                                      key={cellKey}
                                       className={`border-b transition-colors ${
                                         darkMode
-                                          ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${subIdx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
-                                          : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${subIdx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
+                                          ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${gIdx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
+                                          : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${gIdx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
                                       }`}
                                     >
                                       <td className="px-4 py-0.5">
                                         <div className="flex items-center gap-2">
-                                          <div className={`w-1.5 h-1.5 rounded-full ${darkMode ? 'bg-[#666666]' : 'bg-[#999999]'}`}></div>
-                                          <span className={darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}>{subCat.name}</span>
+                                          <Users size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                                          <span className={darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}>{gEntry.gender.name}</span>
                                         </div>
                                       </td>
                                       <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.buyPct || 0}%</td>
@@ -1376,19 +903,15 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                           onClick={() => {
                                             if (onOpenSkuProposal) {
                                               onOpenSkuProposal({
-                                                // Budget info
                                                 budgetId: selectedBudgetId !== 'all' ? selectedBudgetId : budgetContext?.budgetId,
                                                 budgetName: selectedBudget?.budgetName || budgetContext?.budgetName,
                                                 fiscalYear: selectedBudget?.fiscalYear || budgetContext?.fiscalYear,
                                                 brandName: selectedBudget?.brandName || budgetContext?.brandName,
-                                                // Season info
                                                 seasonGroup: selectedSeasonGroup !== 'all' ? selectedSeasonGroup : budgetContext?.seasonGroup,
                                                 season: selectedSeason !== 'all' ? selectedSeason : budgetContext?.season,
-                                                // Category info
-                                                gender: genderGroup.gender,
-                                                category: cat,
-                                                subCategory: subCat,
-                                                // OTB data
+                                                gender: gEntry.gender,
+                                                category: { id: catEntry.id, name: catEntry.name },
+                                                subCategory: subCatEntry.subCategory,
                                                 otbData: rowData
                                               });
                                             }
@@ -1402,21 +925,21 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                                     </tr>
                                   );
                                 })}
-                                {/* Category Subtotal Row */}
+                                {/* SubCategory Subtotal Row */}
                                 <tr className={darkMode ? 'bg-gradient-to-r from-[rgba(215,183,151,0.2)] to-[rgba(215,183,151,0.15)] font-medium' : 'bg-gradient-to-r from-[rgba(215,183,151,0.25)] to-[rgba(215,183,151,0.2)] font-medium'}>
                                   <td className={`px-4 py-0.5 font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{t('otbAnalysis.subTotal')}</td>
-                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.buyPct}%</td>
-                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.salesPct}%</td>
-                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.stPct}%</td>
-                                  <td className={`px-3 py-0.5 text-center bg-[rgba(160,120,75,0.18)] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{catTotals.buyProposed}%</td>
-                                  <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.otbProposed.toLocaleString()}</td>
+                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.buyPct}%</td>
+                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.salesPct}%</td>
+                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.stPct}%</td>
+                                  <td className={`px-3 py-0.5 text-center bg-[rgba(160,120,75,0.18)] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{subCatTotals.buyProposed}%</td>
+                                  <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.otbProposed.toLocaleString()}</td>
                                   <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${
-                                    catTotals.varPct < 0 ? 'text-[#FF7B72]' : darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'
+                                    subCatTotals.varPct < 0 ? 'text-[#FF7B72]' : darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'
                                   }`}>
-                                    {catTotals.varPct > 0 ? '+' : ''}{catTotals.varPct}%
+                                    {subCatTotals.varPct > 0 ? '+' : ''}{subCatTotals.varPct}%
                                   </td>
-                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.otbSubmitted.toLocaleString()}</td>
-                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{catTotals.buyActual}%</td>
+                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.otbSubmitted.toLocaleString()}</td>
+                                  <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{subCatTotals.buyActual}%</td>
                                   <td className="px-3 py-0.5"></td>
                                 </tr>
                               </tbody>
@@ -1427,7 +950,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     );
                   })}
 
-                  {/* Gender Total */}
+                  {/* Category Total */}
                   <div className={`rounded-xl p-3 border ${
                     darkMode
                       ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)]'
@@ -1435,16 +958,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   }`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                       <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                        TOTAL {genderGroup.gender.name.toUpperCase()}
+                        TOTAL {catEntry.name.toUpperCase()}
                       </span>
                       <div className={`flex flex-wrap items-center gap-2 md:gap-6 text-xs md:text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                        <span>% Buy: <strong>{genderTotals.buyPct}%</strong></span>
-                        <span>% Sales: <strong>{genderTotals.salesPct}%</strong></span>
-                        <span>% ST: <strong>{genderTotals.stPct}%</strong></span>
-                        <span>% Proposed: <strong>{genderTotals.buyProposed}%</strong></span>
-                        <span>$ OTB: <strong>{genderTotals.otbProposed.toLocaleString()}</strong></span>
-                        <span className={genderTotals.varPct < 0 ? 'text-[#F85149]' : ''}>
-                          Var: <strong>{genderTotals.varPct > 0 ? '+' : ''}{genderTotals.varPct}%</strong>
+                        <span>% Buy: <strong>{catTotals.buyPct}%</strong></span>
+                        <span>% Sales: <strong>{catTotals.salesPct}%</strong></span>
+                        <span>% ST: <strong>{catTotals.stPct}%</strong></span>
+                        <span>% Proposed: <strong>{catTotals.buyProposed}%</strong></span>
+                        <span>$ OTB: <strong>{catTotals.otbProposed.toLocaleString()}</strong></span>
+                        <span className={catTotals.varPct < 0 ? 'text-[#F85149]' : ''}>
+                          Var: <strong>{catTotals.varPct > 0 ? '+' : ''}{catTotals.varPct}%</strong>
                         </span>
                       </div>
                     </div>
@@ -1583,397 +1106,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     );
   };
 
-  // NOTE: Brand Comparison tab removed per client feedback (Round 2)
-  const renderBrandComparisonTab = () => {
-    const BRAND_COLORS = ['#D7B797', '#2A9E6A', '#7C3AED'];
-    const selectedBrands = selectedBrandIds.map(id => availableBrands.find((b: any) => b.id === id)).filter(Boolean);
-
-    // Gather all category keys across all brands
-    const allCategoryKeys = new Set<string>();
-    Object.values(brandBudgetData).forEach(({ categoryData }) => {
-      Object.keys(categoryData).forEach(k => allCategoryKeys.add(k));
-    });
-    const categoryKeys = Array.from(allCategoryKeys);
-
-    return (
-      <div className="p-4 space-y-4">
-        {/* Brand Selector */}
-        <div className={`flex flex-col md:flex-row md:items-center gap-3 pb-3 border-b ${
-          darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'
-        }`}>
-          <div className="flex items-center gap-2">
-            <GitCompareArrows size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-            <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-              {t('otbAnalysis.brandComparison')}
-            </span>
-          </div>
-
-          {/* Brand Multi-Select Dropdown */}
-          <div className="relative flex-1 max-w-md" ref={brandDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setOpenBrandDropdown(!openBrandDropdown)}
-              className={`w-full px-3 py-[7px] border rounded-lg font-medium cursor-pointer flex items-center justify-between text-xs transition-all duration-200 ${
-                openBrandDropdown
-                  ? darkMode
-                    ? 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/50 shadow-[0_0_0_1px_rgba(215,183,151,0.12)]'
-                    : 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/60 shadow-[0_0_0_1px_rgba(215,183,151,0.15)]'
-                  : selectedBrandIds.length > 0
-                    ? darkMode
-                      ? 'bg-[rgba(215,183,151,0.05)] border-[rgba(215,183,151,0.2)] text-[#D7B797] hover:border-[rgba(215,183,151,0.35)]'
-                      : 'bg-[rgba(215,183,151,0.04)] border-[rgba(215,183,151,0.3)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
-                    : darkMode
-                      ? 'bg-[#141414] border-[#2A2A2A] text-[#F2F2F2] hover:border-[#444444] hover:bg-[#181818]'
-                      : 'bg-white border-[#D4CCC2] text-[#1A1A1A] hover:border-[#B8A998] hover:bg-[#FDFCFB]'
-              }`}
-            >
-              <div className="flex items-center gap-2 truncate">
-                <Users size={12} className={`shrink-0 ${selectedBrandIds.length > 0 ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
-                <span className="truncate">
-                  {selectedBrandIds.length === 0
-                    ? t('otbAnalysis.selectBrands')
-                    : `${selectedBrandIds.length} ${t('otbAnalysis.brandsSelected')}`}
-                </span>
-                {selectedBrandIds.length > 0 && (
-                  <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md ${
-                    darkMode ? 'bg-[#D7B797]/90 text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
-                  }`}>{selectedBrandIds.length}</span>
-                )}
-              </div>
-              <ChevronDown size={12} strokeWidth={2} className={`flex-shrink-0 transition-transform duration-200 ease-out ${openBrandDropdown ? 'rotate-180' : ''} ${
-                darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]'
-              }`} />
-            </button>
-            {openBrandDropdown && (
-              <div
-                className={`absolute top-full left-0 mt-1.5 w-full min-w-[240px] border rounded-lg z-[9999] overflow-hidden ${
-                  darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
-                }`}
-                style={{
-                  boxShadow: darkMode
-                    ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
-                    : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)',
-                }}
-              >
-                <div className="h-[1.5px]" style={{ background: darkMode ? 'linear-gradient(90deg, transparent 5%, rgba(215,183,151,0.35) 50%, transparent 95%)' : 'linear-gradient(90deg, transparent 5%, rgba(184,153,112,0.4) 50%, transparent 95%)' }} />
-                <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-[#FDFCFB] border-[#E8E0D8]'}`}>
-                  <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                    {t('otbAnalysis.brands')}
-                  </span>
-                  {selectedBrandIds.length > 0 && (
-                    <button
-                      onClick={() => setSelectedBrandIds([])}
-                      className={`text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors ${
-                        darkMode ? 'text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#F85149] hover:bg-[rgba(248,81,73,0.08)]'
-                      }`}
-                    >
-                      {t('common.clearAll')}
-                    </button>
-                  )}
-                </div>
-                <div className="filter-select-scroll max-h-60 overflow-y-auto py-1">
-                  {loadingBrands && (
-                    <div className="px-4 py-6 flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-[#D7B797]/30 border-t-[#D7B797] rounded-full animate-spin" />
-                      <span className={`ml-2 text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{t('common.loading')}...</span>
-                    </div>
-                  )}
-                  {!loadingBrands && availableBrands.length === 0 && (
-                    <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                      {t('otbAnalysis.noBrandsAvailable')}
-                    </div>
-                  )}
-                  {!loadingBrands && availableBrands.map((brand: any) => {
-                    const isSelected = selectedBrandIds.includes(brand.id);
-                    const isDisabled = !isSelected && selectedBrandIds.length >= 3;
-                    return (
-                      <div
-                        key={brand.id}
-                        onClick={() => !isDisabled && toggleBrandSelection(brand.id)}
-                        className={`relative px-3 py-2 cursor-pointer transition-all duration-150 ${
-                          isDisabled
-                            ? 'opacity-40 cursor-not-allowed'
-                            : isSelected
-                              ? darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(215,183,151,0.1)]'
-                              : darkMode ? 'hover:bg-[rgba(215,183,151,0.04)]' : 'hover:bg-[rgba(215,183,151,0.06)]'
-                        }`}
-                      >
-                        {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-full" style={{ background: BRAND_COLORS[selectedBrandIds.indexOf(brand.id)] || '#D7B797' }} />}
-                        <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                            isSelected
-                              ? 'border-[#D7B797]'
-                              : darkMode ? 'border-[#555555]' : 'border-[#C4B5A5]'
-                          }`} style={isSelected ? { backgroundColor: BRAND_COLORS[selectedBrandIds.indexOf(brand.id)] || '#D7B797' } : {}}>
-                            {isSelected && <Check size={10} className="text-[#1A1A1A]" strokeWidth={3} />}
-                          </div>
-                          <div>
-                            <div className={`font-semibold text-sm ${isSelected ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
-                              {brand.name}
-                            </div>
-                            <div className={`text-[10px] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                              {brand.code}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Selected Brand Chips */}
-          {selectedBrands.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {selectedBrands.map((brand: any, idx: number) => (
-                <div key={brand.id} className={`flex items-center gap-2 px-3 py-1 rounded-lg border ${
-                  darkMode ? 'border-[rgba(215,183,151,0.25)] bg-[rgba(215,183,151,0.08)]' : 'border-[rgba(215,183,151,0.4)] bg-white'
-                }`}>
-                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
-                  <span className={`text-xs font-medium ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{brand.name}</span>
-                  <button
-                    onClick={() => toggleBrandSelection(brand.id)}
-                    className={`p-0.5 rounded transition-colors ${darkMode ? 'hover:bg-[#2E2E2E]' : 'hover:bg-[#F2F2F2]'}`}
-                  >
-                    <X size={10} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Prompt if less than 2 brands selected */}
-        {selectedBrands.length < 2 && (
-          <div className={`flex flex-col items-center justify-center py-12 rounded-xl border ${
-            darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-[#C4B5A5] bg-[#F2F2F2]/50'
-          }`}>
-            <GitCompareArrows size={40} className={darkMode ? 'text-[#2E2E2E]' : 'text-[#C4B5A5]'} />
-            <p className={`mt-3 text-sm font-medium ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-              {t('otbAnalysis.selectBrandsToCompare')}
-            </p>
-          </div>
-        )}
-
-        {/* Brand Overview Cards */}
-        {selectedBrands.length >= 2 && (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {selectedBrands.map((brand: any, idx: number) => {
-                const data = brandBudgetData[brand.id];
-                if (!data) return null;
-                return (
-                  <div key={brand.id} className={`rounded-xl border overflow-hidden ${
-                    darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
-                  }`}>
-                    <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
-                      darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
-                    }`}>
-                      <span className="w-3 h-3 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
-                      <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                        {brand.name}
-                      </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-                        darkMode ? 'bg-[#2E2E2E] text-[#999999]' : 'bg-[#F0EDE8] text-[#999999]'
-                      }`}>{brand.code}</span>
-                    </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                          {t('otbAnalysis.budgetAmount')}
-                        </span>
-                        <span className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                          {formatCurrency(data.totalBudget)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                          {t('otbAnalysis.budgets')}
-                        </span>
-                        <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                          {data.budgets.length}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                          {t('otbAnalysis.allocationPct')}
-                        </span>
-                        <span className={`text-sm font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                          {data.totalBudget > 0 ? '100%' : '0%'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Category Breakdown Comparison Table */}
-            <div className={`rounded-xl border overflow-hidden ${
-              darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
-            }`}>
-              <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
-                darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
-              }`}>
-                <Tag size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                  {t('otbAnalysis.categoryBreakdown')}
-                </span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th className={`${headerCellClass} ${headerDarkCell} text-left min-w-[180px]`} rowSpan={2}>
-                        {t('otbAnalysis.category')}
-                      </th>
-                      {selectedBrands.map((brand: any, idx: number) => (
-                        <th key={brand.id} className={`${headerCellClass} ${headerGoldCell}`} colSpan={4}>
-                          <div className="flex items-center justify-center gap-2 py-0.5">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
-                            <span className="font-bold text-xs">{brand.name}</span>
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                    <tr>
-                      {selectedBrands.map((brand: any) => (
-                        <React.Fragment key={`h2-brand-${brand.id}`}>
-                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctBuy')}</th>
-                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctSales')}</th>
-                          <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.pctProposed')}</th>
-                          <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
-                        </React.Fragment>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categoryKeys.length === 0 && (
-                      <tr>
-                        <td colSpan={1 + selectedBrands.length * 4} className="px-4 py-8 text-center">
-                          <span className={`text-sm ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                            {t('common.noData')}
-                          </span>
-                        </td>
-                      </tr>
-                    )}
-                    {categoryKeys.map((catKey, idx) => (
-                      <tr
-                        key={catKey}
-                        className={`border-b transition-colors ${
-                          darkMode
-                            ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${idx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
-                            : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${idx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
-                        }`}
-                      >
-                        <td className="px-4 py-1.5">
-                          <div className="flex items-center gap-2">
-                            <Tag size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
-                            <span className={`font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{catKey}</span>
-                          </div>
-                        </td>
-                        {selectedBrands.map((brand: any, bIdx: number) => {
-                          const data = brandBudgetData[brand.id];
-                          const catData = data?.categoryData[catKey] || { buyPct: 0, salesPct: 0, buyProposed: 0, otbProposed: 0 };
-                          // Vary slightly per brand index to show differentiated data
-                          const offset = bIdx * 2;
-                          return (
-                            <React.Fragment key={`${catKey}-${brand.id}`}>
-                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                                {Math.max(0, (catData.buyPct || 0) + offset)}%
-                              </td>
-                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                                {Math.max(0, (catData.salesPct || 0) - offset)}%
-                              </td>
-                              <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                                {Math.max(0, (catData.buyProposed || 0) + offset)}%
-                              </td>
-                              <td className={`px-3 py-1.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                                {((catData.otbProposed || 0) + offset * 100).toLocaleString()}
-                              </td>
-                            </React.Fragment>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                    {/* Grand Total */}
-                    {categoryKeys.length > 0 && (
-                      <tr className={sumRowClass}>
-                        <td className="px-4 py-1.5 font-semibold text-xs uppercase tracking-wide font-['Montserrat']">{t('otbAnalysis.total')}</td>
-                        {selectedBrands.map((brand: any) => {
-                          const data = brandBudgetData[brand.id];
-                          const totalBuyPct = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.buyPct || 0), 0);
-                          const totalSalesPct = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.salesPct || 0), 0);
-                          const totalProposed = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.buyProposed || 0), 0);
-                          const totalOtb = Object.values(data?.categoryData || {}).reduce((sum: number, c: any) => sum + (c.otbProposed || 0), 0);
-                          return (
-                            <React.Fragment key={`total-brand-${brand.id}`}>
-                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalBuyPct}%</td>
-                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalSalesPct}%</td>
-                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalProposed}%</td>
-                              <td className="px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold">{totalOtb.toLocaleString()}</td>
-                            </React.Fragment>
-                          );
-                        })}
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Budget Amount Comparison Bar */}
-            <div className={`rounded-xl border overflow-hidden ${
-              darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[#C4B5A5] bg-white'
-            }`}>
-              <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${
-                darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'
-              }`}>
-                <BarChart3 size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                <span className={`text-sm font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
-                  {t('otbAnalysis.brandOverview')}
-                </span>
-              </div>
-              <div className="p-4 space-y-3">
-                {(() => {
-                  const maxBudget = Math.max(...selectedBrands.map((_: any, idx: number) => {
-                    const brand = selectedBrands[idx];
-                    return brandBudgetData[brand.id]?.totalBudget || 0;
-                  }), 1);
-                  return selectedBrands.map((brand: any, idx: number) => {
-                    const data = brandBudgetData[brand.id];
-                    const pct = maxBudget > 0 ? ((data?.totalBudget || 0) / maxBudget) * 100 : 0;
-                    return (
-                      <div key={brand.id} className="space-y-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: BRAND_COLORS[idx] }} />
-                            <span className={`text-xs font-semibold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>{brand.name}</span>
-                          </div>
-                          <span className={`text-xs font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
-                            {formatCurrency(data?.totalBudget || 0)}
-                          </span>
-                        </div>
-                        <div className={`w-full h-2 rounded-full overflow-hidden ${darkMode ? 'bg-[#2E2E2E]' : 'bg-[#E8E0D8]'}`}>
-                          <div
-                            className="h-full rounded-full transition-all duration-200"
-                            style={{ width: `${pct}%`, backgroundColor: BRAND_COLORS[idx] }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
   // Empty state: no approved budgets available
   if (!loadingBudgets && apiBudgets.length === 0) {
     return (
@@ -2100,47 +1232,16 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                 </div>
 
                 {/* Type Filter (Same/Different Season) */}
-                <div className="shrink-0">
-                  <div className={`relative flex rounded-lg border overflow-hidden ${
-                    darkMode ? 'border-[#2A2A2A]' : 'border-[#D4CCC2]'
-                  }`}>
-                    <button
-                      type="button"
-                      onClick={() => { setComparisonType('same'); setSelectedBudgetIds([]); }}
-                      className={`relative px-3 py-[7px] text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-                        comparisonType === 'same'
-                          ? darkMode
-                            ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]'
-                            : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30]'
-                          : darkMode
-                            ? 'bg-[#141414] text-[#666666] hover:text-[#999999] hover:bg-[#181818]'
-                            : 'bg-white text-[#999999] hover:text-[#666666] hover:bg-[#FDFCFB]'
-                      }`}
-                    >
-                      <ArrowLeftRight size={12} />
-                      {t('otbAnalysis.same') || 'Same'}
-                      {comparisonType === 'same' && <div className="absolute bottom-0 left-2 right-2 h-[1.5px] rounded-full" style={{ background: darkMode ? '#D7B797' : '#8B6E4E' }} />}
-                    </button>
-                    <div className={`w-px ${darkMode ? 'bg-[#2A2A2A]' : 'bg-[#D4CCC2]'}`} />
-                    <button
-                      type="button"
-                      onClick={() => { setComparisonType('different'); setSelectedBudgetIds([]); }}
-                      className={`relative px-3 py-[7px] text-xs font-medium flex items-center gap-1.5 transition-all duration-200 ${
-                        comparisonType === 'different'
-                          ? darkMode
-                            ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]'
-                            : 'bg-[rgba(215,183,151,0.15)] text-[#6B4D30]'
-                          : darkMode
-                            ? 'bg-[#141414] text-[#666666] hover:text-[#999999] hover:bg-[#181818]'
-                            : 'bg-white text-[#999999] hover:text-[#666666] hover:bg-[#FDFCFB]'
-                      }`}
-                    >
-                      <ArrowLeftRight size={12} className="rotate-45" />
-                      {t('otbAnalysis.different') || 'Different'}
-                      {comparisonType === 'different' && <div className="absolute bottom-0 left-2 right-2 h-[1.5px] rounded-full" style={{ background: darkMode ? '#D7B797' : '#8B6E4E' }} />}
-                    </button>
-                  </div>
-                </div>
+                <FilterSelect
+                  label={t('otbAnalysis.comparisonType') || 'Type'}
+                  value={comparisonType}
+                  options={[
+                    { value: 'same', label: t('otbAnalysis.same') || 'Same Season' },
+                    { value: 'different', label: t('otbAnalysis.different') || 'Different Season' },
+                  ]}
+                  onChange={(val: any) => { setComparisonType(val); setSelectedBudgetIds([]); }}
+                  darkMode={darkMode}
+                />
 
                 {/* Number of Seasons Dropdown */}
                 <div className="relative shrink-0" ref={setDropdownRef('seasonCount')}>
@@ -2225,9 +1326,11 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       <span className="truncate">
                         {selectedBudgetIds.length === 0
                           ? (t('otbAnalysis.selectBudgets') || 'Select')
-                          : `${selectedBudgetIds.length} ${t('otbAnalysis.budgetsSelected') || 'selected'}`}
+                          : selectedBudgetIds.length === 1
+                            ? (apiBudgets.find((b: any) => b.id === selectedBudgetIds[0])?.budgetName || 'Budget')
+                            : `${selectedBudgetIds.length} ${t('otbAnalysis.budgetsSelected') || 'selected'}`}
                       </span>
-                      {selectedBudgetIds.length > 0 && (
+                      {selectedBudgetIds.length > 1 && (
                         <span className={`px-1.5 text-[10px] leading-[16px] font-bold rounded-md ${
                           darkMode ? 'bg-[#D7B797]/90 text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
                         }`} style={{ letterSpacing: '0.02em' }}>{selectedBudgetIds.length}</span>
@@ -2712,43 +1815,57 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       </div>
       )}
 
-      {/* Single Budget Mode - Tabs & Content */}
+      {/* Single Budget Mode - Category Content */}
       {selectedBudgetIds.length <= 1 && selectedBudget && selectedSeason && selectedSeasonGroup && (
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-        {/* Tabs */}
-        <div className={`border-b px-2 md:px-4 pt-2 ${darkMode ? 'border-[#2E2E2E] bg-[#1A1A1A]' : 'border-[#D4C8BB] bg-[#F2F2F2]'}`}>
-          <div className="flex gap-1">
-            {TABS.map((tab: any) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`px-5 py-2 text-sm font-medium font-['Montserrat'] flex items-center gap-2 border-b-2 transition-all duration-200 ${
-                    isActive
-                      ? darkMode
-                        ? 'border-[#D7B797] text-[#D7B797] bg-[#121212] -mb-px rounded-t-md'
-                        : 'border-[#D7B797] text-[#6B4D30] bg-white -mb-px rounded-t-md'
-                      : darkMode
-                        ? 'border-transparent text-[#666666] hover:text-[#999999] hover:bg-[#121212] rounded-t-md'
-                        : 'border-transparent text-[#999999] hover:text-[#666666] hover:bg-white/50 rounded-t-md'
-                  }`}
-                >
-                  <Icon size={14} />
-                  {t(tab.labelKey) || tab.fallback}
-                </button>
-              );
-            })}
+        {/* Filter Bar (Category / SubCategory / Gender) */}
+        <div className={`border-b px-3 py-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+          <div className="flex items-center gap-2">
+            <FilterSelect
+              label={t('common.category') || 'Category'}
+              value={categoryFilter}
+              options={[
+                { value: 'all', label: t('common.all') || 'All' },
+                ...filterOptions.categories.filter((c: any) => c.id !== 'all').map((c: any) => ({ value: c.id, label: c.name })),
+              ]}
+              onChange={handleCategoryFilterChange}
+              darkMode={darkMode}
+            />
+            <FilterSelect
+              label={t('common.subCategories') || 'SubCat'}
+              value={subCategoryFilter}
+              options={[
+                { value: 'all', label: t('common.all') || 'All' },
+                ...filteredSubCategoryOptions.filter((c: any) => c.id !== 'all').map((c: any) => ({ value: c.id, label: c.name })),
+              ]}
+              onChange={handleSubCategoryFilterChange}
+              darkMode={darkMode}
+            />
+            <FilterSelect
+              label={t('common.gender') || 'Gender'}
+              value={genderFilter}
+              options={[
+                { value: 'all', label: t('common.all') || 'All' },
+                ...filterOptions.genders.filter((c: any) => c.id !== 'all').map((c: any) => ({ value: c.id, label: c.name })),
+              ]}
+              onChange={handleGenderFilterChange}
+              darkMode={darkMode}
+            />
+            {(genderFilter !== 'all' || categoryFilter !== 'all' || subCategoryFilter !== 'all') && (
+              <button
+                onClick={() => { setGenderFilter('all'); setCategoryFilter('all'); setSubCategoryFilter('all'); }}
+                className={`shrink-0 p-1 rounded transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[#1A1A1A]' : 'text-[#666666] hover:text-[#F85149] hover:bg-red-50'}`}
+                title={t('common.clearAll')}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
         </div>
 
-
         {/* Content */}
         <div className="overflow-y-auto">
-          {activeTab === 'collection' && renderCollectionTab()}
-          {activeTab === 'gender' && renderGenderTab()}
-          {activeTab === 'category' && renderCategoryTab()}
+          {renderCategoryTab()}
         </div>
       </div>
       )}

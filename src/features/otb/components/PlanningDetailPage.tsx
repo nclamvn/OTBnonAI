@@ -14,6 +14,7 @@ import { invalidateCache } from '@/services/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { useSessionRecoveryGeneric } from '../hooks/useSessionRecovery';
 
 
@@ -99,6 +100,10 @@ const PlanningDetailPage = ({
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
   const [localData, setLocalData] = useState<Record<string, any>>({});
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Warn on browser close/refresh with unsaved changes
+  useUnsavedChanges(isDirty);
 
   // UX-21: Session recovery for planning form state
   const planningRecovery = useSessionRecoveryGeneric<Record<string, any>>(
@@ -478,6 +483,7 @@ const PlanningDetailPage = ({
         [fieldToUpdate]: newValue
       }
     }));
+    setIsDirty(true);
     setEditingCell(null);
     setEditValue('');
   };

@@ -2,14 +2,14 @@
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
-  ChevronDown, Plus, Search, Table, X, Filter, Eye, Split,
+  ChevronDown, Plus, X, Filter, Eye, Split,
   Wallet, CircleCheckBig, Hourglass, Trash2, Send, Copy, Clock, Archive
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils/formatters';
 import { budgetService, masterDataService } from '@/services';
 import { invalidateCache } from '@/services/api';
-import { LoadingSpinner, ErrorMessage, EmptyState, ExpandableStatCard } from '@/components/ui';
+import { LoadingSpinner, ErrorMessage, EmptyState, ExpandableStatCard, FilterSelect } from '@/components/ui';
 import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, FilterBottomSheet, useBottomSheet } from '@/components/mobile';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -175,10 +175,12 @@ const BudgetManagementScreen = ({
   }, [fetchBudgets]);
 
   // Local State
-  const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState('table');
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [currency, setCurrency] = useState<any>('VND'); // VND or USD
+  const [budgetNameFilter, setBudgetNameFilterRaw] = useState<string>(() => {
+    try { return sessionStorage.getItem('bms_budget_filter') || ''; } catch { return ''; }
+  });
+  const setBudgetNameFilter = (v: string) => { setBudgetNameFilterRaw(v); try { sessionStorage.setItem('bms_budget_filter', v); } catch {} };
 
   // Dropdown states
   const [yearDropdownOpen, setYearDropdownOpen] = useState(false);
@@ -189,8 +191,11 @@ const BudgetManagementScreen = ({
   const [approvalHistory, setApprovalHistory] = useState<any[]>([]); // UX-16: approval timeline
   const [loadingApprovals, setLoadingApprovals] = useState(false);
 
-  // Status filter (P1 UX-01)
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  // Computed unique budget names for FilterSelect
+  const uniqueBudgetNames = useMemo(() => {
+    const names = [...new Set(budgetData.map((b: any) => b.budgetName).filter(Boolean))];
+    return names.sort();
+  }, [budgetData]);
 
   // Column sorting (P1 UX-06)
   const [sortColumn, setSortColumn] = useState<string>('');
@@ -229,8 +234,7 @@ const BudgetManagementScreen = ({
   const filteredBudgets = useMemo(() => {
     let list = budgetData.filter((budget: any) => {
       if (selectedYear && budget.fiscalYear !== selectedYear) return false;
-      if (statusFilter && budget.status !== statusFilter) return false;
-      if (searchQuery && !budget.budgetName.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (budgetNameFilter && budget.budgetName !== budgetNameFilter) return false;
       return true;
     });
     if (sortColumn) {
@@ -244,7 +248,7 @@ const BudgetManagementScreen = ({
       });
     }
     return list;
-  }, [budgetData, selectedYear, statusFilter, searchQuery, sortColumn, sortDir]);
+  }, [budgetData, selectedYear, budgetNameFilter, sortColumn, sortDir]);
 
   // Calculate summary stats
   const summaryStats = useMemo(() => {
@@ -278,8 +282,7 @@ const BudgetManagementScreen = ({
   // Clear all filters
   const clearFilters = () => {
     setSelectedYear(null);
-    setSearchQuery('');
-    setStatusFilter('');
+    setBudgetNameFilter('');
   };
 
   const DetailRow = ({ label, value, strong }: any) => (
@@ -292,7 +295,7 @@ const BudgetManagementScreen = ({
 );
 
 
-  const hasActiveFilters = selectedYear || searchQuery || statusFilter;
+  const hasActiveFilters = selectedYear || budgetNameFilter;
 
   // Loading state
   if (loading) {
@@ -344,7 +347,7 @@ const BudgetManagementScreen = ({
               onClick={() => {
                 setYearDropdownOpen(!yearDropdownOpen);
               }}
-              className={`flex items-center justify-between gap-2 px-3 py-1 border rounded-lg transition-colors min-w-[110px] ${selectedYear
+              className={`flex items-center justify-between gap-2 px-3 py-[7px] border rounded-lg transition-colors min-w-[110px] ${selectedYear
                 ? darkMode
                   ? 'bg-[rgba(215,183,151,0.08)] border-[rgba(215,183,151,0.25)] text-[#D7B797]'
                   : 'bg-[rgba(160,120,75,0.18)] border-[rgba(215,183,151,0.4)] text-[#6B4D30]'
@@ -354,7 +357,7 @@ const BudgetManagementScreen = ({
                 }`}
               aria-label="Select fiscal year"
             >
-              <span className="text-xs font-medium">{selectedYear ? `FY${selectedYear}` : t('budget.allYears')}</span>
+              <span className="text-sm font-medium">{selectedYear ? `FY${selectedYear}` : t('budget.allYears')}</span>
               <ChevronDown size={12} className="opacity-50 shrink-0" />
             </button>
             {yearDropdownOpen && (
@@ -378,101 +381,21 @@ const BudgetManagementScreen = ({
             )}
           </div>
 
-          {/* Status Filter Chips */}
-          <div className="flex items-center gap-1">
-            {['draft', 'submitted', 'approved', 'rejected'].map(s => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(statusFilter === s ? '' : s)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-colors ${
-                  statusFilter === s
-                    ? s === 'approved' ? 'bg-[rgba(42,158,106,0.2)] text-[#2A9E6A]'
-                      : s === 'rejected' ? 'bg-[rgba(248,81,73,0.15)] text-[#F85149]'
-                      : s === 'submitted' ? 'bg-[rgba(88,166,255,0.15)] text-[#58A6FF]'
-                      : darkMode ? 'bg-[rgba(215,183,151,0.12)] text-[#D7B797]' : 'bg-[rgba(160,120,75,0.18)] text-[#6B4D30]'
-                    : darkMode ? 'text-[#666] hover:bg-[#1A1A1A]' : 'text-[#999] hover:bg-gray-100'
-                }`}
-              >
-                {t(`common.${s}`) || s}
-                {summaryStats.statusCounts[s] > 0 && (
-                  <span className="ml-1 opacity-70">({summaryStats.statusCounts[s]})</span>
-                )}
-              </button>
-            ))}
-          </div>
-          </>}
-
-          {/* Search */}
-          <div className="relative flex-1 min-w-[160px]">
-            <Search size={14} className={`absolute left-2.5 top-1/2 -translate-y-1/2 ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`} />
-            <input
-              type="text"
-              placeholder={t('budget.searchBudgets')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-8 pr-3 py-1 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#D7B797] focus:border-transparent ${darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E] text-[#F2F2F2] placeholder-[#666666]' : 'bg-white border-[#C4B5A5] text-[#0A0A0A] placeholder-[#999999]'}`}
+          {/* Budget Name Filter */}
+          <div className="min-w-[160px]">
+            <FilterSelect
+              label={t('budget.budgetName') || 'Budget'}
+              value={budgetNameFilter}
+              options={[
+                { value: '', label: t('budget.allBudgets') || 'All Budgets' },
+                ...uniqueBudgetNames.map(name => ({ value: name, label: name })),
+              ]}
+              onChange={(val) => setBudgetNameFilter(val)}
+              darkMode={darkMode}
+              placeholder={t('budget.allBudgets') || 'All Budgets'}
             />
           </div>
-
-          {/* Currency Toggle */}
-          <div className={`flex items-center rounded-lg p-1 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[#F2F2F2]'}`}>
-            <button
-              onClick={() => setCurrency('VND')}
-              className={`px-3 py-1 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
-                currency === 'VND'
-                  ? darkMode
-                    ? 'bg-[#D7B797] text-[#0A0A0A] shadow-sm'
-                    : 'bg-[#D7B797] text-[#0A0A0A] shadow-sm'
-                  : darkMode
-                    ? 'text-[#666666] hover:text-[#F2F2F2]'
-                    : 'text-[#999999] hover:text-[#0A0A0A]'
-              }`}
-              aria-label="Switch to VND currency"
-            >
-              VND
-            </button>
-            <button
-              onClick={() => setCurrency('USD')}
-              className={`px-3 py-1 rounded-md text-xs font-semibold font-['JetBrains_Mono'] transition-all ${
-                currency === 'USD'
-                  ? darkMode
-                    ? 'bg-[#127749] text-white shadow-sm'
-                    : 'bg-[#127749] text-white shadow-sm'
-                  : darkMode
-                    ? 'text-[#666666] hover:text-[#F2F2F2]'
-                    : 'text-[#999999] hover:text-[#0A0A0A]'
-              }`}
-              aria-label="Switch to USD currency"
-            >
-              USD
-            </button>
-          </div>
-
-          {/* View Toggle */}
-          {/* <div className={`flex items-center gap-1 rounded-lg p-1 ml-auto ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[#F2F2F2]'}`}>
-            <button
-              onClick={() => setViewMode('table')}
-              className={`flex items-center gap-2 px-4 py-0.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'table'
-                  ? darkMode ? 'bg-[#2E2E2E] text-[#F2F2F2] shadow-sm' : 'bg-white text-[#0A0A0A] shadow-sm'
-                  : darkMode ? 'text-[#999999] hover:text-[#F2F2F2]' : 'text-[#666666] hover:text-[#0A0A0A]'
-              }`}
-            >
-              <Table size={16} />
-              Table
-            </button>
-            <button
-              onClick={() => setViewMode('charts')}
-              className={`flex items-center gap-2 px-4 py-0.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'charts'
-                  ? darkMode ? 'bg-[#2E2E2E] text-[#F2F2F2] shadow-sm' : 'bg-white text-[#0A0A0A] shadow-sm'
-                  : darkMode ? 'text-[#999999] hover:text-[#F2F2F2]' : 'text-[#666666] hover:text-[#0A0A0A]'
-              }`}
-            >
-              <PieChart size={16} />
-              Charts
-            </button>
-          </div> */}
+          </>}
 
           {hasActiveFilters && (
             <button
@@ -499,7 +422,7 @@ const BudgetManagementScreen = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <ExpandableStatCard
           title={t('budget.totalBudget')}
-          value={formatCurrency(summaryStats.total, { currency })}
+          value={formatCurrency(summaryStats.total)}
           sub={t('budget.allBudgetsCombined')}
           darkMode={darkMode}
           icon={Wallet}
@@ -509,7 +432,7 @@ const BudgetManagementScreen = ({
         />
         <ExpandableStatCard
           title={t('budget.allocated')}
-          value={formatCurrency(summaryStats.approved, { currency })}
+          value={formatCurrency(summaryStats.approved)}
           sub={`${summaryStats.approvedPct}% ${t('budget.ofTotal')}`}
           darkMode={darkMode}
           icon={CircleCheckBig}
@@ -525,7 +448,7 @@ const BudgetManagementScreen = ({
         />
         <ExpandableStatCard
           title={t('budget.remaining')}
-          value={formatCurrency(summaryStats.remaining, { currency })}
+          value={formatCurrency(summaryStats.remaining)}
           sub={`${summaryStats.remainingPct}% ${t('budget.ofTotal')}`}
           darkMode={darkMode}
           icon={Hourglass}
@@ -533,8 +456,8 @@ const BudgetManagementScreen = ({
           progress={Number(summaryStats.remainingPct)}
           progressLabel={t('budget.remaining')}
           breakdown={[
-            { label: 'Draft', value: summaryStats.draft, displayValue: formatCurrency(summaryStats.draft, { currency }), pct: summaryStats.total > 0 ? Math.round((summaryStats.draft / summaryStats.total) * 100) : 0, color: '#666666' },
-            { label: 'Pending', value: summaryStats.pending, displayValue: formatCurrency(summaryStats.pending, { currency }), pct: summaryStats.total > 0 ? Math.round((summaryStats.pending / summaryStats.total) * 100) : 0, color: '#D29922' },
+            { label: 'Draft', value: summaryStats.draft, displayValue: formatCurrency(summaryStats.draft), pct: summaryStats.total > 0 ? Math.round((summaryStats.draft / summaryStats.total) * 100) : 0, color: '#666666' },
+            { label: 'Pending', value: summaryStats.pending, displayValue: formatCurrency(summaryStats.pending), pct: summaryStats.total > 0 ? Math.round((summaryStats.pending / summaryStats.total) * 100) : 0, color: '#D29922' },
           ]}
           expandTitle={t('home.kpiDetail.breakdown')}
         />
@@ -563,7 +486,7 @@ const BudgetManagementScreen = ({
                 avatar: budget.status === 'approved' ? '✅' : budget.status === 'pending' ? '⏳' : '📝',
                 title: budget.budgetName,
                 subtitle: `FY${budget.fiscalYear}`,
-                value: formatCurrency(budget.totalBudget, { currency }),
+                value: formatCurrency(budget.totalBudget),
                 valueLabel: t('budget.amount'),
                 status: { text: budget.status, variant: budget.status === 'approved' ? 'success' as const : budget.status === 'pending' ? 'warning' as const : 'default' as const },
                 expandedContent: (
@@ -599,9 +522,9 @@ const BudgetManagementScreen = ({
         {/* Desktop Table */}
         {!isMobile && (
         <div className={`rounded-xl shadow-sm border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)]">
           <table className="w-full">
-            <thead className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}>
+            <thead className={`sticky top-0 z-10 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(160,120,75,0.18)]'}`}>
               <tr>
                 <th className={`text-left px-3 py-0.5 text-xs font-semibold tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
                   {t('budget.fiscalYear')}
@@ -621,13 +544,16 @@ const BudgetManagementScreen = ({
               {filteredBudgets.map((budget: any) => (
                 <tr
                   key={budget.id}
-                  className={`transition-colors ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'}`}
+                  onClick={() => { setSelectedBudget(budget); setShowViewModal(true); }}
+                  className={`transition-colors cursor-pointer ${darkMode ? 'hover:bg-[rgba(215,183,151,0.08)]' : 'hover:bg-[rgba(160,120,75,0.18)]'}`}
                 >
                   <td className="px-3 py-0.5">
                     <span className={`text-sm font-medium ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>FY{budget.fiscalYear}</span>
                   </td>
                   <td className="px-3 py-0.5">
-                    <span className={`text-sm font-medium cursor-pointer transition-colors ${
+                    <span
+                      onClick={() => { setSelectedBudget(budget); setShowViewModal(true); }}
+                      className={`text-sm font-medium cursor-pointer transition-colors ${
                       darkMode
                         ? 'text-[#D7B797] hover:text-[#D7B797]/80 hover:underline'
                         : 'text-[#6B4D30] hover:text-[#6B4D30]/80 hover:underline'
@@ -636,9 +562,9 @@ const BudgetManagementScreen = ({
                     </span>
                   </td>
                   <td className="px-3 py-0.5">
-                    <span className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{formatCurrency(budget.totalBudget, { currency })}</span>
+                    <span className={`text-sm font-semibold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>{formatCurrency(budget.totalBudget)}</span>
                   </td>
-                  <td className="px-3 py-0.5">
+                  <td className="px-3 py-0.5" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       {/* View */}
                       <button
@@ -715,6 +641,28 @@ const BudgetManagementScreen = ({
                 </tr>
               ))}
             </tbody>
+            {filteredBudgets.length > 0 && (
+              <tfoot>
+                <tr className={darkMode ? 'bg-[rgba(215,183,151,0.06)]' : 'bg-[rgba(160,120,75,0.10)]'}>
+                  <td className="px-3 py-1.5">
+                    <span className={`text-xs font-bold uppercase tracking-wider font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                      {t('common.total') || 'TOTAL'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <span className={`text-xs font-medium ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
+                      {filteredBudgets.length} {t('budget.budgets') || 'budgets'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-1.5">
+                    <span className={`text-sm font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+                      {formatCurrency(filteredBudgets.reduce((sum: number, b: any) => sum + (Number(b.totalBudget) || 0), 0))}
+                    </span>
+                  </td>
+                  <td className="px-3 py-1.5" />
+                </tr>
+              </tfoot>
+            )}
           </table>
           </div>
 
@@ -812,7 +760,7 @@ const BudgetManagementScreen = ({
 
                 <DetailRow
                   label={t('budget.totalBudget')}
-                  value={formatCurrency(selectedBudget.totalBudget, { currency })}
+                  value={formatCurrency(selectedBudget.totalBudget)}
                   strong
                 />
 
@@ -1086,7 +1034,7 @@ const BudgetManagementScreen = ({
                 />
                 {newBudgetForm.totalBudget && (
                   <p className={`text-xs mt-1 font-['JetBrains_Mono'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                    {formatCurrency(parseInt(newBudgetForm.totalBudget) || 0, { currency })}
+                    {formatCurrency(parseInt(newBudgetForm.totalBudget) || 0)}
                   </p>
                 )}
               </div>

@@ -61,7 +61,7 @@ export const FilterChips: React.FC<FilterChipsProps> = ({
             key={chip.key}
             onClick={() => onChipPress(chip.key)}
             className={`
-              flex items-center gap-1.5 px-3 h-9 rounded-xl
+              flex items-center gap-1.5 px-3 h-11 rounded-xl
               text-[13px] font-medium whitespace-nowrap
               transition-all duration-200
               flex-shrink-0
@@ -176,7 +176,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         ${className}
       `}
       style={{
-        bottom: 'calc(24px + env(safe-area-inset-bottom))',
+        bottom: 'calc(76px + env(safe-area-inset-bottom))',
       }}
     >
       {icon || defaultIcon}

@@ -9,3 +9,4 @@ export { useSmartScrollState } from './useSmartScrollState';
 export { useConfirmDialog } from './useConfirmDialog';
 export { useMasterData } from './useMasterData';
 export { useUnsavedChanges } from './useUnsavedChanges';
+export { useNetworkStatus } from './useNetworkStatus';

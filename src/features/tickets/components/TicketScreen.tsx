@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Eye, Loader2, Plus, X, LayoutList, LayoutGrid, Ticket, CircleCheckBig, DollarSign, Search } from 'lucide-react';
 import TicketKanbanBoard from './TicketKanbanBoard';
-import { ExpandableStatCard } from '@/components/ui';
+import { ExpandableStatCard, ErrorMessage } from '@/components/ui';
 import { MobileList, FilterChips, FloatingActionButton, PullToRefresh, useBottomSheet, FilterBottomSheet } from '@/components/mobile';
 import { budgetService, planningService, proposalService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,11 +73,17 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
     seasonGroup: '',
     season: ''
   });
-  const [viewMode, setViewMode] = useState<string>('table'); // 'table' | 'kanban'
+  const [viewMode, setViewModeRaw] = useState<string>(() => {
+    try { return sessionStorage.getItem('ticket_view_mode') || 'table'; } catch { return 'table'; }
+  });
+  const setViewMode = (v: string) => { setViewModeRaw(v); try { sessionStorage.setItem('ticket_view_mode', v); } catch {} };
   const [budgetOptions, setBudgetOptions] = useState<any[]>([]);
   const { isOpen: filterOpen, open: openFilter, close: closeFilter } = useBottomSheet();
   const [mobileFilters, setMobileFilters] = useState<Record<string, string | string[]>>({});
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTermRaw] = useState<string>(() => {
+    try { return sessionStorage.getItem('ticket_search') || ''; } catch { return ''; }
+  });
+  const setSearchTerm = (v: string) => { setSearchTermRaw(v); try { sessionStorage.setItem('ticket_search', v); } catch {} };
 
   // Fetch all tickets (budgets, plannings, proposals)
   const fetchTickets = async () => {
@@ -392,11 +398,7 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
           <span className="text-sm">{t('ticket.loadingTickets')}</span>
         </div>
       ) : error ? (
-        <div className={`border rounded-lg p-6 text-center text-sm ${
-          darkMode ? 'bg-[#121212] border-[#2E2E2E] text-[#FF7B72]' : 'bg-white border-gray-300 text-red-500'
-        }`}>
-          {t('ticket.failedToLoadTickets')}: {error}
-        </div>
+        <ErrorMessage message={error} onRetry={fetchTickets} darkMode={darkMode} />
       ) : viewMode === 'kanban' ? (
         <TicketKanbanBoard
           tickets={filteredTickets}
@@ -493,9 +495,9 @@ const TicketScreen = ({ onOpenTicketDetail, darkMode = true }: any) => {
         <div className={`border rounded-lg overflow-hidden ${
           darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-gray-300'
         }`}>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)]">
           <table className="w-full text-sm">
-            <thead className={darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(215,183,151,0.15)]'}>
+            <thead className={`sticky top-0 z-10 ${darkMode ? 'bg-[#1A1A1A]' : 'bg-[rgba(215,183,151,0.15)]'}`}>
               <tr>
                 {[t('common.name'), t('approval.brand'), t('ticket.seasonLabel'), t('budget.createdBy'), t('budget.createdOn'), t('common.status'), t('common.actions')].map((header: any, idx: any) => (
                   <th

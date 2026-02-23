@@ -258,9 +258,9 @@ const LoginScreen = () => {
                 </div>
                 <span>Ghi nhớ đăng nhập</span>
               </label>
-              <a href="#" className="text-[#6B5744] hover:text-[#3D2E22] font-light transition-colors no-underline">
+              <button type="button" onClick={() => toast(t('login.contactAdmin') || 'Contact your administrator to reset your password', { icon: 'ℹ️' })} className="text-[#6B5744] hover:text-[#3D2E22] font-light transition-colors no-underline bg-transparent border-none cursor-pointer text-[13px]">
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             {/* Submit */}

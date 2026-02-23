@@ -24,7 +24,7 @@ const Sidebar = ({ currentScreen, darkMode, setDarkMode, user, onLogout }: any) 
   };
   const [isMasterDataOpen, setIsMasterDataOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
-  const [openGroups, setOpenGroups] = useState<any>({ planning: true, approval: false, confirmation: false });
+  const [openGroups, setOpenGroups] = useState<any>({ planning: true, approval: true, confirmation: false });
   const [hoveredItem, setHoveredItem] = useState<any>(null);
   const [showUserMenu, setShowUserMenu] = useState(false);
 

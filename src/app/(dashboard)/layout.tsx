@@ -2,7 +2,7 @@
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppContext } from '@/contexts/AppContext';
-import { useIsMobile } from '@/hooks';
+import { useIsMobile, useNetworkStatus } from '@/hooks';
 import { getScreenIdFromPathname } from '@/utils/routeMap';
 import AuthGuard from '@/components/AuthGuard';
 import { Sidebar } from '@/components/layout';
@@ -17,6 +17,7 @@ export default function DashboardLayout({ children }: any) {
   const currentScreen = getScreenIdFromPathname(pathname);
 
   const { isMobile } = useIsMobile();
+  const { isOnline } = useNetworkStatus();
 
   return (
     <AuthGuard>
@@ -32,6 +33,11 @@ export default function DashboardLayout({ children }: any) {
         </div>
 
         <div className={`flex-1 flex flex-col overflow-hidden ${darkMode ? 'text-content' : 'text-content-inverse'}`}>
+          {!isOnline && (
+            <div className="sticky top-0 z-50 bg-amber-500 text-amber-900 text-center text-sm font-medium py-1.5 px-4">
+              You are offline — changes will sync when reconnected
+            </div>
+          )}
           <AppHeader
             currentScreen={currentScreen}
             darkMode={darkMode}

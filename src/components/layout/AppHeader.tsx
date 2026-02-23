@@ -766,7 +766,7 @@ const AppHeader = ({
 
       {/* Workflow Stepper Bar - Show for all Planning workflow screens */}
       {isInPlanningWorkflow && (
-        <div className={`px-4 ${isMobile ? 'py-1.5' : 'py-1.5'}`} style={{
+        <div className={`px-4 ${isMobile ? 'py-0.5' : 'py-0.5'}`} style={{
           borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
           background: darkMode
             ? 'linear-gradient(90deg, #0A0A0A 0%, rgba(215,183,151,0.02) 50%, #0A0A0A 100%)'
@@ -798,7 +798,7 @@ const AppHeader = ({
                 return (
                   <React.Fragment key={step.id}>
                     {index > 0 && (
-                      <div className={`${isMobile ? 'w-3' : 'w-6'} h-[1.5px] rounded-full transition-all duration-300 shrink-0`} style={{
+                      <div className={`${isMobile ? 'w-3' : 'w-4'} h-[1.5px] rounded-full transition-all duration-300 shrink-0`} style={{
                         background: isCompleted
                           ? 'linear-gradient(90deg, #127749, #2A9E6A)'
                           : darkMode ? '#1A1A1A' : '#D1D5DB',
@@ -808,7 +808,7 @@ const AppHeader = ({
                     {isMobile ? (
                       <button
                         onClick={() => onNavigate(step.id)}
-                        className="flex flex-col items-center gap-0.5 rounded-lg px-1.5 py-1 transition-all duration-200"
+                        className="flex flex-col items-center gap-0.5 rounded-lg px-1 py-0.5 transition-all duration-200"
                         style={{
                           background: isCurrent
                             ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
@@ -839,7 +839,7 @@ const AppHeader = ({
                       /* Desktop: pill-shaped step with count */
                       <button
                         onClick={() => onNavigate(step.id)}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-all duration-200 ${isCurrent ? 'shadow-sm' : ''}`}
+                        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all duration-200 ${isCurrent ? 'shadow-sm' : ''}`}
                         style={{
                           background: isCurrent
                             ? 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)'
@@ -853,7 +853,7 @@ const AppHeader = ({
                         {isCurrent && (
                           <div className="w-2 h-2 rounded-full bg-[#D7B797]" style={{ boxShadow: '0 0 6px rgba(215,183,151,0.4)' }} />
                         )}
-                        <span className={`text-[11px] font-semibold font-['Montserrat'] leading-tight ${
+                        <span className={`text-[10px] font-semibold font-['Montserrat'] leading-tight ${
                           isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#666666]' : 'text-gray-400'
                         }`}>
                           {config.shortLabel}

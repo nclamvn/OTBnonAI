@@ -55,7 +55,7 @@ const SIZING_CHOICES = [
   { id: 'choice-c', name: 'Choice C', isFinal: false },
 ];
 
-const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any) => {
+const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode = false }: any) => {
   const { t } = useLanguage();
   const { isMobile } = useIsMobile();
   const router = useRouter();
@@ -1167,9 +1167,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
             {/* SKU Count + Export + View Mode Toggle */}
             <div className="flex items-center gap-3">
-              <span className={`text-xs ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                {filteredSkuItems.length} SKUs
-              </span>
+              {/* SKU count removed — visible in rail section */}
               {/* Export CSV Button */}
               <button
                 type="button"
@@ -1243,7 +1241,19 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
         </div>{/* end grid animation wrapper */}
       </div>
 
-      {filteredSkuBlocks.length === 0 ? (
+      {!skuDataLoading && skuCatalog.length === 0 ? (
+        <div className={`rounded-xl border p-10 text-center ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
+          <Package size={36} className={`mx-auto mb-3 ${darkMode ? 'text-[#666666]' : 'text-[rgba(215,183,151,0.5)]'}`} />
+          <p className={`font-medium font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>No SKU Catalog</p>
+          <p className={`text-sm mt-1 mb-3 ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>Import SKU data first to begin creating proposals</p>
+          <button
+            onClick={() => router.push('/import-data')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold font-['Montserrat'] transition-colors ${darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]' : 'bg-[#C4A77D] text-white hover:bg-[#B8956D]'}`}
+          >
+            Go to Import
+          </button>
+        </div>
+      ) : filteredSkuBlocks.length === 0 ? (
         <div className={`rounded-xl border p-10 text-center ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[rgba(215,183,151,0.2)]'}`}>
           <Package size={36} className={`mx-auto mb-3 ${darkMode ? 'text-[#666666]' : 'text-[rgba(215,183,151,0.5)]'}`} />
           <p className={`font-medium font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#333333]'}`}>{t('skuProposal.noSkuData')}</p>
@@ -1613,12 +1623,12 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
             );
           })}
 
-          {/* Grand Total */}
+          {/* Sticky Grand Total Bar */}
           {filteredSkuBlocks.length > 0 && (
-            <div className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#D7B797]/30' : 'bg-white border-[#D7B797]/40'}`}>
-              <div className={`flex items-center gap-0 ${darkMode ? 'bg-[rgba(215,183,151,0.15)]' : 'bg-[rgba(215,183,151,0.25)]'}`}>
-                <div className={`w-1.5 self-stretch rounded-l-xl ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`} />
-                <div className="flex flex-wrap items-center justify-between flex-1 px-4 py-2.5 gap-3">
+            <div className={`sticky bottom-0 z-30 rounded-xl border overflow-hidden backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#D7B797]/30' : 'bg-white/95 border-[#D7B797]/40'}`}>
+              <div className="flex items-center gap-0">
+                <div className={`w-1.5 self-stretch ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`} />
+                <div className="flex flex-wrap items-center flex-1 px-4 py-2.5 gap-3">
                   <span className={`text-xs font-semibold font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                     GRAND TOTAL — {filteredSkuBlocks.length} Rails • {grandTotals.skuCount} SKUs
                   </span>
@@ -1636,22 +1646,23 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
                     <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
                     <div className="flex flex-col items-center">
                       <span className={`text-[10px] font-['Montserrat'] uppercase tracking-wider ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>Total Value</span>
-                      <span className={`font-bold text-2xl font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#C4A77D]'}`}>{formatCurrency(grandTotals.ttlValue)}</span>
+                      <span className={`font-bold text-lg font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#C4A77D]'}`}>{formatCurrency(grandTotals.ttlValue)}</span>
                     </div>
-                    <div className={`h-6 w-px ${darkMode ? 'bg-[rgba(215,183,151,0.3)]' : 'bg-[rgba(215,183,151,0.5)]'}`} />
+                  </div>
+                  <div className="ml-auto">
                     <button
                       onClick={() => {
-                        router.push(`/tickets?source=proposal&budgetId=${budgetFilter !== 'all' ? budgetFilter : ''}`);
+                        if (onSubmitTicket) {
+                          onSubmitTicket({ budgetId: budgetFilter !== 'all' ? budgetFilter : '', skuBlocks: filteredSkuBlocks, grandTotals, stores });
+                        } else {
+                          router.push(`/tickets?source=proposal&budgetId=${budgetFilter !== 'all' ? budgetFilter : ''}`);
+                        }
                       }}
                       disabled={grandTotals.order === 0}
                       className={`flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold font-['Montserrat'] transition-colors ${
                         grandTotals.order > 0
-                          ? darkMode
-                            ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]'
-                            : 'bg-[#C4A77D] text-white hover:bg-[#B8956D]'
-                          : darkMode
-                            ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed'
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                          ? darkMode ? 'bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A584]' : 'bg-[#C4A77D] text-white hover:bg-[#B8956D]'
+                          : darkMode ? 'bg-[#2E2E2E] text-[#666666] cursor-not-allowed' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                       }`}
                     >
                       <Send size={16} />
@@ -1756,9 +1767,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
               {/* Store Order Tab */}
               {lightbox.tab === 'storeOrder' && (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)]">
                   <table className="w-full text-sm">
-                    <thead>
+                    <thead className="sticky top-0 z-10">
                       <tr className={darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-[rgba(160,120,75,0.12)] text-[#666666]'}>
                         <th className="px-4 py-2 text-left">Store</th>
                         <th className="px-4 py-2 text-center font-['JetBrains_Mono']">ORDER</th>
@@ -1806,9 +1817,9 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, darkMode = false }: any)
 
               {/* Sizing Tab */}
               {lightbox.tab === 'sizing' && (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-220px)]">
                   <table className="w-full text-sm">
-                    <thead>
+                    <thead className="sticky top-0 z-10">
                       <tr className={darkMode ? 'bg-[rgba(215,183,151,0.15)] text-[#D7B797]' : 'bg-[rgba(215,183,151,0.2)] text-[#6B4D30]'}>
                         <th className="px-4 py-2 text-left font-semibold font-['Montserrat']">{lightbox.item.productType}</th>
                         <th className="px-4 py-2 text-center font-semibold font-['JetBrains_Mono']">0002</th>
