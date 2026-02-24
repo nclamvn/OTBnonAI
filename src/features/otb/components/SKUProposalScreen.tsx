@@ -480,6 +480,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
   const [editingCell, setEditingCell] = useState<any>(null);
   const [highlightedRow, setHighlightedRow] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+  const [commentPopup, setCommentPopup] = useState<{ text: string; blockKey: string; idx: number; rect: DOMRect } | null>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
 
   // Add SKU Modal state
@@ -1363,6 +1364,33 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'}`}>{item.order}</td>
                           ))}
                         </tr>
+                        {/* Comment row */}
+                        <tr className={trCls('comment')}>
+                          <td className={tdLabel('comment')} onClick={() => toggleHl('comment')}>Comment</td>
+                          {block.items.map((item: any, idx: number) => (
+                            <td key={idx} className="px-3 py-1.5 text-center">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={item.comment || ''}
+                                  onChange={(e) => handleSelectChange(key, idx, 'comment', e.target.value)}
+                                  onClick={(e) => {
+                                    if (item.comment) {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      setCommentPopup({ text: item.comment, blockKey: key, idx, rect });
+                                    }
+                                  }}
+                                  placeholder="..."
+                                  className={`w-full min-w-[80px] px-2 py-1 text-xs text-center border rounded-md outline-none transition-colors truncate ${
+                                    darkMode
+                                      ? 'bg-transparent border-[#2E2E2E] text-[#F2F2F2] placeholder-[#555] focus:border-[#D7B797]'
+                                      : 'bg-transparent border-[rgba(215,183,151,0.3)] text-[#333333] placeholder-[#aaa] focus:border-[#C4A77D]'
+                                  }`}
+                                />
+                              </div>
+                            </td>
+                          ))}
+                        </tr>
                         {/* Dynamic store rows */}
                         {stores.map((st: any) => (
                           <tr key={st.code} className={trCls(`store_${st.code}`)}>
@@ -1465,7 +1493,7 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
 
           {/* Sticky Grand Total Bar */}
           {filteredSkuBlocks.length > 0 && (
-            <div className={`sticky bottom-0 z-30 rounded-xl border overflow-hidden backdrop-blur-sm ${darkMode ? 'bg-[#121212]/95 border-[#D7B797]/30' : 'bg-white/95 border-[#D7B797]/40'}`}>
+            <div className={`rounded-xl border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#D7B797]/30' : 'bg-white border-[#D7B797]/40'}`}>
               <div className="flex items-center gap-0">
                 <div className={`w-1.5 self-stretch ${darkMode ? 'bg-[#2A9E6A]' : 'bg-[#127749]'}`} />
                 <div className="flex flex-wrap items-center flex-1 px-4 py-2.5 gap-3">
@@ -1824,6 +1852,40 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
           customerTargetOptions={customerTargetOptions}
           onCreateCustomerTarget={(val) => setCustomerTargetOptions(prev => [...prev, val])}
         />
+      )}
+
+      {/* Comment popup — portal */}
+      {commentPopup && createPortal(
+        <div
+          className="fixed inset-0 z-[9999]"
+          onClick={() => setCommentPopup(null)}
+        >
+          <div
+            className={`fixed rounded-lg border px-4 py-3 max-w-xs shadow-xl ${
+              darkMode
+                ? 'bg-[#1a1a1a] border-[#D7B797]/30 text-[#F2F2F2]'
+                : 'bg-white border-[#D4CCC2] text-[#333333]'
+            }`}
+            style={{
+              top: commentPopup.rect.top - 8,
+              left: commentPopup.rect.left + commentPopup.rect.width / 2,
+              transform: 'translate(-50%, -100%)',
+              boxShadow: darkMode
+                ? '0 8px 24px rgba(0,0,0,0.6)'
+                : '0 8px 24px rgba(0,0,0,0.12)',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`text-[10px] uppercase tracking-wider font-semibold mb-1 font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>Comment</div>
+            <div className="text-sm whitespace-pre-wrap break-words">{commentPopup.text}</div>
+            <div
+              className={`absolute left-1/2 -translate-x-1/2 bottom-[-6px] w-3 h-3 rotate-45 border-r border-b ${
+                darkMode ? 'bg-[#1a1a1a] border-[#D7B797]/30' : 'bg-white border-[#D4CCC2]'
+              }`}
+            />
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx';
 import { formatCurrency } from '../../../utils';
 
 interface ExportAllocationOptions {
@@ -13,7 +12,8 @@ interface ExportAllocationOptions {
   totalAllocated: number;
 }
 
-export function exportAllocationToExcel(opts: ExportAllocationOptions) {
+export async function exportAllocationToExcel(opts: ExportAllocationOptions) {
+  const XLSX = await import('xlsx');
   const {
     budgetName, fiscalYear, stores, seasonGroups, seasonConfig,
     brands, allocationValues, totalBudget, totalAllocated,

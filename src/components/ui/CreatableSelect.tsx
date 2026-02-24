@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { ChevronDown, Check, Plus, X } from 'lucide-react';
 
 interface CreatableSelectProps {
@@ -28,7 +29,10 @@ function CreatableSelect({
 }: CreatableSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Filtered options based on input
@@ -40,11 +44,26 @@ function CreatableSelect({
     inputValue.trim() &&
     !options.some((o) => o.toLowerCase() === inputValue.trim().toLowerCase());
 
-  // Click outside to close
+  // Position dropdown relative to trigger
+  useEffect(() => {
+    if (!isOpen || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownPos({
+      top: rect.bottom + 6,
+      left: rect.left,
+      width: Math.max(rect.width, 160),
+    });
+  }, [isOpen]);
+
+  // Click outside to close (check both container and portal dropdown)
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        containerRef.current && !containerRef.current.contains(target) &&
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      ) {
         setIsOpen(false);
         setInputValue('');
       }
@@ -118,6 +137,7 @@ function CreatableSelect({
 
       {/* Trigger */}
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleOpen}
         disabled={disabled}
@@ -146,11 +166,16 @@ function CreatableSelect({
         </div>
       </button>
 
-      {/* Dropdown */}
-      {isOpen && (
+      {/* Dropdown — rendered via portal to escape overflow:clip containers */}
+      {isOpen && createPortal(
         <div
-          className={`absolute top-full left-0 mt-1.5 z-[9999] min-w-full w-max rounded-lg overflow-hidden border ${dropBg} ${dropBorder}`}
+          ref={dropdownRef}
+          className={`fixed z-[9999] rounded-lg overflow-hidden border ${dropBg} ${dropBorder}`}
           style={{
+            top: dropdownPos.top,
+            left: dropdownPos.left,
+            minWidth: dropdownPos.width,
+            width: 'max-content',
             boxShadow: darkMode
               ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)'
               : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06)',
@@ -220,7 +245,8 @@ function CreatableSelect({
               <div className={`px-3 py-3 text-center text-xs ${textMuted}`}>No options found</div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

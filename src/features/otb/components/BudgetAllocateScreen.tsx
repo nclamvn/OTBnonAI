@@ -748,10 +748,10 @@ const BudgetAllocateScreen = ({
   }, [selectedGroupBrand, groupBrandList]);
 
   // Handle export (placed after displayBrands + totalAllocated are defined)
-  const handleExportExcel = useCallback(() => {
+  const handleExportExcel = useCallback(async () => {
     if (!selectedBudgetId) return;
     try {
-      exportAllocationToExcel({
+      await exportAllocationToExcel({
         budgetName: selectedBudget?.budgetName || fallbackBudgetName || 'Allocation',
         fiscalYear: selectedBudget?.fiscalYear || selectedYear,
         stores,
