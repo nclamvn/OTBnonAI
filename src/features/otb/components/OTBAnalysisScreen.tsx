@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import {
   BarChart3, Filter, ChevronDown, Check,
   Calendar, Tag, Layers, Users, Pencil, X,
-  FileText, Clock, Split
+  FileText, Clock, Split, Bookmark, Store
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatCurrency } from '@/utils';
@@ -244,6 +244,13 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const [subCategoryFilter, setSubCategoryFilter] = useState('all');
   const [openCategoryDropdown, setOpenCategoryDropdown] = useState<any>(null);
 
+  // Active tab for Category / Collection / Gender views
+  const [activeTab, setActiveTab] = useState<'category' | 'collection' | 'gender'>('category');
+
+  // Collapse states for Collection and Gender tabs
+  const [expandedCollections, setExpandedCollections] = useState<Record<string, boolean>>({});
+  const [expandedGenderGroups, setExpandedGenderGroups] = useState<Record<string, boolean>>({});
+
   // Editable cell states
   const [editingCell, setEditingCell] = useState<any>(null);
   const [editValue, setEditValue] = useState('');
@@ -371,6 +378,45 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
           };
           catIndex++;
         });
+      });
+    });
+
+    // Initialize Collection tab data (collection x store)
+    const collectionDemoValues = [
+      { buyPct: 30, salesPct: 28, stPct: 93, moc: 2.1, userBuyPct: 25, otbValue: 45000, varPct: -3 },
+      { buyPct: 22, salesPct: 20, stPct: 87, moc: 1.8, userBuyPct: 20, otbValue: 32000, varPct: 2 },
+      { buyPct: 18, salesPct: 16, stPct: 85, moc: 1.5, userBuyPct: 15, otbValue: 28000, varPct: -1 },
+      { buyPct: 15, salesPct: 14, stPct: 90, moc: 1.9, userBuyPct: 12, otbValue: 22000, varPct: 1 },
+      { buyPct: 10, salesPct: 12, stPct: 82, moc: 1.3, userBuyPct: 10, otbValue: 18000, varPct: -2 },
+    ];
+    let colIdx = 0;
+    collectionSections.forEach((section: any) => {
+      STORES.forEach((store: any) => {
+        const key = `collection_${section.id}_${store.id}`;
+        const demo = collectionDemoValues[colIdx % collectionDemoValues.length];
+        initialData[key] = { ...demo };
+        colIdx++;
+      });
+    });
+
+    // Initialize Gender tab data (gender x store)
+    const genderDemoValues = [
+      { buyPct: 55, salesPct: 52, stPct: 94, userBuyPct: 50, otbValue: 120000, varPct: -2 },
+      { buyPct: 45, salesPct: 48, stPct: 91, userBuyPct: 42, otbValue: 98000, varPct: 3 },
+      { buyPct: 35, salesPct: 30, stPct: 86, userBuyPct: 32, otbValue: 75000, varPct: -5 },
+      { buyPct: 28, salesPct: 25, stPct: 89, userBuyPct: 26, otbValue: 62000, varPct: 1 },
+      { buyPct: 20, salesPct: 18, stPct: 83, userBuyPct: 18, otbValue: 45000, varPct: -2 },
+    ];
+    let genIdx = 0;
+    const genderList = categoryStructure.length > 0
+      ? categoryStructure.map((g: any) => g.gender)
+      : GENDERS;
+    genderList.forEach((gender: any) => {
+      STORES.forEach((store: any) => {
+        const key = `gender_${gender.id}_${store.id}`;
+        const demo = genderDemoValues[genIdx % genderDemoValues.length];
+        initialData[key] = { ...demo };
+        genIdx++;
       });
     });
 
@@ -691,20 +737,35 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     }, []);
   }, [apiBudgets, selectedYear]);
 
-  const handleBrandFilterChange = (value: any) => {
-    if (value === 'all') return;
-    // Switch to the selected brand's budget
-    setSelectedBudgetIds([value]);
-    setSelectedBudgetId(value);
-    const budget = apiBudgets.find((b: any) => b.id === value);
-    if (budget) {
-      if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
-      if (budget.seasonType) setSelectedSeason(budget.seasonType);
-    }
-    // Reset category filters when switching brand
-    setGenderFilter('all');
-    setCategoryFilter('all');
-    setSubCategoryFilter('all');
+  const handleBrandToggle = (budgetId: string) => {
+    setSelectedBudgetIds(prev => {
+      if (prev.includes(budgetId)) {
+        // Remove brand
+        const next = prev.filter(id => id !== budgetId);
+        if (next.length === 1) {
+          setSelectedBudgetId(next[0]);
+          const budget = apiBudgets.find((b: any) => b.id === next[0]);
+          if (budget) {
+            if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
+            if (budget.seasonType) setSelectedSeason(budget.seasonType);
+          }
+        } else if (next.length === 0) {
+          setSelectedBudgetId('all');
+        }
+        return next;
+      }
+      // Add brand
+      const next = [...prev, budgetId];
+      if (next.length === 1) {
+        setSelectedBudgetId(budgetId);
+        const budget = apiBudgets.find((b: any) => b.id === budgetId);
+        if (budget) {
+          if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
+          if (budget.seasonType) setSelectedSeason(budget.seasonType);
+        }
+      }
+      return next;
+    });
   };
 
   // Common table styles - DAFC Design System (compact)
@@ -1012,6 +1073,295 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render Collection Tab — collection sections with store-level detail
+  const renderCollectionTab = () => {
+    const calculateCollectionTotals = (sectionId: string) => {
+      let totals = { buyPct: 0, salesPct: 0, stPct: 0, moc: 0, userBuyPct: 0, otbValue: 0, varPct: 0 };
+      let count = 0;
+      STORES.forEach((store: any) => {
+        const key = `collection_${sectionId}_${store.id}`;
+        const data = localData[key] || {};
+        totals.buyPct += data.buyPct || 0;
+        totals.salesPct += data.salesPct || 0;
+        totals.moc += data.moc || 0;
+        totals.userBuyPct += data.userBuyPct || 0;
+        totals.otbValue += data.otbValue || 0;
+        totals.varPct += data.varPct || 0;
+        count++;
+      });
+      totals.stPct = totals.salesPct > 0 ? Math.round((totals.salesPct / (totals.buyPct || 1)) * 100) : 0;
+      if (count > 0) totals.moc = Math.round((totals.moc / count) * 10) / 10;
+      return totals;
+    };
+
+    return (
+      <div className="p-4 space-y-3">
+        {collectionSections.map((section: any) => {
+          const sectionTotals = calculateCollectionTotals(section.id);
+          const isExpanded = expandedCollections[section.id] !== false;
+
+          return (
+            <div key={section.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+              {/* Collection Header */}
+              <div
+                onClick={() => setExpandedCollections(prev => ({ ...prev, [section.id]: !isExpanded }))}
+                className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-0.5 cursor-pointer transition-all ${
+                  darkMode
+                    ? 'bg-gradient-to-r from-[#1A1A1A] to-[#121212] hover:from-[#2E2E2E] hover:to-[#1A1A1A]'
+                    : 'bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.08)] hover:from-[rgba(215,183,151,0.25)] hover:to-[rgba(215,183,151,0.15)] border-b border-[rgba(215,183,151,0.2)]'
+                }`}
+              >
+                <button className={`p-1 rounded-lg transition-colors ${
+                  darkMode ? 'bg-white/20 hover:bg-white/30' : 'bg-[rgba(138,99,64,0.1)] hover:bg-[rgba(138,99,64,0.2)]'
+                }`}>
+                  <ChevronDown size={18} className={`transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'} ${darkMode ? 'text-white' : 'text-[#6B4D30]'}`} />
+                </button>
+                <Bookmark size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{section.name}</span>
+                <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-white/80' : 'text-[#6B4D30]'}`}>
+                  {STORES.length} stores
+                </span>
+                <div className={`hidden md:flex items-center gap-4 ml-4 text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-white/90' : 'text-[#5C4A3A]'}`}>
+                  <span>Buy: <strong>{sectionTotals.buyPct}%</strong></span>
+                  <span>Sales: <strong>{sectionTotals.salesPct}%</strong></span>
+                  <span>OTB: <strong>{formatCurrency(sectionTotals.otbValue)}</strong></span>
+                </div>
+              </div>
+
+              {/* Collection Store Table */}
+              {isExpanded && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className={`px-4 py-2 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>Store</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>MOC</th>
+                        <th className={`${headerCellClass} ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
+                        <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
+                        <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {STORES.map((store: any, sIdx: number) => {
+                        const cellKey = `collection_${section.id}_${store.id}`;
+                        const rowData = localData[cellKey] || {};
+                        const isEditing = editingCell === cellKey;
+
+                        return (
+                          <tr
+                            key={cellKey}
+                            className={`border-b transition-colors ${
+                              darkMode
+                                ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${sIdx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
+                                : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${sIdx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
+                            }`}
+                          >
+                            <td className="px-4 py-0.5">
+                              <div className="flex items-center gap-2">
+                                <Store size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                                <span className={darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}>{store.name}</span>
+                              </div>
+                            </td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.buyPct || 0}%</td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.salesPct || 0}%</td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.stPct || 0}%</td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.moc || 0}</td>
+                            <td className={`px-3 py-0.5 ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
+                              <EditableCell
+                                cellKey={cellKey}
+                                value={rowData.userBuyPct || 0}
+                                isEditing={isEditing}
+                                editValue={editValue}
+                                onStartEdit={handleStartEdit}
+                                onSaveEdit={handleSaveEdit}
+                                onChangeValue={setEditValue}
+                                onKeyDown={handleKeyDown}
+                                darkMode={darkMode}
+                              />
+                            </td>
+                            <td className={`px-3 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                              {formatCurrency(rowData.otbValue || 0)}
+                            </td>
+                            <td className={`px-3 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${
+                              (rowData.varPct || 0) < 0 ? 'text-[#F85149]' : 'text-[#2A9E6A]'
+                            }`}>
+                              {(rowData.varPct || 0) > 0 ? '+' : ''}{rowData.varPct || 0}%
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {/* Collection Subtotal */}
+                      <tr className={darkMode ? 'bg-gradient-to-r from-[rgba(215,183,151,0.2)] to-[rgba(215,183,151,0.15)] font-medium' : 'bg-gradient-to-r from-[rgba(215,183,151,0.25)] to-[rgba(215,183,151,0.2)] font-medium'}>
+                        <td className={`px-4 py-0.5 font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{t('otbAnalysis.subTotal')}</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{sectionTotals.buyPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{sectionTotals.salesPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{sectionTotals.stPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{sectionTotals.moc}</td>
+                        <td className={`px-3 py-0.5 text-center bg-[rgba(160,120,75,0.18)] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{sectionTotals.userBuyPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{formatCurrency(sectionTotals.otbValue)}</td>
+                        <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${
+                          sectionTotals.varPct < 0 ? 'text-[#FF7B72]' : darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'
+                        }`}>
+                          {sectionTotals.varPct > 0 ? '+' : ''}{sectionTotals.varPct}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Render Gender Tab — gender groups with store-level detail
+  const renderGenderTab = () => {
+    const genderList = categoryStructure.length > 0
+      ? categoryStructure.map((g: any) => g.gender)
+      : GENDERS;
+
+    const calculateGenderTotals = (genderId: string) => {
+      let totals = { buyPct: 0, salesPct: 0, stPct: 0, userBuyPct: 0, otbValue: 0, varPct: 0 };
+      STORES.forEach((store: any) => {
+        const key = `gender_${genderId}_${store.id}`;
+        const data = localData[key] || {};
+        totals.buyPct += data.buyPct || 0;
+        totals.salesPct += data.salesPct || 0;
+        totals.userBuyPct += data.userBuyPct || 0;
+        totals.otbValue += data.otbValue || 0;
+        totals.varPct += data.varPct || 0;
+      });
+      totals.stPct = totals.salesPct > 0 ? Math.round((totals.salesPct / (totals.buyPct || 1)) * 100) : 0;
+      return totals;
+    };
+
+    return (
+      <div className="p-4 space-y-3">
+        {genderList.map((gender: any) => {
+          const genderTotals = calculateGenderTotals(gender.id);
+          const isExpanded = expandedGenderGroups[gender.id] !== false;
+
+          return (
+            <div key={gender.id} className={`rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+              {/* Gender Header */}
+              <div
+                onClick={() => setExpandedGenderGroups(prev => ({ ...prev, [gender.id]: !isExpanded }))}
+                className={`flex flex-wrap items-center gap-2 md:gap-3 px-3 md:px-4 py-0.5 cursor-pointer transition-all ${
+                  darkMode
+                    ? 'bg-gradient-to-r from-[#1A1A1A] to-[#121212] hover:from-[#2E2E2E] hover:to-[#1A1A1A]'
+                    : 'bg-gradient-to-r from-[rgba(215,183,151,0.15)] to-[rgba(215,183,151,0.08)] hover:from-[rgba(215,183,151,0.25)] hover:to-[rgba(215,183,151,0.15)] border-b border-[rgba(215,183,151,0.2)]'
+                }`}
+              >
+                <button className={`p-1 rounded-lg transition-colors ${
+                  darkMode ? 'bg-white/20 hover:bg-white/30' : 'bg-[rgba(138,99,64,0.1)] hover:bg-[rgba(138,99,64,0.2)]'
+                }`}>
+                  <ChevronDown size={18} className={`transition-transform duration-200 ${isExpanded ? '' : '-rotate-90'} ${darkMode ? 'text-white' : 'text-[#6B4D30]'}`} />
+                </button>
+                <Users size={18} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                <span className={`font-semibold text-xs font-['Montserrat'] uppercase tracking-wide ${darkMode ? 'text-white' : 'text-[#5C4A3A]'}`}>{gender.name}</span>
+                <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-white/80' : 'text-[#6B4D30]'}`}>
+                  {STORES.length} stores
+                </span>
+                <div className={`hidden md:flex items-center gap-4 ml-4 text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-white/90' : 'text-[#5C4A3A]'}`}>
+                  <span>Buy: <strong>{genderTotals.buyPct}%</strong></span>
+                  <span>Sales: <strong>{genderTotals.salesPct}%</strong></span>
+                  <span>OTB: <strong>{formatCurrency(genderTotals.otbValue)}</strong></span>
+                </div>
+              </div>
+
+              {/* Gender Store Table */}
+              {isExpanded && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className={`px-4 py-2 text-left text-xs font-semibold font-['Montserrat'] ${headerDarkCell}`}>Store</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctBuy')}</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctSales')}</th>
+                        <th className={`${headerCellClass} ${headerDarkCell}`}>{t('otbAnalysis.pctST')}</th>
+                        <th className={`${headerCellClass} ${headerGoldCell}`}>{t('otbAnalysis.pctProposed')}</th>
+                        <th className={`${headerCellClass} ${headerBrownCell}`}>{t('otbAnalysis.dollarOTB')}</th>
+                        <th className={`${headerCellClass} ${headerDarkBrownCell}`}>{t('otbAnalysis.variance')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {STORES.map((store: any, sIdx: number) => {
+                        const cellKey = `gender_${gender.id}_${store.id}`;
+                        const rowData = localData[cellKey] || {};
+                        const isEditing = editingCell === cellKey;
+
+                        return (
+                          <tr
+                            key={cellKey}
+                            className={`border-b transition-colors ${
+                              darkMode
+                                ? `border-[#2E2E2E] hover:bg-[#1A1A1A] ${sIdx % 2 === 0 ? 'bg-[#121212]' : 'bg-[#0A0A0A]'}`
+                                : `border-[#D4C8BB] hover:bg-[rgba(160,120,75,0.08)] ${sIdx % 2 === 0 ? 'bg-white' : 'bg-[#F2F2F2]/50'}`
+                            }`}
+                          >
+                            <td className="px-4 py-0.5">
+                              <div className="flex items-center gap-2">
+                                <Store size={12} className={darkMode ? 'text-[#666666]' : 'text-[#999999]'} />
+                                <span className={darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}>{store.name}</span>
+                              </div>
+                            </td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.buyPct || 0}%</td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.salesPct || 0}%</td>
+                            <td className={`px-2 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>{rowData.stPct || 0}%</td>
+                            <td className={`px-3 py-0.5 ${darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(160,120,75,0.12)]'}`}>
+                              <EditableCell
+                                cellKey={cellKey}
+                                value={rowData.userBuyPct || 0}
+                                isEditing={isEditing}
+                                editValue={editValue}
+                                onStartEdit={handleStartEdit}
+                                onSaveEdit={handleSaveEdit}
+                                onChangeValue={setEditValue}
+                                onKeyDown={handleKeyDown}
+                                darkMode={darkMode}
+                              />
+                            </td>
+                            <td className={`px-3 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]'}`}>
+                              {formatCurrency(rowData.otbValue || 0)}
+                            </td>
+                            <td className={`px-3 py-0.5 text-center font-medium font-['JetBrains_Mono'] ${
+                              (rowData.varPct || 0) < 0 ? 'text-[#F85149]' : 'text-[#2A9E6A]'
+                            }`}>
+                              {(rowData.varPct || 0) > 0 ? '+' : ''}{rowData.varPct || 0}%
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {/* Gender Subtotal */}
+                      <tr className={darkMode ? 'bg-gradient-to-r from-[rgba(215,183,151,0.2)] to-[rgba(215,183,151,0.15)] font-medium' : 'bg-gradient-to-r from-[rgba(215,183,151,0.25)] to-[rgba(215,183,151,0.2)] font-medium'}>
+                        <td className={`px-4 py-0.5 font-semibold font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{t('otbAnalysis.subTotal')}</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{genderTotals.buyPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{genderTotals.salesPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{genderTotals.stPct}%</td>
+                        <td className={`px-3 py-0.5 text-center bg-[rgba(160,120,75,0.18)] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>{genderTotals.userBuyPct}%</td>
+                        <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'}`}>{formatCurrency(genderTotals.otbValue)}</td>
+                        <td className={`px-3 py-0.5 text-center font-bold font-['JetBrains_Mono'] ${
+                          genderTotals.varPct < 0 ? 'text-[#FF7B72]' : darkMode ? 'text-[#D7B797]' : 'text-[#5C4A32]'
+                        }`}>
+                          {genderTotals.varPct > 0 ? '+' : ''}{genderTotals.varPct}%
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -1469,16 +1819,107 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   )}
                 </div>
 
-                {/* Brand Filter — quick switch between brands */}
-                {brandOptions.length > 1 && (
+                {/* Brand Filter — multi-select brands */}
+                {brandOptions.length >= 1 && (
                 <>
                 <div className={`h-5 w-px hidden sm:block rounded-full ${darkMode ? 'bg-gradient-to-b from-transparent via-[#2E2E2E] to-transparent' : 'bg-gradient-to-b from-transparent via-[#C4B5A5]/40 to-transparent'}`} />
-                <FilterSelect
-                  value={selectedBudgetId}
-                  options={brandOptions}
-                  onChange={handleBrandFilterChange}
-                  darkMode={darkMode}
-                />
+                <div className="relative shrink-0" ref={setDropdownRef('brand')}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpenDropdown((prev: any) => (prev === 'brand' ? null : 'brand'));
+                      setOpenCategoryDropdown(null);
+                    }}
+                    className={`px-3 py-[7px] border rounded-lg font-medium cursor-pointer flex items-center gap-2 text-xs transition-all duration-200 ${
+                      openDropdown === 'brand'
+                        ? darkMode
+                          ? 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/50 shadow-[0_0_0_1px_rgba(215,183,151,0.12)]'
+                          : 'bg-[rgba(215,183,151,0.06)] border-[#D7B797]/60 shadow-[0_0_0_1px_rgba(215,183,151,0.15)]'
+                        : selectedBudgetIds.length > 0
+                          ? darkMode
+                            ? 'bg-[rgba(215,183,151,0.05)] border-[rgba(215,183,151,0.2)] text-[#D7B797] hover:border-[rgba(215,183,151,0.35)]'
+                            : 'bg-[rgba(215,183,151,0.04)] border-[rgba(215,183,151,0.3)] text-[#6B4D30] hover:border-[rgba(215,183,151,0.5)]'
+                          : darkMode
+                            ? 'bg-[#141414] border-[#2A2A2A] text-[#F2F2F2] hover:border-[#444444] hover:bg-[#181818]'
+                            : 'bg-white border-[#D4CCC2] text-[#1A1A1A] hover:border-[#B8A998] hover:bg-[#FDFCFB]'
+                    }`}
+                  >
+                    <Tag size={12} className={selectedBudgetIds.length > 0 ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')} />
+                    <span className="truncate max-w-[120px]">
+                      {(() => {
+                        const selectedBrands = brandOptions.filter((b: any) => selectedBudgetIds.includes(b.value));
+                        if (selectedBrands.length === 0) return 'Brands';
+                        if (selectedBrands.length === 1) return selectedBrands[0].label;
+                        return `${selectedBrands.length} brands`;
+                      })()}
+                    </span>
+                    {selectedBudgetIds.length > 1 && (
+                      <span className={`px-1.5 text-[10px] leading-[16px] font-bold rounded-md ${
+                        darkMode ? 'bg-[#D7B797]/90 text-[#0A0A0A]' : 'bg-[#6B4D30] text-white'
+                      }`}>{selectedBudgetIds.filter(id => brandOptions.some((b: any) => b.value === id)).length}</span>
+                    )}
+                    <ChevronDown size={10} strokeWidth={2} className={`transition-transform duration-200 ease-out ${openDropdown === 'brand' ? 'rotate-180' : ''} ${openDropdown === 'brand' ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : (darkMode ? 'text-[#555555]' : 'text-[#AAAAAA]')}`} />
+                  </button>
+                  {openDropdown === 'brand' && (
+                    <div
+                      className={`absolute top-full left-0 mt-1.5 whitespace-nowrap w-max min-w-[220px] border rounded-lg z-[9999] overflow-hidden ${
+                        darkMode ? 'bg-[#161616] border-[#2E2E2E]' : 'bg-white border-[#D4CCC2]'
+                      }`}
+                      style={{
+                        boxShadow: darkMode
+                          ? '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(215,183,151,0.06)'
+                          : '0 8px 32px rgba(107,77,48,0.08), 0 2px 8px rgba(107,77,48,0.06), inset 0 1px 0 rgba(215,183,151,0.15)',
+                      }}
+                    >
+                      <div className="h-[1.5px]" style={{ background: darkMode ? 'linear-gradient(90deg, transparent 5%, rgba(215,183,151,0.35) 50%, transparent 95%)' : 'linear-gradient(90deg, transparent 5%, rgba(184,153,112,0.4) 50%, transparent 95%)' }} />
+                      <div className={`px-3 py-2 border-b flex items-center justify-between ${darkMode ? 'bg-[#1A1A1A]/60 border-[#2E2E2E]' : 'bg-[#FDFCFB] border-[#E8E0D8]'}`}>
+                        <span className={`text-[10px] font-semibold uppercase tracking-[0.12em] font-['Montserrat'] ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
+                          Select Brands
+                        </span>
+                        {selectedBudgetIds.length > 0 && (
+                          <button
+                            onClick={() => { setSelectedBudgetIds([]); setSelectedBudgetId('all'); }}
+                            className={`text-[10px] px-2 py-0.5 rounded-md font-medium transition-colors ${
+                              darkMode ? 'text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#F85149] hover:bg-[rgba(248,81,73,0.08)]'
+                            }`}
+                          >
+                            {t('common.clearAll') || 'Clear'}
+                          </button>
+                        )}
+                      </div>
+                      <div className="filter-select-scroll max-h-60 overflow-y-auto py-1">
+                        {brandOptions.map((brand: any) => {
+                          const isSelected = selectedBudgetIds.includes(brand.value);
+                          return (
+                            <div
+                              key={brand.value}
+                              onClick={() => handleBrandToggle(brand.value)}
+                              className={`relative px-3 py-2 cursor-pointer transition-all duration-150 ${
+                                isSelected
+                                  ? darkMode ? 'bg-[rgba(215,183,151,0.08)]' : 'bg-[rgba(215,183,151,0.1)]'
+                                  : darkMode ? 'hover:bg-[rgba(215,183,151,0.04)]' : 'hover:bg-[rgba(215,183,151,0.06)]'
+                              }`}
+                            >
+                              {isSelected && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-5 rounded-full" style={{ background: darkMode ? '#D7B797' : '#8B6E4E' }} />}
+                              <div className="flex items-center gap-3">
+                                <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                                  isSelected
+                                    ? 'bg-[#D7B797] border-[#D7B797]'
+                                    : darkMode ? 'border-[#555555]' : 'border-[#C4B5A5]'
+                                }`}>
+                                  {isSelected && <Check size={10} className="text-[#1A1A1A]" strokeWidth={3} />}
+                                </div>
+                                <span className={`text-sm ${isSelected ? (darkMode ? 'text-[#D7B797] font-semibold' : 'text-[#6B4D30] font-semibold') : (darkMode ? 'text-[#F2F2F2]' : 'text-[#1A1A1A]')}`}>
+                                  {brand.label}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 </>
                 )}
 
@@ -1867,10 +2308,48 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       </div>
       )}
 
-      {/* Single Budget Mode - Category Content */}
+      {/* Single Budget Mode - Tabbed Content */}
       {selectedBudgetIds.length <= 1 && selectedBudget && selectedSeason && selectedSeasonGroup && (
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
-        {/* Filter Bar (Category / SubCategory / Gender) */}
+        {/* Tab Navigation: Category | Collection | Gender */}
+        <div className={`border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
+          <div className="flex">
+            {(['category', 'collection', 'gender'] as const).map((tab) => {
+              const isActive = activeTab === tab;
+              const labels: Record<string, string> = {
+                category: 'Category',
+                collection: 'Collection',
+                gender: 'Gender',
+              };
+              const icons: Record<string, React.ReactNode> = {
+                category: <Tag size={14} />,
+                collection: <Bookmark size={14} />,
+                gender: <Users size={14} />,
+              };
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-1.5 px-4 md:px-6 py-2.5 text-xs md:text-sm font-semibold font-['Montserrat'] uppercase tracking-wide border-b-2 -mb-px transition-all ${
+                    isActive
+                      ? darkMode
+                        ? 'border-[#D7B797] text-[#D7B797] bg-[rgba(215,183,151,0.08)]'
+                        : 'border-[#6B4D30] text-[#6B4D30] bg-[rgba(215,183,151,0.08)]'
+                      : darkMode
+                        ? 'border-transparent text-[#666666] hover:text-[#999999] hover:bg-[rgba(215,183,151,0.04)]'
+                        : 'border-transparent text-[#999999] hover:text-[#6B4D30] hover:bg-[rgba(215,183,151,0.04)]'
+                  }`}
+                >
+                  {icons[tab]}
+                  {labels[tab]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Filter Bar (Category tab only) */}
+        {activeTab === 'category' && (
         <div className={`border-b px-3 py-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
           <div className="flex items-center gap-2 flex-wrap">
             <button
@@ -1922,10 +2401,13 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
             )}
           </div>
         </div>
+        )}
 
-        {/* Content */}
+        {/* Tab Content */}
         <div className="overflow-y-auto">
-          {renderCategoryTab()}
+          {activeTab === 'category' && renderCategoryTab()}
+          {activeTab === 'collection' && renderCollectionTab()}
+          {activeTab === 'gender' && renderGenderTab()}
         </div>
       </div>
       )}
