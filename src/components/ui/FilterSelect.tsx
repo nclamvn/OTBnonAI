@@ -9,7 +9,7 @@ interface FilterOption {
 }
 
 interface FilterSelectProps {
-  label: string;
+  label?: string;
   value: string;
   options: FilterOption[];
   onChange: (value: string) => void;
@@ -29,8 +29,9 @@ function FilterSelect({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedOption = options.find((o) => o.value === value);
-  const displayLabel = selectedOption?.label || placeholder;
   const isDefault = value === 'all' || value === '' || !selectedOption;
+  // Show placeholder (filter name) when default, otherwise show selected value
+  const displayLabel = isDefault ? placeholder : selectedOption?.label || placeholder;
 
   // Click outside
   useEffect(() => {
@@ -64,7 +65,7 @@ function FilterSelect({
         onClick={() => setIsOpen((p) => !p)}
         onKeyDown={handleKeyDown}
         className={`
-          w-full flex items-center gap-1.5
+          max-w-[180px] w-full flex items-center gap-1.5
           pl-3 pr-2.5 py-[7px]
           text-sm font-medium
           border rounded-lg
@@ -84,15 +85,17 @@ function FilterSelect({
           }
         `}
       >
-        <span
-          className={`text-[10px] uppercase tracking-[0.08em] font-semibold shrink-0 transition-colors duration-200 ${
-            isOpen
-              ? darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'
-              : darkMode ? 'text-[#666666] group-hover:text-[#999999]' : 'text-[#999999] group-hover:text-[#666666]'
-          }`}
-        >
-          {label}
-        </span>
+        {label && (
+          <span
+            className={`text-[10px] uppercase tracking-[0.08em] font-semibold shrink-0 transition-colors duration-200 ${
+              isOpen
+                ? darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'
+                : darkMode ? 'text-[#666666] group-hover:text-[#999999]' : 'text-[#999999] group-hover:text-[#666666]'
+            }`}
+          >
+            {label}
+          </span>
+        )}
         <span
           className={`truncate text-left leading-tight flex-1 ${
             !isDefault
@@ -157,7 +160,7 @@ function FilterSelect({
           />
 
           <div className="filter-select-scroll max-h-[240px] overflow-y-auto py-1">
-            {options.map((option, idx) => {
+            {options.map((option) => {
               const isSelected = option.value === value;
               return (
                 <button

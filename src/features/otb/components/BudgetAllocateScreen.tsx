@@ -1786,7 +1786,7 @@ const BudgetAllocateScreen = ({
       )}
       {/* Combined Progress Bar + Allocate All Footer */}
       {(selectedBudget || selectedBudgetId) && (
-        <div className={`sticky bottom-0 z-30 mt-4 mb-3 rounded-xl border overflow-hidden backdrop-blur-sm ${darkMode ? 'border-[#2E2E2E] bg-[#121212]/95' : 'border-[rgba(215,183,151,0.3)] bg-white/95'}`}>
+        <div className={`mt-4 rounded-xl border overflow-hidden ${darkMode ? 'border-[#2E2E2E] bg-[#121212]' : 'border-[rgba(215,183,151,0.3)] bg-white'}`}>
           <div className="flex items-center gap-4 px-4 py-2.5">
             <div className="flex-1">
               <AllocationProgressBar

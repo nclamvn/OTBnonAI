@@ -67,6 +67,7 @@ const vi = {
     breadcrumbPlanning: 'Kế hoạch',
     breadcrumbProposals: 'Đề xuất',
     breadcrumbTickets: 'Phiếu yêu cầu',
+    grandTotal: 'Tổng cộng',
   },
 
   // ──────────────────────────────────────────────
@@ -661,6 +662,18 @@ const vi = {
     exportCSV: 'Xuất CSV',
     noDataToExport: 'Không có dữ liệu để xuất',
     exportedSkus: 'Đã xuất {count} SKU',
+    exportSuccess: 'Xuất thành công',
+    reviewTicket: 'Xem lại đề xuất',
+    reviewBeforeSubmit: 'Xem lại đề xuất SKU trước khi gửi duyệt',
+    proposalSummary: 'Tóm tắt đề xuất',
+    totalRails: 'Hạng mục',
+    totalSKUs: 'SKU',
+    totalOrder: 'Số lượng đặt',
+    submitForApproval: 'Gửi duyệt',
+    submitSuccess: 'Đã gửi đề xuất để duyệt',
+    submitFailed: 'Gửi đề xuất thất bại',
+    name: 'Tên',
+    value: 'Giá trị',
   },
 
   // ──────────────────────────────────────────────

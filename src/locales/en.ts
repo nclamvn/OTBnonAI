@@ -67,6 +67,7 @@ const en = {
     breadcrumbPlanning: 'Planning',
     breadcrumbProposals: 'Proposals',
     breadcrumbTickets: 'Tickets',
+    grandTotal: 'Grand Total',
   },
 
   // ──────────────────────────────────────────────
@@ -661,6 +662,18 @@ const en = {
     exportCSV: 'Export CSV',
     noDataToExport: 'No data to export',
     exportedSkus: 'Exported {count} SKUs',
+    exportSuccess: 'Exported successfully',
+    reviewTicket: 'Review Ticket',
+    reviewBeforeSubmit: 'Review your SKU proposal before submitting for approval',
+    proposalSummary: 'Proposal Summary',
+    totalRails: 'Rails',
+    totalSKUs: 'SKUs',
+    totalOrder: 'Order Qty',
+    submitForApproval: 'Submit for Approval',
+    submitSuccess: 'Proposal submitted for approval',
+    submitFailed: 'Failed to submit proposal',
+    name: 'Name',
+    value: 'Value',
   },
 
   // ──────────────────────────────────────────────

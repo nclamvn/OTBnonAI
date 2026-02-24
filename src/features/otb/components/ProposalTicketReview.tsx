@@ -18,6 +18,7 @@ interface ProposalTicketReviewProps {
     skuBlocks: any[];
     grandTotals: any;
     stores: any[];
+    sizingChoiceName?: string;
   };
   darkMode?: boolean;
   onBack: () => void;
@@ -30,7 +31,7 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
   const [submitting, setSubmitting] = useState(false);
   const [expandedBlocks, setExpandedBlocks] = useState<Record<string, boolean>>({});
 
-  const { skuBlocks, grandTotals, stores, budgetId } = reviewData;
+  const { skuBlocks, grandTotals, stores, budgetId, sizingChoiceName } = reviewData;
 
   const toggleBlock = useCallback((key: string) => {
     setExpandedBlocks(prev => ({ ...prev, [key]: !prev[key] }));
@@ -88,7 +89,7 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
               {t('skuProposal.proposalSummary') || 'Proposal Summary'}
             </span>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('skuProposal.totalRails') || 'Rails'}</div>
               <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
@@ -113,6 +114,14 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
                 {formatCurrency(grandTotals.ttlValue)}
               </div>
             </div>
+            {sizingChoiceName && (
+            <div>
+              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>{t('skuProposal.sizing') || 'Sizing'}</div>
+              <div className={`text-lg font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
+                {sizingChoiceName}
+              </div>
+            </div>
+            )}
           </div>
         </div>
       </div>
@@ -124,6 +133,9 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
           const isExpanded = expandedBlocks[blockKey] || false;
           const blockItems = block.items || [];
           const blockTotal = blockItems.reduce((sum: number, item: any) => sum + (Number(item.orderQty || item.order || 0)), 0);
+          // Extract all size keys from items' sizing data
+          const sizeKeys = Array.from(new Set(blockItems.flatMap((item: any) => Object.keys(item.sizing || {})))) as string[];
+          sizeKeys.sort();
 
           return (
             <div
@@ -161,6 +173,11 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
                         <th className={`text-left px-3 py-1.5 font-semibold ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>SKU</th>
                         <th className={`text-left px-3 py-1.5 font-semibold ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>{t('skuProposal.name') || 'Name'}</th>
                         <th className={`text-center px-3 py-1.5 font-semibold ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>{t('skuProposal.order') || 'Order'}</th>
+                        {sizeKeys.length > 0 && sizeKeys.map((size: string) => (
+                          <th key={size} className={`text-center px-2 py-1.5 font-semibold ${darkMode ? 'text-[#D7B797]/70' : 'text-[#6B4D30]/70'}`}>
+                            {size.toUpperCase()}
+                          </th>
+                        ))}
                         {stores.map((st: any) => (
                           <th key={st.code} className={`text-center px-3 py-1.5 font-semibold ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
                             {st.code}
@@ -182,6 +199,11 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
                           <td className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] font-bold ${darkMode ? 'text-[#F2F2F2]' : 'text-[#0A0A0A]'}`}>
                             {item.orderQty || item.order || 0}
                           </td>
+                          {sizeKeys.length > 0 && sizeKeys.map((size: string) => (
+                            <td key={size} className={`px-2 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]/80' : 'text-[#6B4D30]/80'}`}>
+                              {item.sizing?.[size] || 0}
+                            </td>
+                          ))}
                           {stores.map((st: any) => (
                             <td key={st.code} className={`px-3 py-1.5 text-center font-['JetBrains_Mono'] ${darkMode ? 'text-[#999]' : 'text-[#666]'}`}>
                               {item.storeQty?.[st.code] || item[`store_${st.code}`] || 0}
@@ -225,9 +247,9 @@ const ProposalTicketReview = ({ reviewData, darkMode = false, onBack, onSubmitte
         </div>
       </div>
 
-      {/* Sticky Submit Footer */}
-      <div className={`sticky bottom-0 -mx-3 md:-mx-6 px-3 md:px-6 py-3 border-t backdrop-blur-sm ${
-        darkMode ? 'bg-[#0A0A0A]/95 border-[#2E2E2E]' : 'bg-white/95 border-[rgba(215,183,151,0.3)]'
+      {/* Submit Footer */}
+      <div className={`mt-4 py-3 border-t ${
+        darkMode ? 'border-[#2E2E2E]' : 'border-[rgba(215,183,151,0.3)]'
       }`}>
         <div className="flex items-center justify-between gap-4">
           <button

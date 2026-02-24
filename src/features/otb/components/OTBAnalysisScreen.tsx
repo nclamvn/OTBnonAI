@@ -252,6 +252,7 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   // Category hierarchy collapse states (Category -> SubCategory -> Gender)
   const [expandedCategories, setExpandedCategories] = useState<Record<string, any>>({});
   const [expandedSubCategories, setExpandedSubCategories] = useState<Record<string, any>>({});
+  const [allCollapsed, setAllCollapsed] = useState(false);
 
 
   // Refs
@@ -596,6 +597,21 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
     setExpandedSubCategories((prev: any) => ({ ...prev, [key]: prev[key] === false ? true : false }));
   };
 
+  const handleToggleAll = () => {
+    const newExpanded = allCollapsed; // if currently collapsed → expand, vice versa
+    setAllCollapsed(!newExpanded);
+    const newCats: Record<string, boolean> = {};
+    const newSubCats: Record<string, boolean> = {};
+    categoryFirstStructure.forEach((catEntry: any) => {
+      newCats[catEntry.id] = newExpanded;
+      Object.values(catEntry.subCategories).forEach((subCatEntry: any) => {
+        newSubCats[`${catEntry.id}_${subCatEntry.subCategory.id}`] = newExpanded;
+      });
+    });
+    setExpandedCategories(newCats);
+    setExpandedSubCategories(newSubCats);
+  };
+
   // Generate filter options from categoryStructure
   const filterOptions = useMemo(() => {
     const genders: any[] = [{ id: 'all', name: 'All Genders' }];
@@ -657,6 +673,38 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
   const handleSubCategoryFilterChange = (value: any) => {
     setSubCategoryFilter(value);
     setOpenCategoryDropdown(null);
+  };
+
+  // Brand filter options from available budgets (filtered by selected year)
+  const brandOptions = useMemo(() => {
+    const budgets = selectedYear === 'all'
+      ? apiBudgets
+      : apiBudgets.filter((b: any) => b.fiscalYear === selectedYear);
+    const seen = new Set<string>();
+    return budgets.reduce((acc: any[], b: any) => {
+      const key = b.brandName || b.groupBrand || 'Unknown';
+      if (!seen.has(key)) {
+        seen.add(key);
+        acc.push({ value: b.id, label: key });
+      }
+      return acc;
+    }, []);
+  }, [apiBudgets, selectedYear]);
+
+  const handleBrandFilterChange = (value: any) => {
+    if (value === 'all') return;
+    // Switch to the selected brand's budget
+    setSelectedBudgetIds([value]);
+    setSelectedBudgetId(value);
+    const budget = apiBudgets.find((b: any) => b.id === value);
+    if (budget) {
+      if (budget.seasonGroup) setSelectedSeasonGroup(budget.seasonGroup);
+      if (budget.seasonType) setSelectedSeason(budget.seasonType);
+    }
+    // Reset category filters when switching brand
+    setGenderFilter('all');
+    setCategoryFilter('all');
+    setSubCategoryFilter('all');
   };
 
   // Common table styles - DAFC Design System (compact)
@@ -821,14 +869,6 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                           <span className={`font-semibold text-xs uppercase tracking-wide font-['Montserrat'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
                             {subCatEntry.subCategory.name}
                           </span>
-                          <span className={`ml-auto text-xs md:text-sm ${darkMode ? 'text-[#666666]' : 'text-[#999999]'}`}>
-                            {subCatEntry.genders.length} genders
-                          </span>
-                          <div className={`hidden md:flex items-center gap-4 ml-4 text-sm font-['JetBrains_Mono'] ${darkMode ? 'text-[#999999]' : 'text-[#666666]'}`}>
-                            <span>Buy: <strong>{subCatTotals.buyPct}%</strong></span>
-                            <span>Proposed: <strong>{subCatTotals.buyProposed}%</strong></span>
-                            <span>OTB: <strong>{subCatTotals.otbProposed.toLocaleString()}</strong></span>
-                          </div>
                         </div>
 
                         {/* Gender Table - Level 3 */}
@@ -1231,13 +1271,12 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                   )}
                 </div>
 
-                {/* Type Filter (Same/Different Season) */}
+                {/* Type Filter (Same/Different Season) — no label, compact */}
                 <FilterSelect
-                  label={t('otbAnalysis.comparisonType') || 'Type'}
                   value={comparisonType}
                   options={[
-                    { value: 'same', label: t('otbAnalysis.same') || 'Same Season' },
-                    { value: 'different', label: t('otbAnalysis.different') || 'Different Season' },
+                    { value: 'same', label: t('otbAnalysis.same') || 'Same' },
+                    { value: 'different', label: t('otbAnalysis.different') || 'Different' },
                   ]}
                   onChange={(val: any) => { setComparisonType(val); setSelectedBudgetIds([]); }}
                   darkMode={darkMode}
@@ -1429,6 +1468,19 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
                     </div>
                   )}
                 </div>
+
+                {/* Brand Filter — quick switch between brands */}
+                {brandOptions.length > 1 && (
+                <>
+                <div className={`h-5 w-px hidden sm:block rounded-full ${darkMode ? 'bg-gradient-to-b from-transparent via-[#2E2E2E] to-transparent' : 'bg-gradient-to-b from-transparent via-[#C4B5A5]/40 to-transparent'}`} />
+                <FilterSelect
+                  value={selectedBudgetId}
+                  options={brandOptions}
+                  onChange={handleBrandFilterChange}
+                  darkMode={darkMode}
+                />
+                </>
+                )}
 
                 {/* Season Group Filter - only show after budget selected */}
                 {selectedBudgetId && selectedBudgetId !== 'all' && (
@@ -1820,7 +1872,15 @@ const OTBAnalysisScreen = ({ otbContext, onOpenSkuProposal, darkMode = false }: 
       <div className={`rounded-xl shadow-lg border overflow-hidden ${darkMode ? 'bg-[#121212] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'}`}>
         {/* Filter Bar (Category / SubCategory / Gender) */}
         <div className={`border-b px-3 py-2 ${darkMode ? 'border-[#2E2E2E]' : 'border-[#C4B5A5]'}`}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={handleToggleAll}
+              className={`flex items-center gap-1.5 px-3 py-[7px] text-sm font-medium rounded-lg border transition-colors ${darkMode ? 'border-[rgba(215,183,151,0.25)] text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'border-[rgba(215,183,151,0.4)] text-[#6B4D30] hover:bg-[rgba(160,120,75,0.12)]'}`}
+            >
+              <ChevronDown size={12} className={`transition-transform ${allCollapsed ? '-rotate-90' : ''}`} />
+              {allCollapsed ? 'Expand All' : 'Collapse All'}
+            </button>
             <FilterSelect
               label={t('common.category') || 'Category'}
               value={categoryFilter}
