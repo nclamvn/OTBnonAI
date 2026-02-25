@@ -760,6 +760,8 @@ const AppHeader = ({
                 </div>
               </div>
             )}
+          </div>
+
           {/* Print + Save — moved to header row, hidden on Tickets pages */}
           {isInPlanningWorkflow && currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
           <>
@@ -812,7 +814,6 @@ const AppHeader = ({
             </div>
           </>
           )}
-          </div>
         </div>
       </div>
 
