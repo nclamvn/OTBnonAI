@@ -1277,13 +1277,27 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
                       return (
                     <table className={`w-full text-xs border-separate border-spacing-0 ${darkMode ? '[&_td]:border-[#2E2E2E]' : '[&_td]:border-[rgba(215,183,151,0.2)]'} [&_td]:border`}>
                       <tbody>
-                        {/* Image row */}
+                        {/* Image row — with Sizing + Delete action icons overlay */}
                         <tr className={trCls('image')}>
                           <td className={tdLabel('image', 'py-2')} onClick={() => toggleHl('image')}>Image</td>
                           {block.items.map((item: any, idx: number) => (
                             <td key={idx} className={`px-3 py-2 text-center min-w-[140px] ${darkMode ? 'bg-[#121212]' : 'bg-white'}`}>
-                              <div className="mx-auto w-fit">
+                              <div className="relative mx-auto w-fit">
                                 <ProductImage subCategory={block.subCategory} sku={item.sku} size={64} darkMode={darkMode} />
+                                {/* Action icons — top-right corner of image */}
+                                <div className="absolute -top-1 -right-6 flex flex-col gap-0.5">
+                                  <button type="button" onClick={() => handleOpenLightbox(`${key}_${item.sku || 'new'}_${idx}`, 'sizing', item, key, idx, block)} className={`p-0.5 rounded transition-colors relative ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.15)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing">
+                                    <Ruler size={12} />
+                                    {isSizingComplete(key, idx) && (
+                                      <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#2A9E6A] rounded-full flex items-center justify-center">
+                                        <Check size={6} className="text-white" />
+                                      </span>
+                                    )}
+                                  </button>
+                                  <button type="button" onClick={() => handleDeleteSkuRow(key, idx)} className={`p-0.5 rounded transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.15)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`} title={t('proposal.deleteSku')}>
+                                    <Trash2 size={12} />
+                                  </button>
+                                </div>
                               </div>
                             </td>
                           ))}
@@ -1364,33 +1378,6 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
                             <td key={idx} className={`px-3 py-1.5 text-center font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#c0392b]'}`}>{item.order}</td>
                           ))}
                         </tr>
-                        {/* Comment row */}
-                        <tr className={trCls('comment')}>
-                          <td className={tdLabel('comment')} onClick={() => toggleHl('comment')}>Comment</td>
-                          {block.items.map((item: any, idx: number) => (
-                            <td key={idx} className="px-3 py-1.5 text-center">
-                              <div className="relative">
-                                <input
-                                  type="text"
-                                  value={item.comment || ''}
-                                  onChange={(e) => handleSelectChange(key, idx, 'comment', e.target.value)}
-                                  onClick={(e) => {
-                                    if (item.comment) {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      setCommentPopup({ text: item.comment, blockKey: key, idx, rect });
-                                    }
-                                  }}
-                                  placeholder="..."
-                                  className={`w-full min-w-[80px] px-2 py-1 text-xs text-center border rounded-md outline-none transition-colors truncate ${
-                                    darkMode
-                                      ? 'bg-transparent border-[#2E2E2E] text-[#F2F2F2] placeholder-[#555] focus:border-[#D7B797]'
-                                      : 'bg-transparent border-[rgba(215,183,151,0.3)] text-[#333333] placeholder-[#aaa] focus:border-[#C4A77D]'
-                                  }`}
-                                />
-                              </div>
-                            </td>
-                          ))}
-                        </tr>
                         {/* Dynamic store rows */}
                         {stores.map((st: any) => (
                           <tr key={st.code} className={trCls(`store_${st.code}`)}>
@@ -1451,21 +1438,29 @@ const SKUProposalScreen = ({ skuContext, onContextUsed, onSubmitTicket, darkMode
                             </td>
                           ))}
                         </tr>
-                        {/* Actions row */}
-                        <tr>
-                          <td className={`px-3 py-1.5 sticky left-0 z-10 ${darkMode ? 'bg-[#121212] !border-r-[#555]' : 'bg-white !border-r-[rgba(160,120,75,0.4)]'}`}></td>
+                        {/* Comment row — moved to bottom per client feedback */}
+                        <tr className={trCls('comment')}>
+                          <td className={tdLabel('comment')} onClick={() => toggleHl('comment')}>Comment</td>
                           {block.items.map((item: any, idx: number) => (
-                            <td key={idx} className="px-3 py-1 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <button type="button" onClick={() => handleOpenLightbox(`${key}_${item.sku || 'new'}_${idx}`, 'sizing', item, key, idx, block)} className={`p-1 rounded-md transition-colors relative ${darkMode ? 'text-[#999999] hover:text-[#D7B797] hover:bg-[rgba(215,183,151,0.1)]' : 'text-[#666666] hover:text-[#6B4D30] hover:bg-[rgba(160,120,75,0.18)]'}`} title="Sizing">
-                                  <Ruler size={14} />
-                                  {isSizingComplete(key, idx) && (
-                                    <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#2A9E6A] rounded-full flex items-center justify-center">
-                                      <Check size={8} className="text-white" />
-                                    </span>
-                                  )}
-                                </button>
-                                <button type="button" onClick={() => handleDeleteSkuRow(key, idx)} className={`p-1 rounded-md transition-colors ${darkMode ? 'text-[#999999] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]' : 'text-[#666666] hover:text-[#F85149] hover:bg-[rgba(248,81,73,0.1)]'}`} title={t('proposal.deleteSku')}><Trash2 size={14} /></button>
+                            <td key={idx} className="px-3 py-1.5 text-center">
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={item.comment || ''}
+                                  onChange={(e) => handleSelectChange(key, idx, 'comment', e.target.value)}
+                                  onClick={(e) => {
+                                    if (item.comment) {
+                                      const rect = e.currentTarget.getBoundingClientRect();
+                                      setCommentPopup({ text: item.comment, blockKey: key, idx, rect });
+                                    }
+                                  }}
+                                  placeholder="..."
+                                  className={`w-full min-w-[80px] px-2 py-1 text-xs text-center border rounded-md outline-none transition-colors truncate ${
+                                    darkMode
+                                      ? 'bg-transparent border-[#2E2E2E] text-[#F2F2F2] placeholder-[#555] focus:border-[#D7B797]'
+                                      : 'bg-transparent border-[rgba(215,183,151,0.3)] text-[#333333] placeholder-[#aaa] focus:border-[#C4A77D]'
+                                  }`}
+                                />
                               </div>
                             </td>
                           ))}
