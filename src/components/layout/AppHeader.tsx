@@ -760,6 +760,58 @@ const AppHeader = ({
                 </div>
               </div>
             )}
+          {/* Print + Save — moved to header row, hidden on Tickets pages */}
+          {isInPlanningWorkflow && currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
+          <>
+            <div className="w-px h-4 mx-1" style={{
+              background: darkMode
+                ? 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.15) 50%, transparent 100%)'
+                : 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.25) 50%, transparent 100%)',
+            }} />
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => window.print()}
+                className={`no-print px-1.5 py-1 rounded-lg transition-colors ${
+                  darkMode
+                    ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797]'
+                    : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'
+                }`}
+                title={t('common.print')}
+              >
+                <Printer size={14} />
+              </button>
+              <div className="relative" ref={saveButtonRef}>
+                <div className="inline-flex items-stretch rounded-lg border border-[rgba(215,183,151,0.3)] overflow-hidden">
+                  <button
+                    onClick={async () => {
+                      if (hasSaveHandler) {
+                        await triggerSave();
+                      } else {
+                        toast.success(t('header.save'));
+                      }
+                    }}
+                    className="flex items-center px-2 py-1 transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                    title={t('header.save')}
+                  >
+                    <Save size={14} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!openSaveMenu && saveButtonRef.current) {
+                        const rect = saveButtonRef.current.getBoundingClientRect();
+                        setSaveMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                      }
+                      setOpenSaveMenu(!openSaveMenu);
+                    }}
+                    className="flex items-center px-1 py-1 border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                  >
+                    <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+          )}
           </div>
         </div>
       </div>
@@ -870,51 +922,6 @@ const AppHeader = ({
               })}
             </div>
 
-            {/* Print + Save — hidden on Tickets pages */}
-            {currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
-            <div className="ml-auto flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => window.print()}
-                className={`no-print px-1.5 py-1 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797]'
-                    : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'
-                }`}
-                title={t('common.print')}
-              >
-                <Printer size={14} />
-              </button>
-            <div className="relative" ref={saveButtonRef}>
-              <div className="inline-flex items-stretch rounded-lg border border-[rgba(215,183,151,0.3)] overflow-hidden">
-                <button
-                  onClick={async () => {
-                    if (hasSaveHandler) {
-                      await triggerSave();
-                    } else {
-                      toast.success(t('header.save'));
-                    }
-                  }}
-                  className="flex items-center px-2 py-1 transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
-                  title={t('header.save')}
-                >
-                  <Save size={14} />
-                </button>
-                <button
-                  onClick={() => {
-                    if (!openSaveMenu && saveButtonRef.current) {
-                      const rect = saveButtonRef.current.getBoundingClientRect();
-                      setSaveMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-                    }
-                    setOpenSaveMenu(!openSaveMenu);
-                  }}
-                  className="flex items-center px-1 py-1 border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
-                >
-                  <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
-                </button>
-              </div>
-            </div>
-            </div>
-            )}
           </div>
         </div>
       )}
