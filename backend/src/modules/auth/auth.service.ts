@@ -135,6 +135,60 @@ export class AuthService {
   }
 
   /**
+   * Microsoft SSO Login — receives an MS access token, validates and finds/creates user
+   */
+  async loginWithMicrosoft(msAccessToken: string) {
+    // Decode the MS token to get user info (in production, verify signature with Azure AD keys)
+    let decoded: any;
+    try {
+      const parts = msAccessToken.split('.');
+      if (parts.length !== 3) throw new Error('Invalid token format');
+      decoded = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    } catch {
+      throw new UnauthorizedException('Invalid Microsoft access token');
+    }
+
+    const email = decoded.preferred_username || decoded.email || decoded.upn;
+    if (!email) throw new UnauthorizedException('No email found in Microsoft token');
+
+    // Look up user by email
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { role: true },
+    });
+
+    if (!user || !user.isActive) {
+      this.auditLog.log({ userId: 'anonymous', entityType: 'auth', entityId: email, action: 'ms_login_failed', changes: { reason: 'user_not_found_or_inactive' } });
+      throw new UnauthorizedException('User not found or inactive. Please contact admin.');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role.name,
+      permissions: user.role.permissions,
+      brandAccess: user.brandAccess,
+      storeAccess: user.storeAccess,
+    };
+
+    this.auditLog.log({ userId: user.id, entityType: 'auth', entityId: user.id, action: 'ms_login', changes: { role: user.role.name, provider: 'microsoft' } });
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(payload, { expiresIn: '7d' }),
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role.name,
+        permissions: user.role.permissions,
+        storeAccess: user.storeAccess,
+        brandAccess: user.brandAccess,
+      },
+    };
+  }
+
+  /**
    * GDPR/PDPA Data Erasure (Right to Be Forgotten)
    * Anonymizes user PII instead of hard-deleting to preserve referential integrity.
    * Only accessible by admin users.

@@ -6,7 +6,15 @@ import { AppModule } from './app.module';
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
+
+  // Support large payloads (planning/allocation data)
+  const expressApp = app.getHttpAdapter().getInstance();
+  const bodyParser = require('body-parser');
+  expressApp.use(bodyParser.json({ limit: '10mb' }));
+  expressApp.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
   // Security
   app.use(helmet());
@@ -58,6 +66,8 @@ async function bootstrap() {
     .addTag('planning', 'OTB Planning & Versions')
     .addTag('proposals', 'SKU Proposals')
     .addTag('approvals', 'Approval Workflow')
+    .addTag('AI', 'AI-powered recommendations and analytics')
+    .addTag('tickets', 'Ticket approval workflow')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -11,6 +11,8 @@ import { ApprovalWorkflowModule } from './modules/approval-workflow/approval-wor
 import { ImportModule } from './modules/import/import.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { DataRetentionModule } from './modules/data-retention/data-retention.module';
+import { AiModule } from './modules/ai/ai.module';
+import { TicketModule } from './modules/ticket/ticket.module';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ ThrottlerModule.forRoot([{ ttl: 60000, limit: 30 }]),
     ImportModule,
     NotificationModule,
     DataRetentionModule,
+    AiModule,
+    TicketModule,
   ],
 })
 export class AppModule {}

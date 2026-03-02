@@ -2,14 +2,13 @@
 // Master Data Service - Brands, Stores, Collections, Categories, SKU Catalog
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
-
-const extract = (response: any) => response.data?.data ?? response.data;
+import { extract } from './serviceUtils';
 
 export const masterDataService = {
   // Get all brands
-  async getBrands() {
+  async getBrands(params?: { groupBrandId?: string }) {
     try {
-      const response = await api.get('/master/brands');
+      const response = await api.get('/master/brands', { params });
       return extract(response);
     } catch (err: any) {
       console.error('[masterDataService.getBrands]', err?.response?.status, err?.message);
@@ -51,9 +50,9 @@ export const masterDataService = {
   },
 
   // Get all categories (with hierarchy)
-  async getCategories() {
+  async getCategories(params?: { genderId?: string }) {
     try {
-      const response = await api.get('/master/categories');
+      const response = await api.get('/master/categories', { params });
       return extract(response);
     } catch (err: any) {
       console.error('[masterDataService.getCategories]', err?.response?.status, err?.message);
@@ -83,7 +82,41 @@ export const masterDataService = {
     }
   },
 
-  // Get all sub-categories (flatten from categories hierarchy — direct endpoint not yet implemented)
+  // Get season types
+  async getSeasonTypes() {
+    try {
+      const response = await api.get('/master/season-types');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getSeasonTypes]', err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Get season groups with their seasons
+  async getSeasonGroups(params?: { year?: number }, opts?: { signal?: AbortSignal }) {
+    try {
+      const response = await api.get('/master/season-groups', { params, signal: opts?.signal });
+      return extract(response);
+    } catch (err: any) {
+      if (err?.name === 'CanceledError' || err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') throw err;
+      console.error('[masterDataService.getSeasonGroups]', err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Get sub-categories directly from backend endpoint
+  async getSubCategoriesDirect() {
+    try {
+      const response = await api.get('/master/sub-categories');
+      return extract(response);
+    } catch (err: any) {
+      console.error('[masterDataService.getSubCategoriesDirect]', err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Get all sub-categories (flatten from categories hierarchy — legacy fallback)
   async getSubCategories() {
     try {
       const categories: any = await this.getCategories();

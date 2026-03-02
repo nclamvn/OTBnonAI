@@ -3,12 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
 import { approvalHelper } from './approvalHelper';
-
-const extract = (response: any) => response.data?.data ?? response.data;
-const normalizeList = (items: any) => {
-  if (!Array.isArray(items)) return items;
-  return items.map((item: any) => item.status ? { ...item, status: item.status.toLowerCase() } : item);
-};
+import { extract, normalizeList } from './serviceUtils';
 
 export const planningService = {
   // Get all planning versions with filters
@@ -102,6 +97,17 @@ export const planningService = {
     } catch (err: any) {
       console.error('[planningService.finalize]', id, err?.response?.status, err?.message);
       throw err;
+    }
+  },
+
+  // Get historical planning data
+  async getHistorical(params: { fiscalYear: number; seasonGroupName: string; seasonName: string; brandId: string }) {
+    try {
+      const response = await api.get('/planning/historical', { params });
+      return extract(response);
+    } catch (err: any) {
+      console.error('[planningService.getHistorical]', err?.response?.status, err?.message);
+      return null;
     }
   },
 

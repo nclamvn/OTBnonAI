@@ -1,7 +1,9 @@
 // ============================================================================
 // DAFC OTB Planning System - Database Schema
 // Tech: PostgreSQL 16 + Prisma ORM
-// Updated: 2026-02-05 — Removed ProposalRails (flat product structure)
+// Updated: 2026-03-02 — Merged from BE-NEW: Brand hierarchy, SeasonGroup/Season,
+//   AllocateHeader, SubcategorySize, ProposalSizing, Ticket module,
+//   ApprovalWorkflow 2-level, AI-ready models
 // ============================================================================
 
 generator client {
@@ -18,37 +20,43 @@ datasource db {
 // ============================================================================
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   name         String
-  passwordHash String   @map("password_hash")
-  roleId       String   @map("role_id")
-  storeAccess  String[] @map("store_access") // store IDs user can access
-  brandAccess  String[] @map("brand_access") // brand IDs user can access
-  phone        String?  @map("phone")
-  department   String?  @map("department")
-  isActive     Boolean  @default(true) @map("is_active")
+  passwordHash String    @map("password_hash")
+  roleId       String    @map("role_id")
+  storeAccess  String[]  @map("store_access") // store IDs user can access
+  brandAccess  String[]  @map("brand_access") // brand IDs user can access
+  phone        String?   @map("phone")
+  department   String?   @map("department")
+  isActive     Boolean   @default(true) @map("is_active")
   erasedAt     DateTime? @map("erased_at") // GDPR/PDPA: timestamp when user data was anonymized
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  role              Role               @relation(fields: [roleId], references: [id])
-  createdBudgets    Budget[]           @relation("BudgetCreator")
-  createdPlannings  PlanningVersion[]  @relation("PlanningCreator")
-  createdProposals  Proposal[]         @relation("ProposalCreator")
-  approvalDecisions Approval[]         @relation("ApprovalDecider")
-  auditLogs         AuditLog[]
-  workflowSteps     ApprovalWorkflowStep[] @relation("WorkflowStepUser")
+  role                         Role                    @relation(fields: [roleId], references: [id])
+  createdBudgets               Budget[]                @relation("BudgetCreator")
+  createdPlannings             PlanningVersion[]       @relation("PlanningCreator")
+  createdProposals             Proposal[]              @relation("ProposalCreator")
+  approvalDecisions            Approval[]              @relation("ApprovalDecider")
+  auditLogs                    AuditLog[]
+  workflowSteps                ApprovalWorkflowStep[]  @relation("WorkflowStepUser")
+  // NEW: from BE-NEW merge
+  createdAllocateHeaders       AllocateHeader[]        @relation("AllocateHeaderCreator")
+  createdTickets               Ticket[]                @relation("TicketCreator")
+  createdProposalSizingHeaders ProposalSizingHeader[]  @relation("ProposalSizingCreator")
+  approvalWorkflowLevels       ApprovalWorkflowLevel[] @relation("ApproverUser")
+  ticketApprovalLogs           TicketApprovalLog[]     @relation("TicketApprovalLogUser")
 
   @@map("users")
 }
 
 model Role {
-  id          String @id @default(cuid())
-  name        String @unique // buyer, merchandiser, merch_manager, finance_director, admin
+  id          String  @id @default(cuid())
+  name        String  @unique // buyer, merchandiser, merch_manager, finance_director, admin
   description String?
-  permissions Json   @default("[]") // ["budget:read", "budget:write", "planning:approve", ...]
+  permissions Json    @default("[]") // ["budget:read", "budget:write", "planning:approve", ...]
 
   users User[]
 
@@ -62,17 +70,36 @@ model Role {
 model GroupBrand {
   id          String  @id @default(cuid())
   code        String  @unique // FER, BUR, GUC, PRA
-  name        String  // Ferragamo, Burberry, Gucci, Prada
+  name        String // Ferragamo, Burberry, Gucci, Prada
   groupId     String  @map("group_id") // A, B, C
   colorConfig Json?   @map("color_config") // { gradient: "from-rose-400 to-rose-600" }
   isActive    Boolean @default(true) @map("is_active")
   sortOrder   Int     @default(0) @map("sort_order")
 
-  budgets    Budget[]
-  skuCatalog SkuCatalog[]
-  workflowSteps ApprovalWorkflowStep[]
+  budgets           Budget[]
+  skuCatalog        SkuCatalog[]
+  workflowSteps     ApprovalWorkflowStep[]
+  // NEW: from BE-NEW merge
+  brands            Brand[]
+  allocateHeaders   AllocateHeader[]
+  approvalWorkflows ApprovalWorkflow[]
 
   @@map("group_brands")
+}
+
+// NEW: Brand sub-hierarchy under GroupBrand (from BE-NEW)
+model Brand {
+  id           String   @id @default(cuid())
+  code         String   @unique
+  name         String
+  groupBrandId String   @map("group_brand_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  groupBrand GroupBrand @relation(fields: [groupBrandId], references: [id])
+
+  @@map("brands")
 }
 
 model Store {
@@ -82,20 +109,56 @@ model Store {
   region   String?
   isActive Boolean @default(true) @map("is_active")
 
-  budgetDetails            BudgetDetail[]
-  productAllocations       ProductAllocation[]
+  budgetDetails      BudgetDetail[]
+  productAllocations ProductAllocation[]
+  // NEW: from BE-NEW merge
+  budgetAllocates    BudgetAllocate[]
 
   @@map("stores")
 }
 
-model Collection {
+// Renamed from Collection → SeasonType (semantic alignment with BE-NEW)
+// Keeps existing DB table name for migration compatibility
+model SeasonType {
   id       String  @id @default(cuid())
-  name     String  @unique
+  name     String  @unique // Carry Over, Seasonal
   isActive Boolean @default(true) @map("is_active")
 
   planningDetails PlanningDetail[]
 
   @@map("collections")
+}
+
+// NEW: Season group hierarchy (from BE-NEW)
+model SeasonGroup {
+  id        String   @id @default(cuid())
+  name      String   @unique // SS, FW
+  year      Int?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  seasons         Season[]
+  budgetAllocates BudgetAllocate[]
+  tickets         Ticket[]
+
+  @@map("season_groups")
+}
+
+// NEW: Season (child of SeasonGroup, from BE-NEW)
+model Season {
+  id            String   @id @default(cuid())
+  name          String // SS24, FW24, SS25, etc.
+  seasonGroupId String   @map("season_group_id")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  seasonGroup     SeasonGroup      @relation(fields: [seasonGroupId], references: [id], onDelete: Cascade)
+  budgetAllocates BudgetAllocate[]
+  tickets         Ticket[]
+
+  @@map("seasons")
 }
 
 model Gender {
@@ -111,7 +174,7 @@ model Gender {
 
 model Category {
   id       String  @id @default(cuid())
-  name     String  // RTW, HARD ACCESSORIES, etc.
+  name     String // RTW, HARD ACCESSORIES, etc.
   genderId String  @map("gender_id")
   isActive Boolean @default(true) @map("is_active")
 
@@ -124,35 +187,62 @@ model Category {
 
 model SubCategory {
   id         String  @id @default(cuid())
-  name       String  // W Outerwear, W Tailoring, M Bags, etc.
+  name       String // W Outerwear, W Tailoring, M Bags, etc.
   categoryId String  @map("category_id")
   isActive   Boolean @default(true) @map("is_active")
 
-  category        Category         @relation(fields: [categoryId], references: [id])
-  planningDetails PlanningDetail[]
+  category         Category          @relation(fields: [categoryId], references: [id])
+  planningDetails  PlanningDetail[]
+  // NEW: from BE-NEW merge
+  subcategorySizes SubcategorySize[]
 
   @@map("sub_categories")
 }
 
+// NEW: Sizes per subcategory (from BE-NEW, for AI size curve)
+model SubcategorySize {
+  id            String   @id @default(cuid())
+  name          String // XS, S, M, L, XL
+  subCategoryId String   @map("sub_category_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  subCategory     SubCategory      @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  proposalSizings ProposalSizing[]
+
+  @@map("subcategory_sizes")
+}
+
 model SkuCatalog {
-  id            String  @id @default(cuid())
-  skuCode       String  @unique @map("sku_code")
-  productName   String  @map("product_name")
-  productType   String  @map("product_type") // W OUTERWEAR, W TOPS, M BAGS
+  id            String   @id @default(cuid())
+  skuCode       String   @unique @map("sku_code")
+  productName   String   @map("product_name")
+  productType   String   @map("product_type") // W OUTERWEAR, W TOPS, M BAGS
   theme         String? // AUGUST (08), SEPTEMBER (09)
   color         String?
   composition   String?
-  srp           Decimal @db.Decimal(18, 2) // Suggested Retail Price (VND)
-  costPrice     Decimal? @db.Decimal(18, 2) @map("cost_price") // Actual cost price for OTB calculations
-  brandId       String? @map("brand_id")
-  seasonGroupId String? @map("season_group_id")
-  imageUrl      String? @map("image_url")
-  isActive      Boolean @default(true) @map("is_active")
+  srp           Decimal  @db.Decimal(18, 2) // Suggested Retail Price (VND)
+  costPrice     Decimal? @map("cost_price") @db.Decimal(18, 2) // Actual cost price for OTB calculations
+  brandId       String?  @map("brand_id")
+  seasonGroupId String?  @map("season_group_id")
+  imageUrl      String?  @map("image_url")
+  isActive      Boolean  @default(true) @map("is_active")
 
-  brand                    GroupBrand?               @relation(fields: [brandId], references: [id])
-  products                 ProposalProduct[]
+  brand    GroupBrand?       @relation(fields: [brandId], references: [id])
+  products ProposalProduct[]
 
   @@map("sku_catalog")
+}
+
+// NEW: Reference table for approval statuses (from BE-NEW)
+model ApprovalStatus {
+  id        String   @id @default(cuid())
+  name      String   @unique // PENDING, IN_REVIEW, APPROVED, REJECTED
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("approval_statuses")
 }
 
 // ============================================================================
@@ -189,6 +279,9 @@ model Budget {
   createdBy       User             @relation("BudgetCreator", fields: [createdById], references: [id])
   details         BudgetDetail[]
   proposals       Proposal[]
+  // NEW: from BE-NEW merge
+  allocateHeaders AllocateHeader[]
+  tickets         Ticket[]
 
   // Constraints
   @@unique([groupBrandId, seasonGroupId, seasonType, fiscalYear])
@@ -198,6 +291,7 @@ model Budget {
   @@map("budgets")
 }
 
+// Kept for backward compatibility (BudgetDetail → simple store allocation)
 model BudgetDetail {
   id           String  @id @default(cuid())
   budgetId     String  @map("budget_id")
@@ -205,12 +299,55 @@ model BudgetDetail {
   budgetAmount Decimal @default(0) @map("budget_amount") @db.Decimal(18, 2)
 
   // Relations
-  budget                      Budget                      @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  store                       Store                       @relation(fields: [storeId], references: [id])
-  planningVersions            PlanningVersion[]
+  budget           Budget            @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  store            Store             @relation(fields: [storeId], references: [id])
+  planningVersions PlanningVersion[]
 
   @@unique([budgetId, storeId])
   @@map("budget_details")
+}
+
+// NEW: Budget allocation versioning per brand (from BE-NEW)
+model AllocateHeader {
+  id             String   @id @default(cuid())
+  budgetId       String   @map("budget_id")
+  groupBrandId   String   @map("group_brand_id")
+  version        Int      @default(1)
+  isFinalVersion Boolean  @default(false) @map("is_final_version")
+  isSnapshot     Boolean  @default(false) @map("is_snapshot")
+  ticketId       String?  @map("ticket_id")
+  createdById    String   @map("created_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  budget           Budget            @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  groupBrand       GroupBrand        @relation(fields: [groupBrandId], references: [id])
+  creator          User              @relation("AllocateHeaderCreator", fields: [createdById], references: [id])
+  ticket           Ticket?           @relation("TicketToSnapshotHeaders", fields: [ticketId], references: [id])
+  budgetAllocates  BudgetAllocate[]
+  planningVersions PlanningVersion[] @relation("AllocateHeaderPlanning")
+  proposals        Proposal[]        @relation("AllocateHeaderProposal")
+
+  @@map("allocate_headers")
+}
+
+// NEW: Detailed allocation (store × season, from BE-NEW)
+model BudgetAllocate {
+  id               String   @id @default(cuid())
+  allocateHeaderId String   @map("allocate_header_id")
+  storeId          String   @map("store_id")
+  seasonGroupId    String   @map("season_group_id")
+  seasonId         String   @map("season_id")
+  budgetAmount     Decimal  @default(0) @map("budget_amount") @db.Decimal(18, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  allocateHeader AllocateHeader @relation(fields: [allocateHeaderId], references: [id], onDelete: Cascade)
+  store          Store          @relation(fields: [storeId], references: [id])
+  seasonGroup    SeasonGroup    @relation(fields: [seasonGroupId], references: [id])
+  season         Season         @relation(fields: [seasonId], references: [id])
+
+  @@map("budget_allocates")
 }
 
 // ============================================================================
@@ -226,24 +363,26 @@ enum PlanningStatus {
 }
 
 model PlanningVersion {
-  id             String         @id @default(cuid())
-  planningCode   String         @unique @map("planning_code") // PLN-BUD-FER-SS-Pre-2025-REX-V1
-  budgetDetailId String         @map("budget_detail_id")
-  versionNumber  Int            @map("version_number")
-  versionName    String?        @map("version_name")
-  status         PlanningStatus @default(DRAFT)
-  isFinal        Boolean        @default(false) @map("is_final")
-  snapshotData   Json?          @map("snapshot_data") // frozen data on submit
-  version        Int            @default(1) // SEC-13: Optimistic locking
-  createdById    String         @map("created_by_id")
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
+  id               String         @id @default(cuid())
+  planningCode     String         @unique @map("planning_code") // PLN-BUD-FER-SS-Pre-2025-REX-V1
+  budgetDetailId   String         @map("budget_detail_id")
+  allocateHeaderId String?        @map("allocate_header_id") // NEW: link to allocation version
+  versionNumber    Int            @map("version_number")
+  versionName      String?        @map("version_name")
+  status           PlanningStatus @default(DRAFT)
+  isFinal          Boolean        @default(false) @map("is_final")
+  snapshotData     Json?          @map("snapshot_data") // frozen data on submit
+  version          Int            @default(1) // SEC-13: Optimistic locking
+  createdById      String         @map("created_by_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  budgetDetail BudgetDetail    @relation(fields: [budgetDetailId], references: [id])
-  createdBy    User            @relation("PlanningCreator", fields: [createdById], references: [id])
-  details      PlanningDetail[]
-  proposals    Proposal[]
+  budgetDetail   BudgetDetail     @relation(fields: [budgetDetailId], references: [id])
+  allocateHeader AllocateHeader?  @relation("AllocateHeaderPlanning", fields: [allocateHeaderId], references: [id])
+  createdBy      User             @relation("PlanningCreator", fields: [createdById], references: [id])
+  details        PlanningDetail[]
+  proposals      Proposal[]
 
   @@unique([budgetDetailId, versionNumber])
   @@map("planning_versions")
@@ -253,7 +392,7 @@ model PlanningDetail {
   id                String  @id @default(cuid())
   planningVersionId String  @map("planning_version_id")
   dimensionType     String  @map("dimension_type") // collection | gender | category
-  collectionId      String? @map("collection_id")
+  seasonTypeId      String? @map("collection_id") // Renamed field, DB column kept for compat
   genderId          String? @map("gender_id")
   categoryId        String? @map("category_id")
   subCategoryId     String? @map("sub_category_id")
@@ -269,7 +408,7 @@ model PlanningDetail {
 
   // Relations
   planningVersion PlanningVersion @relation(fields: [planningVersionId], references: [id], onDelete: Cascade)
-  collection      Collection?     @relation(fields: [collectionId], references: [id])
+  seasonType      SeasonType?     @relation(fields: [seasonTypeId], references: [id])
   gender          Gender?         @relation(fields: [genderId], references: [id])
   category        Category?       @relation(fields: [categoryId], references: [id])
   subCategory     SubCategory?    @relation(fields: [subCategoryId], references: [id])
@@ -294,6 +433,7 @@ model Proposal {
   ticketName        String         @map("ticket_name")
   budgetId          String         @map("budget_id")
   planningVersionId String?        @map("planning_version_id")
+  allocateHeaderId  String?        @map("allocate_header_id") // NEW: link to allocation version
   status            ProposalStatus @default(DRAFT)
   totalSkuCount     Int            @default(0) @map("total_sku_count")
   totalOrderQty     Int            @default(0) @map("total_order_qty")
@@ -304,10 +444,12 @@ model Proposal {
   updatedAt         DateTime       @updatedAt @map("updated_at")
 
   // Relations
-  budget          Budget           @relation(fields: [budgetId], references: [id])
-  planningVersion PlanningVersion? @relation(fields: [planningVersionId], references: [id])
-  createdBy       User             @relation("ProposalCreator", fields: [createdById], references: [id])
-  products        ProposalProduct[]
+  budget                Budget                 @relation(fields: [budgetId], references: [id])
+  planningVersion       PlanningVersion?       @relation(fields: [planningVersionId], references: [id])
+  allocateHeader        AllocateHeader?        @relation("AllocateHeaderProposal", fields: [allocateHeaderId], references: [id])
+  createdBy             User                   @relation("ProposalCreator", fields: [createdById], references: [id])
+  products              ProposalProduct[]
+  proposalSizingHeaders ProposalSizingHeader[]
 
   @@map("proposals")
 }
@@ -334,9 +476,11 @@ model ProposalProduct {
   sortOrder      Int     @default(0) @map("sort_order")
 
   // Relations
-  proposal    Proposal            @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-  sku         SkuCatalog          @relation(fields: [skuId], references: [id])
-  allocations ProductAllocation[]
+  proposal        Proposal            @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sku             SkuCatalog          @relation(fields: [skuId], references: [id])
+  allocations     ProductAllocation[]
+  // NEW: from BE-NEW merge
+  proposalSizings ProposalSizing[]
 
   @@map("proposal_products")
 }
@@ -355,6 +499,42 @@ model ProductAllocation {
   @@map("product_allocations")
 }
 
+// NEW: Size curve versioning (from BE-NEW)
+model ProposalSizingHeader {
+  id             String   @id @default(cuid())
+  proposalId     String   @map("proposal_id")
+  version        Int      @default(1)
+  isFinalVersion Boolean  @default(false) @map("is_final_version")
+  createdById    String   @map("created_by_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  proposal        Proposal         @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  creator         User             @relation("ProposalSizingCreator", fields: [createdById], references: [id])
+  proposalSizings ProposalSizing[]
+
+  @@map("proposal_sizing_headers")
+}
+
+// NEW: Size distribution per SKU × size (from BE-NEW)
+model ProposalSizing {
+  id                     String   @id @default(cuid())
+  proposalSizingHeaderId String   @map("proposal_sizing_header_id")
+  proposalProductId      String   @map("proposal_product_id")
+  subcategorySizeId      String   @map("subcategory_size_id")
+  actualSalesmixPct      Decimal  @default(0) @map("actual_salesmix_pct") @db.Decimal(8, 4)
+  actualStPct            Decimal  @default(0) @map("actual_st_pct") @db.Decimal(8, 4)
+  proposalQuantity       Int      @default(0) @map("proposal_quantity")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  proposalSizingHeader ProposalSizingHeader @relation(fields: [proposalSizingHeaderId], references: [id], onDelete: Cascade)
+  proposalProduct      ProposalProduct      @relation(fields: [proposalProductId], references: [id])
+  subcategorySize      SubcategorySize      @relation(fields: [subcategorySizeId], references: [id])
+
+  @@map("proposal_sizings")
+}
+
 // ============================================================================
 // APPROVAL WORKFLOW
 // ============================================================================
@@ -364,11 +544,12 @@ enum ApprovalAction {
   REJECTED
 }
 
+// Polymorphic approval log (OTBnonAI original — kept)
 model Approval {
   id         String         @id @default(cuid())
   entityType String         @map("entity_type") // budget | planning | proposal
   entityId   String         @map("entity_id")
-  level      Int            // 1 = Merch Manager, 2 = Finance Director
+  level      Int // 1 = Merch Manager, 2 = Finance Director
   deciderId  String         @map("decider_id")
   action     ApprovalAction
   comment    String?
@@ -381,35 +562,7 @@ model Approval {
   @@map("approvals")
 }
 
-// ============================================================================
-// AUDIT LOG
-// ============================================================================
-
-model AuditLog {
-  id         String   @id @default(cuid())
-  userId     String   @map("user_id")
-  entityType String   @map("entity_type") // budget | planning | proposal
-  entityId   String   @map("entity_id")
-  action     String   // create | update | delete | submit | approve | reject
-  changes    Json?    // { field: { old: x, new: y } }
-  ipAddress  String?  @map("ip_address")
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([entityType, entityId])
-  @@index([userId])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-// ============================================================================
-// APPROVAL WORKFLOW CONFIGURATION (AI models removed — see backup/ai-features-full branch)
-// ============================================================================
-
-
-// (AI models removed — see backup branch for restoration)
-
+// Legacy per-brand step config (OTBnonAI original — kept for backward compat)
 model ApprovalWorkflowStep {
   id          String   @id @default(cuid())
   brandId     String   @map("brand_id")
@@ -422,12 +575,108 @@ model ApprovalWorkflowStep {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  brand       GroupBrand @relation(fields: [brandId], references: [id])
-  user        User?      @relation("WorkflowStepUser", fields: [userId], references: [id])
+  brand GroupBrand @relation(fields: [brandId], references: [id])
+  user  User?      @relation("WorkflowStepUser", fields: [userId], references: [id])
 
   @@unique([brandId, stepNumber])
   @@index([brandId])
   @@map("approval_workflow_steps")
+}
+
+// NEW: Structured workflow per group brand (from BE-NEW)
+model ApprovalWorkflow {
+  id           String   @id @default(cuid())
+  groupBrandId String   @map("group_brand_id")
+  workflowName String   @map("workflow_name")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  groupBrand GroupBrand              @relation(fields: [groupBrandId], references: [id], onDelete: Cascade)
+  levels     ApprovalWorkflowLevel[]
+
+  @@map("approval_workflows")
+}
+
+// NEW: Approval levels within a workflow (from BE-NEW)
+model ApprovalWorkflowLevel {
+  id                 String   @id @default(cuid())
+  approvalWorkflowId String   @map("approval_workflow_id")
+  levelOrder         Int      @map("level_order")
+  levelName          String   @map("level_name")
+  approverUserId     String   @map("approver_user_id")
+  isRequired         Boolean  @default(true) @map("is_required")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  approvalWorkflow   ApprovalWorkflow    @relation(fields: [approvalWorkflowId], references: [id], onDelete: Cascade)
+  approverUser       User                @relation("ApproverUser", fields: [approverUserId], references: [id])
+  ticketApprovalLogs TicketApprovalLog[]
+
+  @@map("approval_workflow_levels")
+}
+
+// ============================================================================
+// TICKET MODULE (NEW — from BE-NEW)
+// ============================================================================
+
+model Ticket {
+  id            String   @id @default(cuid())
+  budgetId      String   @map("budget_id")
+  seasonGroupId String   @map("season_group_id")
+  seasonId      String   @map("season_id")
+  status        String   @default("PENDING") // PENDING, IN_REVIEW, APPROVED, REJECTED
+  createdById   String   @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  budget                  Budget              @relation(fields: [budgetId], references: [id])
+  seasonGroup             SeasonGroup         @relation(fields: [seasonGroupId], references: [id])
+  season                  Season              @relation(fields: [seasonId], references: [id])
+  creator                 User                @relation("TicketCreator", fields: [createdById], references: [id])
+  ticketApprovalLogs      TicketApprovalLog[]
+  snapshotAllocateHeaders AllocateHeader[]    @relation("TicketToSnapshotHeaders")
+
+  @@map("tickets")
+}
+
+model TicketApprovalLog {
+  id                      String    @id @default(cuid())
+  ticketId                String    @map("ticket_id")
+  approvalWorkflowLevelId String    @map("approval_workflow_level_id")
+  approverUserId          String    @map("approver_user_id")
+  isApproved              Boolean   @map("is_approved")
+  comment                 String?
+  approvedAt              DateTime? @map("approved_at")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  ticket                Ticket                @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  approvalWorkflowLevel ApprovalWorkflowLevel @relation(fields: [approvalWorkflowLevelId], references: [id])
+  approverUser          User                  @relation("TicketApprovalLogUser", fields: [approverUserId], references: [id])
+
+  @@map("ticket_approval_logs")
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  entityType String   @map("entity_type") // budget | planning | proposal
+  entityId   String   @map("entity_id")
+  action     String // create | update | delete | submit | approve | reject
+  changes    Json? // { field: { old: x, new: y } }
+  ipAddress  String?  @map("ip_address")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("audit_logs")
 }
 
 // ============================================================================

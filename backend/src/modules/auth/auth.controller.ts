@@ -41,6 +41,17 @@ export class AuthController {
     };
   }
 
+  @Post('microsoft')
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Login with Microsoft SSO token' })
+  async loginWithMicrosoft(@Body() body: { msAccessToken: string }) {
+    return {
+      success: true,
+      data: await this.authService.loginWithMicrosoft(body.msAccessToken),
+    };
+  }
+
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
   async refresh(@Body() dto: RefreshDto) {

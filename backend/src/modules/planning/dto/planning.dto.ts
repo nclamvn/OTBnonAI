@@ -12,7 +12,7 @@ export class PlanningDetailDto {
   @ApiPropertyOptional()
   @IsString()
   @IsOptional()
-  collectionId?: string;
+  seasonTypeId?: string;
 
   @ApiPropertyOptional()
   @IsString()

@@ -3,12 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
 import { approvalHelper } from './approvalHelper';
-
-const extract = (response: any) => response.data?.data ?? response.data;
-const normalizeList = (items: any) => {
-  if (!Array.isArray(items)) return items;
-  return items.map((item: any) => item.status ? { ...item, status: item.status.toLowerCase() } : item);
-};
+import { extract, normalizeList } from './serviceUtils';
 
 export const budgetService = {
   // Get all budgets with filters
@@ -92,6 +87,39 @@ export const budgetService = {
       return response.data;
     } catch (err: any) {
       console.error('[budgetService.delete]', id, err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Set allocation version as final
+  async setFinalAllocateVersion(headerId: string) {
+    try {
+      const response = await api.patch(`/budgets/allocations/${headerId}/set-final`);
+      return extract(response);
+    } catch (err: any) {
+      console.error('[budgetService.setFinalAllocateVersion]', headerId, err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Save (overwrite) existing allocate header rows
+  async saveAllocation(headerId: string, allocations: { storeId: string; seasonGroupId: string; seasonId: string; budgetAmount: number }[]) {
+    try {
+      const response = await api.put(`/budgets/allocations/${headerId}`, { allocations });
+      return extract(response);
+    } catch (err: any) {
+      console.error('[budgetService.saveAllocation]', headerId, err?.response?.status, err?.message);
+      throw err;
+    }
+  },
+
+  // Save as new allocate header version for a brand
+  async saveAsNewAllocation(budgetId: string, brandId: string, allocations: { storeId: string; seasonGroupId: string; seasonId: string; budgetAmount: number }[]) {
+    try {
+      const response = await api.post(`/budgets/${budgetId}/allocations`, { brandId, allocations });
+      return extract(response);
+    } catch (err: any) {
+      console.error('[budgetService.saveAsNewAllocation]', budgetId, err?.response?.status, err?.message);
       throw err;
     }
   },

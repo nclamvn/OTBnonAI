@@ -93,6 +93,9 @@ const en = {
     categories: 'Categories',
     subCategories: 'Sub-Categories',
     importData: 'Import Data',
+    stores: 'Stores',
+    genders: 'Genders',
+    seasonGroups: 'Season Groups',
   },
 
   // ──────────────────────────────────────────────

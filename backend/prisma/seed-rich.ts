@@ -55,8 +55,8 @@ async function main() {
   const brandGUC = await prisma.groupBrand.findUniqueOrThrow({ where: { code: 'GUC' } });
   const brandPRA = await prisma.groupBrand.findUniqueOrThrow({ where: { code: 'PRA' } });
 
-  const collCarryOver = await prisma.collection.findUniqueOrThrow({ where: { name: 'Carry Over' } });
-  const collSeasonal  = await prisma.collection.findUniqueOrThrow({ where: { name: 'Seasonal' } });
+  const collCarryOver = await prisma.seasonType.findUniqueOrThrow({ where: { name: 'Carry Over' } });
+  const collSeasonal  = await prisma.seasonType.findUniqueOrThrow({ where: { name: 'Seasonal' } });
   const genderF = await prisma.gender.findUniqueOrThrow({ where: { name: 'Female' } });
   const genderM = await prisma.gender.findUniqueOrThrow({ where: { name: 'Male' } });
 
@@ -264,15 +264,15 @@ async function main() {
 
       // ── Collection dimension ──
       const collDetails = [
-        { collectionId: collCarryOver.id, pct: 0.40, label: 'Carry Over' },
-        { collectionId: collSeasonal.id, pct: 0.60, label: 'Seasonal' },
+        { seasonTypeId: collCarryOver.id, pct: 0.40, label: 'Carry Over' },
+        { seasonTypeId: collSeasonal.id, pct: 0.60, label: 'Seasonal' },
       ];
       for (const cd of collDetails) {
         await prisma.planningDetail.create({
           data: {
             planningVersionId: pv.id,
             dimensionType: 'collection',
-            collectionId: cd.collectionId,
+            seasonTypeId: cd.seasonTypeId,
             lastSeasonSales: d(Math.round(budgetAmt * cd.pct * 0.92)),
             lastSeasonPct: d(cd.pct * 100),
             systemBuyPct: d(cd.pct * 100),

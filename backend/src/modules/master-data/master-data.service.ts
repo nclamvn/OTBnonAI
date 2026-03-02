@@ -48,10 +48,15 @@ export class MasterDataService {
     return this.prisma.store.findMany({ where });
   }
 
-  async getCollections() {
-    return this.prisma.collection.findMany({
+  async getSeasonTypes() {
+    return this.prisma.seasonType.findMany({
       where: { isActive: true },
     });
+  }
+
+  // Alias for backward compat
+  async getCollections() {
+    return this.getSeasonTypes();
   }
 
   async getGenders() {
@@ -127,7 +132,60 @@ export class MasterDataService {
     };
   }
 
-  // Season config (static — no DB table needed)
+  async getSeasonGroups(year?: number) {
+    const where: any = {};
+    if (year) where.year = year;
+    return this.prisma.seasonGroup.findMany({
+      where,
+      include: { seasons: true },
+      orderBy: { year: 'desc' },
+    });
+  }
+
+  async getSeasonsByGroup(seasonGroupId: string) {
+    return this.prisma.season.findMany({
+      where: { seasonGroupId },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getSubCategoriesDirect(params?: { categoryId?: string; genderId?: string }) {
+    const where: any = { isActive: true };
+    if (params?.categoryId) where.categoryId = params.categoryId;
+    if (params?.genderId) {
+      where.category = { genderId: params.genderId };
+    }
+    return this.prisma.subCategory.findMany({
+      where,
+      include: { category: { include: { gender: true } } },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getSubcategorySizes(subCategoryId: string) {
+    return this.prisma.subcategorySize.findMany({
+      where: { subCategoryId },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getApprovalStatuses() {
+    return this.prisma.approvalStatus.findMany({
+      where: { isActive: true },
+    });
+  }
+
+  async getFiscalYears() {
+    const budgets = await this.prisma.budget.findMany({
+      where: { deletedAt: null },
+      select: { fiscalYear: true },
+      distinct: ['fiscalYear'],
+      orderBy: { fiscalYear: 'desc' },
+    });
+    return budgets.map(b => b.fiscalYear);
+  }
+
+  // Season config (static fallback)
   getSeasonConfig() {
     return {
       seasonGroups: [

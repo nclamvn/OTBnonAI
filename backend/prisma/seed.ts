@@ -15,6 +15,21 @@ async function main() {
 
   // ─── CLEANUP (delete in reverse-dependency order) ─────────────────────
   console.log('  🧹 Cleaning existing data...');
+  // New tables from merge
+  await prisma.ticketApprovalLog.deleteMany();
+  await prisma.ticket.deleteMany();
+  await prisma.proposalSizing.deleteMany();
+  await prisma.proposalSizingHeader.deleteMany();
+  await prisma.budgetAllocate.deleteMany();
+  await prisma.allocateHeader.deleteMany();
+  await prisma.approvalWorkflowLevel.deleteMany();
+  await prisma.approvalWorkflow.deleteMany();
+  await prisma.approvalStatus.deleteMany();
+  await prisma.subcategorySize.deleteMany();
+  await prisma.season.deleteMany();
+  await prisma.seasonGroup.deleteMany();
+  await prisma.brand.deleteMany();
+  // Original tables
   await prisma.productAllocation.deleteMany();
   await prisma.proposalProduct.deleteMany();
   await prisma.proposal.deleteMany();
@@ -28,7 +43,7 @@ async function main() {
   await prisma.subCategory.deleteMany();
   await prisma.category.deleteMany();
   await prisma.gender.deleteMany();
-  await prisma.collection.deleteMany();
+  await prisma.seasonType.deleteMany();
   await prisma.groupBrand.deleteMany();
   await prisma.store.deleteMany();
   await prisma.auditLog.deleteMany();
@@ -217,12 +232,43 @@ async function main() {
   const [brandFER, brandBUR, brandGUC, brandPRA, brandLV, brandDG, brandVER, brandBAL] = brands;
   console.log(`  ✅ ${brands.length} brands`);
 
-  // ─── COLLECTIONS ────────────────────────────────────────────────────────
-  const collections = await Promise.all([
-    prisma.collection.upsert({ where: { name: 'Carry Over' }, update: {}, create: { name: 'Carry Over' } }),
-    prisma.collection.upsert({ where: { name: 'Seasonal' }, update: {}, create: { name: 'Seasonal' } }),
+  // ─── SEASON TYPES (was Collections) ─────────────────────────────────────
+  const seasonTypes = await Promise.all([
+    prisma.seasonType.upsert({ where: { name: 'Carry Over' }, update: {}, create: { name: 'Carry Over' } }),
+    prisma.seasonType.upsert({ where: { name: 'Seasonal' }, update: {}, create: { name: 'Seasonal' } }),
   ]);
-  console.log(`  ✅ ${collections.length} collections`);
+  console.log(`  ✅ ${seasonTypes.length} season types`);
+
+  // ─── SEASON GROUPS & SEASONS (NEW from BE-NEW) ──────────────────────────
+  const seasonGroupSS = await prisma.seasonGroup.create({
+    data: { name: 'SS', year: 2026 },
+  });
+  const seasonGroupFW = await prisma.seasonGroup.create({
+    data: { name: 'FW', year: 2026 },
+  });
+  const seasonSS24 = await prisma.season.create({ data: { name: 'SS24', seasonGroupId: seasonGroupSS.id } });
+  const seasonFW24 = await prisma.season.create({ data: { name: 'FW24', seasonGroupId: seasonGroupFW.id } });
+  const seasonSS25 = await prisma.season.create({ data: { name: 'SS25', seasonGroupId: seasonGroupSS.id } });
+  const seasonFW25 = await prisma.season.create({ data: { name: 'FW25', seasonGroupId: seasonGroupFW.id } });
+  const seasonSS26 = await prisma.season.create({ data: { name: 'SS26', seasonGroupId: seasonGroupSS.id } });
+  const seasonFW26 = await prisma.season.create({ data: { name: 'FW26', seasonGroupId: seasonGroupFW.id } });
+  console.log('  ✅ 2 season groups, 6 seasons');
+
+  // ─── BRAND SUB-HIERARCHY (NEW from BE-NEW) ─────────────────────────────
+  const brandSubFER = await prisma.brand.create({ data: { code: 'FER', name: 'Ferragamo', groupBrandId: brandFER.id } });
+  const brandSubBUR = await prisma.brand.create({ data: { code: 'BUR', name: 'Burberry', groupBrandId: brandBUR.id } });
+  const brandSubGUC = await prisma.brand.create({ data: { code: 'GUC', name: 'Gucci', groupBrandId: brandGUC.id } });
+  const brandSubPRA = await prisma.brand.create({ data: { code: 'PRA', name: 'Prada', groupBrandId: brandPRA.id } });
+  console.log('  ✅ 4 brand sub-entries');
+
+  // ─── APPROVAL STATUSES (NEW from BE-NEW) ───────────────────────────────
+  await Promise.all([
+    prisma.approvalStatus.create({ data: { name: 'PENDING' } }),
+    prisma.approvalStatus.create({ data: { name: 'IN_REVIEW' } }),
+    prisma.approvalStatus.create({ data: { name: 'APPROVED' } }),
+    prisma.approvalStatus.create({ data: { name: 'REJECTED' } }),
+  ]);
+  console.log('  ✅ 4 approval statuses');
 
   // ─── GENDERS ────────────────────────────────────────────────────────────
   const genders = await Promise.all([
@@ -321,6 +367,38 @@ async function main() {
     prisma.subCategory.upsert({ where: { id: 'm_backpacks' }, update: {}, create: { id: 'm_backpacks', name: 'M Backpacks', categoryId: menBags.id } }),
   ]);
   console.log(`  ✅ 8 categories + ${subCategories.length} sub-categories`);
+
+  // ─── SUBCATEGORY SIZES (NEW from BE-NEW) ───────────────────────────────
+  const apparelSizes = ['XS', 'S', 'M', 'L', 'XL'];
+  const bagSizes = ['S', 'M', 'L'];
+  const apparelSubCats = subCategories.filter(sc =>
+    ['w_outerwear', 'w_tailoring', 'w_dresses', 'w_tops', 'w_body', 'w_bottoms', 'w_knitwear', 'w_jackets',
+     'm_outerwear', 'm_tops', 'm_bottoms'].includes(sc.id)
+  );
+  const bagSubCats = subCategories.filter(sc =>
+    ['w_handbags', 'w_shoulder_bags', 'w_totes', 'w_crossbody', 'w_wallets', 'w_cardholders', 'w_keychains',
+     'm_totes', 'm_messenger', 'm_backpacks', 'm_bags_slg', 'm_belts', 'm_scarves',
+     'w_shoes', 'w_heels', 'w_flats', 'w_boots', 'w_sandals'].includes(sc.id)
+  );
+
+  let sizeCount = 0;
+  for (const sc of apparelSubCats) {
+    for (const sizeName of apparelSizes) {
+      await prisma.subcategorySize.create({
+        data: { name: sizeName, subCategoryId: sc.id },
+      });
+      sizeCount++;
+    }
+  }
+  for (const sc of bagSubCats) {
+    for (const sizeName of bagSizes) {
+      await prisma.subcategorySize.create({
+        data: { name: sizeName, subCategoryId: sc.id },
+      });
+      sizeCount++;
+    }
+  }
+  console.log(`  ✅ ${sizeCount} subcategory sizes`);
 
   // ─── SKU CATALOG ────────────────────────────────────────────────────────
   const skuData = [
@@ -715,7 +793,7 @@ async function main() {
 
   // ─── PLANNING DETAILS ─────────────────────────────────────────────────
   const allPlanningVersions = await prisma.planningVersion.findMany();
-  const allCollections = await prisma.collection.findMany();
+  const allCollections = await prisma.seasonType.findMany();
   const allGenders = await prisma.gender.findMany();
   const allCategories = await prisma.category.findMany();
   const allSubCategories = await prisma.subCategory.findMany();
@@ -732,7 +810,7 @@ async function main() {
         data: {
           planningVersionId: pv.id,
           dimensionType: 'collection',
-          collectionId: allCollections[i].id,
+          seasonTypeId: allCollections[i].id,
           lastSeasonSales: totalBudget * pct * 0.9,
           lastSeasonPct: pct * 100,
           systemBuyPct: pct * 100,
@@ -1096,6 +1174,68 @@ async function main() {
     });
   }
   console.log(`  ✅ ${brands.length * 2} approval workflow steps (all 8 brands)`);
+
+  // ─── APPROVAL WORKFLOWS + LEVELS (NEW from BE-NEW) ─────────────────────
+  for (const brand of brands) {
+    const workflow = await prisma.approvalWorkflow.create({
+      data: {
+        groupBrandId: brand.id,
+        workflowName: `${brand.name} Approval Workflow`,
+      },
+    });
+    await prisma.approvalWorkflowLevel.create({
+      data: {
+        approvalWorkflowId: workflow.id,
+        levelOrder: 1,
+        levelName: 'Merchandising Manager',
+        approverUserId: managerUser.id,
+        isRequired: true,
+      },
+    });
+    await prisma.approvalWorkflowLevel.create({
+      data: {
+        approvalWorkflowId: workflow.id,
+        levelOrder: 2,
+        levelName: 'Finance Director',
+        approverUserId: financeUser.id,
+        isRequired: true,
+      },
+    });
+  }
+  console.log(`  ✅ ${brands.length} approval workflows with 2 levels each`);
+
+  // ─── SAMPLE ALLOCATE HEADERS (NEW from BE-NEW) ─────────────────────────
+  // Create one sample AllocateHeader per approved 2025 budget
+  const approvedBudgets = await prisma.budget.findMany({
+    where: { status: 'APPROVED', fiscalYear: 2025 },
+    take: 4,
+  });
+  for (const budget of approvedBudgets) {
+    const header = await prisma.allocateHeader.create({
+      data: {
+        budgetId: budget.id,
+        groupBrandId: budget.groupBrandId,
+        version: 1,
+        isFinalVersion: true,
+        createdById: merchUser.id,
+      },
+    });
+    // Create allocations for each store × season
+    const stores = await prisma.store.findMany({ where: { isActive: true } });
+    for (const store of stores) {
+      const storePct = store.code === 'REX' ? 0.35 : store.code === 'TTP' ? 0.30 : store.code === 'REX-DN' ? 0.15 : store.code === 'TTP-HP' ? 0.12 : 0.08;
+      await prisma.budgetAllocate.create({
+        data: {
+          allocateHeaderId: header.id,
+          storeId: store.id,
+          seasonGroupId: seasonGroupSS.id,
+          seasonId: seasonSS25.id,
+          budgetAmount: Number(budget.totalBudget) * storePct,
+        },
+      });
+    }
+  }
+  console.log(`  ✅ ${approvedBudgets.length} allocate headers with store allocations`);
 
   // ─── SUMMARY ────────────────────────────────────────────────────────────
   console.log('');

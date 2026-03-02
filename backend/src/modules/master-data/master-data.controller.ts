@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MasterDataService } from './master-data.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -44,8 +44,14 @@ export class MasterDataController {
     return { success: true, data: result };
   }
 
+  @Get('season-types')
+  @ApiOperation({ summary: 'Get all season types (Carry Over, Seasonal)' })
+  async getSeasonTypes() {
+    return { success: true, data: await this.masterDataService.getSeasonTypes() };
+  }
+
   @Get('collections')
-  @ApiOperation({ summary: 'Get all collections (replaces COLLECTIONS constant)' })
+  @ApiOperation({ summary: 'Get all collections (alias for season-types, backward compat)' })
   async getCollections() {
     return { success: true, data: await this.masterDataService.getCollections() };
   }
@@ -73,10 +79,53 @@ export class MasterDataController {
     return { success: true, data: result };
   }
 
+  @Get('season-groups')
+  @ApiOperation({ summary: 'Get season groups from DB (with seasons)' })
+  @ApiQuery({ name: 'year', required: false, type: Number })
+  async getSeasonGroups(@Query('year') year?: number) {
+    return { success: true, data: await this.masterDataService.getSeasonGroups(year) };
+  }
+
+  @Get('seasons-by-group')
+  @ApiOperation({ summary: 'Get seasons by season group ID' })
+  @ApiQuery({ name: 'seasonGroupId', required: true })
+  async getSeasonsByGroup(@Query('seasonGroupId') seasonGroupId: string) {
+    return { success: true, data: await this.masterDataService.getSeasonsByGroup(seasonGroupId) };
+  }
+
   @Get('seasons')
-  @ApiOperation({ summary: 'Get season configuration (SS/FW + Pre/Main)' })
+  @ApiOperation({ summary: 'Get season configuration (SS/FW + Pre/Main) — static fallback' })
   async getSeasons() {
     return { success: true, data: this.masterDataService.getSeasonConfig() };
+  }
+
+  @Get('sub-categories')
+  @ApiOperation({ summary: 'Get subcategories with optional category/gender filter' })
+  @ApiQuery({ name: 'categoryId', required: false })
+  @ApiQuery({ name: 'genderId', required: false })
+  async getSubCategories(
+    @Query('categoryId') categoryId?: string,
+    @Query('genderId') genderId?: string,
+  ) {
+    return { success: true, data: await this.masterDataService.getSubCategoriesDirect({ categoryId, genderId }) };
+  }
+
+  @Get('subcategory-sizes/:id')
+  @ApiOperation({ summary: 'Get sizes for a subcategory' })
+  async getSubcategorySizes(@Param('id') id: string) {
+    return { success: true, data: await this.masterDataService.getSubcategorySizes(id) };
+  }
+
+  @Get('approval-statuses')
+  @ApiOperation({ summary: 'Get all approval statuses' })
+  async getApprovalStatuses() {
+    return { success: true, data: await this.masterDataService.getApprovalStatuses() };
+  }
+
+  @Get('fiscal-years')
+  @ApiOperation({ summary: 'Get distinct fiscal years from budgets' })
+  async getFiscalYears() {
+    return { success: true, data: await this.masterDataService.getFiscalYears() };
   }
 
   @Get('sku-catalog')

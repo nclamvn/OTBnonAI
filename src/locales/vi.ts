@@ -93,6 +93,9 @@ const vi = {
     categories: 'Danh mục',
     subCategories: 'Danh mục phụ',
     importData: 'Nhập dữ liệu',
+    stores: 'Cửa hàng',
+    genders: 'Giới tính',
+    seasonGroups: 'Nhóm mùa',
   },
 
   // ──────────────────────────────────────────────

@@ -81,14 +81,14 @@ export class PlanningService {
         createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
         details: {
           include: {
-            collection: true,
+            seasonType: true,
             gender: true,
             category: true,
             subCategory: true,
           },
           orderBy: [
             { dimensionType: 'asc' },
-            { collectionId: 'asc' },
+            { seasonTypeId: 'asc' },
             { genderId: 'asc' },
             { categoryId: 'asc' },
           ],
@@ -175,7 +175,7 @@ export class PlanningService {
         details: {
           create: detailsWithOtb.map(d => ({
             dimensionType: d.dimensionType,
-            collectionId: d.collectionId,
+            seasonTypeId: d.seasonTypeId,
             genderId: d.genderId,
             categoryId: d.categoryId,
             subCategoryId: d.subCategoryId,
@@ -233,7 +233,7 @@ export class PlanningService {
         data: dto.details.map(d => ({
           planningVersionId: id,
           dimensionType: d.dimensionType,
-          collectionId: d.collectionId,
+          seasonTypeId: d.seasonTypeId,
           genderId: d.genderId,
           categoryId: d.categoryId,
           subCategoryId: d.subCategoryId,
@@ -546,7 +546,7 @@ export class PlanningService {
         details: {
           create: source.details.map(d => ({
             dimensionType: d.dimensionType,
-            collectionId: d.collectionId,
+            seasonTypeId: d.seasonTypeId,
             genderId: d.genderId,
             categoryId: d.categoryId,
             subCategoryId: d.subCategoryId,

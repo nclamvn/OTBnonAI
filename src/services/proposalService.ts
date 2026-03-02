@@ -3,11 +3,20 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import api from './api';
 import { approvalHelper } from './approvalHelper';
+import { extract, normalizeList } from './serviceUtils';
 
-const extract = (response: any) => response.data?.data ?? response.data;
-const normalizeList = (items: any) => {
-  if (!Array.isArray(items)) return items;
-  return items.map((item: any) => item.status ? { ...item, status: item.status.toLowerCase() } : item);
+/** Wrap an async API call with consistent extract + error logging.
+ *  Silently swallows AbortError / CancelError so callers don't see noise. */
+const withErrorLog = async <T>(tag: string, fn: () => Promise<T>): Promise<T> => {
+  try {
+    return await fn();
+  } catch (err: any) {
+    if (err?.name === 'CanceledError' || err?.name === 'AbortError' || err?.code === 'ERR_CANCELED') {
+      throw err;
+    }
+    console.error(`[proposalService.${tag}]`, err?.response?.status, err?.message);
+    throw err;
+  }
 };
 
 export const proposalService = {
@@ -127,6 +136,35 @@ export const proposalService = {
   approveL2: (id: string, comment?: string) => approvalHelper.approveL2('proposal', id, comment),
   rejectL1: (id: string, comment?: string) => approvalHelper.rejectL1('proposal', id, comment),
   rejectL2: (id: string, comment?: string) => approvalHelper.rejectL2('proposal', id, comment),
+
+  // Save full proposal (overwrite)
+  saveFullProposal: (headerId: string, data: any) =>
+    withErrorLog('saveFullProposal', async () => extract(await api.put(`/proposals/${headerId}/save-full`, data))),
+
+  // Copy proposal
+  copyProposal: (headerId: string) =>
+    withErrorLog('copyProposal', async () => extract(await api.post(`/proposals/${headerId}/copy`))),
+
+  // Get historical proposal data
+  async getHistorical(params: { fiscalYear: number; seasonGroupName: string; seasonName: string; brandId: string }) {
+    try {
+      return extract(await api.get('/proposals/historical', { params }));
+    } catch (err: any) {
+      console.error('[proposalService.getHistorical]', err?.response?.status, err?.message);
+      return null;
+    }
+  },
+
+  // Create allocations
+  createAllocations: (data: any) =>
+    withErrorLog('createAllocations', async () => extract(await api.post('/proposals/allocations', data))),
+
+  // Sizing headers
+  getSizingHeadersByProposalHeader: (proposalHeaderId: string) =>
+    withErrorLog('getSizingHeaders', async () => extract(await api.get(`/proposals/${proposalHeaderId}/sizing-headers`))),
+
+  updateSizingHeader: (headerId: string, data: any) =>
+    withErrorLog('updateSizingHeader', async () => extract(await api.patch(`/proposals/sizing-headers/${headerId}`, data))),
 
   // Delete proposal (DRAFT only)
   async delete(id: string) {
