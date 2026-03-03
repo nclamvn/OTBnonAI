@@ -6,7 +6,7 @@ interface KpiItem {
   status: string;
 }
 
-export interface LoadingState {
+interface LoadingState {
   visible: boolean;
   message?: string;
 }
@@ -14,9 +14,6 @@ export interface LoadingState {
 type SaveHandler = () => Promise<void> | void;
 
 interface AppContextType {
-  // Backward compat — darkMode is always true (toggle removed from AppHeader)
-  darkMode: boolean;
-  setDarkMode: (value: boolean) => void;
   sharedYear: number | null;
   setSharedYear: React.Dispatch<React.SetStateAction<number | null>>;
   allocationData: any;
@@ -44,6 +41,7 @@ interface AppContextType {
   hasExportHandler: boolean;
   headerSubtitle: string | null;
   setHeaderSubtitle: (subtitle: string | null) => void;
+  // Global loading overlay
   loading: LoadingState;
   showLoading: (message?: string) => void;
   hideLoading: () => void;
@@ -53,12 +51,15 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | null>(null);
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+  // Shared filter state between Budget Management and Planning screens
   const [sharedYear, setSharedYear] = useState<number | null>(null);
 
+  // Cross-screen data passing
   const [allocationData, setAllocationData] = useState(null);
   const [otbAnalysisContext, setOtbAnalysisContext] = useState(null);
   const [skuProposalContext, setSkuProposalContext] = useState(null);
 
+  // KPI data for header step bar
   const [kpiData, setKpiData] = useState<Record<string, KpiItem>>({
     'budget-management': { value: 5, status: 'completed' },
     'planning': { value: 3, status: 'completed' },
@@ -67,7 +68,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     'tickets': { value: 4, status: 'in-progress' },
   });
 
-  // Save handler
+  // Save handler: screens register their save callback, AppHeader triggers it
   const saveHandlerRef = useRef<SaveHandler | null>(null);
   const [hasSaveHandler, setHasSaveHandler] = useState(false);
 
@@ -92,7 +93,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Save-as-new handler
+  // Save-as-new handler: same pattern as save handler
   const saveAsNewHandlerRef = useRef<SaveHandler | null>(null);
   const [hasSaveAsNewHandler, setHasSaveAsNewHandler] = useState(false);
 
@@ -117,7 +118,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Create budget handler
+  // Create budget handler: BudgetManagementScreen registers its open-modal callback
   const createBudgetHandlerRef = useRef<(() => void) | null>(null);
 
   const registerCreateBudget = useCallback((handler: () => void) => {
@@ -134,7 +135,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Export handler
+  // Export handler: screens register their export callback, AppHeader triggers it
   const exportHandlerRef = useRef<(() => void) | null>(null);
   const [hasExportHandler, setHasExportHandler] = useState(false);
 
@@ -159,10 +160,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Header subtitle
+  // Header subtitle — screens can set to show e.g. "Ferragamo - Brand X" in breadcrumb
   const [headerSubtitle, setHeaderSubtitle] = useState<string | null>(null);
 
-  // Global loading overlay
+  // Global loading overlay state
   const [loading, setLoading] = useState<LoadingState>({ visible: false });
 
   const showLoading = useCallback((message?: string) => {
@@ -182,13 +183,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Backward compat — light theme only, toggle removed
-  const darkMode = false;
-  const setDarkMode = useCallback((_value: boolean) => { /* no-op */ }, []);
-
   const value = {
-    darkMode,
-    setDarkMode,
     sharedYear,
     setSharedYear,
     allocationData,

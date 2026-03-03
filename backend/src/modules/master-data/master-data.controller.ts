@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MasterDataService } from './master-data.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -10,50 +10,45 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 export class MasterDataController {
   constructor(private masterDataService: MasterDataService) {}
 
+  @Get('group-brands')
+  @ApiOperation({ summary: 'Get all group brands with their brands' })
+  async getGroupBrands() {
+    return { success: true, data: await this.masterDataService.getGroupBrands() };
+  }
+
   @Get('brands')
-  @ApiOperation({ summary: 'Get all active brands (replaces GROUP_BRANDS constant)' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
+  @ApiOperation({ summary: 'Get all active brands' })
+  @ApiQuery({ name: 'groupBrandId', required: false })
   async getBrands(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query('groupBrandId') groupBrandId?: string,
   ) {
-    const result = await this.masterDataService.getBrands(
-      page && limit ? { page, limit } : undefined,
-    );
-    if (page && limit) {
-      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
-    }
-    return { success: true, data: result };
+    return { success: true, data: await this.masterDataService.getBrands(groupBrandId) };
   }
 
   @Get('stores')
-  @ApiOperation({ summary: 'Get all active stores (replaces STORES constant)' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
-  async getStores(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
-    const result = await this.masterDataService.getStores(
-      page && limit ? { page, limit } : undefined,
-    );
-    if (page && limit) {
-      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
-    }
-    return { success: true, data: result };
+  @ApiOperation({ summary: 'Get all active stores' })
+  async getStores() {
+    return { success: true, data: await this.masterDataService.getStores() };
   }
 
   @Get('season-types')
-  @ApiOperation({ summary: 'Get all season types (Carry Over, Seasonal)' })
+  @ApiOperation({ summary: 'Get all season types' })
   async getSeasonTypes() {
     return { success: true, data: await this.masterDataService.getSeasonTypes() };
   }
 
-  @Get('collections')
-  @ApiOperation({ summary: 'Get all collections (alias for season-types, backward compat)' })
-  async getCollections() {
-    return { success: true, data: await this.masterDataService.getCollections() };
+  @Get('season-groups')
+  @ApiOperation({ summary: 'Get season groups with seasons (SS, FW)' })
+  @ApiQuery({ name: 'year', required: false, type: Number })
+  async getSeasonGroups(@Query('year') year?: string) {
+    return { success: true, data: await this.masterDataService.getSeasonGroups(year ? +year : undefined) };
+  }
+
+  @Get('seasons')
+  @ApiOperation({ summary: 'Get all seasons, optionally filter by season group' })
+  @ApiQuery({ name: 'seasonGroupId', required: false })
+  async getSeasons(@Query('seasonGroupId') seasonGroupId?: string) {
+    return { success: true, data: await this.masterDataService.getSeasons(seasonGroupId) };
   }
 
   @Get('genders')
@@ -62,58 +57,24 @@ export class MasterDataController {
     return { success: true, data: await this.masterDataService.getGenders() };
   }
 
-  @Get('categories')
-  @ApiOperation({ summary: 'Get full category hierarchy: Gender → Category → SubCategory' })
-  @ApiQuery({ name: 'page', required: false, type: Number, description: 'Page number (1-based). Requires limit.' })
-  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Items per page. Requires page.' })
-  async getCategories(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
-    const result = await this.masterDataService.getCategories(
-      page && limit ? { page, limit } : undefined,
-    );
-    if (page && limit) {
-      return { success: true, ...(result as { data: any[]; total: number; page: number; limit: number }) };
-    }
-    return { success: true, data: result };
-  }
-
-  @Get('season-groups')
-  @ApiOperation({ summary: 'Get season groups from DB (with seasons)' })
-  @ApiQuery({ name: 'year', required: false, type: Number })
-  async getSeasonGroups(@Query('year') year?: number) {
-    return { success: true, data: await this.masterDataService.getSeasonGroups(year) };
-  }
-
-  @Get('seasons-by-group')
-  @ApiOperation({ summary: 'Get seasons by season group ID' })
-  @ApiQuery({ name: 'seasonGroupId', required: true })
-  async getSeasonsByGroup(@Query('seasonGroupId') seasonGroupId: string) {
-    return { success: true, data: await this.masterDataService.getSeasonsByGroup(seasonGroupId) };
-  }
-
-  @Get('seasons')
-  @ApiOperation({ summary: 'Get season configuration (SS/FW + Pre/Main) — static fallback' })
-  async getSeasons() {
-    return { success: true, data: this.masterDataService.getSeasonConfig() };
-  }
-
   @Get('sub-categories')
-  @ApiOperation({ summary: 'Get subcategories with optional category/gender filter' })
+  @ApiOperation({ summary: 'Get all active sub-categories with parent category and gender' })
   @ApiQuery({ name: 'categoryId', required: false })
   @ApiQuery({ name: 'genderId', required: false })
   async getSubCategories(
     @Query('categoryId') categoryId?: string,
     @Query('genderId') genderId?: string,
   ) {
-    return { success: true, data: await this.masterDataService.getSubCategoriesDirect({ categoryId, genderId }) };
+    return { success: true, data: await this.masterDataService.getSubCategories(categoryId, genderId) };
   }
 
-  @Get('subcategory-sizes/:id')
-  @ApiOperation({ summary: 'Get sizes for a subcategory' })
-  async getSubcategorySizes(@Param('id') id: string) {
-    return { success: true, data: await this.masterDataService.getSubcategorySizes(id) };
+  @Get('categories')
+  @ApiOperation({ summary: 'Get full category hierarchy: Gender → Category → SubCategory → Sizes' })
+  @ApiQuery({ name: 'genderId', required: false })
+  async getCategories(
+    @Query('genderId') genderId?: string,
+  ) {
+    return { success: true, data: await this.masterDataService.getCategories(genderId) };
   }
 
   @Get('approval-statuses')
@@ -122,28 +83,66 @@ export class MasterDataController {
     return { success: true, data: await this.masterDataService.getApprovalStatuses() };
   }
 
+  @Get('subcategory-sizes/:subCategoryId')
+  @ApiOperation({ summary: 'Get sizes for a subcategory' })
+  async getSubcategorySizes(@Param('subCategoryId') subCategoryId: string) {
+    return { success: true, data: await this.masterDataService.getSubcategorySizes(subCategoryId) };
+  }
+
   @Get('fiscal-years')
-  @ApiOperation({ summary: 'Get distinct fiscal years from budgets' })
+  @ApiOperation({ summary: 'Get distinct fiscal years from budgets (for Year filter dropdown)' })
   async getFiscalYears() {
     return { success: true, data: await this.masterDataService.getFiscalYears() };
   }
 
+  @Get('planning-filters')
+  @ApiOperation({ summary: 'Get all filter options for Planning page in one request (groupBrands, brands, seasonGroups, stores, fiscalYears)' })
+  @ApiQuery({ name: 'year', required: false, type: Number })
+  async getPlanningFilterOptions(@Query('year') year?: string) {
+    return { success: true, data: await this.masterDataService.getPlanningFilterOptions(year ? +year : undefined) };
+  }
+
+  @Get('proposal-filters')
+  @ApiOperation({ summary: 'Get all filter options for Proposal page (genders, categories, seasonGroups, stores)' })
+  @ApiQuery({ name: 'year', required: false, type: Number })
+  async getProposalFilterOptions(@Query('year') year?: string) {
+    return { success: true, data: await this.masterDataService.getProposalFilterOptions(year ? +year : undefined) };
+  }
+
   @Get('sku-catalog')
-  @ApiOperation({ summary: 'Search SKU catalog with filters and pagination' })
-  @ApiQuery({ name: 'productType', required: false })
+  @ApiOperation({ summary: 'Get SKU catalog with filters (alias for /master/products)' })
   @ApiQuery({ name: 'brandId', required: false })
+  @ApiQuery({ name: 'subCategoryId', required: false })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
   async getSkuCatalog(
-    @Query('productType') productType?: string,
     @Query('brandId') brandId?: string,
+    @Query('subCategoryId') subCategoryId?: string,
     @Query('search') search?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
-    const result = await this.masterDataService.getSkuCatalog({
-      productType, brandId, search, page, pageSize,
+    const result = await this.masterDataService.getProducts({ brandId, subCategoryId, search, page, pageSize });
+    return { success: true, ...result };
+  }
+
+  @Get('products')
+  @ApiOperation({ summary: 'Search product catalog with filters and pagination' })
+  @ApiQuery({ name: 'brandId', required: false })
+  @ApiQuery({ name: 'subCategoryId', required: false })
+  @ApiQuery({ name: 'search', required: false })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  async getProducts(
+    @Query('brandId') brandId?: string,
+    @Query('subCategoryId') subCategoryId?: string,
+    @Query('search') search?: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    const result = await this.masterDataService.getProducts({
+      brandId, subCategoryId, search, page, pageSize,
     });
     return { success: true, ...result };
   }

@@ -163,13 +163,13 @@ describe('proposalService', () => {
   it('updateProduct should PATCH', async () => {
     mockApi.patch.mockResolvedValueOnce(wrapResponse({}));
     await proposalService.updateProduct('p1', 'prod-1', { orderQty: 20 });
-    expect(mockApi.patch).toHaveBeenCalledWith('/proposals/p1/products/prod-1', { orderQty: 20 });
+    expect(mockApi.patch).toHaveBeenCalledWith('/proposals/items/prod-1', { orderQty: 20 });
   });
 
   it('removeProduct should DELETE', async () => {
     mockApi.delete.mockResolvedValueOnce(wrapResponseFlat({ success: true }));
     await proposalService.removeProduct('p1', 'prod-1');
-    expect(mockApi.delete).toHaveBeenCalledWith('/proposals/p1/products/prod-1');
+    expect(mockApi.delete).toHaveBeenCalledWith('/proposals/items/prod-1');
   });
 });
 
@@ -322,7 +322,7 @@ describe('masterDataService', () => {
   it('getBrands should call GET /master/brands', async () => {
     mockApi.get.mockResolvedValueOnce(wrapResponse([{ id: '1', name: 'Ferragamo' }]));
     const result = await masterDataService.getBrands();
-    expect(mockApi.get).toHaveBeenCalledWith('/master/brands');
+    expect(mockApi.get).toHaveBeenCalledWith('/master/brands', { params: undefined });
     expect(result).toEqual([{ id: '1', name: 'Ferragamo' }]);
   });
 

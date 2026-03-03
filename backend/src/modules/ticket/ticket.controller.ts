@@ -42,11 +42,14 @@ export class TicketController {
     return { success: true, data: await this.ticketService.getStatistics() };
   }
 
+  // Validate endpoint — MUST be before :id to avoid route conflict
   @Post('validate')
   @RequirePermissions('ticket:write')
   @ApiOperation({ summary: 'Validate budget readiness for ticket creation' })
   async validate(@Body() body: ValidateTicketDto) {
-    const result = await this.ticketService.validateBudgetReadiness(body.budgetId);
+    const result = await this.ticketService.validateBudgetReadiness(
+      body.budgetId,
+    );
     return { success: true, data: result };
   }
 

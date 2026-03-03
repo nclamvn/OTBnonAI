@@ -19,71 +19,84 @@ export class NotificationService {
 
   /**
    * Get notifications for a user by aggregating:
-   * 1. Recent approvals on their submissions
+   * 1. Recent approval-related audit log entries on their submissions
    * 2. Items pending their review
    */
   async getNotifications(userId: string, limit = 20): Promise<NotificationItem[]> {
     const notifications: NotificationItem[] = [];
 
-    // 1. Recent approval decisions on user's budgets/plans/proposals
-    const recentApprovals = await this.prisma.approval.findMany({
+    // 1. Recent approval/rejection actions from audit log (last 7 days)
+    const recentApprovalLogs = await this.prisma.auditLog.findMany({
       where: {
-        decidedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // last 7 days
+        action: { in: ['APPROVED', 'REJECTED'] },
+        created_at: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
       },
-      include: {
-        decider: { select: { name: true } },
-      },
-      orderBy: { decidedAt: 'desc' },
+      orderBy: { created_at: 'desc' },
       take: 50,
     });
 
-    // Filter: only approvals on entities the user created
-    for (const approval of recentApprovals) {
+    // Filter: only approval actions on entities the user created
+    for (const logEntry of recentApprovalLogs) {
       let isOwner = false;
       let entityName = '';
 
-      if (approval.entityType === 'budget') {
+      if (logEntry.entity_type === 'budget') {
         const budget = await this.prisma.budget.findUnique({
-          where: { id: approval.entityId },
-          select: { createdById: true, budgetCode: true },
+          where: { id: BigInt(logEntry.entity_id) },
+          select: { created_by: true, name: true },
         });
-        if (budget?.createdById === userId) {
+        if (budget && String(budget.created_by) === userId) {
           isOwner = true;
-          entityName = budget.budgetCode;
+          entityName = budget.name;
         }
-      } else if (approval.entityType === 'planning') {
-        const plan = await this.prisma.planningVersion.findUnique({
-          where: { id: approval.entityId },
-          select: { createdById: true, planningCode: true },
+      } else if (logEntry.entity_type === 'planning') {
+        const plan = await this.prisma.planningHeader.findUnique({
+          where: { id: BigInt(logEntry.entity_id) },
+          select: { created_by: true },
         });
-        if (plan?.createdById === userId) {
+        if (plan && String(plan.created_by) === userId) {
           isOwner = true;
-          entityName = plan.planningCode;
+          entityName = `Planning #${logEntry.entity_id}`;
         }
-      } else if (approval.entityType === 'proposal') {
-        const proposal = await this.prisma.proposal.findUnique({
-          where: { id: approval.entityId },
-          select: { createdById: true, ticketName: true },
+      } else if (logEntry.entity_type === 'proposal') {
+        const proposal = await this.prisma.sKUProposalHeader.findUnique({
+          where: { id: BigInt(logEntry.entity_id) },
+          select: { created_by: true },
         });
-        if (proposal?.createdById === userId) {
+        if (proposal && String(proposal.created_by) === userId) {
           isOwner = true;
-          entityName = proposal.ticketName;
+          entityName = `Proposal #${logEntry.entity_id}`;
         }
       }
 
       if (isOwner) {
-        const isApproved = approval.action === 'APPROVED';
+        const isApproved = logEntry.action === 'APPROVED';
+        // Parse changes to extract approver info if available
+        let approverName = 'A reviewer';
+        let comment = '';
+        let level = '';
+        if (logEntry.changes) {
+          try {
+            const changes = JSON.parse(logEntry.changes);
+            if (changes.approverName) approverName = changes.approverName;
+            if (changes.comment) comment = changes.comment;
+            if (changes.level) level = ` (L${changes.level})`;
+          } catch {
+            // ignore parse errors
+          }
+        }
+
         notifications.push({
-          id: `approval-${approval.id}`,
+          id: `audit-${String(logEntry.id)}`,
           type: 'approval',
-          entityType: approval.entityType,
-          entityId: approval.entityId,
+          entityType: logEntry.entity_type,
+          entityId: logEntry.entity_id,
           title: isApproved
-            ? `${approval.entityType} approved`
-            : `${approval.entityType} rejected`,
-          message: `${approval.decider.name} ${isApproved ? 'approved' : 'rejected'} ${entityName} (L${approval.level})${approval.comment ? ': ' + approval.comment : ''}`,
+            ? `${logEntry.entity_type} approved`
+            : `${logEntry.entity_type} rejected`,
+          message: `${approverName} ${isApproved ? 'approved' : 'rejected'} ${entityName}${level}${comment ? ': ' + comment : ''}`,
           severity: isApproved ? 'success' : 'error',
-          createdAt: approval.decidedAt,
+          createdAt: logEntry.created_at,
           read: false,
         });
       }
@@ -92,8 +105,8 @@ export class NotificationService {
     // 2. Pending items awaiting user's action (items in SUBMITTED or LEVEL1_APPROVED)
     const [pendingBudgets, pendingPlans, pendingProposals] = await Promise.all([
       this.prisma.budget.count({ where: { status: { in: ['SUBMITTED', 'LEVEL1_APPROVED'] } } }),
-      this.prisma.planningVersion.count({ where: { status: { in: ['SUBMITTED', 'LEVEL1_APPROVED'] } } }),
-      this.prisma.proposal.count({ where: { status: { in: ['SUBMITTED', 'LEVEL1_APPROVED'] } } }),
+      this.prisma.planningHeader.count({ where: { status: { in: ['SUBMITTED', 'LEVEL1_APPROVED'] } } }),
+      this.prisma.sKUProposalHeader.count({ where: { status: { in: ['SUBMITTED', 'LEVEL1_APPROVED'] } } }),
     ]);
 
     const totalPending = pendingBudgets + pendingPlans + pendingProposals;

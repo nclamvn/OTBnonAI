@@ -104,11 +104,11 @@ async function fetchBreakdown(cardKey: string) {
     }
 
     case 'sellThrough': {
-      const cols = await masterDataService.getCollections();
-      const collections: any[] = Array.isArray(cols) ? cols : [];
+      const cols = await masterDataService.getSeasonTypes();
+      const seasonTypes: any[] = Array.isArray(cols) ? cols : [];
 
-      const breakdown = collections.map((c: any, i: number) => ({
-        label: c.name || c.code || `Collection ${i + 1}`,
+      const breakdown = seasonTypes.map((c: any, i: number) => ({
+        label: c.name || c.code || `Season Type ${i + 1}`,
         value: c.sellThrough || (50 + (i * 8) % 40),
         pct: c.sellThrough || (50 + (i * 8) % 40),
       }));
@@ -121,7 +121,7 @@ async function fetchBreakdown(cardKey: string) {
           message: `${i.label} sell-through below 40%`,
           severity: 'critical',
         })),
-        summary: { total: collections.length, count: collections.length },
+        summary: { total: seasonTypes.length, count: seasonTypes.length },
       };
     }
 

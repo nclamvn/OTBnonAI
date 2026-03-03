@@ -1,6 +1,6 @@
 // 3D realistic fashion product SVG generator — transparent background
 export const getDemoImageSvg = (subCategory: string, sku: string): string => {
-  const hash = (sku || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const hash = String(sku || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const variant = hash % 3; // 3 color variants per type
   const sub = (subCategory || '').toLowerCase();
 

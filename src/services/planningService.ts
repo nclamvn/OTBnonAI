@@ -100,17 +100,6 @@ export const planningService = {
     }
   },
 
-  // Get historical planning data
-  async getHistorical(params: { fiscalYear: number; seasonGroupName: string; seasonName: string; brandId: string }) {
-    try {
-      const response = await api.get('/planning/historical', { params });
-      return extract(response);
-    } catch (err: any) {
-      console.error('[planningService.getHistorical]', err?.response?.status, err?.message);
-      return null;
-    }
-  },
-
   // Delete planning (DRAFT only)
   async delete(id: string) {
     try {
@@ -119,6 +108,17 @@ export const planningService = {
     } catch (err: any) {
       console.error('[planningService.delete]', id, err?.response?.status, err?.message);
       throw err;
+    }
+  },
+
+  // Get historical planning data for year/season/brand comparison
+  async getHistorical(params: { fiscalYear: number; seasonGroupName: string; seasonName: string; brandId: string }) {
+    try {
+      const response = await api.get('/planning/historical', { params });
+      return extract(response);
+    } catch (err: any) {
+      console.error('[planningService.getHistorical]', err?.response?.status, err?.message);
+      return null;
     }
   }
 };

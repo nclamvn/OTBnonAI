@@ -43,6 +43,10 @@ vi.mock('../../../../services', () => ({
   masterDataService: mockMasterDataService,
 }));
 
+vi.mock('../../../../contexts/AuthContext', () => ({
+  useAuth: () => ({ isAuthenticated: true, user: { id: '1', name: 'Test' } }),
+}));
+
 import { useProposal } from '../useProposal';
 
 // ─── Tests ──────────────────────────────────────────────────────

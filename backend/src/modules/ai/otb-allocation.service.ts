@@ -4,7 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export interface DimensionRecommendation {
   dimensionType: 'collection' | 'gender' | 'category';
   dimensionValue: string;
-  dimensionId: string;
+  dimensionId: number | bigint;
   recommendedPct: number;
   recommendedAmt: number;
   confidence: number;
@@ -26,6 +26,9 @@ export class OtbAllocationService {
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Generate OTB allocation recommendations based on available master data.
+   */
   async generateAllocation(input: {
     budgetAmount: number;
     storeId?: string;
@@ -106,7 +109,7 @@ export class OtbAllocationService {
 
   private async recommendCollections(budgetAmount: number): Promise<DimensionRecommendation[]> {
     const collections = await this.prisma.seasonType.findMany({
-      where: { isActive: true },
+      where: { is_active: true },
     });
 
     if (collections.length === 0) return [];
@@ -125,12 +128,13 @@ export class OtbAllocationService {
 
   private async recommendGenders(budgetAmount: number): Promise<DimensionRecommendation[]> {
     const genders = await this.prisma.gender.findMany({
-      where: { isActive: true },
+      where: { is_active: true },
       include: { _count: { select: { categories: true } } },
     });
 
     if (genders.length === 0) return [];
 
+    // Weight by number of categories
     const totalCats = genders.reduce((sum, g) => sum + g._count.categories, 0);
 
     return genders.map(g => {
@@ -152,20 +156,21 @@ export class OtbAllocationService {
 
   private async recommendCategories(budgetAmount: number): Promise<DimensionRecommendation[]> {
     const categories = await this.prisma.category.findMany({
-      where: { isActive: true },
+      where: { is_active: true },
       include: {
         gender: true,
-        subCategories: { where: { isActive: true } },
+        sub_categories: { where: { is_active: true } },
       },
     });
 
     if (categories.length === 0) return [];
 
-    const totalSubs = categories.reduce((sum, c) => sum + c.subCategories.length, 0);
+    // Weight by subcategory count
+    const totalSubs = categories.reduce((sum, c) => sum + c.sub_categories.length, 0);
 
     return categories.map(c => {
       const pct = totalSubs > 0
-        ? (c.subCategories.length / totalSubs) * 100
+        ? (c.sub_categories.length / totalSubs) * 100
         : 100 / categories.length;
 
       return {
@@ -175,7 +180,7 @@ export class OtbAllocationService {
         recommendedPct: Math.round(pct * 10) / 10,
         recommendedAmt: Math.round(budgetAmount * (pct / 100)),
         confidence: 0.5,
-        reasoning: `Based on subcategory breadth: ${c.subCategories.length} subcategories.`,
+        reasoning: `Based on subcategory breadth: ${c.sub_categories.length} subcategories.`,
       };
     });
   }

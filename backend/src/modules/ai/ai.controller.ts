@@ -129,7 +129,7 @@ export class AiController {
   // ═══════════════════════════════════════════════════════════════════════
 
   @Post('risk/assess/:headerId')
-  @ApiOperation({ summary: 'Calculate risk score for a Proposal' })
+  @ApiOperation({ summary: 'Calculate risk score for a SKU Proposal Header' })
   async assessRisk(@Param('headerId') headerId: string) {
     const data = await this.riskScoringService.assessProposal(headerId);
     return { success: true, data };
@@ -148,7 +148,7 @@ export class AiController {
   }
 
   @Post('sku-recommend/add-to-proposal')
-  @ApiOperation({ summary: 'Add recommended products to a Proposal' })
+  @ApiOperation({ summary: 'Add recommended products to a SKU Proposal Header' })
   @ApiBody({ type: AddRecommendationsToProposalDto })
   async addToProposal(@Body() dto: AddRecommendationsToProposalDto) {
     const count = await this.skuRecommenderService.addSelectedToProposal(dto.productIds, dto.headerId);

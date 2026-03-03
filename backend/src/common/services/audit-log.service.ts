@@ -15,11 +15,11 @@ export class AuditLogService {
     try {
       await this.prisma.auditLog.create({
         data: {
-          userId: params.userId,
-          entityType: params.entityType,
-          entityId: params.entityId,
+          user_id: params.userId ? BigInt(params.userId) : null,
+          entity_type: params.entityType,
+          entity_id: params.entityId,
           action: params.action,
-          changes: params.changes || undefined,
+          changes: params.changes ? JSON.stringify(params.changes) : undefined,
         },
       });
     } catch (err) {

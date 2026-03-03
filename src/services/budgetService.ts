@@ -91,7 +91,7 @@ export const budgetService = {
     }
   },
 
-  // Set allocation version as final
+  // Set allocation version as final (unsets all others for same brand+budget)
   async setFinalAllocateVersion(headerId: string) {
     try {
       const response = await api.patch(`/budgets/allocations/${headerId}/set-final`);

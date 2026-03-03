@@ -1,21 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
+/**
+ * Budget Alerts Service — in-memory alerts based on budget analysis.
+ * Since BudgetAlert/BudgetSnapshot models are not in the current schema,
+ * this service computes alerts on-demand from existing data.
+ */
 @Injectable()
 export class BudgetAlertsService {
   private readonly logger = new Logger(BudgetAlertsService.name);
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Analyze all approved budgets and return alerts.
+   */
   async checkAllBudgets() {
     this.logger.log('Running budget alert check...');
 
     const budgets = await this.prisma.budget.findMany({
       where: { status: 'APPROVED' },
       include: {
-        allocateHeaders: {
+        allocate_headers: {
           include: {
-            budgetAllocates: true,
+            budget_allocates: true,
           },
           orderBy: { version: 'desc' },
           take: 1,
@@ -33,17 +41,20 @@ export class BudgetAlertsService {
     return allAlerts;
   }
 
+  /**
+   * Get alerts for a specific budget or all budgets.
+   */
   async getAlerts(options?: { budgetId?: string; unreadOnly?: boolean }) {
     const budgets = await this.prisma.budget.findMany({
       where: {
-        ...(options?.budgetId ? { id: options.budgetId } : {}),
+        ...(options?.budgetId ? { id: +options.budgetId } : {}),
         status: { in: ['APPROVED', 'SUBMITTED'] },
       },
       include: {
-        allocateHeaders: {
+        allocate_headers: {
           include: {
-            budgetAllocates: {
-              include: { store: true, seasonGroup: true },
+            budget_allocates: {
+              include: { store: true, season_group: true },
             },
           },
           orderBy: { version: 'desc' },
@@ -72,41 +83,46 @@ export class BudgetAlertsService {
 
   private analyzeBudget(budget: any): any[] {
     const alerts: any[] = [];
-    const totalBudget = Number(budget.totalBudget);
+    const totalBudget = Number(budget.amount);
     if (totalBudget <= 0) return alerts;
 
-    const latestHeader = budget.allocateHeaders?.[0];
+    const latestHeader = budget.allocate_headers?.[0];
     if (!latestHeader) return alerts;
 
-    const totalAllocated = latestHeader.budgetAllocates.reduce(
-      (sum: number, a: any) => sum + Number(a.budgetAmount),
+    const totalAllocated = latestHeader.budget_allocates.reduce(
+      (sum: number, a: any) => sum + Number(a.budget_amount),
       0,
     );
 
     const utilizationPct = (totalAllocated / totalBudget) * 100;
 
+    // Over-allocated
     if (totalAllocated > totalBudget) {
       alerts.push({
         budgetId: budget.id,
-        budgetName: budget.budgetCode,
+        budgetName: budget.name,
         alertType: 'over_budget',
         severity: 'critical',
         title: 'Budget Exceeded',
         message: `Allocated amount (${this.fmt(totalAllocated)}) exceeds budget (${this.fmt(totalBudget)}) by ${this.fmt(totalAllocated - totalBudget)}`,
       });
-    } else if (utilizationPct >= 90) {
+    }
+    // Approaching limit
+    else if (utilizationPct >= 90) {
       alerts.push({
         budgetId: budget.id,
-        budgetName: budget.budgetCode,
+        budgetName: budget.name,
         alertType: 'approaching_limit',
         severity: 'warning',
         title: 'Budget Nearly Exhausted',
         message: `${utilizationPct.toFixed(1)}% of budget allocated. Only ${this.fmt(totalBudget - totalAllocated)} remaining.`,
       });
-    } else if (utilizationPct < 50) {
+    }
+    // Under-utilized
+    else if (utilizationPct < 50) {
       alerts.push({
         budgetId: budget.id,
-        budgetName: budget.budgetCode,
+        budgetName: budget.name,
         alertType: 'under_utilized',
         severity: 'info',
         title: 'Budget Under-utilized',
@@ -114,14 +130,15 @@ export class BudgetAlertsService {
       });
     }
 
-    const storeAllocations = latestHeader.budgetAllocates;
+    // Store concentration check
+    const storeAllocations = latestHeader.budget_allocates;
     if (storeAllocations.length > 0 && totalAllocated > 0) {
       for (const alloc of storeAllocations) {
-        const storePct = (Number(alloc.budgetAmount) / totalAllocated) * 100;
+        const storePct = (Number(alloc.budget_amount) / totalAllocated) * 100;
         if (storePct > 60) {
           alerts.push({
             budgetId: budget.id,
-            budgetName: budget.budgetCode,
+            budgetName: budget.name,
             alertType: 'store_concentration',
             severity: 'warning',
             title: 'Store Concentration',

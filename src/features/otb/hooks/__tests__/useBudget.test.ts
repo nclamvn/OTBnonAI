@@ -26,10 +26,11 @@ const { mockBudgetService, mockMasterDataService } = vi.hoisted(() => {
   const masterSvc = {
     getBrands: vi.fn().mockResolvedValue([]),
     getStores: vi.fn().mockResolvedValue([]),
-    getCollections: vi.fn().mockResolvedValue([]),
+    getSeasonTypes: vi.fn().mockResolvedValue([]),
     getGenders: vi.fn().mockResolvedValue([]),
     getCategories: vi.fn().mockResolvedValue([]),
     getSeasons: vi.fn().mockResolvedValue([]),
+    getSeasonGroups: vi.fn().mockResolvedValue([]),
     getSkuCatalog: vi.fn().mockResolvedValue([]),
     getSubCategories: vi.fn().mockResolvedValue([]),
   };
@@ -51,14 +52,6 @@ vi.mock('../../../../utils/constants', () => ({
     { id: 'ttp', code: 'TTP', name: 'TTP' },
   ],
   CURRENT_YEAR: 2025,
-  CURRENT_SEASON_GROUP: 'SS',
-}));
-
-vi.mock('../../../../utils/formatters', () => ({
-  generateSeasonsMultiple: vi.fn(() => [
-    { id: 'SS-Pre', seasonGroupId: 'SS', seasonType: 'Pre', name: 'SS Pre' },
-    { id: 'SS-Main/Show', seasonGroupId: 'SS', seasonType: 'Main/Show', name: 'SS Main/Show' },
-  ]),
 }));
 
 import { useBudget } from '../useBudget';

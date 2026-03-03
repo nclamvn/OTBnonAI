@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   ImportTargetEnum,
@@ -25,9 +24,23 @@ export class ImportService {
       totalBatches = 1,
     } = dto;
 
-    const sessionId = dto.sessionId || `import_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-    const now = new Date();
-    const prismaTarget = target as any; // Prisma enum maps directly
+    const sessionIdStr = dto.sessionId || `import_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    // Ensure an ImportSession exists for this batch
+    let session = await this.prisma.importSession.findFirst({
+      where: { target, file_name: sessionIdStr },
+    });
+    if (!session) {
+      session = await this.prisma.importSession.create({
+        data: {
+          target,
+          file_name: sessionIdStr,
+          status: 'PROCESSING',
+          total_rows: rows.length,
+        },
+      });
+    }
+    const sessionId = session.id;
 
     const result = {
       inserted: 0,
@@ -35,7 +48,7 @@ export class ImportService {
       skipped: 0,
       errors: 0,
       errorDetails: [] as Array<{ row: number; field?: string; error: string }>,
-      sessionId,
+      sessionId: sessionIdStr,
       message: '',
     };
 
@@ -53,9 +66,13 @@ export class ImportService {
           ? matchKey.map((k) => String(row[k] || '')).join('||')
           : null;
 
+        // Look for existing record in same session's target with matching data key
         const existingRecord = matchKeyValue
           ? await this.prisma.importedRecord.findFirst({
-              where: { target: prismaTarget, matchKey: matchKeyValue },
+              where: {
+                session: { target },
+                data: { contains: matchKeyValue },
+              },
             })
           : null;
 
@@ -66,24 +83,25 @@ export class ImportService {
                 result.skipped++;
                 continue;
               case DuplicateHandling.OVERWRITE:
-              case DuplicateHandling.MERGE:
+              case DuplicateHandling.MERGE: {
+                const mergedData = duplicateHandling === DuplicateHandling.MERGE
+                  ? { ...(JSON.parse(existingRecord.data) as Record<string, unknown>), ...row }
+                  : row;
                 await this.prisma.importedRecord.update({
                   where: { id: existingRecord.id },
                   data: {
-                    data: duplicateHandling === DuplicateHandling.MERGE
-                      ? { ...(existingRecord.data as Record<string, unknown>), ...row } as Prisma.InputJsonValue
-                      : row as Prisma.InputJsonValue,
-                    sessionId,
-                    importedAt: now,
+                    data: JSON.stringify(mergedData),
+                    session_id: sessionId,
                   },
                 });
                 result.updated++;
                 continue;
+              }
             }
           } else if (mode === ImportMode.UPSERT || mode === ImportMode.UPDATE_ONLY) {
             await this.prisma.importedRecord.update({
               where: { id: existingRecord.id },
-              data: { data: row as Prisma.InputJsonValue, sessionId, importedAt: now },
+              data: { data: JSON.stringify(row), session_id: sessionId },
             });
             result.updated++;
             continue;
@@ -96,11 +114,10 @@ export class ImportService {
 
           await this.prisma.importedRecord.create({
             data: {
-              target: prismaTarget,
-              matchKey: matchKeyValue,
-              data: row as Prisma.InputJsonValue,
-              sessionId,
-              importedAt: now,
+              session_id: sessionId,
+              row_number: i + 1,
+              data: JSON.stringify(row),
+              status: 'SUCCESS',
             },
           });
           result.inserted++;
@@ -115,6 +132,18 @@ export class ImportService {
       }
     }
 
+    // Update session totals
+    await this.prisma.importSession.update({
+      where: { id: sessionId },
+      data: {
+        status: 'COMPLETED',
+        total_rows: rows.length,
+        success_rows: result.inserted + result.updated,
+        error_rows: result.errors,
+        error_log: result.errorDetails.length > 0 ? JSON.stringify(result.errorDetails) : null,
+      },
+    });
+
     result.message = `Batch ${batchIndex + 1}/${totalBatches}: +${result.inserted} inserted, ↻${result.updated} updated, ⊘${result.skipped} skipped, ✕${result.errors} errors`;
     this.logger.log(`Import batch completed: ${result.message}`);
     return result;
@@ -128,22 +157,16 @@ export class ImportService {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
   }) {
-    const { target, page = 1, pageSize = 50, search, sortBy = '_importedAt', sortOrder = 'desc' } = query;
-    const prismaTarget = target as any;
+    const { target, page = 1, pageSize = 50, search, sortOrder = 'desc' } = query;
 
-    const where: any = { target: prismaTarget };
+    const where: any = { session: { target } };
     if (search) {
-      where.matchKey = { contains: search, mode: 'insensitive' };
+      where.data = { contains: search };
     }
 
     const total = await this.prisma.importedRecord.count({ where });
 
-    const orderBy: any = {};
-    if (sortBy === '_importedAt' || sortBy === 'importedAt') {
-      orderBy.importedAt = sortOrder;
-    } else {
-      orderBy.importedAt = sortOrder;
-    }
+    const orderBy: any = { created_at: sortOrder };
 
     const records = await this.prisma.importedRecord.findMany({
       where,
@@ -153,10 +176,10 @@ export class ImportService {
     });
 
     const transformedRecords = records.map((r) => ({
-      _id: r.id,
-      _importedAt: r.importedAt.toISOString(),
-      _sessionId: r.sessionId,
-      ...(r.data as object),
+      _id: String(r.id),
+      _importedAt: r.created_at.toISOString(),
+      _sessionId: String(r.session_id),
+      ...(JSON.parse(r.data) as object),
     }));
 
     return {
@@ -169,32 +192,30 @@ export class ImportService {
   }
 
   async getStats(target: ImportTargetEnum) {
-    const prismaTarget = target as any;
-
     const totalRecords = await this.prisma.importedRecord.count({
-      where: { target: prismaTarget },
+      where: { session: { target } },
     });
 
     const lastRecord = await this.prisma.importedRecord.findFirst({
-      where: { target: prismaTarget },
-      orderBy: { importedAt: 'desc' },
-      select: { importedAt: true },
+      where: { session: { target } },
+      orderBy: { created_at: 'desc' },
+      select: { created_at: true },
     });
 
     const sessions = await this.prisma.importedRecord.groupBy({
-      by: ['sessionId'],
-      where: { target: prismaTarget },
+      by: ['session_id'],
+      where: { session: { target } },
     });
 
     const sampleRecords = await this.prisma.importedRecord.findMany({
-      where: { target: prismaTarget },
+      where: { session: { target } },
       take: 100,
       select: { data: true },
     });
 
     const fieldCounts: Record<string, number> = {};
     for (const record of sampleRecords) {
-      const data = record.data as Record<string, unknown>;
+      const data = JSON.parse(record.data) as Record<string, unknown>;
       for (const [key, value] of Object.entries(data)) {
         if (value !== null && value !== undefined && value !== '') {
           fieldCounts[key] = (fieldCounts[key] || 0) + 1;
@@ -205,33 +226,54 @@ export class ImportService {
     return {
       target,
       totalRecords,
-      lastImportAt: lastRecord?.importedAt?.toISOString() || null,
+      lastImportAt: lastRecord?.created_at?.toISOString() || null,
       sessionCount: sessions.length,
       fieldCounts,
     };
   }
 
   async deleteSession(target: ImportTargetEnum, sessionId: string) {
+    // Find the session by target and file_name (sessionId string)
+    const session = await this.prisma.importSession.findFirst({
+      where: { target, file_name: sessionId },
+    });
+    if (!session) return 0;
+
     const result = await this.prisma.importedRecord.deleteMany({
-      where: { target: target as any, sessionId },
+      where: { session_id: session.id },
     });
     this.logger.log(`Deleted ${result.count} records from session ${sessionId}`);
     return result.count;
   }
 
   async clearAll(target: ImportTargetEnum) {
+    // Delete all records belonging to sessions with this target
+    const sessions = await this.prisma.importSession.findMany({
+      where: { target },
+      select: { id: true },
+    });
+    const sessionIds = sessions.map((s) => s.id);
+
     const result = await this.prisma.importedRecord.deleteMany({
-      where: { target: target as any },
+      where: { session_id: { in: sessionIds } },
     });
     this.logger.log(`Cleared all ${result.count} records for target ${target}`);
     return result.count;
   }
 
-  // ─── BIZ-05: ETL APPLY — Transform imported_records into transactional tables ──
+  // --- BIZ-05: ETL APPLY --- Transform imported_records into transactional tables --
 
   async applyImportedData(target: ImportTargetEnum, sessionId?: string) {
-    const where: any = { target: target as any };
-    if (sessionId) where.sessionId = sessionId;
+    const where: any = { session: { target } };
+    if (sessionId) {
+      const session = await this.prisma.importSession.findFirst({
+        where: { target, file_name: sessionId },
+      });
+      if (session) {
+        where.session_id = session.id;
+        delete where.session;
+      }
+    }
 
     const records = await this.prisma.importedRecord.findMany({ where });
     if (records.length === 0) {
@@ -244,45 +286,41 @@ export class ImportService {
       case ImportTargetEnum.PRODUCTS:
         for (const record of records) {
           try {
-            const data = record.data as Record<string, any>;
+            const data = JSON.parse(record.data) as Record<string, any>;
             const skuCode = data.skuCode || data.sku_code || data.SKU || data.sku;
             if (!skuCode) { result.skipped++; continue; }
 
             const productName = data.productName || data.product_name || data.name || data.NAME || skuCode;
-            const productType = data.productType || data.product_type || data.type || '';
             const srp = Number(data.srp || data.SRP || data.price || data.retail_price || 0);
-            const costPrice = Number(data.costPrice || data.cost_price || data.cost || 0) || (srp > 0 ? Math.round(srp * 0.4) : null);
 
-            await this.prisma.skuCatalog.upsert({
-              where: { skuCode: String(skuCode) },
+            // Product requires sub_category_id; use a default or look up
+            const subCategoryId = data.subCategoryId || data.sub_category_id || 1;
+
+            await this.prisma.product.upsert({
+              where: { id: BigInt(record.id) },
               update: {
-                productName,
-                productType,
+                product_name: productName,
                 theme: data.theme || data.THEME || undefined,
                 color: data.color || data.COLOR || undefined,
                 composition: data.composition || data.COMPOSITION || undefined,
                 srp: srp > 0 ? srp : undefined,
-                costPrice: costPrice && costPrice > 0 ? costPrice : undefined,
-                seasonGroupId: data.seasonGroupId || data.season || undefined,
-                imageUrl: data.imageUrl || data.image_url || undefined,
+                image_url: data.imageUrl || data.image_url || undefined,
               },
               create: {
-                skuCode: String(skuCode),
-                productName,
-                productType,
+                sku_code: String(skuCode),
+                product_name: productName,
+                sub_category_id: BigInt(subCategoryId),
                 theme: data.theme || data.THEME || null,
                 color: data.color || data.COLOR || null,
                 composition: data.composition || data.COMPOSITION || null,
                 srp: srp > 0 ? srp : 0,
-                costPrice: costPrice && costPrice > 0 ? costPrice : null,
-                seasonGroupId: data.seasonGroupId || data.season || null,
-                imageUrl: data.imageUrl || data.image_url || null,
+                image_url: data.imageUrl || data.image_url || null,
               },
             });
             result.applied++;
           } catch (err) {
             result.errors++;
-            result.errorDetails.push({ id: record.id, error: err instanceof Error ? err.message : String(err) });
+            result.errorDetails.push({ id: String(record.id), error: err instanceof Error ? err.message : String(err) });
           }
         }
         break;
@@ -296,11 +334,11 @@ export class ImportService {
     return { ...result, message: msg };
   }
 
-  // ─── BIZ-14: WSSI SELL-THROUGH ANALYTICS ────────────────────────────────────
+  // --- BIZ-14: WSSI SELL-THROUGH ANALYTICS ---
 
   async getWssiAnalytics() {
     const records = await this.prisma.importedRecord.findMany({
-      where: { target: 'wssi' as any },
+      where: { session: { target: 'wssi' } },
     });
 
     if (records.length === 0) {
@@ -324,14 +362,14 @@ export class ImportService {
     >();
 
     for (const record of records) {
-      const data = record.data as Record<string, any>;
+      const data = JSON.parse(record.data) as Record<string, any>;
 
-      // Extract received qty — handle multiple possible field names
+      // Extract received qty -- handle multiple possible field names
       const received = Number(
         data.received_qty ?? data.receivedQty ?? data.received ?? data.RECEIVED_QTY ?? data.ReceivedQty ?? 0,
       );
 
-      // Extract sold qty — handle multiple possible field names
+      // Extract sold qty -- handle multiple possible field names
       const sold = Number(
         data.sold_qty ?? data.soldQty ?? data.sold ?? data.SOLD_QTY ?? data.SoldQty ?? 0,
       );
@@ -407,7 +445,7 @@ export class ImportService {
     const stats: Array<{ target: string; totalRecords: number; lastImportAt: string | null; sessionCount: number; fieldCounts: Record<string, number> }> = [];
 
     for (const target of targets) {
-      const count = await this.prisma.importedRecord.count({ where: { target: target as any } });
+      const count = await this.prisma.importedRecord.count({ where: { session: { target } } });
       if (count > 0) {
         stats.push(await this.getStats(target));
       } else {

@@ -26,7 +26,7 @@ export class CompareSizeCurveDto {
   storeId: string;
 
   @ApiProperty({
-    description: 'User sizing input — map of sizeName to quantity',
+    description: 'User sizing input — map of sizeName → quantity',
     example: { S: 10, M: 30, L: 35, XL: 25 },
   })
   @IsObject()
@@ -75,11 +75,11 @@ export class CompareAllocationDto {
 }
 
 export class GenerateSkuRecommendationsDto {
-  @ApiProperty({ description: 'SubCategory ID or product type filter' })
+  @ApiProperty({ description: 'SubCategory ID' })
   @IsString()
   subCategoryId: string;
 
-  @ApiPropertyOptional({ description: 'Brand (GroupBrand) ID' })
+  @ApiPropertyOptional({ description: 'Brand ID' })
   @IsOptional()
   @IsString()
   brandId?: string;
@@ -96,12 +96,12 @@ export class GenerateSkuRecommendationsDto {
 }
 
 export class AddRecommendationsToProposalDto {
-  @ApiProperty({ description: 'SKU Catalog IDs to add', type: [String] })
+  @ApiProperty({ description: 'Product IDs to add', type: [String] })
   @IsArray()
   @IsString({ each: true })
   productIds: string[];
 
-  @ApiProperty({ description: 'Proposal ID' })
+  @ApiProperty({ description: 'SKU Proposal Header ID' })
   @IsString()
   headerId: string;
 }

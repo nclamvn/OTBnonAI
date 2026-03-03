@@ -3,7 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation, ApiQuery, ApiBody } from '@nestjs
 import { BudgetService } from './budget.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { PermissionsGuard, RequirePermissions } from '../../common/guards/permissions.guard';
-import { CreateBudgetDto, UpdateBudgetDto, ApprovalDecisionDto } from './dto/budget.dto';
+import { CreateBudgetDto, UpdateBudgetDto, CreateAllocateDto, UpdateAllocateDto, ApprovalDecisionDto } from './dto/budget.dto';
 
 @ApiTags('budgets')
 @ApiBearerAuth()
@@ -12,42 +12,35 @@ import { CreateBudgetDto, UpdateBudgetDto, ApprovalDecisionDto } from './dto/bud
 export class BudgetController {
   constructor(private budgetService: BudgetService) {}
 
-  // ─── LIST ────────────────────────────────────────────────────────────────
+  // ─── LIST ──────────────────────────────────────────────────────────────────
 
   @Get()
   @RequirePermissions('budget:read')
   @ApiOperation({ summary: 'List budgets with filters and pagination' })
   @ApiQuery({ name: 'fiscalYear', required: false, type: Number, example: 2025 })
-  @ApiQuery({ name: 'groupBrandId', required: false })
-  @ApiQuery({ name: 'seasonGroupId', required: false, enum: ['SS', 'FW'] })
-  @ApiQuery({ name: 'status', required: false, enum: ['DRAFT', 'SUBMITTED', 'LEVEL1_APPROVED', 'APPROVED', 'REJECTED'] })
-  @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number, example: 20 })
+  @ApiQuery({ name: 'status', required: false, enum: ['DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED'] })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'pageSize', required: false, type: Number })
   async findAll(
-    @Request() req: any,
     @Query('fiscalYear') fiscalYear?: number,
-    @Query('groupBrandId') groupBrandId?: string,
-    @Query('seasonGroupId') seasonGroupId?: string,
-    @Query('status') status?: any,
+    @Query('status') status?: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
     const result = await this.budgetService.findAll({
       fiscalYear: fiscalYear ? Number(fiscalYear) : undefined,
-      groupBrandId,
-      seasonGroupId,
       status,
       page: page ? Number(page) : 1,
       pageSize: pageSize ? Number(pageSize) : 20,
-    }, req.user);
+    });
     return { success: true, ...result };
   }
 
-  // ─── STATISTICS ──────────────────────────────────────────────────────────
+  // ─── STATISTICS ────────────────────────────────────────────────────────────
 
   @Get('statistics')
   @RequirePermissions('budget:read')
-  @ApiOperation({ summary: 'Get budget statistics (total, by status, amounts)' })
+  @ApiOperation({ summary: 'Get budget statistics' })
   @ApiQuery({ name: 'fiscalYear', required: false, type: Number })
   async getStatistics(@Query('fiscalYear') fiscalYear?: number) {
     return {
@@ -56,36 +49,69 @@ export class BudgetController {
     };
   }
 
-  // ─── GET ONE ─────────────────────────────────────────────────────────────
+  // ─── GET ONE ───────────────────────────────────────────────────────────────
 
   @Get(':id')
   @RequirePermissions('budget:read')
-  @ApiOperation({ summary: 'Get budget by ID with details and approval history' })
+  @ApiOperation({ summary: 'Get budget by ID with allocations' })
   async findOne(@Param('id') id: string) {
     return { success: true, data: await this.budgetService.findOne(id) };
   }
 
-  // ─── CREATE ──────────────────────────────────────────────────────────────
+  // ─── CREATE ────────────────────────────────────────────────────────────────
 
   @Post()
   @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Create new budget with store allocations' })
+  @ApiOperation({ summary: 'Create new budget' })
   @ApiBody({ type: CreateBudgetDto })
   async create(@Body() dto: CreateBudgetDto, @Request() req: any) {
     return { success: true, data: await this.budgetService.create(dto, req.user.sub) };
   }
 
-  // ─── UPDATE ──────────────────────────────────────────────────────────────
+  // ─── UPDATE ────────────────────────────────────────────────────────────────
 
   @Put(':id')
   @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Update draft budget (only DRAFT status)' })
+  @ApiOperation({ summary: 'Update draft budget' })
   @ApiBody({ type: UpdateBudgetDto })
   async update(@Param('id') id: string, @Body() dto: UpdateBudgetDto, @Request() req: any) {
     return { success: true, data: await this.budgetService.update(id, dto, req.user.sub) };
   }
 
-  // ─── SUBMIT ──────────────────────────────────────────────────────────────
+  // ─── CREATE ALLOCATION HEADER ──────────────────────────────────────────────
+
+  @Post(':id/allocations')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Create new allocation version for a budget' })
+  @ApiBody({ type: CreateAllocateDto })
+  async createAllocation(@Param('id') id: string, @Body() dto: CreateAllocateDto, @Request() req: any) {
+    return { success: true, data: await this.budgetService.createAllocateHeader(id, dto.brandId, dto.allocations, req.user.sub, dto.isFinalVersion) };
+  }
+
+  // ─── UPDATE ALLOCATION HEADER ──────────────────────────────────────────────
+
+  @Put('allocations/:headerId')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Update allocation header details' })
+  @ApiBody({ type: UpdateAllocateDto })
+  async updateAllocation(
+    @Param('headerId') headerId: string,
+    @Body() dto: UpdateAllocateDto,
+    @Request() req: any,
+  ) {
+    return { success: true, data: await this.budgetService.updateAllocateHeader(headerId, dto, req.user.sub) };
+  }
+
+  // ─── SET FINAL ALLOCATE VERSION ────────────────────────────────────────────
+
+  @Patch('allocations/:headerId/set-final')
+  @RequirePermissions('budget:write')
+  @ApiOperation({ summary: 'Mark allocation version as final (unsets all others for same brand+budget)' })
+  async setFinalVersion(@Param('headerId') headerId: string) {
+    return { success: true, data: await this.budgetService.setFinalVersion(headerId) };
+  }
+
+  // ─── SUBMIT ────────────────────────────────────────────────────────────────
 
   @Post(':id/submit')
   @RequirePermissions('budget:submit')
@@ -94,68 +120,55 @@ export class BudgetController {
     return { success: true, data: await this.budgetService.submit(id, req.user.sub) };
   }
 
-  // ─── APPROVE LEVEL 1 ─────────────────────────────────────────────────────
+  // ─── APPROVE ───────────────────────────────────────────────────────────────
 
-  @Post(':id/approve/level1')
-  @RequirePermissions('budget:approve_l1')
-  @ApiOperation({ summary: 'Level 1 approval (SUBMITTED → LEVEL1_APPROVED or REJECTED)' })
-  @ApiBody({ type: ApprovalDecisionDto })
-  async approveLevel1(
+  @Post(':id/approve')
+  @RequirePermissions('budget:approve')
+  @ApiOperation({ summary: 'Approve budget (SUBMITTED → APPROVED)' })
+  async approve(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.budgetService.approve(id, req.user.sub) };
+  }
+
+  // ─── APPROVE BY LEVEL (used by approvalHelper) ────────────────────────────
+
+  @Post(':id/approve/:level')
+  @RequirePermissions('budget:approve')
+  @ApiOperation({ summary: 'Approve or reject budget by level (action: APPROVED | REJECTED)' })
+  async approveByLevel(
     @Param('id') id: string,
-    @Body() dto: ApprovalDecisionDto,
+    @Param('level') level: string,
+    @Body('action') action: string,
+    @Body('comment') comment: string,
     @Request() req: any,
   ) {
-    return { success: true, data: await this.budgetService.approveLevel1(id, dto, req.user.sub, req.user.role) };
+    return { success: true, data: await this.budgetService.approveByLevel(id, level, action, comment, req.user.sub) };
   }
 
-  // ─── APPROVE LEVEL 2 ─────────────────────────────────────────────────────
+  // ─── REJECT ────────────────────────────────────────────────────────────────
 
-  @Post(':id/approve/level2')
-  @RequirePermissions('budget:approve_l2')
-  @ApiOperation({ summary: 'Level 2 approval (LEVEL1_APPROVED → APPROVED or REJECTED)' })
-  @ApiBody({ type: ApprovalDecisionDto })
-  async approveLevel2(
-    @Param('id') id: string,
-    @Body() dto: ApprovalDecisionDto,
-    @Request() req: any,
-  ) {
-    return { success: true, data: await this.budgetService.approveLevel2(id, dto, req.user.sub, req.user.role) };
+  @Post(':id/reject')
+  @RequirePermissions('budget:approve')
+  @ApiOperation({ summary: 'Reject budget (SUBMITTED → REJECTED)' })
+  async reject(@Param('id') id: string, @Request() req: any) {
+    return { success: true, data: await this.budgetService.reject(id, req.user.sub) };
   }
 
-  // ─── RESET TO DRAFT ──────────────────────────────────────────────────────
-
-  @Post(':id/reset-to-draft')
-  @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Reset rejected budget back to draft for revision' })
-  async resetToDraft(@Param('id') id: string, @Request() req: any) {
-    return { success: true, data: await this.budgetService.resetToDraft(id, req.user.sub) };
-  }
-
-  // ─── ARCHIVE ─────────────────────────────────────────────────────────────
+  // ─── ARCHIVE ───────────────────────────────────────────────────────────────
 
   @Patch(':id/archive')
   @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Archive an approved budget (APPROVED → ARCHIVED)' })
-  async archive(@Param('id') id: string, @Request() req: any) {
-    return { success: true, data: await this.budgetService.archive(id, req.user.sub) };
+  @ApiOperation({ summary: 'Archive approved budget (APPROVED → ARCHIVED)' })
+  async archive(@Param('id') id: string) {
+    return { success: true, data: await this.budgetService.archive(id) };
   }
 
-  // ─── DELETE (soft) ───────────────────────────────────────────────────────
+  // ─── DELETE ────────────────────────────────────────────────────────────────
 
   @Delete(':id')
   @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Soft-delete draft budget (only if no linked planning)' })
-  async remove(@Param('id') id: string, @Request() req: any) {
-    await this.budgetService.remove(id, req.user.sub);
+  @ApiOperation({ summary: 'Delete draft budget' })
+  async remove(@Param('id') id: string) {
+    await this.budgetService.remove(id);
     return { success: true, message: 'Budget deleted' };
-  }
-
-  // ─── RESTORE ──────────────────────────────────────────────────────────────
-
-  @Patch(':id/restore')
-  @RequirePermissions('budget:write')
-  @ApiOperation({ summary: 'Restore a soft-deleted budget' })
-  async restore(@Param('id') id: string, @Request() req: any) {
-    return { success: true, data: await this.budgetService.restore(id, req.user.sub) };
   }
 }

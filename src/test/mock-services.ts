@@ -79,9 +79,9 @@ export const mockApiPlanning = (overrides: any = {}) => ({
   details: [
     {
       id: 'pd-1',
-      dimensionType: 'collection',
-      collectionId: 'col-1',
-      collection: { name: 'Carry Over' },
+      dimensionType: 'seasonType',
+      seasonTypeId: 'col-1',
+      seasonType: { name: 'Carry Over' },
       genderId: null,
       gender: null,
       categoryId: null,
@@ -213,10 +213,11 @@ export const createMockProposalService = () => ({
 export const createMockMasterDataService = () => ({
   getBrands: vi.fn().mockResolvedValue(mockBrands),
   getStores: vi.fn().mockResolvedValue(mockStores),
-  getCollections: vi.fn().mockResolvedValue(mockCollections),
+  getSeasonTypes: vi.fn().mockResolvedValue(mockCollections),
   getGenders: vi.fn().mockResolvedValue(mockGenders),
   getCategories: vi.fn().mockResolvedValue(mockCategories),
   getSeasons: vi.fn().mockResolvedValue(mockSeasons),
+  getSeasonGroups: vi.fn().mockResolvedValue([]),
   getSkuCatalog: vi.fn().mockResolvedValue({ data: mockSkuCatalog }),
   getSubCategories: vi.fn().mockResolvedValue([]),
 });

@@ -1,59 +1,150 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsEnum, MaxLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsArray, ValidateNested, IsNumber, Min, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
-// ─── Create Proposal ─────────────────────────────────────────────────────────
+// ─── SKU Proposal Item ──────────────────────────────────────────────────────
 
-export class CreateProposalDto {
-  @ApiProperty({ example: 'FER-SS25-REX-Ticket-001' })
+export class SKUProposalItemDto {
+  @ApiProperty({ description: 'Product ID' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100, { message: 'Ticket name cannot exceed 100 characters' })
-  ticketName: string;
+  productId: string;
 
-  @ApiProperty({ description: 'Budget ID to link this proposal' })
+  @ApiProperty({ example: 'VIP', description: 'Customer target (VIP, Regular, Outlet)' })
   @IsString()
   @IsNotEmpty()
-  budgetId: string;
+  customerTarget: string;
 
-  @ApiPropertyOptional({ description: 'Optional planning version to link' })
-  @IsString()
-  @IsOptional()
-  planningVersionId?: string;
+  @ApiProperty({ example: 500000, description: 'Unit cost' })
+  @IsNumber()
+  @Min(0)
+  unitCost: number;
+
+  @ApiProperty({ example: 1200000, description: 'Suggested retail price' })
+  @IsNumber()
+  @Min(0)
+  srp: number;
 }
 
-// ─── Update Proposal ─────────────────────────────────────────────────────────
+// ─── SKU Allocate (per store) ────────────────────────────────────────────────
 
-export class UpdateProposalDto {
-  @ApiPropertyOptional({ example: 'FER-SS25-REX-Ticket-001-Updated' })
+export class SKUAllocateDto {
+  @ApiProperty({ description: 'SKU Proposal ID' })
   @IsString()
-  @IsOptional()
-  ticketName?: string;
+  @IsNotEmpty()
+  skuProposalId: string;
 
-  @ApiPropertyOptional({ description: 'Link to a different planning version' })
+  @ApiProperty({ description: 'Store ID' })
   @IsString()
-  @IsOptional()
-  planningVersionId?: string;
+  @IsNotEmpty()
+  storeId: string;
+
+  @ApiProperty({ example: 10, description: 'Quantity to allocate' })
+  @IsNumber()
+  @Min(0)
+  quantity: number;
 }
 
-// ─── Add Product to Proposal ─────────────────────────────────────────────────
+// ─── Proposal Sizing Item (dùng trong header) ───────────────────────────────
+
+export class ProposalSizingItemDto {
+  @ApiProperty({ description: 'SKU Proposal ID (which SKU this sizing belongs to)' })
+  @IsString()
+  @IsNotEmpty()
+  skuProposalId: string;
+
+  @ApiProperty({ description: 'Subcategory Size ID' })
+  @IsString()
+  @IsNotEmpty()
+  subcategorySizeId: string;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsNumber()
+  @IsOptional()
+  actualSalesmixPct?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsNumber()
+  @IsOptional()
+  actualStPct?: number;
+
+  @ApiProperty({ example: 10, description: 'Proposed quantity for this size' })
+  @IsInt()
+  @Min(0)
+  proposalQuantity: number;
+}
+
+// ─── Proposal Sizing (standalone, thuộc 1 header cụ thể) ────────────────────
+
+export class ProposalSizingDto {
+  @ApiProperty({ description: 'Proposal Sizing Header ID' })
+  @IsString()
+  @IsNotEmpty()
+  proposalSizingHeaderId: string;
+
+  @ApiProperty({ description: 'SKU Proposal ID (which SKU this sizing belongs to)' })
+  @IsString()
+  @IsNotEmpty()
+  skuProposalId: string;
+
+  @ApiProperty({ description: 'Subcategory Size ID' })
+  @IsString()
+  @IsNotEmpty()
+  subcategorySizeId: string;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsNumber()
+  @IsOptional()
+  actualSalesmixPct?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsNumber()
+  @IsOptional()
+  actualStPct?: number;
+
+  @ApiProperty({ example: 10, description: 'Proposed quantity for this size' })
+  @IsInt()
+  @Min(0)
+  proposalQuantity: number;
+}
+
+// ─── Create SKU Proposal Header ──────────────────────────────────────────────
+
+export class CreateSKUProposalHeaderDto {
+  @ApiProperty({ description: 'Allocate Header ID (links proposal to a brand allocation)' })
+  @IsString()
+  @IsNotEmpty()
+  allocateHeaderId: string;
+
+  @ApiProperty({ type: [SKUProposalItemDto], description: 'SKU proposal items' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SKUProposalItemDto)
+  proposals: SKUProposalItemDto[];
+}
+
+// ─── Add Product to Existing Header ──────────────────────────────────────────
 
 export class AddProductDto {
-  @ApiProperty({ description: 'SKU Catalog ID' })
+  @ApiProperty({ description: 'Product ID' })
   @IsString()
   @IsNotEmpty()
-  @MaxLength(100, { message: 'SKU ID cannot exceed 100 characters' })
-  skuId: string;
+  productId: string;
 
-  @ApiProperty({ example: 10, description: 'Order quantity' })
-  @IsNumber()
-  @Min(1)
-  orderQty: number;
-
-  @ApiPropertyOptional({ enum: ['New', 'Existing', 'VIP'], description: 'Customer target segment' })
+  @ApiProperty({ example: 'VIP' })
   @IsString()
-  @IsOptional()
-  customerTarget?: string;
+  @IsNotEmpty()
+  customerTarget: string;
+
+  @ApiProperty({ example: 500000 })
+  @IsNumber()
+  @Min(0)
+  unitCost: number;
+
+  @ApiProperty({ example: 1200000 })
+  @IsNumber()
+  @Min(0)
+  srp: number;
 }
 
 // ─── Bulk Add Products ───────────────────────────────────────────────────────
@@ -66,35 +157,58 @@ export class BulkAddProductsDto {
   products: AddProductDto[];
 }
 
-// ─── Update Product Quantity ─────────────────────────────────────────────────
+// ─── Update SKU Proposal Item ────────────────────────────────────────────────
 
-export class UpdateProductDto {
-  @ApiPropertyOptional({ example: 15, description: 'New order quantity' })
-  @IsNumber()
-  @Min(0)
-  @IsOptional()
-  orderQty?: number;
-
-  @ApiPropertyOptional({ enum: ['New', 'Existing', 'VIP'] })
+export class UpdateSKUProposalDto {
+  @ApiPropertyOptional({ example: 'VIP' })
   @IsString()
   @IsOptional()
   customerTarget?: string;
 
-  @ApiPropertyOptional({ description: 'Sort order for display' })
+  @ApiPropertyOptional({ example: 500000 })
   @IsNumber()
+  @Min(0)
   @IsOptional()
-  sortOrder?: number;
+  unitCost?: number;
+
+  @ApiPropertyOptional({ example: 1200000 })
+  @IsNumber()
+  @Min(0)
+  @IsOptional()
+  srp?: number;
 }
 
-// ─── Approval Decision ───────────────────────────────────────────────────────
+// ─── Bulk SKU Allocate ───────────────────────────────────────────────────────
 
-export class ApprovalDecisionDto {
-  @ApiProperty({ enum: ['APPROVED', 'REJECTED'] })
-  @IsEnum(['APPROVED', 'REJECTED'])
-  action: 'APPROVED' | 'REJECTED';
+export class BulkSKUAllocateDto {
+  @ApiProperty({ type: [SKUAllocateDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SKUAllocateDto)
+  allocations: SKUAllocateDto[];
+}
 
-  @ApiPropertyOptional({ example: 'Looks good, approved for ordering' })
+// ─── Create Proposal Sizing Header ──────────────────────────────────────────
+
+export class CreateProposalSizingHeaderDto {
+  @ApiProperty({ description: 'SKU Proposal Header ID (the proposal header this sizing choice belongs to)' })
   @IsString()
-  @IsOptional()
-  comment?: string;
+  @IsNotEmpty()
+  skuProposalHeaderId: string;
+
+  @ApiProperty({ type: [ProposalSizingItemDto], description: 'Sizing rows per SKU × size' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProposalSizingItemDto)
+  sizings: ProposalSizingItemDto[];
+}
+
+// ─── Bulk Proposal Sizing ────────────────────────────────────────────────────
+
+export class BulkProposalSizingDto {
+  @ApiProperty({ type: [ProposalSizingDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProposalSizingDto)
+  sizings: ProposalSizingDto[];
 }

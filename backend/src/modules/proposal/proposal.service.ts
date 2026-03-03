@@ -1,56 +1,165 @@
 import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { AuditLogService } from '../../common/services/audit-log.service';
-import { ProposalStatus, ApprovalAction, Prisma } from '@prisma/client';
-import { CreateProposalDto, UpdateProposalDto, AddProductDto, BulkAddProductsDto, UpdateProductDto, ApprovalDecisionDto } from './dto/proposal.dto';
+import {
+  CreateSKUProposalHeaderDto,
+  AddProductDto,
+  BulkAddProductsDto,
+  UpdateSKUProposalDto,
+  BulkSKUAllocateDto,
+  BulkProposalSizingDto,
+  CreateProposalSizingHeaderDto,
+} from './dto/proposal.dto';
 
 interface ProposalFilters {
-  budgetId?: string;
-  planningVersionId?: string;
-  status?: ProposalStatus;
   page?: number;
   pageSize?: number;
+  status?: string;
+  allocateHeaderId?: string;
 }
+
+const toBigInt = (id: string | number | bigint) => BigInt(id);
+
+/** Standard include for sizing header queries */
+const SIZING_HEADER_INCLUDE = {
+  creator: { select: { id: true, name: true } },
+  proposal_sizings: {
+    include: {
+      subcategory_size: true,
+      sku_proposal: { select: { id: true, product_id: true } },
+    },
+  },
+} as const;
 
 @Injectable()
 export class ProposalService {
-  constructor(private prisma: PrismaService, private auditLog: AuditLogService) {}
+  constructor(private prisma: PrismaService) {}
 
-  // ─── LIST ────────────────────────────────────────────────────────────────
+  // ─── PRIVATE HELPERS ────────────────────────────────────────────────────
 
-  async findAll(filters: ProposalFilters, user?: { brandAccess?: string[]; permissions?: string[] }) {
-    const { budgetId, planningVersionId, status } = filters;
+  /** Find entity or throw NotFoundException */
+  private async findOrFail<T>(
+    model: { findUnique: (args: any) => Promise<T | null> },
+    id: string | number | bigint,
+    label: string,
+  ): Promise<T> {
+    const entity = await model.findUnique({ where: { id: toBigInt(id) } });
+    if (!entity) throw new NotFoundException(`${label} not found`);
+    return entity;
+  }
+
+  /** Get next version number, scoped by a where clause */
+  private async getNextVersion(
+    model: { findFirst: (args: any) => Promise<any> },
+    where: Record<string, any> = {},
+  ): Promise<number> {
+    const last = await model.findFirst({ where, orderBy: { version: 'desc' } });
+    return (last?.version || 0) + 1;
+  }
+
+  /** Build conditional update data from DTO (skip undefined fields) */
+  private pickDefined(dto: Record<string, any>, mapping: Record<string, string>): Record<string, any> {
+    const data: Record<string, any> = {};
+    for (const [dtoKey, dbKey] of Object.entries(mapping)) {
+      if (dto[dtoKey] !== undefined) data[dbKey] = dto[dtoKey];
+    }
+    return data;
+  }
+
+  // ─── HISTORICAL (for previous year comparison) ───────────────────────
+
+  async findHistorical(params: {
+    fiscalYear: number;
+    seasonGroupName: string;
+    seasonName: string;
+    brandId: string;
+  }) {
+    const { fiscalYear, seasonGroupName, seasonName, brandId } = params;
+
+    // Step 1: Find AllocateHeaders matching brand + budget.fiscal_year
+    //         AND whose budget_allocates touch the target season_group + season
+    const matchingHeaders = await this.prisma.allocateHeader.findMany({
+      where: {
+        brand_id: BigInt(brandId),
+        is_snapshot: false,
+        budget: { fiscal_year: fiscalYear },
+        budget_allocates: {
+          some: {
+            season_group: { name: seasonGroupName },
+            season: { name: seasonName },
+          },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (matchingHeaders.length === 0) return null;
+
+    const allocateHeaderIds = matchingHeaders.map(h => h.id);
+
+    // Step 2: Find best SKUProposalHeader (prefer final, then most recent approved)
+    const proposal = await this.prisma.sKUProposalHeader.findFirst({
+      where: {
+        allocate_header_id: { in: allocateHeaderIds },
+        OR: [
+          { status: 'APPROVED' },
+          { is_final_version: true },
+        ],
+      },
+      include: {
+        creator: { select: { id: true, name: true, email: true } },
+        allocate_header: { select: { id: true, brand_id: true, brand: { select: { id: true, name: true } } } },
+        sku_proposals: {
+          include: {
+            product: {
+              include: {
+                brand: true,
+                sub_category: {
+                  include: { category: { include: { gender: true } } },
+                },
+              },
+            },
+            sku_allocates: { include: { store: true } },
+          },
+        },
+        proposal_sizing_headers: {
+          include: SIZING_HEADER_INCLUDE,
+          orderBy: { version: 'asc' },
+        },
+      },
+      orderBy: [
+        { is_final_version: 'desc' },
+        { created_at: 'desc' },
+      ],
+    });
+
+    return proposal;
+  }
+
+  // ─── LIST SKU PROPOSAL HEADERS ─────────────────────────────────────────
+
+  async findAll(filters: ProposalFilters) {
     const page = Number(filters.page) || 1;
     const pageSize = Number(filters.pageSize) || 20;
 
-    const where: Prisma.ProposalWhereInput = {};
-    if (budgetId) where.budgetId = budgetId;
-    if (planningVersionId) where.planningVersionId = planningVersionId;
-    if (status) where.status = status;
-
-    // SEC-04: Data scoping by brandAccess
-    if (user?.brandAccess?.length && !user.permissions?.includes('*')) {
-      where.budget = { groupBrandId: { in: user.brandAccess } };
-    }
+    const where: Record<string, any> = {};
+    if (filters.status) where.status = filters.status;
+    if (filters.allocateHeaderId) where.allocate_header_id = toBigInt(filters.allocateHeaderId);
+    // Always exclude snapshot records from normal queries
+    where.allocate_header = { is_snapshot: false };
 
     const [data, total] = await Promise.all([
-      this.prisma.proposal.findMany({
+      this.prisma.sKUProposalHeader.findMany({
         where,
         include: {
-          budget: { include: { groupBrand: true } },
-          planningVersion: { select: { id: true, planningCode: true, versionNumber: true } },
-          createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
-          products: {
-            orderBy: { sortOrder: 'asc' },
-            include: { allocations: true },
-          },
-          _count: { select: { products: true } },
+          creator: { select: { id: true, name: true, email: true } },
+          allocate_header: { select: { id: true, brand_id: true } },
+          _count: { select: { sku_proposals: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { created_at: 'desc' },
       }),
-      this.prisma.proposal.count({ where }),
+      this.prisma.sKUProposalHeader.count({ where }),
     ]);
 
     return {
@@ -59,575 +168,531 @@ export class ProposalService {
     };
   }
 
-  // ─── GET ONE ─────────────────────────────────────────────────────────────
+  // ─── GET ONE ───────────────────────────────────────────────────────────
 
-  async findOne(id: string) {
-    const proposal = await this.prisma.proposal.findUnique({
-      where: { id },
+  async findOne(id: string | number) {
+    const header = await this.prisma.sKUProposalHeader.findUnique({
+      where: { id: toBigInt(id) },
       include: {
-        budget: { include: { groupBrand: true } },
-        planningVersion: {
+        creator: { select: { id: true, name: true, email: true } },
+        allocate_header: { select: { id: true, brand_id: true, brand: { select: { id: true, name: true } } } },
+        sku_proposals: {
           include: {
-            budgetDetail: { include: { store: true } },
+            product: {
+              include: {
+                brand: true,
+                sub_category: {
+                  include: { category: { include: { gender: true } } },
+                },
+              },
+            },
+            sku_allocates: { include: { store: true } },
           },
         },
-        createdBy: { select: { id: true, name: true, /* email removed SEC-09 */ } },
-        products: {
-          orderBy: { sortOrder: 'asc' },
+        proposal_sizing_headers: {
+          include: SIZING_HEADER_INCLUDE,
+          orderBy: { version: 'asc' },
         },
       },
     });
 
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    // Query approvals separately (polymorphic pattern)
-    const approvals = await this.prisma.approval.findMany({
-      where: { entityType: 'proposal', entityId: id },
-      include: { decider: { select: { id: true, name: true } } },
-      orderBy: { decidedAt: 'desc' },
-    });
-
-    // Calculate summary by collection/category
-    const summary = this.calculateSummary(proposal.products);
-
-    return { ...proposal, approvals, summary };
+    if (!header) throw new NotFoundException('SKU Proposal Header not found');
+    return header;
   }
 
-  // ─── CREATE ──────────────────────────────────────────────────────────────
+  // ─── CREATE ────────────────────────────────────────────────────────────
 
-  async create(dto: CreateProposalDto, userId: string) {
-    // Validate budget exists and is approved
-    const budget = await this.prisma.budget.findUnique({
-      where: { id: dto.budgetId },
-    });
+  async create(dto: CreateSKUProposalHeaderDto, userId: string) {
+    const allocateHeaderId = toBigInt(dto.allocateHeaderId);
+    const versionWhere = { allocate_header_id: allocateHeaderId };
+    const version = await this.getNextVersion(this.prisma.sKUProposalHeader, versionWhere);
 
-    if (!budget) throw new BadRequestException('Budget not found');
-
-    // R-PRP-01: Budget must be approved before creating proposals
-    if (budget.status !== 'APPROVED') {
-      throw new BadRequestException('Cannot create proposal for non-approved budget');
+    for (const item of dto.proposals) {
+      const product = await this.prisma.product.findUnique({ where: { id: +item.productId } });
+      if (!product) throw new BadRequestException(`Product not found: ${item.productId}`);
     }
 
-    // Validate planning version if provided
-    if (dto.planningVersionId) {
-      const planning = await this.prisma.planningVersion.findUnique({
-        where: { id: dto.planningVersionId },
-        include: { budgetDetail: true },
-      });
-
-      if (!planning) throw new BadRequestException('Planning version not found');
-
-      // R-PRP-02: Planning must belong to the same budget
-      if (planning.budgetDetail.budgetId !== dto.budgetId) {
-        throw new BadRequestException('Planning version does not belong to the specified budget');
-      }
-    }
-
-    const result = await this.prisma.proposal.create({
+    const header = await this.prisma.sKUProposalHeader.create({
       data: {
-        ticketName: dto.ticketName,
-        budgetId: dto.budgetId,
-        planningVersionId: dto.planningVersionId,
-        createdById: userId,
+        version,
+        allocate_header_id: allocateHeaderId,
+        created_by: toBigInt(userId),
+        sku_proposals: {
+          create: dto.proposals.map(item => ({
+            product_id: +item.productId,
+            customer_target: item.customerTarget,
+            unit_cost: item.unitCost,
+            srp: item.srp,
+          })),
+        },
       },
       include: {
-        budget: { include: { groupBrand: true } },
-        planningVersion: true,
+        creator: { select: { id: true, name: true } },
+        sku_proposals: { include: { product: true } },
       },
     });
 
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: result.id, action: 'create', changes: { ticketName: dto.ticketName, budgetId: dto.budgetId, planningVersionId: dto.planningVersionId } });
-
-    return result;
-  }
-
-  // ─── UPDATE ──────────────────────────────────────────────────────────────
-
-  async update(id: string, dto: UpdateProposalDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    // R-PRP-03: Only DRAFT can be edited
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Only draft proposals can be edited');
-    }
-
-    // Validate planning version if changing
-    if (dto.planningVersionId) {
-      const planning = await this.prisma.planningVersion.findUnique({
-        where: { id: dto.planningVersionId },
-        include: { budgetDetail: true },
+    // Auto-create 3 sizing choices (A=1, B=2, C=3) per SKUProposalHeader
+    for (const v of [1, 2, 3]) {
+      await this.prisma.proposalSizingHeader.create({
+        data: {
+          sku_proposal_header_id: header.id,
+          version: v,
+          created_by: toBigInt(userId),
+        },
       });
-
-      if (!planning) throw new BadRequestException('Planning version not found');
-
-      if (planning.budgetDetail.budgetId !== proposal.budgetId) {
-        throw new BadRequestException('Planning version does not belong to the proposal budget');
-      }
     }
 
-    const result = await this.prisma.proposal.update({
-      where: { id },
-      data: {
-        ticketName: dto.ticketName,
-        planningVersionId: dto.planningVersionId,
-      },
-      include: {
-        budget: { include: { groupBrand: true } },
-        planningVersion: true,
-      },
-    });
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'update', changes: { ticketName: dto.ticketName, planningVersionId: dto.planningVersionId } });
-
-    return result;
+    return this.findOne(String(header.id));
   }
 
-  // ─── ADD PRODUCT ─────────────────────────────────────────────────────────
+  // ─── ADD / BULK ADD PRODUCTS ───────────────────────────────────────────
 
-  async addProduct(proposalId: string, dto: AddProductDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id: proposalId } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
+  async addProduct(headerId: string, dto: AddProductDto, userId: string) {
+    await this.findOrFail(this.prisma.sKUProposalHeader, headerId, 'SKU Proposal Header');
 
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Can only add products to draft proposals');
-    }
+    const product = await this.prisma.product.findUnique({ where: { id: +dto.productId } });
+    if (!product) throw new BadRequestException('Product not found');
 
-    // VAL-07: Max product count per proposal
-    const productCount = await this.prisma.proposalProduct.count({ where: { proposalId } });
-    if (productCount >= 200) {
-      throw new BadRequestException('Maximum 200 products allowed per proposal');
-    }
-
-    // Check if SKU already in proposal
-    const existing = await this.prisma.proposalProduct.findFirst({
-      where: { proposalId, skuId: dto.skuId },
+    const existing = await this.prisma.sKUProposal.findFirst({
+      where: { sku_proposal_header_id: +headerId, product_id: +dto.productId },
     });
+    if (existing) throw new BadRequestException('Product already exists in this proposal');
 
-    if (existing) {
-      throw new BadRequestException('SKU already exists in this proposal. Use update to change quantity.');
-    }
-
-    // Get SKU details
-    const sku = await this.prisma.skuCatalog.findUnique({
-      where: { id: dto.skuId },
-      include: { brand: true },
-    });
-
-    if (!sku) throw new BadRequestException('SKU not found in catalog');
-
-    // Parse productType to extract category/gender info (e.g., "W OUTERWEAR" → gender: Women, category: Outerwear)
-    const [genderCode, ...categoryParts] = (sku.productType || '').split(' ');
-    const gender = genderCode === 'W' ? 'Women' : genderCode === 'M' ? 'Men' : genderCode;
-    const category = categoryParts.join(' ');
-
-    // BIZ-03: Use costPrice for OTB calculations (fall back to SRP if not set)
-    const unitCost = Number(sku.costPrice || sku.srp);
-    const totalValue = unitCost * dto.orderQty;
-
-    // BIZ-02: Budget ceiling check — warn if proposal exceeds budget
-    const budget = await this.prisma.budget.findUnique({ where: { id: proposal.budgetId } });
-    if (budget) {
-      const currentTotal = Number(proposal.totalValue || 0);
-      const newTotal = currentTotal + totalValue;
-      if (newTotal > Number(budget.totalBudget)) {
-        throw new BadRequestException(
-          `Adding this item would exceed the budget ceiling. ` +
-          `Current proposal: ${currentTotal.toLocaleString()}, ` +
-          `This item: ${totalValue.toLocaleString()}, ` +
-          `Budget limit: ${Number(budget.totalBudget).toLocaleString()}`
-        );
-      }
-    }
-
-    // Get max sort order
-    const lastProduct = await this.prisma.proposalProduct.findFirst({
-      where: { proposalId },
-      orderBy: { sortOrder: 'desc' },
-    });
-
-    const product = await this.prisma.proposalProduct.create({
+    return this.prisma.sKUProposal.create({
       data: {
-        proposalId,
-        skuId: dto.skuId,
-        skuCode: sku.skuCode,
-        productName: sku.productName,
-        collection: sku.brand?.name || null,
-        gender,
-        category,
-        subCategory: null,
-        theme: sku.theme,
-        color: sku.color,
-        composition: sku.composition,
-        unitCost,
-        srp: sku.srp,
-        orderQty: dto.orderQty,
-        totalValue,
-        customerTarget: dto.customerTarget,
-        imageUrl: sku.imageUrl,
-        sortOrder: (lastProduct?.sortOrder || 0) + 1,
+        sku_proposal_header_id: +headerId,
+        product_id: +dto.productId,
+        customer_target: dto.customerTarget,
+        unit_cost: dto.unitCost,
+        srp: dto.srp,
       },
+      include: { product: true },
     });
-
-    // Update proposal totals
-    await this.updateProposalTotals(proposalId);
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'add_product', changes: { productId: product.id, skuId: dto.skuId, skuCode: sku.skuCode, orderQty: dto.orderQty, totalValue } });
-
-    return product;
   }
 
-  // ─── BULK ADD PRODUCTS ───────────────────────────────────────────────────
-
-  async bulkAddProducts(proposalId: string, dto: BulkAddProductsDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id: proposalId } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Can only add products to draft proposals');
-    }
-
-    const results: Array<{ success: boolean; skuId: string; product?: any; error?: string }> = [];
+  async bulkAddProducts(headerId: string, dto: BulkAddProductsDto, userId: string) {
+    const results: Array<{ success: boolean; productId: string; data?: any; error?: string }> = [];
     for (const productDto of dto.products) {
       try {
-        const product = await this.addProduct(proposalId, productDto, userId);
-        results.push({ success: true, skuId: productDto.skuId, product });
+        const data = await this.addProduct(headerId, productDto, userId);
+        results.push({ success: true, productId: productDto.productId, data });
       } catch (error: any) {
-        results.push({ success: false, skuId: productDto.skuId, error: error.message });
+        results.push({ success: false, productId: productDto.productId, error: error.message });
+      }
+    }
+    return results;
+  }
+
+  // ─── UPDATE / REMOVE SKU PROPOSAL ─────────────────────────────────────
+
+  async updateProposal(proposalId: string, dto: UpdateSKUProposalDto) {
+    await this.findOrFail(this.prisma.sKUProposal, proposalId, 'SKU Proposal');
+    const updateData = this.pickDefined(dto, {
+      customerTarget: 'customer_target',
+      unitCost: 'unit_cost',
+      srp: 'srp',
+    });
+    return this.prisma.sKUProposal.update({
+      where: { id: toBigInt(proposalId) },
+      data: updateData,
+      include: { product: true },
+    });
+  }
+
+  async removeProposal(proposalId: string) {
+    await this.findOrFail(this.prisma.sKUProposal, proposalId, 'SKU Proposal');
+    await this.prisma.sKUProposal.delete({ where: { id: toBigInt(proposalId) } });
+    return { message: 'SKU Proposal removed' };
+  }
+
+  // ─── SKU ALLOCATE (per store) ─────────────────────────────────────────
+
+  async createAllocations(dto: BulkSKUAllocateDto) {
+    for (const alloc of dto.allocations) {
+      const proposal = await this.prisma.sKUProposal.findUnique({ where: { id: +alloc.skuProposalId } });
+      if (!proposal) throw new BadRequestException(`SKU Proposal not found: ${alloc.skuProposalId}`);
+      const store = await this.prisma.store.findUnique({ where: { id: +alloc.storeId } });
+      if (!store) throw new BadRequestException(`Store not found: ${alloc.storeId}`);
+    }
+    return this.prisma.$transaction(
+      dto.allocations.map(alloc =>
+        this.prisma.sKUAllocate.create({
+          data: {
+            sku_proposal_id: +alloc.skuProposalId,
+            store_id: +alloc.storeId,
+            quantity: alloc.quantity,
+          },
+          include: { store: true },
+        }),
+      ),
+    );
+  }
+
+  async getStoreAllocations(skuProposalId: string) {
+    return this.prisma.sKUAllocate.findMany({
+      where: { sku_proposal_id: +skuProposalId },
+      include: { store: true },
+    });
+  }
+
+  async updateAllocation(allocationId: string, quantity: number) {
+    await this.findOrFail(this.prisma.sKUAllocate, allocationId, 'Allocation');
+    return this.prisma.sKUAllocate.update({
+      where: { id: toBigInt(allocationId) },
+      data: { quantity },
+      include: { store: true },
+    });
+  }
+
+  async deleteAllocation(allocationId: string) {
+    await this.findOrFail(this.prisma.sKUAllocate, allocationId, 'Allocation');
+    await this.prisma.sKUAllocate.delete({ where: { id: toBigInt(allocationId) } });
+    return { message: 'Allocation deleted' };
+  }
+
+  // ─── PROPOSAL SIZING HEADER ───────────────────────────────────────────
+
+  async createSizingHeader(dto: CreateProposalSizingHeaderDto, userId: string) {
+    const proposalHeader = await this.prisma.sKUProposalHeader.findUnique({ where: { id: +dto.skuProposalHeaderId } });
+    if (!proposalHeader) throw new BadRequestException(`SKU Proposal Header not found: ${dto.skuProposalHeaderId}`);
+
+    // Enforce max 3 sizing choices (A, B, C)
+    const existingCount = await this.prisma.proposalSizingHeader.count({
+      where: { sku_proposal_header_id: +dto.skuProposalHeaderId },
+    });
+    if (existingCount >= 3) {
+      throw new BadRequestException('Maximum 3 sizing choices (A, B, C) allowed per proposal header');
+    }
+
+    const version = await this.getNextVersion(
+      this.prisma.proposalSizingHeader,
+      { sku_proposal_header_id: +dto.skuProposalHeaderId },
+    );
+
+    return this.prisma.proposalSizingHeader.create({
+      data: {
+        sku_proposal_header_id: +dto.skuProposalHeaderId,
+        version,
+        created_by: toBigInt(userId),
+        proposal_sizings: {
+          create: dto.sizings.map(s => ({
+            sku_proposal_id: +s.skuProposalId,
+            subcategory_size_id: +s.subcategorySizeId,
+            actual_salesmix_pct: s.actualSalesmixPct || 0,
+            actual_st_pct: s.actualStPct || 0,
+            proposal_quantity: s.proposalQuantity,
+          })),
+        },
+      },
+      include: SIZING_HEADER_INCLUDE,
+    });
+  }
+
+  async getSizingHeadersByProposalHeader(skuProposalHeaderId: string) {
+    await this.findOrFail(this.prisma.sKUProposalHeader, skuProposalHeaderId, 'SKU Proposal Header');
+    return this.prisma.proposalSizingHeader.findMany({
+      where: { sku_proposal_header_id: +skuProposalHeaderId },
+      include: SIZING_HEADER_INCLUDE,
+      orderBy: { version: 'asc' },
+    });
+  }
+
+  async getSizingHeader(headerId: string) {
+    const header = await this.prisma.proposalSizingHeader.findUnique({
+      where: { id: toBigInt(headerId) },
+      include: SIZING_HEADER_INCLUDE,
+    });
+    if (!header) throw new NotFoundException('Proposal Sizing Header not found');
+    return header;
+  }
+
+  async updateSizingHeader(headerId: string, dto: any, userId: string) {
+    const header = await this.findOrFail(this.prisma.proposalSizingHeader, headerId, 'Proposal Sizing Header') as any;
+
+    const updateData: Record<string, any> = { updated_by: toBigInt(userId) };
+    if (dto.isFinalVersion !== undefined) {
+      updateData.is_final_version = dto.isFinalVersion;
+      if (dto.isFinalVersion) {
+        await this.prisma.proposalSizingHeader.updateMany({
+          where: { sku_proposal_header_id: header.sku_proposal_header_id, id: { not: toBigInt(headerId) } },
+          data: { is_final_version: false },
+        });
       }
     }
 
-    return { results, proposal: await this.findOne(proposalId) };
-  }
-
-  // ─── UPDATE PRODUCT ──────────────────────────────────────────────────────
-
-  async updateProduct(proposalId: string, productId: string, dto: UpdateProductDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id: proposalId } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Can only update products in draft proposals');
-    }
-
-    const product = await this.prisma.proposalProduct.findFirst({
-      where: { id: productId, proposalId },
-    });
-
-    if (!product) throw new NotFoundException('Product not found in this proposal');
-
-    const updateData: any = {};
-    if (dto.orderQty !== undefined) {
-      updateData.orderQty = dto.orderQty;
-      updateData.totalValue = Number(product.unitCost) * dto.orderQty;
-    }
-    if (dto.customerTarget !== undefined) updateData.customerTarget = dto.customerTarget;
-    if (dto.sortOrder !== undefined) updateData.sortOrder = dto.sortOrder;
-
-    const updated = await this.prisma.proposalProduct.update({
-      where: { id: productId },
+    return this.prisma.proposalSizingHeader.update({
+      where: { id: toBigInt(headerId) },
       data: updateData,
+      include: SIZING_HEADER_INCLUDE,
     });
-
-    // Update proposal totals
-    await this.updateProposalTotals(proposalId);
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'update_product', changes: { productId, ...updateData } });
-
-    return updated;
   }
 
-  // ─── REMOVE PRODUCT ──────────────────────────────────────────────────────
+  async deleteSizingHeader(headerId: string) {
+    const header = await this.findOrFail(this.prisma.proposalSizingHeader, headerId, 'Proposal Sizing Header') as any;
 
-  async removeProduct(proposalId: string, productId: string, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id: proposalId } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Can only remove products from draft proposals');
+    // Enforce min 3 sizing choices — cannot delete below 3
+    const existingCount = await this.prisma.proposalSizingHeader.count({
+      where: { sku_proposal_header_id: header.sku_proposal_header_id },
+    });
+    if (existingCount <= 3) {
+      throw new BadRequestException('Cannot delete sizing choice — minimum 3 choices (A, B, C) required');
     }
 
-    const product = await this.prisma.proposalProduct.findFirst({
-      where: { id: productId, proposalId },
-    });
-
-    if (!product) throw new NotFoundException('Product not found in this proposal');
-
-    await this.prisma.proposalProduct.delete({ where: { id: productId } });
-
-    // Update proposal totals
-    await this.updateProposalTotals(proposalId);
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: proposalId, action: 'remove_product', changes: { productId, skuCode: product.skuCode, productName: product.productName } });
-
-    return { message: 'Product removed from proposal' };
+    await this.prisma.proposalSizingHeader.delete({ where: { id: toBigInt(headerId) } });
+    return { message: 'Proposal Sizing Header deleted' };
   }
 
-  // ─── SUBMIT ──────────────────────────────────────────────────────────────
+  // ─── PROPOSAL SIZING (individual rows) ────────────────────────────────
+
+  async createSizings(dto: BulkProposalSizingDto) {
+    for (const s of dto.sizings) {
+      const header = await this.prisma.proposalSizingHeader.findUnique({ where: { id: +s.proposalSizingHeaderId } });
+      if (!header) throw new BadRequestException(`Proposal Sizing Header not found: ${s.proposalSizingHeaderId}`);
+      const skuProposal = await this.prisma.sKUProposal.findUnique({ where: { id: +s.skuProposalId } });
+      if (!skuProposal) throw new BadRequestException(`SKU Proposal not found: ${s.skuProposalId}`);
+    }
+    return this.prisma.$transaction(
+      dto.sizings.map(s =>
+        this.prisma.proposalSizing.create({
+          data: {
+            proposal_sizing_header_id: +s.proposalSizingHeaderId,
+            sku_proposal_id: +s.skuProposalId,
+            subcategory_size_id: +s.subcategorySizeId,
+            actual_salesmix_pct: s.actualSalesmixPct || 0,
+            actual_st_pct: s.actualStPct || 0,
+            proposal_quantity: s.proposalQuantity,
+          },
+          include: { subcategory_size: true, sku_proposal: { select: { id: true, product_id: true } } },
+        }),
+      ),
+    );
+  }
+
+  async getSizings(proposalSizingHeaderId: string) {
+    return this.prisma.proposalSizing.findMany({
+      where: { proposal_sizing_header_id: +proposalSizingHeaderId },
+      include: { subcategory_size: true },
+    });
+  }
+
+  async updateSizing(sizingId: string, quantity: number) {
+    await this.findOrFail(this.prisma.proposalSizing, sizingId, 'Sizing');
+    return this.prisma.proposalSizing.update({
+      where: { id: toBigInt(sizingId) },
+      data: { proposal_quantity: quantity },
+      include: { subcategory_size: true },
+    });
+  }
+
+  async deleteSizing(sizingId: string) {
+    await this.findOrFail(this.prisma.proposalSizing, sizingId, 'Sizing');
+    await this.prisma.proposalSizing.delete({ where: { id: toBigInt(sizingId) } });
+    return { message: 'Sizing deleted' };
+  }
+
+  // ─── SUBMIT / APPROVE ────────────────────────────────────────────────
 
   async submit(id: string, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({
-      where: { id },
-      include: { products: true },
-    });
-
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new BadRequestException(`Cannot submit proposal with status: ${proposal.status}`);
-    }
-
-    // R-PRP-04: Must have at least one product
-    if (proposal.products.length === 0) {
-      throw new BadRequestException('Proposal must have at least one product');
-    }
-
-    const result = await this.prisma.proposal.update({
-      where: { id },
-      data: { status: ProposalStatus.SUBMITTED },
-      include: {
-        budget: { include: { groupBrand: true } },
-        _count: { select: { products: true } },
-      },
-    });
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'submit', changes: { previousStatus: 'DRAFT', newStatus: 'SUBMITTED', productCount: proposal.products.length } });
-
-    return result;
+    const header = await this.findOrFail(this.prisma.sKUProposalHeader, id, 'SKU Proposal Header') as any;
+    if (header.status !== 'DRAFT') throw new BadRequestException(`Cannot submit with status: ${header.status}`);
+    return this.prisma.sKUProposalHeader.update({ where: { id: toBigInt(id) }, data: { status: 'SUBMITTED' } });
   }
 
-  // ─── APPROVE LEVEL 1 ─────────────────────────────────────────────────────
-
-  async approveLevel1(id: string, dto: ApprovalDecisionDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.SUBMITTED) {
-      throw new BadRequestException(`Cannot approve proposal with status: ${proposal.status}`);
+  async approveByLevel(id: string, level: string, action: string, comment: string, userId: string) {
+    const header = await this.findOrFail(this.prisma.sKUProposalHeader, id, 'SKU Proposal Header') as any;
+    if (header.status !== 'SUBMITTED') {
+      throw new BadRequestException(`Cannot approve/reject with status: ${header.status}. Must be SUBMITTED.`);
     }
-
-    // BIZ-01: Prevent self-approval
-    if (proposal.createdById === userId) {
-      throw new ForbiddenException('Cannot approve your own submission');
-    }
-
-    const newStatus = dto.action === 'APPROVED'
-      ? ProposalStatus.LEVEL1_APPROVED
-      : ProposalStatus.REJECTED;
-
-    // BIZ-06: Atomic approval
-    const result = await this.prisma.$transaction(async (tx) => {
-      const current = await tx.proposal.findUnique({ where: { id } });
-      if (current?.status !== ProposalStatus.SUBMITTED) {
-        throw new BadRequestException('Proposal already processed by another approver');
-      }
-
-      await tx.approval.create({
-        data: {
-          entityType: 'proposal',
-          entityId: id,
-          level: 1,
-          deciderId: userId,
-          action: dto.action as ApprovalAction,
-          comment: dto.comment,
-        },
-      });
-
-      return tx.proposal.update({
-        where: { id },
-        data: { status: newStatus },
-        include: {
-          budget: { include: { groupBrand: true } },
-          _count: { select: { products: true } },
-        },
-      });
-    });
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l1' : 'reject_l1', changes: { previousStatus: 'SUBMITTED', newStatus, comment: dto.comment } });
-
-    return result;
+    const newStatus = action === 'REJECTED' ? 'REJECTED' : 'APPROVED';
+    return this.prisma.sKUProposalHeader.update({ where: { id: toBigInt(id) }, data: { status: newStatus } });
   }
 
-  // ─── APPROVE LEVEL 2 ─────────────────────────────────────────────────────
+  // ─── UPDATE HEADER ────────────────────────────────────────────────────
 
-  async approveLevel2(id: string, dto: ApprovalDecisionDto, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.LEVEL1_APPROVED) {
-      throw new BadRequestException(`Cannot approve proposal with status: ${proposal.status}`);
-    }
-
-    // BIZ-01: Prevent self-approval
-    if (proposal.createdById === userId) {
-      throw new ForbiddenException('Cannot approve your own submission');
-    }
-
-    const newStatus = dto.action === 'APPROVED'
-      ? ProposalStatus.APPROVED
-      : ProposalStatus.REJECTED;
-
-    // BIZ-06: Atomic approval
-    const result = await this.prisma.$transaction(async (tx) => {
-      const current = await tx.proposal.findUnique({ where: { id } });
-      if (current?.status !== ProposalStatus.LEVEL1_APPROVED) {
-        throw new BadRequestException('Proposal already processed by another approver');
-      }
-
-      await tx.approval.create({
-        data: {
-          entityType: 'proposal',
-          entityId: id,
-          level: 2,
-          deciderId: userId,
-          action: dto.action as ApprovalAction,
-          comment: dto.comment,
-        },
-      });
-
-      return tx.proposal.update({
-        where: { id },
-        data: { status: newStatus },
-        include: {
-          budget: { include: { groupBrand: true } },
-          _count: { select: { products: true } },
-        },
-      });
-    });
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: dto.action === 'APPROVED' ? 'approve_l2' : 'reject_l2', changes: { previousStatus: 'LEVEL1_APPROVED', newStatus, comment: dto.comment } });
-
-    return result;
+  async updateHeader(id: string, dto: any, userId: string) {
+    const header = await this.findOrFail(this.prisma.sKUProposalHeader, id, 'SKU Proposal Header') as any;
+    if (header.status !== 'DRAFT') throw new ForbiddenException('Only draft proposals can be edited');
+    const updateData: Record<string, any> = { updated_by: toBigInt(userId) };
+    if (dto.isFinalVersion !== undefined) updateData.is_final_version = dto.isFinalVersion;
+    return this.prisma.sKUProposalHeader.update({ where: { id: toBigInt(id) }, data: updateData });
   }
 
-  // ─── RESET TO DRAFT ────────────────────────────────────────────────────
-
-  async resetToDraft(id: string, userId: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.REJECTED) {
-      throw new BadRequestException(`Only REJECTED proposals can be reset. Current status: ${proposal.status}`);
-    }
-
-    await this.prisma.approval.create({
-      data: {
-        entityType: 'proposal',
-        entityId: id,
-        level: 0,
-        deciderId: userId,
-        action: 'APPROVED' as ApprovalAction,
-        comment: 'Reset to DRAFT for revision',
-      },
-    });
-
-    const result = await this.prisma.proposal.update({
-      where: { id },
-      data: { status: ProposalStatus.DRAFT },
-      include: {
-        budget: { include: { groupBrand: true } },
-        _count: { select: { products: true } },
-      },
-    });
-
-    this.auditLog.log({ userId, entityType: 'proposal', entityId: id, action: 'reset_to_draft', changes: { previousStatus: 'REJECTED', newStatus: 'DRAFT' } });
-
-    return result;
-  }
-
-  // ─── DELETE ──────────────────────────────────────────────────────────────
-
-  async remove(id: string, userId?: string) {
-    const proposal = await this.prisma.proposal.findUnique({ where: { id } });
-    if (!proposal) throw new NotFoundException('Proposal not found');
-
-    if (proposal.status !== ProposalStatus.DRAFT) {
-      throw new ForbiddenException('Only draft proposals can be deleted');
-    }
-
-    const result = await this.prisma.proposal.delete({ where: { id } });
-
-    this.auditLog.log({ userId: userId || 'system', entityType: 'proposal', entityId: id, action: 'delete', changes: { ticketName: proposal.ticketName, budgetId: proposal.budgetId } });
-
-    return result;
-  }
-
-  // ─── STATISTICS ──────────────────────────────────────────────────────────
+  // ─── STATISTICS ───────────────────────────────────────────────────────
 
   async getStatistics(budgetId?: string) {
-    const where: Prisma.ProposalWhereInput = budgetId ? { budgetId } : {};
-
-    const [total, byStatus, totals] = await Promise.all([
-      this.prisma.proposal.count({ where }),
-      this.prisma.proposal.groupBy({
-        by: ['status'],
-        where,
-        _count: true,
-      }),
-      this.prisma.proposal.aggregate({
-        where,
-        _sum: {
-          totalSkuCount: true,
-          totalOrderQty: true,
-          totalValue: true,
-        },
-      }),
-    ]);
-
-    const statusMap = byStatus.reduce((acc, s) => {
-      acc[s.status] = s._count;
-      return acc;
-    }, {} as Record<string, number>);
-
-    return {
-      total,
-      byStatus: statusMap,
-      totals: {
-        skuCount: totals._sum.totalSkuCount || 0,
-        orderQty: totals._sum.totalOrderQty || 0,
-        value: totals._sum.totalValue || 0,
-      },
-    };
+    const where: Record<string, any> = { allocate_header: { is_snapshot: false } };
+    if (budgetId) where.budget_id = toBigInt(budgetId);
+    const total = await this.prisma.sKUProposalHeader.count({ where });
+    return { totalProposals: total, byStatus: {} };
   }
 
-  // ─── HELPER: Update Proposal Totals ──────────────────────────────────────
+  // ─── SAVE FULL PROPOSAL (products + store allocations + sizing) ──────
 
-  private async updateProposalTotals(proposalId: string) {
-    const products = await this.prisma.proposalProduct.findMany({
-      where: { proposalId },
+  async saveFullProposal(headerId: string, dto: {
+    products: Array<{
+      productId: string;
+      customerTarget: string;
+      unitCost: number;
+      srp: number;
+      allocations?: Array<{ storeId: string; quantity: number }>;
+    }>;
+    sizings?: Array<{
+      version: number;
+      isFinal?: boolean;
+      rows?: Array<{ skuProposalProductId: string; subcategorySizeId: string; actualSalesmixPct?: number; actualStPct?: number; proposalQuantity: number }>;
+    }>;
+  }, userId: string) {
+    await this.findOrFail(this.prisma.sKUProposalHeader, headerId, 'SKU Proposal Header');
+
+    await this.prisma.$transaction(async (tx) => {
+      // Delete existing children (cascade deletes sku_allocates)
+      await tx.sKUProposal.deleteMany({ where: { sku_proposal_header_id: toBigInt(headerId) } });
+      // Delete existing sizing headers (cascade deletes proposal_sizings)
+      await tx.proposalSizingHeader.deleteMany({ where: { sku_proposal_header_id: toBigInt(headerId) } });
+
+      // Re-create all SKU proposals + store allocations
+      const productIdMap = new Map<string, bigint>(); // productId → skuProposal.id
+      for (const prod of dto.products) {
+        const skuProposal = await tx.sKUProposal.create({
+          data: {
+            sku_proposal_header_id: toBigInt(headerId),
+            product_id: toBigInt(prod.productId),
+            customer_target: prod.customerTarget || 'New',
+            unit_cost: prod.unitCost || 0,
+            srp: prod.srp || 0,
+            created_by: toBigInt(userId),
+          },
+        });
+        productIdMap.set(String(prod.productId), skuProposal.id);
+
+        if (prod.allocations?.length) {
+          await tx.sKUAllocate.createMany({
+            data: prod.allocations.map(a => ({
+              sku_proposal_id: skuProposal.id,
+              store_id: toBigInt(a.storeId),
+              quantity: a.quantity || 0,
+            })),
+          });
+        }
+      }
+
+      // Create 3 sizing choices (A=1, B=2, C=3) at header level
+      const sizingChoices = dto.sizings?.length === 3
+        ? dto.sizings
+        : [{ version: 1 }, { version: 2 }, { version: 3 }];
+      for (const choice of sizingChoices) {
+        const sizingRows = (choice.rows || [])
+          .filter(r => productIdMap.has(r.skuProposalProductId))
+          .map(r => ({
+            sku_proposal_id: productIdMap.get(r.skuProposalProductId)!,
+            subcategory_size_id: toBigInt(r.subcategorySizeId),
+            actual_salesmix_pct: r.actualSalesmixPct || 0,
+            actual_st_pct: r.actualStPct || 0,
+            proposal_quantity: r.proposalQuantity || 0,
+          }));
+
+        await tx.proposalSizingHeader.create({
+          data: {
+            sku_proposal_header_id: toBigInt(headerId),
+            version: choice.version,
+            is_final_version: choice.isFinal ?? false,
+            created_by: toBigInt(userId),
+            ...(sizingRows.length ? {
+              proposal_sizings: { create: sizingRows },
+            } : {}),
+          },
+        });
+      }
     });
 
-    const totalSkuCount = products.length;
-    const totalOrderQty = products.reduce((sum, p) => sum + p.orderQty, 0);
-    const totalValue = products.reduce((sum, p) => sum + Number(p.totalValue), 0);
-
-    await this.prisma.proposal.update({
-      where: { id: proposalId },
-      data: { totalSkuCount, totalOrderQty, totalValue },
-    });
+    return this.findOne(headerId);
   }
 
-  // ─── HELPER: Calculate Summary by Dimension ──────────────────────────────
+  // ─── COPY PROPOSAL (save as new version) ──────────────────────────────
 
-  private calculateSummary(products: any[]) {
-    const byCollection: Record<string, { qty: number; value: number; count: number }> = {};
-    const byCategory: Record<string, { qty: number; value: number; count: number }> = {};
+  async copyProposal(headerId: string, userId: string) {
+    const source = await this.findOne(headerId);
+    const allocateHeaderId = source.allocate_header_id;
+    const versionWhere = { allocate_header_id: allocateHeaderId };
+    const version = await this.getNextVersion(this.prisma.sKUProposalHeader, versionWhere);
 
-    for (const p of products) {
-      const collection = p.collection || 'Unknown';
-      const category = p.category || 'Unknown';
+    const newHeader = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.sKUProposalHeader.create({
+        data: { allocate_header_id: allocateHeaderId, version, created_by: toBigInt(userId) },
+      });
 
-      if (!byCollection[collection]) byCollection[collection] = { qty: 0, value: 0, count: 0 };
-      byCollection[collection].qty += p.orderQty;
-      byCollection[collection].value += Number(p.totalValue);
-      byCollection[collection].count += 1;
+      // Copy SKU proposals + allocations, build old→new ID map
+      const skuIdMap = new Map<bigint, bigint>(); // old sku_proposal.id → new id
+      for (const sp of source.sku_proposals) {
+        const newProposal = await tx.sKUProposal.create({
+          data: {
+            sku_proposal_header_id: created.id,
+            product_id: sp.product_id,
+            customer_target: sp.customer_target,
+            unit_cost: sp.unit_cost,
+            srp: sp.srp,
+            created_by: toBigInt(userId),
+          },
+        });
+        skuIdMap.set(sp.id, newProposal.id);
 
-      if (!byCategory[category]) byCategory[category] = { qty: 0, value: 0, count: 0 };
-      byCategory[category].qty += p.orderQty;
-      byCategory[category].value += Number(p.totalValue);
-      byCategory[category].count += 1;
-    }
+        if (sp.sku_allocates?.length) {
+          await tx.sKUAllocate.createMany({
+            data: sp.sku_allocates.map((a: any) => ({
+              sku_proposal_id: newProposal.id,
+              store_id: a.store_id,
+              quantity: a.quantity,
+            })),
+          });
+        }
+      }
 
-    return { byCollection, byCategory };
+      // Copy sizing headers (A, B, C) at header level with remapped sku_proposal_id
+      const sizingHeaders = source.proposal_sizing_headers || [];
+      if (sizingHeaders.length > 0) {
+        for (const sh of sizingHeaders) {
+          const sizingRows = ((sh as any).proposal_sizings || [])
+            .filter((ps: any) => skuIdMap.has(ps.sku_proposal_id))
+            .map((ps: any) => ({
+              sku_proposal_id: skuIdMap.get(ps.sku_proposal_id)!,
+              subcategory_size_id: ps.subcategory_size_id,
+              actual_salesmix_pct: ps.actual_salesmix_pct || 0,
+              actual_st_pct: ps.actual_st_pct || 0,
+              proposal_quantity: ps.proposal_quantity || 0,
+            }));
+
+          await tx.proposalSizingHeader.create({
+            data: {
+              sku_proposal_header_id: created.id,
+              version: sh.version,
+              is_final_version: sh.is_final_version ?? false,
+              created_by: toBigInt(userId),
+              ...(sizingRows.length > 0 ? {
+                proposal_sizings: { create: sizingRows },
+              } : {}),
+            },
+          });
+        }
+      } else {
+        // No existing sizing — create 3 empty choices
+        for (const v of [1, 2, 3]) {
+          await tx.proposalSizingHeader.create({
+            data: { sku_proposal_header_id: created.id, version: v, created_by: toBigInt(userId) },
+          });
+        }
+      }
+
+      return created;
+    });
+
+    return this.findOne(String(newHeader.id));
+  }
+
+  // ─── DELETE HEADER ────────────────────────────────────────────────────
+
+  async remove(id: string) {
+    await this.findOrFail(this.prisma.sKUProposalHeader, id, 'SKU Proposal Header');
+    return this.prisma.sKUProposalHeader.delete({ where: { id: toBigInt(id) } });
   }
 }

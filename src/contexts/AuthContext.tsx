@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Login with Microsoft (Azure AD)
   const loginWithMicrosoft = useCallback(async () => {
     setError(null);
-    setLoginStatus('Connecting to Microsoft...');
+    setLoginStatus('Đang kết nối Microsoft...');
     setLoading(true);
     try {
       const { getMsalInstance, loginRequest } = await import('../services/msalConfig');
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const result = await msalInstance.loginPopup(loginRequest);
       const msAccessToken = result.accessToken;
 
-      setLoginStatus('Authenticating...');
+      setLoginStatus('Đang xác thực...');
       const { user: userData } = await authService.loginWithMicrosoft(msAccessToken);
       setLoginStatus('');
       setUser(userData);
@@ -102,10 +102,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (err: any) {
       setLoginStatus('');
       if (err.errorCode === 'user_cancelled') {
-        throw new Error('Microsoft login cancelled');
+        throw new Error('Đã hủy đăng nhập Microsoft');
       }
+      // crypto.subtle not available on HTTP (non-localhost) — need HTTPS
       if (err.errorCode === 'crypto_nonexistent' || err.message?.includes('crypto')) {
-        const msg = 'Browser requires HTTPS for Microsoft login. Please use https:// or http://localhost';
+        const msg = 'Trình duyệt yêu cầu HTTPS để đăng nhập Microsoft. Vui lòng truy cập qua https:// hoặc http://localhost';
         setError(msg);
         throw new Error(msg);
       }

@@ -379,7 +379,7 @@ const SettingsScreen = ({ darkMode = true, setDarkMode, user }: any) => {
           </div>
         </div>
       </div>
-      <ConfirmDialog darkMode={darkMode} {...dialogProps} />
+      <ConfirmDialog {...dialogProps} />
     </div>
   );
 };

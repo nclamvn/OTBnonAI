@@ -28,7 +28,7 @@ const { mockPlanningService, mockMasterDataService } = vi.hoisted(() => {
   const masterSvc = {
     getBrands: vi.fn().mockResolvedValue([]),
     getStores: vi.fn().mockResolvedValue([]),
-    getCollections: vi.fn().mockResolvedValue([]),
+    getSeasonTypes: vi.fn().mockResolvedValue([]),
     getGenders: vi.fn().mockResolvedValue([]),
     getCategories: vi.fn().mockResolvedValue([]),
     getSeasons: vi.fn().mockResolvedValue([]),
@@ -54,7 +54,7 @@ import { usePlanning } from '../usePlanning';
 describe('usePlanning', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockMasterDataService.getCollections.mockResolvedValue(mockCollections);
+    mockMasterDataService.getSeasonTypes.mockResolvedValue(mockCollections);
     mockMasterDataService.getGenders.mockResolvedValue(mockGenders);
     mockMasterDataService.getCategories.mockResolvedValue(mockCategories);
     mockPlanningService.getAll.mockResolvedValue([mockApiPlanning()]);
@@ -71,20 +71,20 @@ describe('usePlanning', () => {
     expect(result.current.showPlanningDetail).toBe(false);
   });
 
-  it('should fetch collections, genders, categories on mount', async () => {
+  it('should fetch seasonTypes, genders, categories on mount', async () => {
     renderHook(() => usePlanning());
 
     await waitFor(() => {
-      expect(mockMasterDataService.getCollections).toHaveBeenCalledTimes(1);
+      expect(mockMasterDataService.getSeasonTypes).toHaveBeenCalledTimes(1);
       expect(mockMasterDataService.getGenders).toHaveBeenCalledTimes(1);
       expect(mockMasterDataService.getCategories).toHaveBeenCalledTimes(1);
     });
   });
 
-  it('should set collections from API', async () => {
+  it('should set seasonTypes from API', async () => {
     const { result } = renderHook(() => usePlanning());
     await waitFor(() => {
-      expect(result.current.collections).toEqual(mockCollections);
+      expect(result.current.seasonTypes).toEqual(mockCollections);
     });
   });
 
@@ -148,7 +148,7 @@ describe('usePlanning', () => {
     const { result } = renderHook(() => usePlanning());
 
     await waitFor(() => {
-      expect(result.current.collections).toHaveLength(2);
+      expect(result.current.seasonTypes).toHaveLength(2);
     });
 
     await act(async () => {
@@ -175,7 +175,7 @@ describe('usePlanning', () => {
     const { result } = renderHook(() => usePlanning());
 
     await waitFor(() => {
-      expect(result.current.collections).toHaveLength(2);
+      expect(result.current.seasonTypes).toHaveLength(2);
     });
 
     await act(async () => {
@@ -203,7 +203,7 @@ describe('usePlanning', () => {
     const { result } = renderHook(() => usePlanning());
 
     await waitFor(() => {
-      expect(result.current.collections).toHaveLength(2);
+      expect(result.current.seasonTypes).toHaveLength(2);
     });
 
     await act(async () => {
@@ -229,7 +229,7 @@ describe('usePlanning', () => {
     const { result } = renderHook(() => usePlanning());
 
     await waitFor(() => {
-      expect(result.current.collections).toHaveLength(2);
+      expect(result.current.seasonTypes).toHaveLength(2);
     });
 
     await act(async () => {

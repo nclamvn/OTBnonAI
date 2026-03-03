@@ -25,8 +25,6 @@ import {
   Target,
   TrendingUp,
   Bell,
-  Sun,
-  Moon,
   ChevronRight,
   Home,
   Search,
@@ -34,13 +32,15 @@ import {
   User,
   Settings,
   Save,
+  Plus,
   ChevronDown,
   Layers,
   LineChart,
   PieChart,
   Activity,
   Loader2,
-  Printer
+  Printer,
+  Download
 } from 'lucide-react';
 
 // Screen configuration builder (uses t() for translations)
@@ -55,7 +55,7 @@ const getScreenConfig = (t: any) => ({
   },
   'budget-management': {
     label: t('screenConfig.budgetManagement'),
-    shortLabel: t('budget.title'),
+    shortLabel: 'Budget',
     icon: Wallet,
     step: 1,
     kpiLabel: t('header.kpiBudgets'),
@@ -186,14 +186,12 @@ const PLANNING_STEPS = [
 
 const AppHeader = ({
   currentScreen,
-  darkMode = true,
-  setDarkMode,
   kpiData = {}
 }: any) => {
   const router = useRouter();
   const { t, language, setLanguage } = useLanguage();
   const { isMobile } = useIsMobile();
-  const { triggerSave, hasSaveHandler } = useAppContext();
+  const { triggerSave, hasSaveHandler, triggerSaveAsNew, hasSaveAsNewHandler, triggerCreateBudget, triggerExport, hasExportHandler } = useAppContext();
   const SCREEN_CONFIG: any = useMemo(() => getScreenConfig(t), [t]);
   const onNavigate = (screenId: any) => {
     const route = ROUTE_MAP[screenId];
@@ -209,6 +207,7 @@ const AppHeader = ({
   const [notifLoading, setNotifLoading] = useState(false);
   const [openSaveMenu, setOpenSaveMenu] = useState(false);
   const saveButtonRef = useRef<any>(null);
+  const saveMenuRef = useRef<any>(null);
   const [saveMenuPosition, setSaveMenuPosition] = useState({ top: 0, right: 0 });
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -301,7 +300,10 @@ const AppHeader = ({
         setShowSearch(false);
         setSearchQuery('');
       }
-      if (saveButtonRef.current && !saveButtonRef.current.contains(event.target)) {
+      if (
+        saveButtonRef.current && !saveButtonRef.current.contains(event.target) &&
+        saveMenuRef.current && !saveMenuRef.current.contains(event.target)
+      ) {
         setOpenSaveMenu(false);
       }
     };
@@ -344,16 +346,12 @@ const AppHeader = ({
 
   return (
     <div className="sticky top-0 z-40 shrink-0" style={{
-      background: darkMode
-        ? 'linear-gradient(180deg, #0A0A0A 0%, rgba(13,11,9,1) 100%)'
-        : 'linear-gradient(180deg, #ffffff 0%, #fdfbf9 100%)',
+      background: 'linear-gradient(180deg, #ffffff 0%, #fdfbf9 100%)',
     }}>
       {/* Main Header */}
-      <div className="h-11 px-4 flex items-center justify-between" style={{
-        borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
-        background: darkMode
-          ? 'linear-gradient(135deg, #0A0A0A 0%, rgba(215,183,151,0.02) 100%)'
-          : 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 100%)',
+      <div className="h-11 px-6 flex items-center justify-between" style={{
+        borderBottom: '1px solid #D1D5DB',
+        background: 'linear-gradient(135deg, #ffffff 0%, rgba(215,183,151,0.04) 100%)',
       }}>
         {/* Left - Breadcrumb Navigation */}
         <div className="flex items-center gap-2.5">
@@ -362,34 +360,17 @@ const AppHeader = ({
             onClick={() => onNavigate('home')}
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300"
             style={{
-              background: darkMode
-                ? 'linear-gradient(135deg, rgba(215,183,151,0.10) 0%, rgba(215,183,151,0.20) 100%)'
-                : 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)',
-              border: `1px solid ${darkMode ? 'rgba(215,183,151,0.15)' : 'rgba(215,183,151,0.25)'}`,
+              background: 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)',
+              border: '1px solid rgba(215,183,151,0.25)',
             }}
           >
-            <Home size={14} strokeWidth={2} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} style={{ filter: darkMode ? 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' : 'none' }} />
+            <Home size={14} strokeWidth={2} className="text-[#6B4D30]" style={{ filter: 'none' }} />
           </button>
 
           {/* Breadcrumb Trail */}
           <nav className="flex items-center gap-1">
-            {isInPlanningWorkflow && (
-              <>
-                <ChevronRight size={11} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
-                <button
-                  onClick={() => onNavigate('budget-management')}
-                  className={`text-[11px] font-['Montserrat'] transition-colors ${
-                    darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  {t('screenConfig.budgetManagement')}
-                </button>
-              </>
-            )}
-            <ChevronRight size={11} className={darkMode ? 'text-[#333333]' : 'text-gray-300'} />
-            <span className={`text-[11px] font-semibold font-['Montserrat'] ${
-              darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'
-            }`}>
+            <ChevronRight size={11} className="text-gray-300" />
+            <span className="text-[11px] font-semibold font-['Montserrat'] text-gray-900">
               {currentConfig.label || 'Dashboard'}
             </span>
           </nav>
@@ -401,35 +382,23 @@ const AppHeader = ({
           <div className="relative" ref={searchRef}>
             <button
               onClick={() => setShowSearch(!showSearch)}
-              className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border transition-all duration-200 ${
-                darkMode
-                  ? 'border-[#444444] hover:border-[rgba(215,183,151,0.35)] hover:bg-[rgba(160,120,75,0.08)]'
-                  : 'border-gray-300 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]'
-              }`}
+              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border transition-all duration-200 border-gray-300 hover:border-[rgba(215,183,151,0.4)] hover:bg-[rgba(160,120,75,0.06)]"
             >
-              <Search size={13} className={darkMode ? 'text-[#999999]' : 'text-gray-600'} />
-              <span className={`text-[11px] hidden sm:block ${darkMode ? 'text-[#999999]' : 'text-gray-600'}`}>
+              <Search size={13} className="text-gray-600" />
+              <span className="text-[11px] hidden sm:block text-gray-600">
                 {t('header.searchPlaceholder')}
               </span>
-              <kbd className={`hidden sm:flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-['JetBrains_Mono'] ${
-                darkMode
-                  ? 'bg-[#1A1A1A] text-[#888888] border border-[#444444]'
-                  : 'bg-gray-100 text-gray-500 border border-gray-300'
-              }`}>
+              <kbd className="hidden sm:flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-['JetBrains_Mono'] bg-gray-100 text-gray-500 border border-gray-300">
                 <Command size={8} />K
               </kbd>
             </button>
 
             {/* Search Modal */}
             {showSearch && (
-              <div className={`absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-96 rounded-xl shadow-2xl border overflow-hidden z-[9999] ${
-                darkMode
-                  ? 'bg-[#121212] border-[#2E2E2E]'
-                  : 'bg-white border-gray-300'
-              }`}>
-                <div className={`p-3 border-b ${darkMode ? 'border-[#2E2E2E]' : 'border-gray-300'}`}>
+              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-96 rounded-xl shadow-2xl border overflow-hidden z-[9999] bg-white border-gray-300">
+                <div className="p-3 border-b border-gray-300">
                   <div className="flex items-center gap-3">
-                    <Search size={18} className={darkMode ? 'text-[#666666]' : 'text-gray-600'} />
+                    <Search size={18} className="text-gray-600" />
                     <input
                       type="text"
                       placeholder={t('header.searchScreens')}
@@ -443,12 +412,10 @@ const AppHeader = ({
                           setSearchQuery('');
                         }
                       }}
-                      className={`flex-1 bg-transparent text-sm outline-none ${
-                        darkMode ? 'text-[#F2F2F2] placeholder:text-[#666666]' : 'text-gray-900 placeholder:text-gray-500'
-                      }`}
+                      className="flex-1 bg-transparent text-sm outline-none text-gray-900 placeholder:text-gray-500"
                     />
                     {searchQuery && (
-                      <button onClick={() => setSearchQuery('')} className={`p-0.5 rounded ${darkMode ? 'text-[#666666] hover:text-[#999999]' : 'text-gray-500 hover:text-gray-700'}`}>
+                      <button onClick={() => setSearchQuery('')} className="p-0.5 rounded text-gray-500 hover:text-gray-700">
                         <span className="text-xs">{t('common.clearAll') || 'Clear'}</span>
                       </button>
                     )}
@@ -460,7 +427,7 @@ const AppHeader = ({
                     {/* Screens group */}
                     {screenResults.length > 0 && (
                       <>
-                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                        <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] text-gray-400">
                           {t('header.searchCategoryScreens')}
                         </div>
                         {screenResults.map((result: any) => {
@@ -473,20 +440,16 @@ const AppHeader = ({
                                 setShowSearch(false);
                                 setSearchQuery('');
                               }}
-                              className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
-                                darkMode
-                                  ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                                  : 'hover:bg-gray-50 text-gray-900'
-                              }`}
+                              className="w-full flex items-center gap-3 px-4 py-1.5 transition-colors hover:bg-gray-50 text-gray-900"
                             >
-                              <ResultIcon size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                              <ResultIcon size={16} className="text-[#6B4D30]" />
                               <div className="flex-1 text-left">
                                 <div className={`text-sm font-medium font-['Montserrat']`}>{result.label}</div>
                                 {result.step && (
-                                  <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>Step {result.step}</div>
+                                  <div className="text-xs text-gray-600">Step {result.step}</div>
                                 )}
                               </div>
-                              <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                              <ChevronRight size={14} className="text-gray-300" />
                             </button>
                           );
                         })}
@@ -496,7 +459,7 @@ const AppHeader = ({
                     {/* Budgets group */}
                     {budgetResults.length > 0 && (
                       <>
-                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                        <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] text-gray-400">
                           {t('header.searchCategoryBudgets')}
                         </div>
                         {budgetResults.map((b: any) => (
@@ -507,20 +470,16 @@ const AppHeader = ({
                               setShowSearch(false);
                               setSearchQuery('');
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
-                              darkMode
-                                ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                                : 'hover:bg-gray-50 text-gray-900'
-                            }`}
+                            className="w-full flex items-center gap-3 px-4 py-1.5 transition-colors hover:bg-gray-50 text-gray-900"
                           >
-                            <Wallet size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                            <Wallet size={16} className="text-[#6B4D30]" />
                             <div className="flex-1 text-left">
                               <div className={`text-sm font-medium font-['Montserrat']`}>{b.name || b.budgetName || 'Untitled'}</div>
-                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                              <div className="text-xs text-gray-600">
                                 {b.budgetCode || b.status || ''}
                               </div>
                             </div>
-                            <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                            <ChevronRight size={14} className="text-gray-300" />
                           </button>
                         ))}
                       </>
@@ -529,7 +488,7 @@ const AppHeader = ({
                     {/* Proposals group */}
                     {proposalResults.length > 0 && (
                       <>
-                        <div className={`px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-400'}`}>
+                        <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wider font-['JetBrains_Mono'] text-gray-400">
                           {t('header.searchCategoryProposals')}
                         </div>
                         {proposalResults.map((p: any) => (
@@ -540,20 +499,16 @@ const AppHeader = ({
                               setShowSearch(false);
                               setSearchQuery('');
                             }}
-                            className={`w-full flex items-center gap-3 px-4 py-1.5 transition-colors ${
-                              darkMode
-                                ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                                : 'hover:bg-gray-50 text-gray-900'
-                            }`}
+                            className="w-full flex items-center gap-3 px-4 py-1.5 transition-colors hover:bg-gray-50 text-gray-900"
                           >
-                            <Package size={16} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
+                            <Package size={16} className="text-[#6B4D30]" />
                             <div className="flex-1 text-left">
                               <div className={`text-sm font-medium font-['Montserrat']`}>{p.name || p.ticketName || 'Untitled'}</div>
-                              <div className={`text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                              <div className="text-xs text-gray-600">
                                 {p.proposalCode || p.ticketCode || p.status || ''}
                               </div>
                             </div>
-                            <ChevronRight size={14} className={darkMode ? 'text-[#444444]' : 'text-gray-300'} />
+                            <ChevronRight size={14} className="text-gray-300" />
                           </button>
                         ))}
                       </>
@@ -561,7 +516,7 @@ const AppHeader = ({
 
                     {/* Loading spinner for data search */}
                     {dataLoading && (
-                      <div className={`px-4 py-3 flex items-center justify-center gap-2 ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                      <div className="px-4 py-3 flex items-center justify-center gap-2 text-gray-500">
                         <Loader2 size={14} className="animate-spin" />
                         <span className="text-xs">{t('common.loading')}...</span>
                       </div>
@@ -569,28 +524,28 @@ const AppHeader = ({
 
                     {/* Hint for short queries */}
                     {searchQuery.trim().length < 3 && searchQuery.trim().length > 0 && screenResults.length === 0 && (
-                      <div className={`px-4 py-4 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                      <div className="px-4 py-4 text-center text-xs text-gray-500">
                         {t('header.searchTyping')}
                       </div>
                     )}
 
                     {/* No results at all */}
                     {!dataLoading && !hasAnyResults && searchQuery.trim().length >= 3 && (
-                      <div className={`px-4 py-6 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
+                      <div className="px-4 py-6 text-center text-sm text-gray-600">
                         {t('header.searchNoResults')}
                       </div>
                     )}
 
                     {/* Short query, no screen matches, hint to type more */}
                     {!dataLoading && !hasAnyResults && searchQuery.trim().length > 0 && searchQuery.trim().length < 3 && (
-                      <div className={`px-4 py-4 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                      <div className="px-4 py-4 text-center text-xs text-gray-500">
                         {t('header.searchTyping')}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className={`p-2 text-center text-xs ${darkMode ? 'text-[#666666]' : 'text-gray-600'}`}>
-                    {t('header.typeToSearch')} <kbd className={`px-1 py-0.5 rounded ${darkMode ? 'bg-[#1A1A1A] text-[#999999]' : 'bg-gray-100 text-gray-600'}`}>ESC</kbd> {t('header.toClose')}
+                  <div className="p-2 text-center text-xs text-gray-600">
+                    {t('header.typeToSearch')} <kbd className="px-1 py-0.5 rounded bg-gray-100 text-gray-600">ESC</kbd> {t('header.toClose')}
                   </div>
                 )}
               </div>
@@ -599,41 +554,18 @@ const AppHeader = ({
 
           {/* Divider */}
           <div className="w-px h-4 mx-1" style={{
-            background: darkMode
-              ? 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.15) 50%, transparent 100%)'
-              : 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.25) 50%, transparent 100%)',
+            background: 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.25) 50%, transparent 100%)',
           }} />
 
           {/* Language Toggle */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'vi' : 'en')}
-            className={`relative p-1.5 rounded-md transition-all duration-200 group ${
-              darkMode
-                ? 'hover:bg-[rgba(215,183,151,0.06)]'
-                : 'hover:bg-[rgba(160,120,75,0.08)]'
-            }`}
+            className="relative p-1.5 rounded-md transition-all duration-200 group hover:bg-[rgba(160,120,75,0.08)]"
             title={language === 'en' ? 'Chuyển sang Tiếng Việt' : 'Switch to English'}
           >
-            <span className={`text-[11px] font-bold font-['JetBrains_Mono'] ${darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'}`}>
+            <span className="text-[11px] font-bold font-['JetBrains_Mono'] text-[#6B4D30]">
               {language === 'en' ? 'EN' : 'VN'}
             </span>
-          </button>
-
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={() => setDarkMode && setDarkMode(!darkMode)}
-            className={`relative p-1.5 rounded-md transition-all duration-200 group ${
-              darkMode
-                ? 'hover:bg-[rgba(215,183,151,0.06)]'
-                : 'hover:bg-[rgba(160,120,75,0.08)]'
-            }`}
-            title={darkMode ? t('header.darkModeTitle') : t('header.lightModeTitle')}
-          >
-            {darkMode ? (
-              <Moon size={15} strokeWidth={2} className="text-[#D7B797]" style={{ filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.3))' }} />
-            ) : (
-              <Sun size={15} strokeWidth={2} className="text-[#6B4D30]" />
-            )}
           </button>
 
           {/* Notification Bell */}
@@ -642,22 +574,18 @@ const AppHeader = ({
               onClick={() => { setShowNotifications(!showNotifications); if (!showNotifications) fetchNotifications(); }}
               className={`relative p-1.5 rounded-md transition-all duration-200 ${
                 showNotifications
-                  ? darkMode
-                    ? 'bg-[rgba(215,183,151,0.10)]'
-                    : 'bg-[rgba(215,183,151,0.12)]'
-                  : darkMode
-                    ? 'hover:bg-[rgba(215,183,151,0.06)]'
-                    : 'hover:bg-[rgba(160,120,75,0.08)]'
+                  ? 'bg-[rgba(215,183,151,0.12)]'
+                  : 'hover:bg-[rgba(160,120,75,0.08)]'
               }`}
             >
               <Bell size={15} strokeWidth={2} className={
                 showNotifications
                   ? 'text-[#D7B797]'
-                  : darkMode ? 'text-[#888888]' : 'text-gray-600'
+                  : 'text-gray-600'
               } style={showNotifications ? { filter: 'drop-shadow(0 0 3px rgba(215,183,151,0.4))' } : undefined} />
               {notifications.length > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#F85149] text-white text-[8px] font-bold flex items-center justify-center"
-                  style={{ border: `1.5px solid ${darkMode ? '#0A0A0A' : '#ffffff'}` }}>
+                  style={{ border: '1.5px solid #ffffff' }}>
                   {notifications.length > 9 ? '9+' : notifications.length}
                 </span>
               )}
@@ -665,27 +593,17 @@ const AppHeader = ({
 
             {/* Notification Dropdown */}
             {showNotifications && (
-              <div className={`absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-80 rounded-xl shadow-2xl border overflow-hidden z-50 ${
-                darkMode
-                  ? 'bg-[#121212] border-[#2E2E2E]'
-                  : 'bg-white border-gray-300'
-              }`}>
+              <div className="absolute right-0 top-full mt-2 w-[calc(100vw-2rem)] md:w-80 rounded-xl shadow-2xl border overflow-hidden z-50 bg-white border-gray-300">
                 {/* Header */}
-                <div className={`px-4 py-3 border-b flex items-center justify-between ${
-                  darkMode ? 'border-[#2E2E2E] bg-[#0A0A0A]' : 'border-gray-300 bg-gray-50'
-                }`}>
+                <div className="px-4 py-3 border-b flex items-center justify-between border-gray-300 bg-gray-50">
                   <div className="flex items-center gap-2">
-                    <Bell size={14} className={darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]'} />
-                    <h3 className={`text-sm font-semibold font-['Montserrat'] ${
-                      darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'
-                    }`}>
+                    <Bell size={14} className="text-[#6B4D30]" />
+                    <h3 className="text-sm font-semibold font-['Montserrat'] text-gray-900">
                       {t('header.notifications') || 'Notifications'}
                     </h3>
                   </div>
                   {notifications.length > 0 && (
-                    <span className={`text-[10px] font-semibold font-['JetBrains_Mono'] px-1.5 py-0.5 rounded ${
-                      darkMode ? 'bg-[rgba(248,81,73,0.15)] text-[#FF7B72]' : 'bg-red-50 text-red-600'
-                    }`}>
+                    <span className="text-[10px] font-semibold font-['JetBrains_Mono'] px-1.5 py-0.5 rounded bg-red-50 text-red-600">
                       {notifications.length}
                     </span>
                   )}
@@ -694,11 +612,11 @@ const AppHeader = ({
                 {/* Notification List */}
                 <div className="max-h-80 overflow-y-auto">
                   {notifLoading && notifications.length === 0 ? (
-                    <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                    <div className="px-4 py-8 text-center text-sm text-gray-500">
                       Loading...
                     </div>
                   ) : notifications.length === 0 ? (
-                    <div className={`px-4 py-8 text-center text-sm ${darkMode ? 'text-[#666666]' : 'text-gray-500'}`}>
+                    <div className="px-4 py-8 text-center text-sm text-gray-500">
                       {t('header.noAlerts')}
                     </div>
                   ) : (
@@ -728,11 +646,7 @@ const AppHeader = ({
                         return (
                           <div
                             key={notif.id}
-                            className={`px-4 py-2.5 border-b last:border-b-0 transition-colors ${
-                              darkMode
-                                ? 'border-[#1A1A1A] hover:bg-[rgba(215,183,151,0.04)]'
-                                : 'border-gray-100 hover:bg-gray-50'
-                            }`}
+                            className="px-4 py-2.5 border-b last:border-b-0 transition-colors border-gray-100 hover:bg-gray-50"
                           >
                             <div className="flex items-start gap-2.5">
                               <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${severityBg[notif.severity] || severityBg.info}`}>
@@ -740,14 +654,14 @@ const AppHeader = ({
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
-                                  <span className={`text-xs font-semibold font-['Montserrat'] ${darkMode ? 'text-[#F2F2F2]' : 'text-gray-900'}`}>
+                                  <span className="text-xs font-semibold font-['Montserrat'] text-gray-900">
                                     {notif.title}
                                   </span>
-                                  <span className={`text-[10px] font-['JetBrains_Mono'] ${darkMode ? 'text-[#555555]' : 'text-gray-500'}`}>
+                                  <span className="text-[10px] font-['JetBrains_Mono'] text-gray-500">
                                     {timeAgo(notif.createdAt)}
                                   </span>
                                 </div>
-                                <p className={`text-[11px] mt-0.5 leading-snug ${darkMode ? 'text-[#888888]' : 'text-gray-600'}`}>
+                                <p className="text-[11px] mt-0.5 leading-snug text-gray-600">
                                   {notif.message}
                                 </p>
                               </div>
@@ -761,168 +675,162 @@ const AppHeader = ({
               </div>
             )}
           </div>
-
-          {/* Print + Save — moved to header row, hidden on Tickets pages */}
-          {isInPlanningWorkflow && currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
-          <>
-            <div className="w-px h-4 mx-1" style={{
-              background: darkMode
-                ? 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.15) 50%, transparent 100%)'
-                : 'linear-gradient(180deg, transparent 0%, rgba(215,183,151,0.25) 50%, transparent 100%)',
-            }} />
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => window.print()}
-                className={`no-print px-1.5 py-1 rounded-lg transition-colors ${
-                  darkMode
-                    ? 'text-[#999] hover:bg-[rgba(215,183,151,0.08)] hover:text-[#D7B797]'
-                    : 'text-[#666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]'
-                }`}
-                title={t('common.print')}
-              >
-                <Printer size={14} />
-              </button>
-              <div className="relative" ref={saveButtonRef}>
-                <div className="inline-flex items-stretch rounded-lg border border-[rgba(215,183,151,0.3)] overflow-hidden">
-                  <button
-                    onClick={async () => {
-                      if (hasSaveHandler) {
-                        await triggerSave();
-                      } else {
-                        toast.success(t('header.save'));
-                      }
-                    }}
-                    className="flex items-center px-2 py-1 transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
-                    title={t('header.save')}
-                  >
-                    <Save size={14} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!openSaveMenu && saveButtonRef.current) {
-                        const rect = saveButtonRef.current.getBoundingClientRect();
-                        setSaveMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
-                      }
-                      setOpenSaveMenu(!openSaveMenu);
-                    }}
-                    className="flex items-center px-1 py-1 border-l border-[rgba(26,26,26,0.2)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
-                  >
-                    <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </>
-          )}
         </div>
       </div>
 
       {/* Workflow Stepper Bar - Show for all Planning workflow screens */}
       {isInPlanningWorkflow && (
-        <div className={`px-4 ${isMobile ? 'py-0.5' : 'py-0.5'}`} style={{
-          borderBottom: `1px solid ${darkMode ? '#1A1A1A' : '#D1D5DB'}`,
-          background: darkMode
-            ? 'linear-gradient(90deg, #0A0A0A 0%, rgba(215,183,151,0.02) 50%, #0A0A0A 100%)'
-            : 'linear-gradient(90deg, #FAFAFA 0%, #ffffff 50%, #FAFAFA 100%)',
+        <div className={`px-6 ${isMobile ? 'py-1' : 'py-3'}`} style={{
+          borderBottom: '1px solid #D1D5DB',
+          background: 'linear-gradient(90deg, #FAFAFA 0%, #ffffff 50%, #FAFAFA 100%)',
+          minHeight: isMobile ? undefined : '56px',
         }}>
           <div className="flex items-center gap-4">
             {/* Back Arrow */}
             {currentStepIndex > 0 && !isMobile && (
               <button
                 onClick={() => onNavigate(PLANNING_STEPS[currentStepIndex - 1].id)}
-                className={`p-1 rounded-md transition-colors shrink-0 ${
-                  darkMode ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#888888]' : 'hover:bg-gray-100 text-gray-500'
-                }`}
+                className="p-1 rounded-md transition-colors shrink-0 hover:bg-gray-100 text-gray-500"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
               </button>
             )}
-            {/* Step Progress */}
-            <div className={`flex items-center ${isMobile ? 'gap-1.5 flex-1 justify-between' : 'gap-2'}`}>
-              {PLANNING_STEPS.map((step: any, index: any) => {
-                const config = SCREEN_CONFIG[step.id];
-                const Icon = config.icon;
-                const isCompleted = index < currentStepIndex;
-                const isCurrent = index === currentStepIndex;
-                const kpi = kpiData[step.id] || { value: 0, status: 'pending' };
-
-                return (
-                  <React.Fragment key={step.id}>
-                    {index > 0 && (
-                      <div className={`${isMobile ? 'w-3' : 'w-4'} h-[1.5px] rounded-full transition-all duration-300 shrink-0`} style={{
-                        background: isCompleted
-                          ? 'linear-gradient(90deg, #127749, #2A9E6A)'
-                          : darkMode ? '#1A1A1A' : '#D1D5DB',
-                      }} />
-                    )}
-                    {/* Mobile: icon-only with count badge */}
-                    {isMobile ? (
+            {/* Step Progress — dot + line, fills remaining width */}
+            {isMobile ? (
+              <div className="flex items-center gap-1.5 flex-1 justify-between">
+                {PLANNING_STEPS.map((step: any, index: any) => {
+                  const config = SCREEN_CONFIG[step.id];
+                  const Icon = config.icon;
+                  const isCompleted = index < currentStepIndex;
+                  const isCurrent = index === currentStepIndex;
+                  return (
+                    <React.Fragment key={step.id}>
+                      {index > 0 && (
+                        <div className="flex-1 h-[2px] rounded-full" style={{ background: isCompleted ? '#127749' : '#E5E7EB' }} />
+                      )}
                       <button
                         onClick={() => onNavigate(step.id)}
-                        className="flex flex-col items-center gap-0.5 rounded-lg px-1 py-0.5 transition-all duration-200"
+                        className="flex items-center justify-center rounded-lg p-1 transition-all duration-200"
                         style={{
                           background: isCurrent
-                            ? 'linear-gradient(135deg, rgba(215,183,151,0.08) 0%, rgba(215,183,151,0.16) 100%)'
-                            : isCompleted
-                              ? 'linear-gradient(135deg, rgba(18,119,73,0.06) 0%, rgba(18,119,73,0.12) 100%)'
-                              : 'transparent',
-                          border: `1px solid ${
-                            isCurrent ? 'rgba(215,183,151,0.25)' : isCompleted ? 'rgba(18,119,73,0.2)' : 'transparent'
-                          }`,
+                            ? 'rgba(18,119,73,0.12)'
+                            : isCompleted ? 'rgba(18,119,73,0.08)' : 'transparent',
+                          border: `1px solid ${isCurrent ? 'rgba(18,119,73,0.25)' : 'transparent'}`,
                         }}
                       >
                         <div className={`p-1.5 rounded-lg ${
-                          isCurrent ? 'bg-[#D7B797]' : isCompleted ? 'bg-[#127749]' : darkMode ? 'bg-[#1A1A1A]' : 'bg-gray-200'
+                          isCurrent || isCompleted ? 'bg-[#127749]' : 'bg-gray-200'
                         }`}>
-                          {isCompleted ? (
-                            <CheckCircle size={16} className="text-white" strokeWidth={2} />
-                          ) : (
-                            <Icon size={16} className={isCurrent ? 'text-[#0A0A0A]' : darkMode ? 'text-[#666666]' : 'text-gray-600'} strokeWidth={2} />
-                          )}
+                          <Icon size={14} className={isCurrent || isCompleted ? 'text-white' : 'text-gray-500'} strokeWidth={2} />
                         </div>
-                        <span className={`text-[9px] font-bold font-['JetBrains_Mono'] tabular-nums ${
-                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#555555]' : 'text-gray-500'
-                        }`}>
-                          {kpi.value}
-                        </span>
                       </button>
-                    ) : (
-                      /* Desktop: pill-shaped step with count */
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex-1 relative flex items-start">
+                {PLANNING_STEPS.map((step: any, index: any) => {
+                  const config = SCREEN_CONFIG[step.id];
+                  const isCompleted = index < currentStepIndex;
+                  const isCurrent = index === currentStepIndex;
+                  const isLast = index === PLANNING_STEPS.length - 1;
+                  return (
+                    <React.Fragment key={step.id}>
+                      {/* Step node */}
                       <button
                         onClick={() => onNavigate(step.id)}
-                        className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full transition-all duration-200 ${isCurrent ? 'shadow-sm' : ''}`}
-                        style={{
-                          background: isCurrent
-                            ? 'linear-gradient(135deg, rgba(215,183,151,0.12) 0%, rgba(215,183,151,0.22) 100%)'
-                            : 'transparent',
-                          border: `1px solid ${isCurrent ? 'rgba(215,183,151,0.25)' : 'transparent'}`,
-                        }}
+                        className="flex flex-col items-center shrink-0 group/step relative z-10"
+                        style={{ width: 'auto' }}
                       >
-                        {isCompleted && (
-                          <CheckCircle size={12} className="text-[#2A9E6A]" strokeWidth={2.5} />
-                        )}
-                        {isCurrent && (
-                          <div className="w-2 h-2 rounded-full bg-[#D7B797]" style={{ boxShadow: '0 0 6px rgba(215,183,151,0.4)' }} />
-                        )}
-                        <span className={`text-[10px] font-semibold font-['Montserrat'] leading-tight ${
-                          isCurrent ? (darkMode ? 'text-[#D7B797]' : 'text-[#6B4D30]') : isCompleted ? 'text-[#2A9E6A]' : darkMode ? 'text-[#666666]' : 'text-gray-400'
+                        {/* Dot */}
+                        <div className="relative flex items-center justify-center">
+                          {isCurrent && (
+                            <span className="absolute w-3 h-3 rounded-full bg-[#127749] animate-[stepper-ping_2s_cubic-bezier(0,0,0.2,1)_infinite] opacity-0" />
+                          )}
+                          <div className={`w-3 h-3 rounded-full transition-all duration-200 relative z-10 ${
+                            isCurrent || isCompleted
+                              ? 'bg-[#127749] shadow-[0_0_0_3px_rgba(18,119,73,0.2)]'
+                              : 'bg-[#D1D5DB] group-hover/step:bg-[#B0B0B0]'
+                          }`} />
+                        </div>
+                        {/* Label */}
+                        <span className={`mt-1.5 text-[11px] font-semibold font-['Montserrat'] whitespace-nowrap transition-colors ${
+                          isCurrent ? 'text-[#6B4D30]' : isCompleted ? 'text-[#8B7355]' : 'text-gray-400 group-hover/step:text-gray-500'
                         }`}>
                           {config.shortLabel}
                         </span>
-                        <span className={`text-[9px] font-['JetBrains_Mono'] ${
-                          isCurrent ? (darkMode ? 'text-[#D7B797]/70' : 'text-[#6B4D30]/60') : isCompleted ? 'text-[#2A9E6A]/60' : darkMode ? 'text-[#444444]' : 'text-gray-300'
-                        }`}>
-                          ({kpi.value || 0})
-                        </span>
                       </button>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </div>
+                      {/* Connector line — stretches between dots */}
+                      {!isLast && (
+                        <div className="flex-1 flex items-center px-0 mt-[5px]">
+                          <div className="w-full h-[2px] rounded-full" style={{
+                            background: index < currentStepIndex
+                              ? '#127749'
+                              : '#E5E7EB',
+                          }} />
+                        </div>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            )}
 
+            {/* Export + Save/CreateBudget — hidden on Tickets pages */}
+            {currentScreen !== 'tickets' && currentScreen !== 'ticket-detail' && (
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <button
+                onClick={hasExportHandler ? triggerExport : () => window.print()}
+                className="no-print px-1.5 py-1 rounded-lg transition-colors text-[#666] hover:bg-[rgba(160,120,75,0.12)] hover:text-[#6B4D30]"
+                title="Export"
+              >
+                <Download size={14} />
+              </button>
+              {currentScreen === 'budget-management' ? (
+                <button
+                  onClick={triggerCreateBudget}
+                  className="flex items-center gap-1.5 px-3 py-1 bg-[#127749] text-white rounded-lg hover:bg-[#2A9E6A] transition-colors shadow-sm text-xs font-medium font-['Montserrat'] shrink-0"
+                >
+                  <Plus size={14} />
+                  {t('budget.createBudget')}
+                </button>
+              ) : (
+                <div className="relative" ref={saveButtonRef}>
+                  <div className="inline-flex items-stretch rounded-lg border border-[rgba(215,183,151,0.3)] overflow-hidden">
+                    <button
+                      onClick={async () => {
+                        if (hasSaveHandler) {
+                          await triggerSave();
+                        } else {
+                          toast.success(t('header.save'));
+                        }
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1 transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684] text-xs font-semibold font-['Montserrat']"
+                      title={t('header.save')}
+                    >
+                      <Save size={13} />
+                      <span>Save</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!openSaveMenu && saveButtonRef.current) {
+                          const rect = saveButtonRef.current.getBoundingClientRect();
+                          setSaveMenuPosition({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                        }
+                        setOpenSaveMenu(!openSaveMenu);
+                      }}
+                      className="flex items-center px-1.5 py-1 border-l border-[rgba(26,26,26,0.15)] transition-colors bg-[#D7B797] text-[#0A0A0A] hover:bg-[#C4A684]"
+                    >
+                      <ChevronDown size={12} className={`transition-transform ${openSaveMenu ? 'rotate-180' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            )}
           </div>
         </div>
       )}
@@ -930,9 +838,8 @@ const AppHeader = ({
       {/* Save Dropdown Menu - Portal to body */}
       {openSaveMenu && createPortal(
         <div
-          className={`fixed w-56 border rounded-xl shadow-2xl overflow-hidden ${
-            darkMode ? 'bg-[#1A1A1A] border-[#2E2E2E]' : 'bg-white border-[#C4B5A5]'
-          }`}
+          ref={saveMenuRef}
+          className="fixed w-56 border rounded-xl shadow-2xl overflow-hidden bg-white border-[#C4B5A5]"
           style={{
             top: saveMenuPosition.top,
             right: saveMenuPosition.right,
@@ -948,25 +855,21 @@ const AppHeader = ({
               }
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium transition-colors ${
-              darkMode
-                ? 'hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                : 'hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'
-            }`}
+            className="w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium transition-colors hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]"
           >
             <Save size={14} className="shrink-0" />
             {t('header.save')}
           </button>
           <button
-            onClick={() => {
-              toast.success(t('header.saveAsNewVersion'));
+            onClick={async () => {
+              if (hasSaveAsNewHandler) {
+                await triggerSaveAsNew();
+              } else {
+                toast.success(t('header.saveAsNewVersion'));
+              }
               setOpenSaveMenu(false);
             }}
-            className={`w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors ${
-              darkMode
-                ? 'border-[#2E2E2E] hover:bg-[rgba(215,183,151,0.08)] text-[#F2F2F2]'
-                : 'border-[#C4B5A5] hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]'
-            }`}
+            className="w-full px-4 py-0.5 flex items-center gap-3 text-left text-sm font-medium border-t transition-colors border-[#C4B5A5] hover:bg-[rgba(215,183,151,0.15)] text-[#0A0A0A]"
           >
             <Layers size={14} className="shrink-0" />
             {t('header.saveAsNewVersion')}

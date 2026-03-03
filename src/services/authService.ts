@@ -87,7 +87,7 @@ export const authService = {
 
   // Login with Microsoft (Azure AD) — send MS access token to backend
   async loginWithMicrosoft(msAccessToken: string) {
-    const response: any = await api.post('/auth/microsoft', { msAccessToken }, {
+    const response: any = await api.post('/auth/microsoft', { accessToken: msAccessToken }, {
       timeout: LOGIN_TIMEOUT,
     });
     const { accessToken, refreshToken, user } = response.data.data || response.data;

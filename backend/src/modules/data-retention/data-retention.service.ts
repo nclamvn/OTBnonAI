@@ -62,7 +62,7 @@ export class DataRetentionService {
     // 1. Delete old audit logs
     const auditLogResult = await this.prisma.auditLog.deleteMany({
       where: {
-        createdAt: { lt: auditLogCutoff },
+        created_at: { lt: auditLogCutoff },
       },
     });
     this.logger.log(
@@ -74,7 +74,7 @@ export class DataRetentionService {
     const archivedBudgetResult = await this.prisma.budget.deleteMany({
       where: {
         status: 'ARCHIVED',
-        updatedAt: { lt: archivedBudgetCutoff },
+        updated_at: { lt: archivedBudgetCutoff },
       },
     });
     this.logger.log(
@@ -84,7 +84,7 @@ export class DataRetentionService {
     // 3. Delete old import records (by cutoff on importedAt)
     const importRecordResult = await this.prisma.importedRecord.deleteMany({
       where: {
-        importedAt: { lt: importSessionCutoff },
+        created_at: { lt: importSessionCutoff },
       },
     });
     this.logger.log(
@@ -94,7 +94,7 @@ export class DataRetentionService {
     // 4. Delete old import sessions
     const importSessionResult = await this.prisma.importSession.deleteMany({
       where: {
-        startedAt: { lt: importSessionCutoff },
+        created_at: { lt: importSessionCutoff },
       },
     });
     this.logger.log(

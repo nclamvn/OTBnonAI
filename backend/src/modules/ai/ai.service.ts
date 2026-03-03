@@ -15,13 +15,18 @@ export class AiService {
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Calculate optimal size curve for a subcategory at a store.
+   * Uses subcategory sizes and returns recommended distribution.
+   */
   async calculateSizeCurve(
     subCategoryId: string,
     storeId: string,
     totalOrderQty: number,
   ): Promise<SizeRecommendation[]> {
+    // Get available sizes for the subcategory
     const sizes = await this.prisma.subcategorySize.findMany({
-      where: { subCategoryId },
+      where: { sub_category_id: +subCategoryId },
       orderBy: { name: 'asc' },
     });
 
@@ -29,6 +34,7 @@ export class AiService {
       return this.getDefaultCurve(totalOrderQty);
     }
 
+    // Default bell-curve distribution for common size ranges
     const bellCurve = this.getBellCurveDistribution(sizes.length);
 
     return sizes.map((size, i) => {
@@ -45,6 +51,9 @@ export class AiService {
     });
   }
 
+  /**
+   * Compare user sizing input vs AI recommendation.
+   */
   async compareSizeCurve(
     subCategoryId: string,
     storeId: string,
@@ -99,6 +108,7 @@ export class AiService {
     if (count === 5) return [10, 20, 40, 20, 10];
     if (count === 6) return [5, 15, 30, 30, 15, 5];
 
+    // Generic bell curve for larger counts
     const center = (count - 1) / 2;
     const sigma = count / 4;
     const raw = Array.from({ length: count }, (_, i) =>

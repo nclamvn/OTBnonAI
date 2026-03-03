@@ -26,42 +26,53 @@ export class RiskScoringService {
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Assess risk for a SKU Proposal Header.
+   */
   async assessProposal(headerId: string): Promise<RiskAssessmentResult> {
-    const header = await this.prisma.proposal.findUnique({
-      where: { id: headerId },
+    const header = await this.prisma.sKUProposalHeader.findUnique({
+      where: { id: +headerId },
       include: {
-        products: {
+        sku_proposals: {
           include: {
-            sku: {
-              include: { brand: true },
+            product: {
+              include: {
+                brand: true,
+                sub_category: {
+                  include: {
+                    category: { include: { gender: true } },
+                  },
+                },
+              },
             },
-            allocations: { include: { store: true } },
+            sku_allocates: { include: { store: true } },
           },
         },
-        proposalSizingHeaders: {
+        proposal_sizing_headers: {
           include: {
-            proposalSizings: {
-              include: { proposalProduct: { select: { id: true, skuId: true } } },
+            proposal_sizings: {
+              include: { sku_proposal: { select: { id: true, product_id: true } } },
             },
           },
         },
       },
     });
 
-    if (!header) throw new NotFoundException(`Proposal ${headerId} not found`);
+    if (!header) throw new NotFoundException(`SKU Proposal Header ${headerId} not found`);
 
-    this.logger.log(`Assessing risk for proposal ${headerId}`);
+    this.logger.log(`Assessing risk for proposal header ${headerId}`);
 
     const warnings: string[] = [];
-    const products = header.products;
-    const sizingHeaders = header.proposalSizingHeaders || [];
+    const proposals = header.sku_proposals;
+
+    const sizingHeaders = (header as any).proposal_sizing_headers || [];
 
     const factors: RiskFactor[] = [
-      this.assessSkuDiversity(products, warnings),
-      this.assessStoreAllocation(products, warnings),
-      this.assessSizingCoverage(products, sizingHeaders, warnings),
-      this.assessMarginImpact(products, warnings),
-      this.assessCategoryBalance(products, warnings),
+      this.assessSkuDiversity(proposals, warnings),
+      this.assessStoreAllocation(proposals, warnings),
+      this.assessSizingCoverage(proposals, sizingHeaders, warnings),
+      this.assessMarginImpact(proposals, warnings),
+      this.assessCategoryBalance(proposals, warnings),
     ];
 
     const overallScore = factors.reduce((sum, f) => sum + f.score * f.weight, 0);
@@ -70,7 +81,7 @@ export class RiskScoringService {
     const recommendation = this.generateRecommendation(factors, riskLevel, warnings);
 
     return {
-      entityType: 'proposal',
+      entityType: 'sku_proposal',
       entityId: headerId,
       overallScore: roundedScore,
       riskLevel,
@@ -82,15 +93,15 @@ export class RiskScoringService {
 
   // ── Factor Assessments ────────────────────────────────────────────────
 
-  private assessSkuDiversity(products: any[], warnings: string[]): RiskFactor {
-    const count = products.length;
+  private assessSkuDiversity(proposals: any[], warnings: string[]): RiskFactor {
+    const count = proposals.length;
 
     if (count === 0) {
-      warnings.push('No products in proposal');
+      warnings.push('No SKU proposals');
       return { name: 'SKU Diversity', score: 2, weight: 0.25, status: 'risk', details: 'No products in proposal.' };
     }
 
-    const categories = new Set(products.map(p => p.category || 'Unknown'));
+    const categories = new Set(proposals.map(p => p.product?.sub_category?.category?.name || 'Unknown'));
     const catCount = categories.size;
 
     if (catCount === 1 && count < 5) {
@@ -103,10 +114,10 @@ export class RiskScoringService {
     return { name: 'SKU Diversity', score: 9, weight: 0.25, status: 'good', details: `${count} SKUs across ${catCount} categories. Good diversity.` };
   }
 
-  private assessStoreAllocation(products: any[], warnings: string[]): RiskFactor {
-    const totalAllocations = products.reduce((sum, p) => sum + (p.allocations?.length || 0), 0);
-    const withAllocations = products.filter(p => p.allocations?.length > 0).length;
-    const allocationRate = products.length > 0 ? (withAllocations / products.length) * 100 : 0;
+  private assessStoreAllocation(proposals: any[], warnings: string[]): RiskFactor {
+    const totalAllocations = proposals.reduce((sum, p) => sum + (p.sku_allocates?.length || 0), 0);
+    const withAllocations = proposals.filter(p => p.sku_allocates?.length > 0).length;
+    const allocationRate = proposals.length > 0 ? (withAllocations / proposals.length) * 100 : 0;
 
     if (allocationRate === 0) {
       warnings.push('No store allocations defined');
@@ -119,15 +130,16 @@ export class RiskScoringService {
     return { name: 'Store Allocation', score: 9, weight: 0.2, status: 'good', details: `${allocationRate.toFixed(0)}% coverage with ${totalAllocations} allocations.` };
   }
 
-  private assessSizingCoverage(products: any[], sizingHeaders: any[], warnings: string[]): RiskFactor {
-    const productIdsWithSizing = new Set<string>();
+  private assessSizingCoverage(proposals: any[], sizingHeaders: any[], warnings: string[]): RiskFactor {
+    // Check which SKU proposals have sizing rows in any sizing header
+    const skuIdsWithSizing = new Set<string>();
     for (const sh of sizingHeaders) {
-      for (const ps of (sh.proposalSizings || [])) {
-        productIdsWithSizing.add(String(ps.proposalProduct?.id || ps.proposalProductId));
+      for (const ps of (sh.proposal_sizings || [])) {
+        skuIdsWithSizing.add(String(ps.sku_proposal_id));
       }
     }
-    const withSizings = products.filter(p => productIdsWithSizing.has(String(p.id))).length;
-    const sizingRate = products.length > 0 ? (withSizings / products.length) * 100 : 0;
+    const withSizings = proposals.filter(p => skuIdsWithSizing.has(String(p.id))).length;
+    const sizingRate = proposals.length > 0 ? (withSizings / proposals.length) * 100 : 0;
 
     if (sizingRate === 0) {
       return { name: 'Sizing Coverage', score: 5, weight: 0.2, status: 'warning', details: 'No sizing data defined.', recommendation: 'Add sizing data for better inventory planning.' };
@@ -139,17 +151,17 @@ export class RiskScoringService {
     return { name: 'Sizing Coverage', score: 9, weight: 0.2, status: 'good', details: `${sizingRate.toFixed(0)}% sizing coverage.` };
   }
 
-  private assessMarginImpact(products: any[], warnings: string[]): RiskFactor {
-    if (products.length === 0) {
+  private assessMarginImpact(proposals: any[], warnings: string[]): RiskFactor {
+    if (proposals.length === 0) {
       return { name: 'Margin Impact', score: 5, weight: 0.2, status: 'warning', details: 'No data.' };
     }
 
     let totalCost = 0;
     let totalSrp = 0;
 
-    for (const p of products) {
-      const qty = p.allocations?.reduce((s: number, a: any) => s + Number(a.quantity), 0) || 1;
-      totalCost += Number(p.unitCost) * qty;
+    for (const p of proposals) {
+      const qty = p.sku_allocates?.reduce((s: number, a: any) => s + Number(a.quantity), 0) || 1;
+      totalCost += Number(p.unit_cost) * qty;
       totalSrp += Number(p.srp) * qty;
     }
 
@@ -167,18 +179,18 @@ export class RiskScoringService {
     return { name: 'Margin Impact', score: 3, weight: 0.2, status: 'risk', details: `Critical margin: ${margin.toFixed(1)}%.`, recommendation: 'Urgently review costs and pricing.' };
   }
 
-  private assessCategoryBalance(products: any[], warnings: string[]): RiskFactor {
-    if (products.length === 0) {
+  private assessCategoryBalance(proposals: any[], warnings: string[]): RiskFactor {
+    if (proposals.length === 0) {
       return { name: 'Category Balance', score: 5, weight: 0.15, status: 'warning', details: 'No data.' };
     }
 
     const catMap = new Map<string, number>();
-    for (const p of products) {
-      const cat = p.category || 'Unknown';
+    for (const p of proposals) {
+      const cat = p.product?.sub_category?.category?.name || 'Unknown';
       catMap.set(cat, (catMap.get(cat) || 0) + 1);
     }
 
-    const maxPct = (Math.max(...catMap.values()) / products.length) * 100;
+    const maxPct = (Math.max(...catMap.values()) / proposals.length) * 100;
 
     if (maxPct > 70) {
       return { name: 'Category Balance', score: 4, weight: 0.15, status: 'risk', details: `Dominant category at ${maxPct.toFixed(0)}%.`, recommendation: 'Redistribute across categories.' };

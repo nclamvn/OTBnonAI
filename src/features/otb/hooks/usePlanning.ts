@@ -16,7 +16,7 @@ export const usePlanning = () => {
   const [currentPlanningId, setCurrentPlanningId] = useState<string | null>(null);
 
   // Master data for planning dimensions
-  const [collections, setCollections] = useState<any[]>([]);
+  const [seasonTypes, setSeasonTypes] = useState<any[]>([]);
   const [genders, setGenders] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -27,13 +27,13 @@ export const usePlanning = () => {
     const controller = new AbortController();
     const fetchMasterData = async () => {
       try {
-        const [collectionsRes, gendersRes, categoriesRes] = await Promise.all([
-          masterDataService.getCollections(),
+        const [seasonTypesRes, gendersRes, categoriesRes] = await Promise.all([
+          masterDataService.getSeasonTypes(),
           masterDataService.getGenders(),
           masterDataService.getCategories(),
         ]);
         if (controller.signal.aborted) return;
-        setCollections(collectionsRes || []);
+        setSeasonTypes(seasonTypesRes || []);
         setGenders(gendersRes || []);
         setCategories(categoriesRes || []);
       } catch (err: any) {
@@ -65,8 +65,8 @@ export const usePlanning = () => {
         details: (p.details || []).map((d: any) => ({
           id: d.id,
           dimensionType: d.dimensionType,
-          collectionId: d.collectionId,
-          collectionName: d.collection?.name,
+          seasonTypeId: d.seasonTypeId,
+          seasonTypeName: d.seasonType?.name,
           genderId: d.genderId,
           genderName: d.gender?.name,
           categoryId: d.categoryId,
@@ -110,8 +110,8 @@ export const usePlanning = () => {
         setPlanningDetailData((planning.details || []).map((d: any) => ({
           id: d.id,
           dimensionType: d.dimensionType,
-          collectionId: d.collectionId,
-          collectionName: d.collection?.name,
+          seasonTypeId: d.seasonTypeId,
+          seasonTypeName: d.seasonType?.name,
           genderId: d.genderId,
           genderName: d.gender?.name,
           categoryId: d.categoryId,
@@ -131,23 +131,23 @@ export const usePlanning = () => {
         setCurrentPlanningId(existingPlanning.id);
       }
     } else {
-      // Generate initial data from collections
+      // Generate initial data from season types
       setCurrentPlanningId(null);
       const budgetAmount = Number(budgetDetail.budgetAmount);
       const initialData: any[] = [];
 
-      // Create one row per collection with precise distribution summing to exactly 1.0
-      const count = collections.length;
+      // Create one row per season type with precise distribution summing to exactly 1.0
+      const count = seasonTypes.length;
       const basePct = Math.floor((1 / count) * 10000) / 10000; // 4 decimal precision
       const remainder = 1 - basePct * (count - 1); // assign remainder to last item
 
-      collections.forEach((col: any, index: number) => {
+      seasonTypes.forEach((col: any, index: number) => {
         const pct = index === count - 1 ? remainder : basePct;
         initialData.push({
           id: `new_${col.id}`,
-          dimensionType: 'collection',
-          collectionId: col.id,
-          collectionName: col.name,
+          dimensionType: 'seasonType',
+          seasonTypeId: col.id,
+          seasonTypeName: col.name,
           genderId: null,
           genderName: null,
           categoryId: null,
@@ -177,7 +177,7 @@ export const usePlanning = () => {
       // Convert percentages to decimals for API
       const details = planningDetailData.map((d: any) => ({
         dimensionType: d.dimensionType,
-        collectionId: d.collectionId,
+        seasonTypeId: d.seasonTypeId,
         genderId: d.genderId,
         categoryId: d.categoryId,
         subCategoryId: d.subCategoryId,
@@ -321,7 +321,7 @@ export const usePlanning = () => {
     showPlanningDetail,
     selectedBudgetDetail,
     planningDetailData,
-    collections,
+    seasonTypes,
     genders,
     categories,
     getPlanningStatus,
